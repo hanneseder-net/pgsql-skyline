@@ -5,3 +5,14 @@
 \newcommand{\subtitle}[1]
 	{\gdef\@subtitle{#1}}
 
+
+%% Section revision info:
+\newcommand{\sectionRevision}[0]
+%	{{\small \textcolor{lightgray}{rev:\svnInfoRevision}}}
+	{}
+
+
+\makeatletter
+\@chapter=\chapter
+\renewcommand{\chapter}[1]{\@chapter{#1\sectionRevision}}
+\makeatother

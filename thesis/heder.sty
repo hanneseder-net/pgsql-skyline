@@ -1,18 +1,25 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesPackage{heder}[2006/04/22 heder latex extension]
 
+\usepackage{xcolor}
+
+% hm? does not work yet
+%% Section revision info:
+\newcommand{\sectionRevision}[0]{}
+
+\DeclareOption{revisions}{\renewcommand{\sectionRevision}[0]{{\small\textcolor{lightgray}{\ rev:\svnInfoRevision}}}}
+\ExecuteOptions{revisions}
+\ProcessOptions
+
+
 \gdef\@subtitle{}
 \newcommand{\subtitle}[1]
 	{\gdef\@subtitle{#1}}
 
 
-%% Section revision info:
-\newcommand{\sectionRevision}[0]
-%	{{\small \textcolor{lightgray}{rev:\svnInfoRevision}}}
-	{}
 
 
-\makeatletter
-\@chapter=\chapter
-\renewcommand{\chapter}[1]{\@chapter{#1\sectionRevision}}
-\makeatother
+% does not yet work
+% \let\latexchapter\chapter%
+% \renewcommand\chapter[1]{\latexchapter{#1\sectionRevision}}
+

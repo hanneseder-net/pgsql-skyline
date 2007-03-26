@@ -12,8 +12,10 @@ BUILDDIR=.
 OUTPUTDIR=./output
 REVISION := $(shell svn info | perl -n -e 'if ($$_ =~ m/^Revision:\s*(\d+)/) { print "$$1"; }')
 
-all: $(OUTPUTDIR)/thesis-$(REVISION).pdf $(OUTPUTDIR)/thesis-draft-$(REVISION).pdf
+
 dvi: $(BUILDDIR)/00-thesis-draft.dvi $(BUILDDIR)/00-thesis-final.dvi
+
+putonline: $(OUTPUTDIR)/thesis-$(REVISION).pdf $(OUTPUTDIR)/thesis-draft-$(REVISION).pdf
 
 $(OUTPUTDIR)/thesis-$(REVISION).pdf: $(BUILDDIR)/00-thesis-final.pdf
 	cp $< $@

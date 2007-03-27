@@ -3,10 +3,12 @@
 
 \usepackage{xcolor}
 
+\newif\ifshowrevisions
+\newcommand{\sectionRevision}[0]{{\ifshowrevisions{\small\textcolor{lightgray}{\ rev:\svnInfoRevision}}\fi}}
 
-%% Section revision info:
-\newcommand{\sectionRevision}[0]{}
-\DeclareOption{revisions}{\renewcommand{\sectionRevision}[0]{{\small\textcolor{lightgray}{\ rev:\svnInfoRevision}}}}
+\DeclareOption{revisions}{\showrevisionstrue}
+\DeclareOption{norevisions}{\showrevisionsfalse}
+\ExecuteOptions{norevisions}
 \ProcessOptions
 
 

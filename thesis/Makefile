@@ -4,6 +4,7 @@ FILES=\
 	01-cover-en.tex 01-cover-de.tex \
 	02-acknowledgement.tex \
 	03-abstract-en.tex 03-abstract-de.tex \
+	04-introduction.tex \
 	08-summary.tex \
 	heder.sty ../bib/skyline.bib
 
@@ -13,7 +14,11 @@ OUTPUTDIR=./output
 REVISION := $(shell svn info | perl -n -e 'if ($$_ =~ m/^Revision:\s*(\d+)/) { print "$$1"; }')
 
 
-dvi: $(BUILDDIR)/00-thesis-draft.dvi $(BUILDDIR)/00-thesis-final.dvi
+draft: $(BUILDDIR)/00-thesis-draft.dvi
+
+final: $(BUILDDIR)/00-thesis-final.dvi
+
+dvi: draft final
 
 putonline: $(OUTPUTDIR)/thesis-$(REVISION).pdf $(OUTPUTDIR)/thesis-draft-$(REVISION).pdf
 

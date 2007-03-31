@@ -1,3 +1,5 @@
+# [NOTE]: all output formats depend on these files
+# add new files to this list
 FILES=\
 	Makefile \
 	00-thesis.tex \
@@ -8,7 +10,12 @@ FILES=\
 	08-summary.tex \
 	heder.sty ../bib/skyline.bib
 
-TMPFILES=*.aux *.log *.toc *.lot *.lof *.bbl *.blg *.ind *.ilg *.idx *.out 
+TMPFILES=*.aux *.log *.toc *.lot *.lof *.bbl *.blg *.ind *.ilg *.idx *.out
+TRASHFILES=*~ *.*~
+
+# use in `make realclean` to remove all files
+TARGETFILES=00-thesis-draft.dvi 00-thesis-final.dvi 00-thesis-draft.pdf 00-thesis-final.pdf
+
 ## [NOTE] using:
 #
 # BUILDDIR=. 
@@ -20,16 +27,22 @@ TMPFILES=*.aux *.log *.toc *.lot *.lof *.bbl *.blg *.ind *.ilg *.idx *.out
 ## has no benefit, since change BUILDDIR to something 
 ## differnt to . is not recogniced by texify so it
 ## looks in the wrong directory for the files
-OUTPUTDIR=./output
+
+# [TODO]: copy output to the web-server
+UPLOADDIR=./output
+
+# retrieve subversion revision number of working directory
 REVISION := $(shell svn info | perl -n -e 'if ($$_ =~ m/^Revision:\s*(\d+)/) { print "$$1"; }')
+
+# tools options
 TEXIFYFLAGS=--tex-option="-c-style-errors -halt-on-error"
 
+# [NOTE] this is first, because we want `make` just build the draft
+draft: 00-thesis-draft.dvi
 
-all: draft
+all: dvi pdf
 
 dvi: draft final
-
-draft: 00-thesis-draft.dvi
 
 final: 00-thesis-final.dvi
 
@@ -39,18 +52,29 @@ draft-pdf: 00-thesis-draft.pdf
 
 final-pdf: 00-thesis-final.pdf
 
-putonline: $(OUTPUTDIR)/thesis-$(REVISION).pdf $(OUTPUTDIR)/thesis-draft-$(REVISION).pdf
+# use this target pre-commit, to verify the source
+check: check-preclean check-build check-postclean
 
-$(OUTPUTDIR)/thesis-$(REVISION).pdf: 00-thesis-final.pdf
+check-preclean:
+	rm -rf $(TMPFILES) $(TRASHFILES) $(TARGETFILES)
+
+check-build: all
+
+check-postclean:
+	rm -rf $(TMPFILES) $(TRASHFILES) $(TARGETFILES)
+
+upload: $(UPLOADDIR)/thesis-$(REVISION).pdf $(UPLOADDIR)/thesis-draft-$(REVISION).pdf
+
+$(UPLOADDIR)/thesis-$(REVISION).pdf: 00-thesis-final.pdf
 	cp $< $@
 
-$(OUTPUTDIR)/thesis-draft-$(REVISION).pdf: 00-thesis-draft.pdf
+$(UPLOADDIR)/thesis-draft-$(REVISION).pdf: 00-thesis-draft.pdf
 	cp $< $@
 
 # [NOTE] using texify eases the building of tex stuff, it calls
 # every thing needed, as many times as needed.
 
-00-thesis-draft.dvi: $(FILES) 00-thesis-draft.tex
+00-thesis-draft.dvi: 00-thesis-draft.tex $(FILES) 
 	texify  --src --run-viewer $(TEXIFYFLAGS) $<
 
 00-thesis-final.dvi: 00-thesis-final.tex $(FILES)
@@ -75,4 +99,7 @@ $(OUTPUTDIR)/thesis-draft-$(REVISION).pdf: 00-thesis-draft.pdf
 	cpp -C -P -D"FILE=00-thesis" -D"OPTIONS=a4paper,10pt,final" $< >$@
 
 clean:
-	rm -rf $(TMPFILES)
+	rm -rf $(TMPFILES) $(TRASHFILES)
+
+realclean: clean
+	rm -rf $(TARGETFILES)

@@ -1,0 +1,17 @@
+%%%
+%%% Thesis.
+%%%
+
+#ifndef FILE
+#define FILE 00-thesis
+#endif
+
+#ifndef OPTIONS
+#define OPTIONS a4paper,10pt,revisions
+#endif
+
+\documentclass[OPTIONS]{report}
+\usepackage{heder}
+\begin{document}
+\input{FILE}
+\end{document}

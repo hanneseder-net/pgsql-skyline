@@ -2,127 +2,59 @@
 %%% Thesis.
 %%%
 
-
-% build using 00-thesis-draft or 00-thesis-final
-
-%%% Basic Packages: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\usepackage[latin1]{inputenc}
-
-\usepackage[top=3cm, left=4cm, right=3cm]{geometry}
-
-\usepackage{float}
-
-\usepackage{graphicx}
-	\graphicspath{{plots/}{diagrams/}}
-
-\usepackage[round]{natbib}
-
-\usepackage[nofancy]{svninfo}
-
-\usepackage[small]{caption}
-
-\usepackage{amsmath}
-\usepackage{amssymb}
-
-\usepackage{makeidx}
-
-\usepackage{hyperref}
-		\hypersetup{
-			a4paper=true,
-%			ps2pdf=true,
-			pagebackref=true,
-			colorlinks = {false},		% change colorlinks to false for pretty printing
-			linkcolor = {blue},
-			citecolor = {blue},
-			urlcolor = {blue},
-			hyperindex = {true},
-			linktocpage = {true}}
-
-\usepackage{heder}
-
-\makeindex
-
-%%% Contents: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{document}
+% see Makefile on how to build this
 
 \svnInfo $Id$ 
 
-
-\title{Skyline Operator Implementation in PostgreSQL}
-\subtitle{Master Thesis}
-\author{Johann Eder}
-\date{\today}
-
-
-%%% Cover page: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Cover page: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \include{01-cover-de}
 \include{01-cover-en}
 \pagenumbering{roman}
 
-
-
-%%% Preface: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+%%% Preface: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \include{03-abstract-de}
 \include{03-abstract-en}
 \include{02-acknowledgement}
 
-
-
-%%% Table of contents: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Table of contents: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %\renewcommand{\contentsname}{Table of Contents}
 \setcounter{tocdepth}{2} 
+\pdfbookmark[0]{Table of Contents}{contents}% contents.0
 \tableofcontents
 
 
-
-%%% Chapter 1: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Chapter 1: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \pagenumbering{arabic}
 \include{04-introduction}
 
-
-
-%%% Chapter 2: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Chapter 2: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Chaper 2}
 \label{chap:Chapter-2}
 
-
-
-%%% Chapter 3: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Chapter 3: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Chaper 3}
 \label{chap:Chapter-3}
 
-
-
-%%% Chapter 4: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Chapter 4: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Chaper 4}
 \label{chap:Chapter-4}
 
-
-
-%%% Chapter 5: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Chapter 5: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \include{08-summary}
 
-
-
-%%% Appendix: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Appendix: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \appendix
 
 \bibliographystyle{plainnat}
 \bibliography{../bib/Skyline}
 \addcontentsline{toc}{chapter}{Bibliography}
 
-
 \listoffigures
 \addcontentsline{toc}{chapter}{List of Figures}
-
 
 \listoftables
 \addcontentsline{toc}{chapter}{List of Tables}
 
-
 \newpage
 \addcontentsline{toc}{chapter}{Index}
 \printindex
-
-\end{document}

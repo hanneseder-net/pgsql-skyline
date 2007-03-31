@@ -1,17 +1,75 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesPackage{heder}[2006/04/22 heder latex extension]
 
-\usepackage{xcolor}
+\usepackage[latin1]{inputenc}
 
-\newif\ifshowrevisions
-\newcommand{\sectionRevision}[0]{{\ifshowrevisions{\small\textcolor{lightgray}{\ rev:\svnInfoRevision}}\fi}}
+\usepackage[top=3cm, left=4cm, right=3cm]{geometry}
 
-\DeclareOption{revisions}{\showrevisionstrue}
-\DeclareOption{norevisions}{\showrevisionsfalse}
-\ExecuteOptions{norevisions}
-\ProcessOptions
+\usepackage{float}
 
+\usepackage{graphicx}
+\graphicspath{{plots/}{diagrams/}}
+
+\usepackage[square]{natbib}
+
+\usepackage[nofancy]{svninfo}
+
+\usepackage[small]{caption}
+
+\usepackage{amsmath}
+
+\usepackage{amssymb}
+
+\usepackage{makeidx}
+
+
+
+\usepackage{hyperref}
+% see: http://tug.ctan.org/tex-archive/macros/latex/contrib/hyperref/doc/options.pdf
 
 \gdef\@subtitle{}
 \newcommand{\subtitle}[1]
 	{\gdef\@subtitle{#1}}
+
+\title{Skyline Operator Implementation in PostgreSQL}
+\subtitle{Master Thesis}
+\author{Ing. Bakk.techn. Johann Eder}
+\date{\today}
+
+\hypersetup{
+        a4paper = {true},
+        pagebackref = {true},
+        pdftitle = {Skyline Operator Implementation in PostgreSQL},
+        pdfauthor = {Ing. Bakk.techn. Johann Eder},
+        pdfdisplaydoctitle = {true},
+        linkcolor = {blue},
+	citecolor = {blue},
+	urlcolor = {blue},
+	hyperindex = {true},
+	linktocpage = {true}
+}
+
+\newcommand\hypersetupdraft{\hypersetup{
+        colorlinks = {true},
+        }
+}
+\newcommand\hypersetupfinal{\hypersetup{
+        colorlinks = {false},
+        }
+}
+
+\usepackage{hypernat}
+\usepackage{xcolor}
+
+\newif\ifshowrevisions
+\newcommand{\revision}[0]{{\ifshowrevisions{\small\textcolor{lightgray}{\ rev:\svnInfoRevision}}\fi}}
+
+\DeclareOption{revisions}{\showrevisionstrue}
+\DeclareOption{norevisions}{\showrevisionsfalse}
+\DeclareOption{final}{\hypersetupfinal}
+\DeclareOption{notfinal}{\hypersetupdraft}
+\ExecuteOptions{norevisions}
+\ExecuteOptions{notfinal}
+\ProcessOptions
+
+\makeindex

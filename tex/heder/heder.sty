@@ -22,30 +22,21 @@
 
 \usepackage{makeidx}
 
-
+\usepackage[dvipsnames,svgnames]{xcolor}
 
 \usepackage{hyperref}
 % see: http://tug.ctan.org/tex-archive/macros/latex/contrib/hyperref/doc/options.pdf
 
-\gdef\@subtitle{}
-\newcommand{\subtitle}[1]
-	{\gdef\@subtitle{#1}}
-
-\title{Skyline Operator Implementation in PostgreSQL}
-\subtitle{Master Thesis}
-\author{Ing. Bakk.techn. Johann Eder}
-\date{\today}
-
 \hypersetup{
         a4paper = {true},
-        pagebackref = {true},
-        pdftitle = {Skyline Operator Implementation in PostgreSQL},
-        pdfauthor = {Ing. Bakk.techn. Johann Eder},
+%        pagebackref = {true},
+        pdftitle = {\@title},
+        pdfauthor = {\@author},
         pdfdisplaydoctitle = {true},
         linkcolor = {blue},
 	citecolor = {blue},
 	urlcolor = {blue},
-	hyperindex = {true},
+%	hyperindex = {true},
 	linktocpage = {true}
 }
 
@@ -58,8 +49,14 @@
         }
 }
 
+% TODO: use marginal notes for fixme and todo's
+% TODO: use color for fixme and todo's
+\newcommand\fixme[1]{\marginpar{\textcolor{Crimson}{\footnotesize {\textsc FIXME:} #1}}\colorbox{Yellow}{#1}}
+\newcommand\todo[1]{\marginpar{\textcolor{DarkGreen}{\footnotesize {\textsc TODO:} #1}}\textcolor{DarkGreen}{#1}}
+
+\newcommand\skylinebibliography[0]{\bibliographystyle{plainnat}\bibliography{skyline}}
+
 \usepackage{hypernat}
-\usepackage{xcolor}
 
 \newif\ifshowrevisions
 \newcommand{\revision}[0]{{\ifshowrevisions{\small\textcolor{lightgray}{\ rev:\svnInfoRevision}}\fi}}
@@ -72,4 +69,4 @@
 \ExecuteOptions{notfinal}
 \ProcessOptions
 
-\makeindex
+\def\skyline{\mathop{\operator@font skyline}}

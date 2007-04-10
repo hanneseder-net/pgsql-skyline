@@ -1,14 +1,15 @@
+# -*- Makefile -*-
+
 # [NOTE]: all output formats depend on these files
 # add new files to this list
 FILES=\
 	Makefile \
 	00-thesis.tex \
-	01-cover-en.tex 01-cover-de.tex \
+	01-titlepage-en.tex 01-titlepage-de.tex \
 	02-acknowledgement.tex \
 	03-abstract-en.tex 03-abstract-de.tex \
 	04-introduction.tex \
-	08-summary.tex \
-	heder.sty ../bib/skyline.bib
+	08-summary.tex
 
 TMPFILES=*.aux *.log *.toc *.lot *.lof *.bbl *.blg *.ind *.ilg *.idx *.out
 TRASHFILES=*~ *.*~
@@ -35,10 +36,11 @@ UPLOADDIR=./output
 REVISION := $(shell svn info | perl -n -e 'if ($$_ =~ m/^Revision:\s*(\d+)/) { print "$$1"; }')
 
 # tools options
-TEXIFYFLAGS=--tex-option="-c-style-errors -halt-on-error"
+TEXIFYFLAGS=--tex-option="-quiet -c-style-errors -halt-on-error"
 
 # [NOTE] this is first, because we want `make` just build the draft
 draft: 00-thesis-draft.dvi
+	echo $(BIBINPUTS)
 
 all: dvi pdf
 
@@ -101,5 +103,5 @@ $(UPLOADDIR)/thesis-draft-$(REVISION).pdf: 00-thesis-draft.pdf
 clean:
 	rm -rf $(TMPFILES) $(TRASHFILES)
 
-realclean: clean
+distclean: clean
 	rm -rf $(TARGETFILES)

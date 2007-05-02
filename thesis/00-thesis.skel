@@ -14,7 +14,7 @@
 #endif
 
 \documentclass[OPTIONS]{report}
-\title{Skyline Operator Implementation in PostgreSQL}
+\title{Skyline Operator Implementation into PostgreSQL}
 \author{Bakk.techn. Hannes Eder}
 \date{\today}
 \usepackage{heder}

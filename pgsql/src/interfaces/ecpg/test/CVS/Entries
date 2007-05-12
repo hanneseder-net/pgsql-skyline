@@ -1,0 +1,12 @@
+/Makefile/1.67/Thu Mar 29 12:02:24 2007//
+/Makefile.regress/1.8/Sun Jan 21 09:19:06 2007//
+/pg_regress.sh/1.19/Thu Mar 29 12:02:24 2007//
+/regression.h/1.1/Wed Aug  2 13:53:45 2006//
+D/compat_informix////
+D/connect////
+D/expected////
+D/performance////
+D/pgtypeslib////
+D/preproc////
+D/sql////
+D/thread////

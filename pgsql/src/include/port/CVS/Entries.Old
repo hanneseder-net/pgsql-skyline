@@ -1,0 +1,24 @@
+/aix.h/1.11/Fri Apr  6 05:36:51 2007//
+/bsdi.h/1.13/Sun Aug 29 05:06:57 2004//
+/cygwin.h/1.6/Tue Dec 23 03:31:30 2003//
+/darwin.h/1.11/Wed Oct  4 00:30:09 2006//
+/dgux.h/1.11/Fri Apr  6 05:36:51 2007//
+/freebsd.h/1.16/Sat Mar 11 04:38:38 2006//
+/hpux.h/1.24/Fri Apr  6 05:36:51 2007//
+/irix.h/1.4/Thu Oct  5 01:40:45 2006//
+/linux.h/1.42/Wed Oct  4 00:30:09 2006//
+/netbsd.h/1.16/Wed Oct  4 00:30:10 2006//
+/nextstep.h/1.8/Sat Mar 11 04:38:38 2006//
+/openbsd.h/1.14/Sat Mar 11 04:38:38 2006//
+/osf.h/1.9/Sat Mar 11 04:38:38 2006//
+/sco.h/1.17/Fri Apr  6 05:36:51 2007//
+/solaris.h/1.16/Fri Apr  6 05:36:51 2007//
+/sunos4.h/1.9/Fri Apr  6 05:36:51 2007//
+/svr4.h/1.14/Fri Apr  6 05:36:51 2007//
+/ultrix4.h/1.11/Fri Apr  6 05:36:51 2007//
+/univel.h/1.23/Fri Apr  6 05:36:51 2007//
+/unixware.h/1.17/Fri Apr  6 05:36:51 2007//
+/win32.h/1.74/Fri Apr  6 05:36:51 2007//
+D/win32////
+D/win32_msvc////
+D/darwin////

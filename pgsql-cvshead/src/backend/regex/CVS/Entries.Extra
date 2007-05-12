@@ -1,0 +1,13 @@
+/COPYRIGHT////*///
+/Makefile////*///
+/re_syntax.n////*///
+/regc_color.c////*///
+/regc_cvec.c////*///
+/regc_lex.c////*///
+/regc_locale.c////*///
+/regc_nfa.c////*///
+/regcomp.c////*///
+/rege_dfa.c////*///
+/regerror.c////*///
+/regexec.c////*///
+/regfree.c////*///

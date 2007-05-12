@@ -1,0 +1,11 @@
+/Makefile////*///
+/api.c////*///
+/api.h////*///
+/english_stem.c////*///
+/english_stem.h////*///
+/header.h////*///
+/russian_stem.c////*///
+/russian_stem.h////*///
+/russian_stem_UTF8.c////*///
+/russian_stem_UTF8.h////*///
+/utilities.c////*///

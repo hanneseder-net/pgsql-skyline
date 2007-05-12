@@ -1,0 +1,12 @@
+/Makefile/1.18/Sat Jan 20 20:45:38 2007//
+/allpaths.c/1.163/Sat Apr 21 21:01:44 2007//
+/clausesel.c/1.85/Sat Apr 21 21:01:44 2007//
+/costsize.c/1.182/Fri May  4 01:13:44 2007//
+/equivclass.c/1.2/Mon Jan 22 20:00:39 2007//
+/indxpath.c/1.221/Tue Apr 17 20:03:03 2007//
+/joinpath.c/1.111/Sat Jan 20 20:45:39 2007//
+/joinrels.c/1.86/Fri Feb 16 00:14:01 2007//
+/orindxpath.c/1.82/Fri Jan  5 22:19:31 2007//
+/pathkeys.c/1.84/Sun Apr 15 20:09:28 2007//
+/tidpath.c/1.29/Fri Jan  5 22:19:31 2007//
+D

@@ -1,0 +1,10 @@
+/Makefile////*///
+/README////*///
+/ipc.c////*///
+/ipci.c////*///
+/pmsignal.c////*///
+/procarray.c////*///
+/shmem.c////*///
+/shmqueue.c////*///
+/sinval.c////*///
+/sinvaladt.c////*///

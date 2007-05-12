@@ -1,0 +1,34 @@
+/Makefile/1.75/Sat Apr 21 17:26:17 2007//
+/README/1.92/Sat Apr 21 17:26:17 2007//
+/contrib-global.mk/1.10/Tue Sep 27 17:43:31 2005//
+D/adminpack////
+D/btree_gist////
+D/chkpass////
+D/cube////
+D/dblink////
+D/earthdistance////
+D/fuzzystrmatch////
+D/hstore////
+D/intagg////
+D/intarray////
+D/isn////
+D/lo////
+D/ltree////
+D/oid2name////
+D/pg_buffercache////
+D/pg_freespacemap////
+D/pg_standby////
+D/pg_trgm////
+D/pgbench////
+D/pgcrypto////
+D/pgrowlocks////
+D/pgstattuple////
+D/seg////
+D/spi////
+D/sslinfo////
+D/start-scripts////
+D/tablefunc////
+D/tsearch2////
+D/uuid-ossp////
+D/vacuumlo////
+D/xml2////

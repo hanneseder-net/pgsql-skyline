@@ -1,0 +1,12 @@
+/Makefile////*///
+/allpaths.c////*///
+/clausesel.c////*///
+/costsize.c////*///
+/equivclass.c////*///
+/indxpath.c////*///
+/joinpath.c////*///
+/joinrels.c////*///
+/orindxpath.c////*///
+/pathkeys.c////*///
+/tidpath.c////*///
+D/_deadcode///////

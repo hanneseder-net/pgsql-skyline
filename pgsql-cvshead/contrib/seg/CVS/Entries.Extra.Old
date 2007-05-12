@@ -1,0 +1,11 @@
+/.cvsignore////*///
+/Makefile////*///
+/README.seg////*///
+/seg-validate.pl////*///
+/seg.c////*///
+/seg.sql.in////*///
+/segdata.h////*///
+/segparse.y////*///
+/segscan.l////*///
+/sort-segments.pl////*///
+/uninstall_seg.sql////*///

@@ -1,0 +1,24 @@
+/clauses.h/1.87/Mon Feb 19 07:03:34 2007//
+/cost.h/1.86/Fri May  4 01:13:45 2007//
+/geqo.h/1.42/Fri Jan  5 22:19:56 2007//
+/geqo_copy.h/1.19/Fri Jan  5 22:19:56 2007//
+/geqo_gene.h/1.20/Fri Jan  5 22:19:56 2007//
+/geqo_misc.h/1.31/Fri Jan  5 22:19:56 2007//
+/geqo_mutation.h/1.19/Fri Jan  5 22:19:56 2007//
+/geqo_pool.h/1.23/Fri Jan  5 22:19:56 2007//
+/geqo_random.h/1.19/Fri Jan  5 22:19:56 2007//
+/geqo_recombination.h/1.18/Fri Jan  5 22:19:56 2007//
+/geqo_selection.h/1.19/Fri Jan  5 22:19:56 2007//
+/joininfo.h/1.34/Sat Jan 20 20:45:40 2007//
+/pathnode.h/1.76/Sat Jan 20 20:45:40 2007//
+/paths.h/1.97/Sun Apr 15 20:09:28 2007//
+/plancat.h/1.43/Fri Jan  5 22:19:56 2007//
+/planmain.h/1.101/Fri May  4 01:13:45 2007//
+/planner.h/1.39/Mon Apr 16 01:14:58 2007//
+/predtest.h/1.5/Fri Jan  5 22:19:56 2007//
+/prep.h/1.58/Fri Jan  5 22:19:56 2007//
+/restrictinfo.h/1.40/Sat Jan 20 20:45:40 2007//
+/subselect.h/1.29/Mon Feb 19 07:03:34 2007//
+/tlist.h/1.45/Fri Jan  5 22:19:56 2007//
+/var.h/1.35/Fri Jan  5 22:19:56 2007//
+D/_deadcode////

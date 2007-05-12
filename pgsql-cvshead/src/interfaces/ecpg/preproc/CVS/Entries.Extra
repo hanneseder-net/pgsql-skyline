@@ -1,0 +1,15 @@
+/.cvsignore////*///
+/Makefile////*///
+/c_keywords.c////*///
+/descriptor.c////*///
+/ecpg.c////*///
+/ecpg_keywords.c////*///
+/extern.h////*///
+/keywords.c////*///
+/output.c////*///
+/pgc.l////*///
+/preproc.y////*///
+/type.c////*///
+/type.h////*///
+/variable.c////*///
+D/parser///////

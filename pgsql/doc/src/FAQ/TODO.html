@@ -10,7 +10,7 @@
 PostgreSQL TODO List
 </p><hr/>
 Current maintainer:     Bruce Momjian (<a href="mailto:bruce@momjian.us">bruce@momjian.us</a>)<br/>
-Last updated:           Sat May  5 11:39:57 EDT 2007
+Last updated:           Sun May 13 07:21:48 EDT 2007
 
 <p>The most recent version of this document can be viewed at<br/>
 <a href="http://www.postgresql.org/docs/faqs.TODO.html">http://www.postgresql.org/docs/faqs.TODO.html</a>.
@@ -281,7 +281,9 @@ first.  There is also a developer's wiki at<br/>
       <li>Delay resolution of array expression's data type so assignment
           coercion can be performed on empty array expressions
       </li><li>Add support for arrays of domains
-      </li><li>Add support for arrays of complex types
+<p>          <a href="http://archives.postgresql.org/pgsql-patches/2007-05/msg00114.php">http://archives.postgresql.org/pgsql-patches/2007-05/msg00114.php</a>
+</p>
+      </li><li>-<em>Add support for arrays of complex types</em>
       </li><li>Allow single-byte header storage for array elements
     </li></ul>
     </li><li>Binary Data
@@ -700,6 +702,10 @@ first.  There is also a developer's wiki at<br/>
 <p>                  <a href="http://archives.postgresql.org/pgsql-patches/2006-02/msg00288.php">http://archives.postgresql.org/pgsql-patches/2006-02/msg00288.php</a>
 </p>
       </li><li>-<em>Allow PL/PythonU to return boolean rather than 1/0</em>
+      </li><li>Allow data to be passed in native language formats, rather
+                  than only text
+<p>                  <a href="http://archives.postgresql.org/pgsql-hackers/2007-05/msg00289.php">http://archives.postgresql.org/pgsql-hackers/2007-05/msg00289.php</a>
+</p>
     </li></ul>
   </li></ul>
 </li></ul>
@@ -1314,6 +1320,9 @@ first.  There is also a developer's wiki at<br/>
   </li><li>Consider making NAMEDATALEN more configurable in future releases
   </li><li>Update our code to handle 64-bit timezone files to match the zic 
   source code, which now uses them
+  </li><li>Have configure choose integer datetimes by default
+<p>  <a href="http://archives.postgresql.org/pgsql-patches/2007-05/msg00046.php">http://archives.postgresql.org/pgsql-patches/2007-05/msg00046.php</a>
+</p>
   </li><li>Win32
   <ul>
     <li>Remove configure.in check for link failure when cause is found

@@ -22,5 +22,5 @@
 /toasting.c////*///
 /README////*///
 /heap.c////*///
-/pg_shdepend.c////*///
 /pg_type.c////*///
+/pg_shdepend.c////*///

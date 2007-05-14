@@ -1,5 +1,4 @@
 /Genbki.pm////*///
-/Install.pm////*///
 /Mkvcbuild.pm////*///
 /Project.pm////*///
 /README////*///
@@ -16,3 +15,4 @@
 /pgbison.bat////*///
 /pgflex.bat////*///
 /vcregress.bat////*///
+/Install.pm////*///

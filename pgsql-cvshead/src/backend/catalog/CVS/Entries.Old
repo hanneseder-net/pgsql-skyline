@@ -1,10 +1,8 @@
 /Makefile/1.64/Mon Apr  2 03:49:37 2007//
-/README/1.10/Mon Jul 31 01:16:36 2006//
 /aclchk.c/1.139/Fri Apr 20 02:37:37 2007//
 /catalog.c/1.70/Sun Mar 25 19:45:14 2007//
 /dependency.c/1.65/Tue Mar 27 23:21:08 2007//
 /genbki.sh/1.42/Tue Feb  6 09:16:08 2007//
-/heap.c/1.318/Mon Apr  2 03:49:37 2007//
 /index.c/1.282/Thu Mar 29 00:15:37 2007//
 /indexing.c/1.114/Fri Jan  5 22:19:24 2007//
 /information_schema.sql/1.42/Tue Feb 27 18:49:43 2007//
@@ -18,10 +16,12 @@
 /pg_namespace.c/1.17/Fri Jan  5 22:19:25 2007//
 /pg_operator.c/1.100/Fri Jan  5 22:19:25 2007//
 /pg_proc.c/1.144/Mon Apr  2 03:49:37 2007//
-/pg_shdepend.c/1.17/Sat Mar  3 19:32:54 2007//
-/pg_type.c/1.111/Mon Apr  2 03:49:37 2007//
 /sql_feature_packages.txt/1.3/Thu Dec  2 22:51:28 2004//
 /sql_features.txt/1.16/Sun Apr  1 09:42:57 2007//
 /system_views.sql/1.37/Fri Mar 30 18:34:55 2007//
 /toasting.c/1.6/Fri Apr  6 04:21:42 2007//
+/README/1.11/Sat May 12 09:16:11 2007//
+/heap.c/1.320/Sat May 12 09:16:11 2007//
+/pg_shdepend.c/1.18/Sat May 12 09:16:11 2007//
+/pg_type.c/1.113/Sat May 12 09:16:11 2007//
 D

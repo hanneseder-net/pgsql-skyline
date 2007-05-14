@@ -1313,6 +1313,12 @@ typedef struct GroupState
 	bool		grp_done;		/* indicates completion of Group scan */
 } GroupState;
 
+typedef struct SkylineState
+{
+	ScanState	ss;				/* its first field is NodeTag */
+	bool		sl_done;
+} SkylineState;
+
 /* ---------------------
  *	AggState information
  *

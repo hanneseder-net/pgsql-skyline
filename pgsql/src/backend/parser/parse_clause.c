@@ -39,8 +39,9 @@
 #define ORDER_CLAUSE 0
 #define GROUP_CLAUSE 1
 #define DISTINCT_ON_CLAUSE 2
+#define SKYLINE_CLAUSE 3
 
-static char *clauseText[] = {"ORDER BY", "GROUP BY", "DISTINCT ON"};
+static char *clauseText[] = {"ORDER BY", "GROUP BY", "DISTINCT ON", "SKYLINE BY"};
 
 static void extractRemainingColumns(List *common_colnames,
 						List *src_colnames, List *src_colvars,
@@ -1194,7 +1195,8 @@ findTargetlistEntry(ParseState *pstate, Node *node, List **tlist, int clause)
 		char	   *name = strVal(linitial(((ColumnRef *) node)->fields));
 		int			location = ((ColumnRef *) node)->location;
 
-		if (clause == GROUP_CLAUSE)
+		/* FIXME: should SKYLINE be treated like GROUP? */
+		if (clause == GROUP_CLAUSE || clause == SKYLINE_CLAUSE)
 		{
 			/*
 			 * In GROUP BY, we must prefer a match against a FROM-clause
@@ -1431,6 +1433,37 @@ transformGroupClause(ParseState *pstate, List *grouplist,
 	list_free(tle_list);
 	return result;
 }
+
+List *
+transformSkylineClause(ParseState *pstate,
+					   List *skylinelist,
+					   List **targetlist,
+					   bool resolveUnknown)
+{
+	List	   *resultlist = NIL;
+	ListCell   *slitem;
+
+	foreach(slitem, skylinelist)
+	{
+		SkylineBy	*skylineby = lfirst(slitem);
+		TargetEntry *tle;
+
+		tle = findTargetlistEntry(pstate, skylineby->node,
+								  targetlist, SKYLINE_CLAUSE);
+
+		resultlist = addTargetToSkylineList(pstate, tle,
+							   resultlist, *targetlist,
+							   skylineby->skylineby_dir,
+							   skylineby->skylineby_nulls,
+							   skylineby->useOp,
+							   resolveUnknown);
+
+		tle->resjunk = 0;
+	}
+
+	return resultlist;
+}
+
 
 /*
  * transformSortClause -
@@ -1723,6 +1756,104 @@ addTargetToSortList(ParseState *pstate, TargetEntry *tle,
 
 	return sortlist;
 }
+
+List *
+addTargetToSkylineList(ParseState *pstate, TargetEntry *tle,
+					List *skylinelist, List *targetlist,
+					SkylineByDir skylineby_dir, SkylineByNulls skylineby_nulls,
+					List *skylineby_opname, bool resolveUnknown)
+{
+	Oid			restype = exprType((Node *) tle->expr);
+	Oid			skylineop;
+	Oid			cmpfunc;
+	bool		reverse;
+
+	/* if tlist item is an UNKNOWN literal, change it to TEXT */
+	if (restype == UNKNOWNOID && resolveUnknown)
+	{
+		tle->expr = (Expr *) coerce_type(pstate, (Node *) tle->expr,
+										 restype, TEXTOID, -1,
+										 COERCION_IMPLICIT,
+										 COERCE_IMPLICIT_CAST);
+		restype = TEXTOID;
+	}
+
+	/* determine the sortop */
+	switch (skylineby_dir)
+	{
+		case SKYLINEBY_DEFAULT:
+		case SKYLINEBY_MIN:
+			skylineop = ordering_oper_opid(restype);
+			reverse = false;
+			break;
+		case SKYLINEBY_MAX:
+			skylineop = reverse_ordering_oper_opid(restype);
+			reverse = true;
+			break;
+		case SKYLINEBY_DIFF:
+			elog(ERROR, "unsupported skylineby_dir: %d", skylineby_dir);
+			skylineop = InvalidOid;
+			reverse = false;
+			break;
+		case SKYLINEBY_USING:
+			Assert(skylineby_opname != NIL);
+			skylineop = compatible_oper_opid(skylineby_opname,
+										  restype,
+										  restype,
+										  false);
+			/*
+			 * Verify it's a valid ordering operator, and determine
+			 * whether to consider it like ASC or DESC.
+			 */
+			if (!get_compare_function_for_ordering_op(skylineop,
+													  &cmpfunc, &reverse))
+				ereport(ERROR,
+						(errcode(ERRCODE_WRONG_OBJECT_TYPE),
+						 errmsg("operator %s is not a valid ordering operator",
+								strVal(llast(skylineby_opname))),
+						 errhint("Ordering operators must be \"<\" or \">\" members of btree operator families.")));
+			break;
+		default:
+			elog(ERROR, "unrecognized skylineby_dir: %d", skylineby_dir);
+			skylineop = InvalidOid; /* keep compiler quiet */
+			reverse = false;
+			break;
+	}
+
+	/* avoid making duplicate sortlist entries */
+	if (!targetIsInSortList(tle, skylineop, skylinelist))
+	{
+		SkylineClause *skylinecl = makeNode(SkylineClause);
+
+		/* FIXME: what is it good for? */
+		/* NOTE: I think this is just for GROUP/SORT */
+		skylinecl->tleSortGroupRef = assignSortGroupRef(tle, targetlist);
+
+		skylinecl->sortop = skylineop;
+
+		switch (skylineby_nulls)
+		{
+			case SKYLINEBY_NULLS_DEFAULT:
+				/* NULLS FIRST is default for DESC; other way for ASC */
+				skylinecl->nulls_first = reverse;
+				break;
+			case SKYLINEBY_NULLS_FIRST:
+				skylinecl->nulls_first = true;
+				break;
+			case SKYLINEBY_NULLS_LAST:
+				skylinecl->nulls_first = false;
+				break;
+			default:
+				elog(ERROR, "unrecognized skylineby_nulls: %d", skylineby_nulls);
+				break;
+		}
+
+		skylinelist = lappend(skylinelist, skylinecl);
+	}
+
+	return skylinelist;
+}
+
 
 /*
  * assignSortGroupRef

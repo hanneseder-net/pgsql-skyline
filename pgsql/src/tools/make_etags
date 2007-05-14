@@ -4,10 +4,10 @@
 
 trap "rm -f /tmp/$$" 0 1 2 3 15
 rm -f ./TAGS
-find `pwd`/ -type f -name '*.[chyl]' -print | \
+find `pwd`/ -name ".svn" -prune -or -type f -name '*.[chyl]' -print | \
   xargs etags --append -o TAGS
 
-find . -type d -print | \
+find . -name ".svn" -prune -or -type d -print | \
 while read DIR; do
   [ "$DIR" != "." ] && ln -f -s `pwd`/TAGS $DIR
 done

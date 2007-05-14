@@ -322,6 +322,7 @@ static const ScanKeyword ScanKeywords[] = {
 	{"show", SHOW},
 	{"similar", SIMILAR},
 	{"simple", SIMPLE},
+	{"skyline", SKYLINE},
 	{"smallint", SMALLINT},
 	{"some", SOME},
 	{"stable", STABLE},

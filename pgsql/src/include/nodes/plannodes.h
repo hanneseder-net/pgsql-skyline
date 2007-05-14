@@ -450,6 +450,19 @@ typedef struct Sort
 	bool	   *nullsFirst;		/* NULLS FIRST/LAST directions */
 } Sort;
 
+/* ----------------
+ *		skyline node
+ * ----------------
+ */
+typedef struct Skyline
+{
+	Plan		plan;
+	int			numCols;
+	AttrNumber *skylineColIdx;
+	Oid		   *skylinebyOperators;
+	bool	   *nullsFirst;
+} Skyline;
+
 /* ---------------
  *	 group node -
  *		Used for queries with GROUP BY (but no aggregates) specified.

@@ -531,6 +531,9 @@ explain_outNode(StringInfo str,
 		case T_Sort:
 			pname = "Sort";
 			break;
+		case T_Skyline:
+			pname = "Skyline";
+			break;
 		case T_Group:
 			pname = "Group";
 			break;

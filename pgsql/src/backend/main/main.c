@@ -154,7 +154,7 @@ main(int argc, char *argv[])
 	/*
 	 * Make sure we are not running as root.
 	 */
-	check_root(progname);
+	// check_root(progname);
 
 	/*
 	 * Dispatch to one of various subprograms depending on first argument.

@@ -135,6 +135,7 @@ static Node *makeXmlExpr(XmlExprOp op, char *name, List *named_args, List *args)
 	FuncWithArgs		*funwithargs;
 	DefElem				*defelt;
 	SortBy				*sortby;
+	SkylineBy			*skylineby;
 	JoinExpr			*jexpr;
 	IndexElem			*ielem;
 	Alias				*alias;
@@ -238,11 +239,11 @@ static Node *makeXmlExpr(XmlExprOp op, char *name, List *named_args, List *args)
 				sort_clause opt_sort_clause sortby_list index_params
 				name_list from_clause from_list opt_array_bounds
 				qualified_name_list any_name any_name_list
-				any_operator expr_list attrs
+				any_operator expr_list skyline_by_list attrs
 				target_list insert_column_list set_target_list
 				set_clause_list set_clause multiple_set_clause
 				ctext_expr_list ctext_row def_list indirection opt_indirection
-				group_clause TriggerFuncArgs select_limit
+				group_clause skyline_clause TriggerFuncArgs select_limit
 				opt_select_limit opclass_item_list opclass_drop_list
 				opt_opfamily transaction_mode_list_or_empty
 				TableFuncElementList opt_type_modifiers
@@ -308,6 +309,7 @@ static Node *makeXmlExpr(XmlExprOp op, char *name, List *named_args, List *args)
 %type <value>	NumericOnly FloatOnly IntegerOnly
 %type <alias>	alias_clause
 %type <sortby>	sortby
+%type <skylineby> skylineby
 %type <ielem>	index_elem
 %type <node>	table_ref
 %type <jexpr>	joined_table
@@ -428,7 +430,7 @@ static Node *makeXmlExpr(XmlExprOp op, char *name, List *named_args, List *args)
 
 	SAVEPOINT SCHEMA SCROLL SECOND_P SECURITY SELECT SEQUENCE
 	SERIALIZABLE SESSION SESSION_USER SET SETOF SHARE
-	SHOW SIMILAR SIMPLE SMALLINT SOME STABLE STANDALONE_P START STATEMENT
+	SHOW SIMILAR SIMPLE SKYLINE SMALLINT SOME STABLE STANDALONE_P START STATEMENT
 	STATISTICS STDIN STDOUT STORAGE STRICT_P STRIP_P SUBSTRING SUPERUSER_P
 	SYMMETRIC SYSID SYSTEM_P
 
@@ -5988,7 +5990,7 @@ select_clause:
 simple_select:
 			SELECT opt_distinct target_list
 			into_clause from_clause where_clause
-			group_clause having_clause
+			group_clause having_clause skyline_clause
 				{
 					SelectStmt *n = makeNode(SelectStmt);
 					n->distinctClause = $2;
@@ -5998,6 +6000,7 @@ simple_select:
 					n->whereClause = $6;
 					n->groupClause = $7;
 					n->havingClause = $8;
+					n->skylineClause = $9;
 					$$ = (Node *)n;
 				}
 			| values_clause							{ $$ = $1; }
@@ -6177,6 +6180,58 @@ having_clause:
 			HAVING a_expr							{ $$ = $2; }
 			| /*EMPTY*/								{ $$ = NULL; }
 		;
+
+skyline_clause:
+			SKYLINE	BY skyline_by_list				{ $$ = $3; }
+			| /*EMPTY*/								{ $$ = NIL; }
+		;
+		
+skyline_by_list:
+			skylineby
+				{
+					$$ = list_make1($1);
+				}
+			| skyline_by_list ',' skylineby
+				{
+					$$ = lappend($1, $3);
+				}
+		;
+
+/* FIMXE: we require parantheses to avoid shift/reduce conflicts */
+skylineby: 
+			'(' a_expr ')' IDENT
+				{
+					$$ = makeNode(SkylineBy);
+					$$->node = $2;
+					if (strcmp($4, "min") == 0)
+						$$->skylineby_dir = SKYLINEBY_MIN;
+					else if (strcmp($4, "max") == 0)
+						$$->skylineby_dir = SKYLINEBY_MAX;
+					else if (strcmp($4, "diff") == 0)
+						$$->skylineby_dir = SKYLINEBY_DIFF;
+					else
+						yyerror("syntax error");
+					$$->skylineby_nulls = SKYLINEBY_NULLS_DEFAULT;
+					$$->useOp = NIL;
+				}
+			| '(' a_expr ')'
+				{
+					$$ = makeNode(SkylineBy);
+					$$->node = $2;
+					$$->skylineby_dir = SKYLINEBY_DEFAULT;
+					$$->skylineby_nulls = SKYLINEBY_NULLS_DEFAULT;
+					$$->useOp = NIL;
+				}
+			| '(' a_expr ')' USING qual_Op
+				{
+					$$ = makeNode(SkylineBy);
+					$$->node = $2;
+					$$->skylineby_dir = SKYLINEBY_USING;
+					$$->skylineby_nulls = SKYLINEBY_NULLS_DEFAULT;
+					$$->useOp = $5;
+				}
+		;
+		
 
 for_locking_clause:
 			for_locking_items						{ $$ = $1; }

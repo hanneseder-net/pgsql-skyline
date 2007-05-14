@@ -43,6 +43,22 @@ typedef enum SortByNulls
 	SORTBY_NULLS_LAST
 } SortByNulls;
 
+/* Skyline direction options */
+typedef enum SkylineByDir
+{
+	SKYLINEBY_DEFAULT,
+	SKYLINEBY_MIN,
+	SKYLINEBY_MAX,
+	SKYLINEBY_DIFF,
+	SKYLINEBY_USING
+} SkylineByDir;
+
+typedef enum SkylineByNulls
+{
+	SKYLINEBY_NULLS_DEFAULT,
+	SKYLINEBY_NULLS_FIRST,
+	SKYLINEBY_NULLS_LAST
+} SkylineByNulls;
 
 /*
  * Grantable rights are encoded so that we can OR them together in a bitmask.
@@ -119,6 +135,8 @@ typedef struct Query
 	List	   *groupClause;	/* a list of GroupClause's */
 
 	Node	   *havingQual;		/* qualifications applied to groups */
+
+	List	   *skylineClause;	/* a list of SkylineClause's */
 
 	List	   *distinctClause; /* a list of SortClause's */
 
@@ -342,6 +360,18 @@ typedef struct SortBy
 	List	   *useOp;			/* name of op to use, if SORTBY_USING */
 	Node	   *node;			/* expression to sort on */
 } SortBy;
+
+/*
+ * SkylineBy - for SKYLINE BY clause
+ */
+typedef struct SkylineBy
+{
+	NodeTag		type;
+	SkylineByDir skylineby_dir;	/* MIN/MAX/DIFF/USING */
+	SkylineByNulls skylineby_nulls; /* NULLS FIRST/LAST */
+	List	   *useOp;			/* name of op to use, of SKYLINEBY_USING */
+	Node	   *node;
+} SkylineBy;
 
 /*
  * RangeSubselect - subquery appearing in a FROM clause
@@ -641,6 +671,7 @@ typedef struct SortClause
  * at the moment ... breaking them apart is work for another day.
  */
 typedef SortClause GroupClause;
+typedef SortClause SkylineClause;
 
 /*
  * RowMarkClause -
@@ -740,6 +771,7 @@ typedef struct SelectStmt
 	Node	   *whereClause;	/* WHERE qualification */
 	List	   *groupClause;	/* GROUP BY clauses */
 	Node	   *havingClause;	/* HAVING conditional-expression */
+	List	   *skylineClause;	/* SKYLINE clause */
 
 	/*
 	 * In a "leaf" node representing a VALUES list, the above fields are all

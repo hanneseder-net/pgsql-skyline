@@ -37,6 +37,7 @@
 #include "commands/tablecmds.h"
 #include "miscadmin.h"
 #include "nodes/makefuncs.h"
+#include "nodes/print.h"
 #include "optimizer/clauses.h"
 #include "optimizer/var.h"
 #include "parser/analyze.h"
@@ -2099,6 +2100,13 @@ transformSelectStmt(ParseState *pstate, SelectStmt *stmt)
 												  stmt->distinctClause,
 												  &qry->targetList,
 												  &qry->sortClause);
+
+	qry->skylineClause = transformSkylineClause(pstate,
+												stmt->skylineClause,
+												&qry->targetList,
+												true /* fix unknowns */ );
+
+	nodeDisplay(qry->skylineClause);
 
 	qry->limitOffset = transformLimitClause(pstate, stmt->limitOffset,
 											"OFFSET");

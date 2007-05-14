@@ -230,7 +230,7 @@
  * copyObject(), to facilitate catching errors and omissions in
  * copyObject().
  */
-/* #define COPY_PARSE_PLAN_TREES */
+#define COPY_PARSE_PLAN_TREES
 
 /*
  * Enable debugging print statements for lock-related operations.

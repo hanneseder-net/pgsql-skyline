@@ -38,6 +38,7 @@ extern Plan *create_plan(PlannerInfo *root, Path *best_path);
 extern SubqueryScan *make_subqueryscan(List *qptlist, List *qpqual,
 				  Index scanrelid, Plan *subplan, List *subrtable);
 extern Append *make_append(List *appendplans, bool isTarget, List *tlist);
+extern Skyline *make_skyline(PlannerInfo *root, Plan *lefttree, List *skylinecls);
 extern Sort *make_sort_from_pathkeys(PlannerInfo *root, Plan *lefttree,
 						List *pathkeys, double limit_tuples);
 extern Sort *make_sort_from_sortclauses(PlannerInfo *root, List *sortcls,

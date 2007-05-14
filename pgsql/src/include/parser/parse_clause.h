@@ -30,6 +30,8 @@ extern List *transformGroupClause(ParseState *pstate, List *grouplist,
 					 List **targetlist, List *sortClause);
 extern List *transformSortClause(ParseState *pstate, List *orderlist,
 					List **targetlist, bool resolveUnknown);
+extern List *transformSkylineClause(ParseState *pstate, List *skylinelist,
+					List **targetlist, bool resolveUnknown);
 extern List *transformDistinctClause(ParseState *pstate, List *distinctlist,
 						List **targetlist, List **sortClause);
 
@@ -42,5 +44,9 @@ extern List *addTargetToSortList(ParseState *pstate, TargetEntry *tle,
 					List *sortby_opname, bool resolveUnknown);
 extern Index assignSortGroupRef(TargetEntry *tle, List *tlist);
 extern bool targetIsInSortList(TargetEntry *tle, Oid sortop, List *sortList);
+extern List *addTargetToSkylineList(ParseState *pstate, TargetEntry *tle,
+					List *skylinelist, List *targetlist,
+					SkylineByDir skylineby_dir, SkylineByNulls skylineby_nulls,
+					List *skylineby_opname, bool resolveUnknown);
 
 #endif   /* PARSE_CLAUSE_H */

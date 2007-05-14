@@ -562,6 +562,30 @@ _outSort(StringInfo str, Sort *node)
 }
 
 static void
+_outSkyline(StringInfo str, Skyline *node)
+{
+	int			i;
+
+	WRITE_NODE_TYPE("SKYLINE");
+
+	_outPlanInfo(str, (Plan *) node);
+
+	WRITE_INT_FIELD(numCols);
+
+	appendStringInfo(str, " :skylineColIdx");
+	for (i = 0; i < node->numCols; i++)
+		appendStringInfo(str, " %d", node->skylineColIdx[i]);
+
+	appendStringInfo(str, " :skylinebyOperators");
+	for (i = 0; i < node->numCols; i++)
+		appendStringInfo(str, " %u", node->skylinebyOperators[i]);
+
+	appendStringInfo(str, " :nullsFirst");
+	for (i = 0; i < node->numCols; i++)
+		appendStringInfo(str, " %s", booltostr(node->nullsFirst[i]));
+}
+
+static void
 _outUnique(StringInfo str, Unique *node)
 {
 	int			i;
@@ -1556,6 +1580,7 @@ _outSelectStmt(StringInfo str, SelectStmt *node)
 	WRITE_NODE_FIELD(whereClause);
 	WRITE_NODE_FIELD(groupClause);
 	WRITE_NODE_FIELD(havingClause);
+	WRITE_NODE_FIELD(skylineClause);
 	WRITE_NODE_FIELD(valuesLists);
 	WRITE_NODE_FIELD(sortClause);
 	WRITE_NODE_FIELD(limitOffset);
@@ -1704,6 +1729,7 @@ _outQuery(StringInfo str, Query *node)
 	WRITE_NODE_FIELD(returningList);
 	WRITE_NODE_FIELD(groupClause);
 	WRITE_NODE_FIELD(havingQual);
+	WRITE_NODE_FIELD(skylineClause);
 	WRITE_NODE_FIELD(distinctClause);
 	WRITE_NODE_FIELD(sortClause);
 	WRITE_NODE_FIELD(limitOffset);
@@ -1726,6 +1752,16 @@ static void
 _outGroupClause(StringInfo str, GroupClause *node)
 {
 	WRITE_NODE_TYPE("GROUPCLAUSE");
+
+	WRITE_UINT_FIELD(tleSortGroupRef);
+	WRITE_OID_FIELD(sortop);
+	WRITE_BOOL_FIELD(nulls_first);
+}
+
+static void
+_outSkylineClause(StringInfo str, GroupClause *node)
+{
+	WRITE_NODE_TYPE("SKYLINECLAUSE");
 
 	WRITE_UINT_FIELD(tleSortGroupRef);
 	WRITE_OID_FIELD(sortop);
@@ -2097,6 +2133,9 @@ _outNode(StringInfo str, void *obj)
 			case T_Sort:
 				_outSort(str, obj);
 				break;
+			case T_Skyline:
+				_outSkyline(str, obj);
+				break;
 			case T_Unique:
 				_outUnique(str, obj);
 				break;
@@ -2341,6 +2380,9 @@ _outNode(StringInfo str, void *obj)
 				break;
 			case T_GroupClause:
 				_outGroupClause(str, obj);
+				break;
+			case T_SkylineClause:
+				_outSkylineClause(str, obj);
 				break;
 			case T_RowMarkClause:
 				_outRowMarkClause(str, obj);

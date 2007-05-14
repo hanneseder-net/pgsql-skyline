@@ -733,6 +733,7 @@ _equalQuery(Query *a, Query *b)
 	COMPARE_NODE_FIELD(havingQual);
 	COMPARE_NODE_FIELD(distinctClause);
 	COMPARE_NODE_FIELD(sortClause);
+	COMPARE_NODE_FIELD(skylineClause);
 	COMPARE_NODE_FIELD(limitOffset);
 	COMPARE_NODE_FIELD(limitCount);
 	COMPARE_NODE_FIELD(rowMarks);
@@ -785,6 +786,7 @@ _equalSelectStmt(SelectStmt *a, SelectStmt *b)
 	COMPARE_NODE_FIELD(whereClause);
 	COMPARE_NODE_FIELD(groupClause);
 	COMPARE_NODE_FIELD(havingClause);
+	COMPARE_NODE_FIELD(skylineClause);
 	COMPARE_NODE_FIELD(valuesLists);
 	COMPARE_NODE_FIELD(sortClause);
 	COMPARE_NODE_FIELD(limitOffset);
@@ -1732,6 +1734,17 @@ _equalSortBy(SortBy *a, SortBy *b)
 }
 
 static bool
+_equalSkylineBy(SkylineBy *a, SkylineBy *b)
+{
+	COMPARE_SCALAR_FIELD(skylineby_dir);
+	COMPARE_SCALAR_FIELD(skylineby_nulls);
+	COMPARE_NODE_FIELD(useOp);
+	COMPARE_NODE_FIELD(node);
+
+	return true;
+}
+
+static bool
 _equalRangeSubselect(RangeSubselect *a, RangeSubselect *b)
 {
 	COMPARE_NODE_FIELD(subquery);
@@ -2425,6 +2438,9 @@ equal(void *a, void *b)
 		case T_SortBy:
 			retval = _equalSortBy(a, b);
 			break;
+		case T_SkylineBy:
+			retval = _equalSkylineBy(a, b);
+			break;
 		case T_RangeSubselect:
 			retval = _equalRangeSubselect(a, b);
 			break;
@@ -2457,6 +2473,10 @@ equal(void *a, void *b)
 			break;
 		case T_GroupClause:
 			/* GroupClause is equivalent to SortClause */
+			retval = _equalSortClause(a, b);
+			break;
+		case T_SkylineClause:
+			/* SkylineClause is equivalent to SortClause */
 			retval = _equalSortClause(a, b);
 			break;
 		case T_RowMarkClause:

@@ -1099,6 +1099,14 @@ grouping_planner(PlannerInfo *root, double tuple_fraction)
 		}						/* end of non-minmax-aggregate case */
 	}							/* end of if (setOperations) */
 
+	if (parse->skylineClause)
+	{
+		result_plan = (Plan *) make_skyline(root,
+											result_plan,
+											parse->skylineClause);
+
+	}
+
 	/*
 	 * If we were not able to make the plan come out in the right order, add
 	 * an explicit sort step.

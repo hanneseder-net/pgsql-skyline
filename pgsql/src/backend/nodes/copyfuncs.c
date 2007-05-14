@@ -555,6 +555,26 @@ _copySort(Sort *from)
 	return newnode;
 }
 
+/*
+ * _copySkyline
+ */
+static Skyline *
+_copySkyline(Skyline *from)
+{
+	Skyline	   *newnode = makeNode(Skyline);
+
+	/*
+	 * copy node superclass fields
+	 */
+	CopyPlanFields((Plan *) from, (Plan *) newnode);
+
+	COPY_SCALAR_FIELD(numCols);
+	COPY_POINTER_FIELD(skylineColIdx, from->numCols * sizeof(AttrNumber));
+	COPY_POINTER_FIELD(skylinebyOperators, from->numCols * sizeof(Oid));
+	COPY_POINTER_FIELD(nullsFirst, from->numCols * sizeof(bool));
+
+	return newnode;
+}
 
 /*
  * _copyGroup
@@ -1536,6 +1556,18 @@ _copyGroupClause(GroupClause *from)
 	return newnode;
 }
 
+static SkylineClause *
+_copySkylineClause(SkylineClause *from)
+{
+	SkylineClause *newnode = makeNode(SkylineClause);
+
+	COPY_SCALAR_FIELD(tleSortGroupRef);
+	COPY_SCALAR_FIELD(sortop);
+	COPY_SCALAR_FIELD(nulls_first);
+
+	return newnode;
+}
+
 static RowMarkClause *
 _copyRowMarkClause(RowMarkClause *from)
 {
@@ -1694,6 +1726,19 @@ _copySortBy(SortBy *from)
 	return newnode;
 }
 
+static SkylineBy *
+_copySkylineBy(SkylineBy * from)
+{
+	SkylineBy   *newnode = makeNode(SkylineBy);
+
+	COPY_SCALAR_FIELD(skylineby_dir);
+	COPY_SCALAR_FIELD(skylineby_nulls);
+	COPY_NODE_FIELD(useOp);
+	COPY_NODE_FIELD(node);
+
+	return newnode;
+}
+
 static RangeSubselect *
 _copyRangeSubselect(RangeSubselect *from)
 {
@@ -1831,6 +1876,7 @@ _copyQuery(Query *from)
 	COPY_NODE_FIELD(havingQual);
 	COPY_NODE_FIELD(distinctClause);
 	COPY_NODE_FIELD(sortClause);
+	COPY_NODE_FIELD(skylineClause);
 	COPY_NODE_FIELD(limitOffset);
 	COPY_NODE_FIELD(limitCount);
 	COPY_NODE_FIELD(rowMarks);
@@ -1891,6 +1937,7 @@ _copySelectStmt(SelectStmt *from)
 	COPY_NODE_FIELD(whereClause);
 	COPY_NODE_FIELD(groupClause);
 	COPY_NODE_FIELD(havingClause);
+	COPY_NODE_FIELD(skylineClause);
 	COPY_NODE_FIELD(valuesLists);
 	COPY_NODE_FIELD(sortClause);
 	COPY_NODE_FIELD(limitOffset);
@@ -3034,6 +3081,9 @@ copyObject(void *from)
 		case T_Group:
 			retval = _copyGroup(from);
 			break;
+		case T_Skyline:
+			retval = _copySkyline(from);
+			break;
 		case T_Agg:
 			retval = _copyAgg(from);
 			break;
@@ -3494,6 +3544,9 @@ copyObject(void *from)
 		case T_SortBy:
 			retval = _copySortBy(from);
 			break;
+		case T_SkylineBy:
+			retval = _copySkylineBy(from);
+			break;
 		case T_RangeSubselect:
 			retval = _copyRangeSubselect(from);
 			break;
@@ -3526,6 +3579,9 @@ copyObject(void *from)
 			break;
 		case T_GroupClause:
 			retval = _copyGroupClause(from);
+			break;
+		case T_SkylineClause:
+			retval = _copySkylineClause(from);
 			break;
 		case T_RowMarkClause:
 			retval = _copyRowMarkClause(from);

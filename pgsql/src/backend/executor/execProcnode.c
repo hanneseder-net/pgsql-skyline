@@ -97,6 +97,7 @@
 #include "executor/nodeResult.h"
 #include "executor/nodeSeqscan.h"
 #include "executor/nodeSetOp.h"
+#include "executor/nodeSkyline.h"
 #include "executor/nodeSort.h"
 #include "executor/nodeSubplan.h"
 #include "executor/nodeSubqueryscan.h"
@@ -234,6 +235,11 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
 		case T_Group:
 			result = (PlanState *) ExecInitGroup((Group *) node,
 												 estate, eflags);
+			break;
+
+		case T_Skyline:
+			result = (PlanState *) ExecInitSkyline((Skyline *) node,
+												   estate, eflags);
 			break;
 
 		case T_Agg:
@@ -384,6 +390,10 @@ ExecProcNode(PlanState *node)
 
 		case T_SortState:
 			result = ExecSort((SortState *) node);
+			break;
+
+		case T_SkylineState:
+			result = ExecSkyline((SkylineState *) node);
 			break;
 
 		case T_GroupState:
@@ -558,6 +568,9 @@ ExecCountSlotsNode(Plan *node)
 		case T_Group:
 			return ExecCountSlotsGroup((Group *) node);
 
+		case T_Skyline:
+			return ExecCountSlotsSkyline((Skyline *) node);
+
 		case T_Agg:
 			return ExecCountSlotsAgg((Agg *) node);
 
@@ -687,6 +700,10 @@ ExecEndNode(PlanState *node)
 
 		case T_SortState:
 			ExecEndSort((SortState *) node);
+			break;
+
+		case T_SkylineState:
+			ExecEndSkyline((SkylineState *) node);
 			break;
 
 		case T_GroupState:

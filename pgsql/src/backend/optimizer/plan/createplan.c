@@ -2664,6 +2664,48 @@ add_sort_column(AttrNumber colIdx, Oid sortOp, bool nulls_first,
 	return numCols + 1;
 }
 
+Skyline *
+make_skyline(PlannerInfo *root, Plan *lefttree, List *skylinecls)
+{
+	List	   *sub_tlist = lefttree->targetlist;
+	ListCell   *l;
+	Skyline	   *node = makeNode(Skyline);
+	Plan	   *plan = &node->plan;
+	int			numskylinecols;
+
+	copy_plan_costsize(plan, lefttree); /* only care about copying size */
+	/* FIXME: add costs for skyline */
+	plan->targetlist = lefttree->targetlist;
+	plan->qual = NIL;
+	plan->lefttree = lefttree;
+	plan->righttree = NULL;
+
+	numskylinecols = list_length(skylinecls);
+
+	
+	node->skylineColIdx = (AttrNumber *) palloc(numskylinecols * sizeof(AttrNumber));
+	node->skylinebyOperators = (Oid *) palloc(numskylinecols * sizeof(Oid));
+	node->nullsFirst = (bool *) palloc(numskylinecols * sizeof(bool));
+
+	numskylinecols=0;
+	foreach(l, skylinecls)
+	{
+		SkylineClause *skylinecl = (SkylineClause *) lfirst(l);
+		TargetEntry *tle = get_sortgroupclause_tle(skylinecl, sub_tlist);
+
+		node->skylineColIdx[numskylinecols] = tle->resno;
+		node->skylinebyOperators[numskylinecols] = skylinecl->sortop;
+		node->nullsFirst[numskylinecols] = skylinecl->nulls_first;
+
+		numskylinecols++;
+		
+	}
+
+	node->numCols = numskylinecols;
+
+	return node; /* to disable use: (Skyline*) lefttree; */
+}
+
 /*
  * make_sort_from_pathkeys
  *	  Create sort plan to sort according to given pathkeys

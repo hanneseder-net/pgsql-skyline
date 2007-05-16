@@ -1,7 +1,10 @@
-all: kossmann-main.exe
+all: kossmann-main ksldg
 
-kossmann-main.exe: kossmann-main.cpp
+kossmann-main: kossmann-main.cpp
 	gcc -o $@ $< -lstdc++
 
+ksldg: ksldg.c
+	gcc -std=c99 -Wall -o $@ $<
+
 clean:
-	rm kossmann-main.exe
+	rm -rf kossmann-main ksldg kossmann-main.exe ksldg.exe

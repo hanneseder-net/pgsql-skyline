@@ -1,5 +1,7 @@
 /*
- * Datengenerierung
+ * Kossmann's SkyLine Data Generator
+ * based on kossmann-main.cpp
+ * modified by Hannes Eder <Hannes@HannesEder.net>
  */
 
 #include <unistd.h>
@@ -16,6 +18,7 @@ FILE *flog = NULL;
 
 extern char * __progname;
 
+#define invalidargs(FMT, ...) fprintf(stderr, "%s: error: " FMT "\n", __progname, ##__VA_ARGS__), usage(), exit(1)
 #define fatal(FMT, ...) fprintf(stderr, "%s: error: " FMT "\n", __progname, ##__VA_ARGS__), exit(1)
 
 static double sqr(double a) { return a*a; }
@@ -59,7 +62,7 @@ main(int argc, char **argv)
     case 'c':
     case 'a':
       if (dist != 0 && dist != c)
-        fatal("distribution already selected, hint: use only one of -e | -c | -a");
+        invalidargs("distribution already selected, hint: use only one of -e | -c | -a");
       dist = c;
       break;
 
@@ -95,13 +98,13 @@ main(int argc, char **argv)
   }
 
   if (dist == 0)
-    fatal("no distribution selected");
+    invalidargs("no distribution selected");
 
   if (dim < 2)
-    fatal("dimension less than 2");
+    invalidargs("dimension less than 2");
 
   if (count <= 0)
-    fatal("invalid number of vectors");
+    invalidargs("invalid number of vectors");
 
   for (int index = optind; index < argc; index++)
     filename = argv[index];
@@ -348,7 +351,12 @@ Options:\n\
        -p       print dimension and number of vectors\n\
        -o FILE  output filename, use `-' for stdout\n\
 \n\
-       -s       output stats to stderr\n\n\
-", __progname);
+       -s       output stats to stderr\n\
+\n\
+Examples:\n\
+       %s -e -d 3 -n 10\n\
+       %s -a -d 2 -n 100 -s -p -o anticorr-2d-100.txt\n\
+\n\
+", __progname, __progname, __progname);
 }
 

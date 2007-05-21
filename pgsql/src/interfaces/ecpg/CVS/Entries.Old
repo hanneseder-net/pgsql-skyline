@@ -1,4 +1,3 @@
-/ChangeLog/1.344/Thu May 10 09:53:16 2007//
 /Makefile/1.22/Sat Jan 20 17:16:16 2007//
 /README.dynSQL/1.2/Wed Nov 14 11:11:49 2001//
 D/compatlib////
@@ -7,4 +6,5 @@ D/include////
 D/pgtypeslib////
 D/preproc////
 D/test////
+/ChangeLog/1.346/Mon May 21 06:28:47 2007//
 D/doc////

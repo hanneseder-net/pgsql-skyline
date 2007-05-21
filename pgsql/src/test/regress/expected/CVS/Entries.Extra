@@ -54,7 +54,6 @@
 /interval.out////*///
 /join.out////*///
 /join_1.out////*///
-/limit.out////*///
 /lseg.out////*///
 /mule_internal.out////*///
 /name.out////*///
@@ -123,3 +122,4 @@
 /domain.out////*///
 /oidjoins.out////*///
 /type_sanity.out////*///
+/limit.out////*///

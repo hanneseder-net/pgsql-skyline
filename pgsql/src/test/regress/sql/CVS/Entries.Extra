@@ -47,7 +47,6 @@
 /int8.sql////*///
 /interval.sql////*///
 /join.sql////*///
-/limit.sql////*///
 /lseg.sql////*///
 /mule_internal.sql////*///
 /name.sql////*///
@@ -108,3 +107,4 @@
 /domain.sql////*///
 /oidjoins.sql////*///
 /type_sanity.sql////*///
+/limit.sql////*///

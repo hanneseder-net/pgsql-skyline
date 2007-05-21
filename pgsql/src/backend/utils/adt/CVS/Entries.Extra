@@ -31,7 +31,6 @@
 /misc.c////*///
 /nabstime.c////*///
 /name.c////*///
-/network.c////*///
 /not_in.c////*///
 /numeric.c////*///
 /numutils.c////*///
@@ -39,7 +38,6 @@
 /oracle_compat.c////*///
 /pg_locale.c////*///
 /pg_lzcompress.c////*///
-/pgstatfuncs.c////*///
 /pseudotypes.c////*///
 /quote.c////*///
 /regexp.c////*///
@@ -57,3 +55,5 @@
 /version.c////*///
 /xid.c////*///
 /xml.c////*///
+/network.c////*///
+/pgstatfuncs.c////*///

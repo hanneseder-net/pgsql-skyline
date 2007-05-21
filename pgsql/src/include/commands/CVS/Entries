@@ -1,6 +1,5 @@
 /alter.h/1.9/Fri Jan  5 22:19:53 2007//
 /async.h/1.35/Thu Apr 12 06:53:48 2007//
-/cluster.h/1.32/Tue Mar 13 00:33:43 2007//
 /comment.h/1.20/Fri Jan  5 22:19:53 2007//
 /conversioncmds.h/1.15/Fri Jan  5 22:19:53 2007//
 /copy.h/1.30/Tue Mar 13 00:33:43 2007//
@@ -17,10 +16,11 @@
 /tablespace.h/1.16/Tue Mar  6 02:06:15 2007//
 /trigger.h/1.62/Mon Mar 19 23:38:31 2007//
 /user.h/1.30/Wed Oct  4 00:30:08 2006//
-/vacuum.h/1.70/Tue Mar 13 00:33:43 2007//
 /variable.h/1.29/Fri Jan  5 22:19:54 2007//
 /version.h/1.19/Fri Jan  5 22:19:54 2007//
 /view.h/1.25/Tue Mar 13 00:33:43 2007//
 /tablecmds.h/1.33/Sat May 12 09:16:16 2007//
 /typecmds.h/1.19/Sat May 12 09:16:16 2007//
+/cluster.h/1.33/Sat May 19 08:06:17 2007//
+/vacuum.h/1.71/Sat May 19 08:06:17 2007//
 D

@@ -1,4 +1,3 @@
-/ChangeLog////*///
 /Makefile////*///
 /README.dynSQL////*///
 D/compatlib///////
@@ -7,4 +6,5 @@ D/include///////
 D/pgtypeslib///////
 D/preproc///////
 D/test///////
+/ChangeLog////*///
 D/doc///////

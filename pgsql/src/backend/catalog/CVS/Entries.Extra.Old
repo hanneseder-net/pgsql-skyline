@@ -21,6 +21,6 @@
 /system_views.sql////*///
 /toasting.c////*///
 /README////*///
+/pg_type.c////*///
 /heap.c////*///
 /pg_shdepend.c////*///
-/pg_type.c////*///

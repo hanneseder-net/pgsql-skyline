@@ -22,7 +22,6 @@
 /nodeHash.c////*///
 /nodeHashjoin.c////*///
 /nodeIndexscan.c////*///
-/nodeLimit.c////*///
 /nodeMaterial.c////*///
 /nodeMergejoin.c////*///
 /nodeNestloop.c////*///
@@ -30,11 +29,12 @@
 /nodeSeqscan.c////*///
 /nodeSetOp.c////*///
 /nodeSort.c////*///
-/nodeSubplan.c////*///
 /nodeSubqueryscan.c////*///
 /nodeTidscan.c////*///
 /nodeUnique.c////*///
 /nodeValuesscan.c////*///
 /spi.c////*///
 /tstoreReceiver.c////*///
+/nodeLimit.c////*///
+/nodeSubplan.c////*///
 D/_deadcode///////

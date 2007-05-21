@@ -8,7 +8,7 @@
  *
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/backend/commands/tablecmds.c,v 1.222 2007/05/12 00:54:59 tgl Exp $
+ *	  $PostgreSQL: pgsql/src/backend/commands/tablecmds.c,v 1.225 2007/05/18 23:19:41 alvherre Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -616,7 +616,7 @@ ExecuteTruncate(TruncateStmt *stmt)
 		 * the relfilenode value.	The old storage file is scheduled for
 		 * deletion at commit.
 		 */
-		setNewRelfilenode(rel);
+		setNewRelfilenode(rel, RecentXmin);
 
 		heap_relid = RelationGetRelid(rel);
 		toast_relid = rel->rd_rel->reltoastrelid;
@@ -629,7 +629,7 @@ ExecuteTruncate(TruncateStmt *stmt)
 		if (OidIsValid(toast_relid))
 		{
 			rel = relation_open(toast_relid, AccessExclusiveLock);
-			setNewRelfilenode(rel);
+			setNewRelfilenode(rel, RecentXmin);
 			heap_close(rel, NoLock);
 		}
 
@@ -2285,8 +2285,13 @@ ATRewriteTables(List **wqueue)
 			 */
 			ATRewriteTable(tab, OIDNewHeap);
 
-			/* Swap the physical files of the old and new heaps. */
-			swap_relation_files(tab->relid, OIDNewHeap);
+			/*
+			 * Swap the physical files of the old and new heaps.  Since we are
+			 * generating a new heap, we can use RecentXmin for the table's new
+			 * relfrozenxid because we rewrote all the tuples on
+			 * ATRewriteTable, so no older Xid remains on the table.
+			 */
+			swap_relation_files(tab->relid, OIDNewHeap, RecentXmin);
 
 			CommandCounterIncrement();
 
@@ -5478,10 +5483,11 @@ ATExecChangeOwner(Oid relationOid, Oid newOwnerId, bool recursing)
 		/*
 		 * Update owner dependency reference, if any.  A composite type has
 		 * none, because it's tracked for the pg_type entry instead of here;
-		 * indexes don't have their own entries either.
+		 * indexes and TOAST tables don't have their own entries either.
 		 */
 		if (tuple_class->relkind != RELKIND_COMPOSITE_TYPE &&
-			tuple_class->relkind != RELKIND_INDEX)
+			tuple_class->relkind != RELKIND_INDEX &&
+			tuple_class->relkind != RELKIND_TOASTVALUE)
 			changeDependencyOnOwner(RelationRelationId, relationOid,
 									newOwnerId);
 

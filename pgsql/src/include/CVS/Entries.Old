@@ -16,4 +16,21 @@
 /postgres_ext.h/1.17/Tue Feb  6 09:16:08 2007//
 /postgres_fe.h/1.12/Fri Jan  5 22:19:50 2007//
 /rusagestub.h/1.18/Fri Jan  5 22:19:50 2007//
-D
+D/access////
+D/bootstrap////
+D/catalog////
+D/commands////
+D/executor////
+D/lib////
+D/libpq////
+D/mb////
+D/nodes////
+D/optimizer////
+D/parser////
+D/port////
+D/postmaster////
+D/regex////
+D/rewrite////
+D/storage////
+D/tcop////
+D/utils////

@@ -14,12 +14,12 @@
 /proclang.h////*///
 /schemacmds.h////*///
 /sequence.h////*///
-/tablecmds.h////*///
 /tablespace.h////*///
 /trigger.h////*///
-/typecmds.h////*///
 /user.h////*///
 /vacuum.h////*///
 /variable.h////*///
 /version.h////*///
 /view.h////*///
+/tablecmds.h////*///
+/typecmds.h////*///

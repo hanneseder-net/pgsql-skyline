@@ -2,7 +2,6 @@
 /dependency.h////*///
 /duplicate_oids////*///
 /heap.h////*///
-/index.h////*///
 /indexing.h////*///
 /namespace.h////*///
 /pg_aggregate.h////*///
@@ -15,7 +14,6 @@
 /pg_autovacuum.h////*///
 /pg_cast.h////*///
 /pg_constraint.h////*///
-/pg_control.h////*///
 /pg_conversion.h////*///
 /pg_database.h////*///
 /pg_depend.h////*///
@@ -44,3 +42,5 @@
 /pg_attribute.h////*///
 /pg_class.h////*///
 /pg_type.h////*///
+/index.h////*///
+/pg_control.h////*///

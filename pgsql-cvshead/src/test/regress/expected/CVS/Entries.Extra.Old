@@ -1,7 +1,5 @@
 /abstime.out////*///
 /aggregates.out////*///
-/alter_table.out////*///
-/arrays.out////*///
 /bit.out////*///
 /boolean.out////*///
 /box.out////*///
@@ -26,7 +24,6 @@
 /date.out////*///
 /delete.out////*///
 /dependency.out////*///
-/domain.out////*///
 /drop_if_exists.out////*///
 /enum.out////*///
 /errors.out////*///
@@ -66,7 +63,6 @@
 /numeric_big.out////*///
 /numerology.out////*///
 /oid.out////*///
-/oidjoins.out////*///
 /opr_sanity.out////*///
 /path.out////*///
 /plancache.out////*///
@@ -113,7 +109,6 @@
 /transactions.out////*///
 /triggers.out////*///
 /truncate.out////*///
-/type_sanity.out////*///
 /union.out////*///
 /update.out////*///
 /uuid.out////*///
@@ -123,3 +118,8 @@
 /without_oid.out////*///
 /xml.out////*///
 /xml_1.out////*///
+/alter_table.out////*///
+/arrays.out////*///
+/domain.out////*///
+/oidjoins.out////*///
+/type_sanity.out////*///

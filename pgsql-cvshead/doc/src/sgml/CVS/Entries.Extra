@@ -1,4 +1,3 @@
-/Makefile////*///
 /advanced.sgml////*///
 /arch-dev.sgml////*///
 /backup.sgml////*///
@@ -6,12 +5,10 @@
 /bki.sgml////*///
 /charset.sgml////*///
 /client-auth.sgml////*///
-/config.sgml////*///
 /contacts.sgml////*///
 /cvs.sgml////*///
 /datatype.sgml////*///
 /datetime.sgml////*///
-/ddl.sgml////*///
 /dfunc.sgml////*///
 /diskusage.sgml////*///
 /dml.sgml////*///
@@ -40,7 +37,6 @@
 /legal.sgml////*///
 /libpq.sgml////*///
 /lobj.sgml////*///
-/maintenance.sgml////*///
 /manage-ag.sgml////*///
 /mk_feature_tables.pl////*///
 /monitoring.sgml////*///
@@ -87,8 +83,12 @@
 /xindex.sgml////*///
 /xoper.sgml////*///
 /xplang.sgml////*///
-/xtypes.sgml////*///
 D/ref///////
 /array.sgml////*///
-/catalogs.sgml////*///
 /syntax.sgml////*///
+/catalogs.sgml////*///
+/ddl.sgml////*///
+/maintenance.sgml////*///
+/xtypes.sgml////*///
+/Makefile////*///
+/config.sgml////*///

@@ -10,7 +10,7 @@
 PostgreSQL TODO List
 </p><hr/>
 Current maintainer:     Bruce Momjian (<a href="mailto:bruce@momjian.us">bruce@momjian.us</a>)<br/>
-Last updated:           Sun May 13 07:21:48 EDT 2007
+Last updated:           Thu May 17 21:22:04 EDT 2007
 
 <p>The most recent version of this document can be viewed at<br/>
 <a href="http://www.postgresql.org/docs/faqs.TODO.html">http://www.postgresql.org/docs/faqs.TODO.html</a>.
@@ -78,6 +78,11 @@ first.  There is also a developer's wiki at<br/>
 </p>
   </li><li>Allow custom variable classes that can restrict who can set the values
 <p>  <a href="http://archives.postgresql.org/pgsql-hackers/2006-11/msg00911.php">http://archives.postgresql.org/pgsql-hackers/2006-11/msg00911.php</a>
+</p>
+  </li><li>Implement the SQL standard mechanism whereby REVOKE ROLE revokes only
+  the privilege granted by the invoking role, and not those granted
+  by other roles
+<p>  <a href="http://archives.postgresql.org/pgsql-bugs/2007-05/msg00010.php">http://archives.postgresql.org/pgsql-bugs/2007-05/msg00010.php</a>
 </p>
   </li><li>Improve replication solutions
   <ul>
@@ -197,6 +202,8 @@ first.  There is also a developer's wiki at<br/>
   </li><li>Add support for SQL-standard GENERATED/IDENTITY columns
 <p>  <a href="http://archives.postgresql.org/pgsql-hackers/2006-07/msg00543.php">http://archives.postgresql.org/pgsql-hackers/2006-07/msg00543.php</a>
   <a href="http://archives.postgresql.org/pgsql-hackers/2006-08/msg00038.php">http://archives.postgresql.org/pgsql-hackers/2006-08/msg00038.php</a>
+  <a href="http://archives.postgresql.org/pgsql-hackers/2007-05/msg00344.php">http://archives.postgresql.org/pgsql-hackers/2007-05/msg00344.php</a>
+  <a href="http://archives.postgresql.org/pgsql-patches/2007-05/msg00076.php">http://archives.postgresql.org/pgsql-patches/2007-05/msg00076.php</a>
 </p>
   </li><li>-<em>Support a data type with specific enumerated values (ENUM)</em>
   </li><li>Improve XML support
@@ -1322,6 +1329,13 @@ first.  There is also a developer's wiki at<br/>
   source code, which now uses them
   </li><li>Have configure choose integer datetimes by default
 <p>  <a href="http://archives.postgresql.org/pgsql-patches/2007-05/msg00046.php">http://archives.postgresql.org/pgsql-patches/2007-05/msg00046.php</a>
+</p>
+  </li><li>-<em>Fix problem with excessive logging during SSL disconnection</em>
+<p>  <a href="http://archives.postgresql.org/pgsql-bugs/2006-12/msg00122.php">http://archives.postgresql.org/pgsql-bugs/2006-12/msg00122.php</a>
+  <a href="http://archives.postgresql.org/pgsql-bugs/2007-05/msg00065.php">http://archives.postgresql.org/pgsql-bugs/2007-05/msg00065.php</a>
+</p>
+  </li><li>Support scoped IPv6 addresses
+<p>  <a href="http://archives.postgresql.org/pgsql-bugs/2007-05/msg00111.php">http://archives.postgresql.org/pgsql-bugs/2007-05/msg00111.php</a>
 </p>
   </li><li>Win32
   <ul>

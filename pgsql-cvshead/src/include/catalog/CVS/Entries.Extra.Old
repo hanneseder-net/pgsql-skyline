@@ -1,9 +1,7 @@
 /catalog.h////*///
-/catversion.h////*///
 /dependency.h////*///
 /duplicate_oids////*///
 /heap.h////*///
-/index.h////*///
 /indexing.h////*///
 /namespace.h////*///
 /pg_aggregate.h////*///
@@ -11,12 +9,10 @@
 /pg_amop.h////*///
 /pg_amproc.h////*///
 /pg_attrdef.h////*///
-/pg_attribute.h////*///
 /pg_auth_members.h////*///
 /pg_authid.h////*///
 /pg_autovacuum.h////*///
 /pg_cast.h////*///
-/pg_class.h////*///
 /pg_constraint.h////*///
 /pg_control.h////*///
 /pg_conversion.h////*///
@@ -41,6 +37,10 @@
 /pg_statistic.h////*///
 /pg_tablespace.h////*///
 /pg_trigger.h////*///
-/pg_type.h////*///
 /toasting.h////*///
 /unused_oids////*///
+/catversion.h////*///
+/pg_attribute.h////*///
+/pg_class.h////*///
+/pg_type.h////*///
+/index.h////*///

@@ -3,7 +3,6 @@
 /alter.c////*///
 /analyze.c////*///
 /async.c////*///
-/cluster.c////*///
 /comment.c////*///
 /conversioncmds.c////*///
 /copy.c////*///
@@ -24,9 +23,10 @@
 /tablespace.c////*///
 /trigger.c////*///
 /user.c////*///
-/vacuum.c////*///
-/vacuumlazy.c////*///
 /variable.c////*///
 /view.c////*///
-/tablecmds.c////*///
 /typecmds.c////*///
+/cluster.c////*///
+/tablecmds.c////*///
+/vacuum.c////*///
+/vacuumlazy.c////*///

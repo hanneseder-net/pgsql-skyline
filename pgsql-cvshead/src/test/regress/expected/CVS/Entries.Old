@@ -1,7 +1,5 @@
 /abstime.out/1.16/Thu Apr  7 01:51:40 2005//
 /aggregates.out/1.15/Fri Jul 28 18:33:04 2006//
-/alter_table.out/1.101/Wed Feb 14 01:58:58 2007//
-/arrays.out/1.32/Fri Sep 29 21:22:21 2006//
 /bit.out/1.4/Sun Jul 27 04:53:11 2003//
 /boolean.out/1.12/Thu Apr  7 01:51:40 2005//
 /box.out/1.11/Sun Sep 10 00:29:35 2006//
@@ -26,7 +24,6 @@
 /date.out/1.6/Fri Aug 20 03:45:13 2004//
 /delete.out/1.2/Tue Mar 14 22:50:46 2006//
 /dependency.out/1.5/Tue Sep  5 21:08:36 2006//
-/domain.out/1.40/Mon Mar 19 16:30:32 2007//
 /drop_if_exists.out/1.2/Sat Feb  4 19:06:47 2006//
 /enum.out/1.1/Mon Apr  2 03:49:42 2007//
 /errors.out/1.52/Sat Apr 15 17:45:46 2006//
@@ -66,7 +63,6 @@
 /numeric_big.out/1.2/Thu Mar 30 07:13:20 2000//
 /numerology.out/1.4/Wed Mar 15 23:31:06 2000//
 /oid.out/1.12/Thu Apr  7 01:51:40 2005//
-/oidjoins.out/1.19/Sat Dec 30 21:21:56 2006//
 /opr_sanity.out/1.75/Tue Feb  6 03:52:59 2007//
 /path.out/1.6/Thu Sep 25 06:58:06 2003//
 /plancache.out/1.4/Fri Mar 23 19:53:52 2007//
@@ -113,7 +109,6 @@
 /transactions.out/1.15/Thu Feb  1 19:10:30 2007//
 /triggers.out/1.24/Thu Feb  1 19:10:30 2007//
 /truncate.out/1.12/Thu Jun 29 16:07:29 2006//
-/type_sanity.out/1.29/Mon Apr  2 03:49:42 2007//
 /union.out/1.11/Tue Mar 14 22:48:25 2006//
 /update.out/1.5/Sun Sep  3 22:37:06 2006//
 /uuid.out/1.2/Wed Jan 31 19:33:54 2007//
@@ -123,4 +118,9 @@
 /without_oid.out/1.8/Fri Feb  9 03:35:35 2007//
 /xml.out/1.17/Thu Mar 22 20:26:30 2007//
 /xml_1.out/1.16/Thu Apr  5 13:53:24 2007//
+/alter_table.out/1.102/Sat May 12 09:16:20 2007//
+/arrays.out/1.33/Sat May 12 09:16:20 2007//
+/domain.out/1.41/Sat May 12 09:16:20 2007//
+/oidjoins.out/1.20/Sat May 12 09:16:21 2007//
+/type_sanity.out/1.30/Sat May 12 09:16:21 2007//
 D

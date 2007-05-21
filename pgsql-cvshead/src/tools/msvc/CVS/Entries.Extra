@@ -2,7 +2,6 @@
 /Mkvcbuild.pm////*///
 /Project.pm////*///
 /README////*///
-/Solution.pm////*///
 /build.bat////*///
 /builddoc.bat////*///
 /clean.bat////*///
@@ -16,3 +15,4 @@
 /pgflex.bat////*///
 /vcregress.bat////*///
 /Install.pm////*///
+/Solution.pm////*///

@@ -31,7 +31,6 @@
 /misc.c/1.56/Fri Jan  5 22:19:41 2007//
 /nabstime.c/1.150/Tue Feb 27 23:48:08 2007//
 /name.c/1.60/Fri Jan  5 22:19:41 2007//
-/network.c/1.69/Fri Apr  6 04:21:43 2007//
 /not_in.c/1.46/Fri Jan  5 22:19:41 2007//
 /numeric.c/1.102/Tue May  8 18:56:47 2007//
 /numutils.c/1.75/Fri Jan  5 22:19:41 2007//
@@ -39,7 +38,6 @@
 /oracle_compat.c/1.70/Tue Feb 27 23:48:08 2007//
 /pg_locale.c/1.39/Fri Jan  5 22:19:41 2007//
 /pg_lzcompress.c/1.26/Fri Apr  6 04:21:43 2007//
-/pgstatfuncs.c/1.41/Fri Mar 30 18:34:55 2007//
 /pseudotypes.c/1.19/Mon Apr  2 03:49:39 2007//
 /quote.c/1.22/Tue Feb 27 23:48:08 2007//
 /regexp.c/1.71/Wed Mar 28 22:59:37 2007//
@@ -57,4 +55,6 @@
 /version.c/1.15/Tue Feb 27 23:48:09 2007//
 /xid.c/1.10/Fri Jan  5 22:19:42 2007//
 /xml.c/1.42/Fri Apr  6 04:21:43 2007//
+/network.c/1.70/Sat May 19 08:06:15 2007//
+/pgstatfuncs.c/1.42/Sat May 19 08:06:15 2007//
 D

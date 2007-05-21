@@ -2,7 +2,6 @@
 /README.SSL////*///
 /auth.c////*///
 /be-fsstubs.c////*///
-/be-secure.c////*///
 /crypt.c////*///
 /hba.c////*///
 /ip.c////*///
@@ -12,3 +11,4 @@
 /pqcomm.c////*///
 /pqformat.c////*///
 /pqsignal.c////*///
+/be-secure.c////*///

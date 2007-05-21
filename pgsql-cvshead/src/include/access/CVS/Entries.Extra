@@ -15,7 +15,6 @@
 /printtup.h////*///
 /reloptions.h////*///
 /relscan.h////*///
-/rewriteheap.h////*///
 /rmgr.h////*///
 /sdir.h////*///
 /skey.h////*///
@@ -29,7 +28,8 @@
 /twophase_rmgr.h////*///
 /valid.h////*///
 /xact.h////*///
-/xlog.h////*///
-/xlog_internal.h////*///
 /xlogdefs.h////*///
 /xlogutils.h////*///
+/rewriteheap.h////*///
+/xlog.h////*///
+/xlog_internal.h////*///

@@ -2,7 +2,6 @@
 /dependency.h/1.29/Fri Jan  5 22:19:52 2007//
 /duplicate_oids/1.8/Mon Jul 31 01:16:37 2006//
 /heap.h/1.86/Fri Jan  5 22:19:52 2007//
-/index.h/1.73/Tue Jan  9 02:14:15 2007//
 /indexing.h/1.99/Mon Apr  2 03:49:40 2007//
 /namespace.h/1.47/Thu Apr 12 22:34:45 2007//
 /pg_aggregate.h/1.62/Mon Apr  2 03:49:40 2007//
@@ -15,7 +14,6 @@
 /pg_autovacuum.h/1.6/Fri Jan  5 22:19:52 2007//
 /pg_cast.h/1.32/Mon Apr  2 03:49:40 2007//
 /pg_constraint.h/1.25/Wed Feb 14 01:58:58 2007//
-/pg_control.h/1.37/Tue Apr  3 04:14:26 2007//
 /pg_conversion.h/1.19/Fri Jan  5 22:19:52 2007//
 /pg_database.h/1.43/Fri Jan  5 22:19:52 2007//
 /pg_depend.h/1.8/Fri Jan  5 22:19:52 2007//
@@ -44,4 +42,6 @@
 /pg_attribute.h/1.131/Sat May 12 09:16:16 2007//
 /pg_class.h/1.101/Sat May 12 09:16:16 2007//
 /pg_type.h/1.184/Sat May 12 09:16:16 2007//
+/index.h/1.74/Wed May 16 22:04:02 2007//
+/pg_control.h/1.38/Mon May 21 06:28:46 2007//
 D

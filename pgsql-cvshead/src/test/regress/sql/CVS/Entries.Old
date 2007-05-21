@@ -1,7 +1,6 @@
 /abstime.sql/1.9/Thu Apr  7 01:51:41 2005//
 /aggregates.sql/1.13/Fri Jul 28 18:33:04 2006//
 /alter_table.sql/1.56/Wed Feb 14 01:58:58 2007//
-/arrays.sql/1.25/Fri Sep 29 21:22:21 2006//
 /bit.sql/1.2/Tue May 22 16:37:17 2001//
 /boolean.sql/1.7/Thu Apr  7 01:51:41 2005//
 /box.sql/1.7/Sun Sep 10 00:29:35 2006//
@@ -25,7 +24,6 @@
 /date.sql/1.4/Fri Aug 20 03:45:14 2004//
 /delete.sql/1.1/Sun Jan 22 05:20:35 2006//
 /dependency.sql/1.4/Mon Aug 21 00:57:26 2006//
-/domain.sql/1.23/Mon Mar 19 16:30:32 2007//
 /drop.sql/1.6/Thu Aug 22 00:01:51 2002//
 /drop_if_exists.sql/1.2/Sat Feb  4 19:06:47 2006//
 /enum.sql/1.1/Mon Apr  2 03:49:42 2007//
@@ -58,7 +56,6 @@
 /numeric_big.sql/1.2/Thu Mar 30 07:13:19 2000//
 /numerology.sql/1.4/Wed Mar 15 23:31:05 2000//
 /oid.sql/1.8/Thu Apr  7 01:51:41 2005//
-/oidjoins.sql/1.19/Sat Dec 30 21:21:56 2006//
 /opr_sanity.sql/1.61/Tue Feb  6 03:52:59 2007//
 /path.sql/1.3/Wed Jan  5 06:07:58 2000//
 /plancache.sql/1.4/Fri Mar 23 19:53:52 2007//
@@ -100,7 +97,6 @@
 /transactions.sql/1.13/Sun Feb 26 18:36:23 2006//
 /triggers.sql/1.13/Mon Jun 26 17:24:41 2006//
 /truncate.sql/1.5/Thu Jun 29 16:07:29 2006//
-/type_sanity.sql/1.29/Mon Apr  2 03:49:42 2007//
 /union.sql/1.6/Sun Nov  2 22:35:26 2003//
 /update.sql/1.5/Sun Sep  3 22:37:06 2006//
 /uuid.sql/1.2/Wed Jan 31 19:33:54 2007//
@@ -108,4 +104,8 @@
 /varchar.sql/1.4/Thu Apr  7 01:51:41 2005//
 /without_oid.sql/1.7/Fri Feb  9 03:35:35 2007//
 /xml.sql/1.14/Thu Mar 22 20:26:30 2007//
+/arrays.sql/1.26/Sat May 12 09:16:21 2007//
+/domain.sql/1.24/Sat May 12 09:16:21 2007//
+/oidjoins.sql/1.20/Sat May 12 09:16:21 2007//
+/type_sanity.sql/1.30/Sat May 12 09:16:21 2007//
 D

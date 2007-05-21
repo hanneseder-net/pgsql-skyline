@@ -3,7 +3,6 @@
 /catalog.c////*///
 /dependency.c////*///
 /genbki.sh////*///
-/index.c////*///
 /indexing.c////*///
 /information_schema.sql////*///
 /namespace.c////*///
@@ -21,6 +20,7 @@
 /system_views.sql////*///
 /toasting.c////*///
 /README////*///
-/heap.c////*///
 /pg_type.c////*///
+/heap.c////*///
 /pg_shdepend.c////*///
+/index.c////*///

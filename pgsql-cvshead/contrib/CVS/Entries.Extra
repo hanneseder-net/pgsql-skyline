@@ -1,5 +1,3 @@
-/Makefile////*///
-/README////*///
 /contrib-global.mk////*///
 D/adminpack///////
 D/btree_gist///////
@@ -32,3 +30,6 @@ D/tsearch2///////
 D/uuid-ossp///////
 D/vacuumlo///////
 D/xml2///////
+/Makefile////*///
+/README////*///
+D/pageinspect///////

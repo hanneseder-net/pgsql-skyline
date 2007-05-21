@@ -1,6 +1,5 @@
 /alter.h////*///
 /async.h////*///
-/cluster.h////*///
 /comment.h////*///
 /conversioncmds.h////*///
 /copy.h////*///
@@ -17,9 +16,10 @@
 /tablespace.h////*///
 /trigger.h////*///
 /user.h////*///
-/vacuum.h////*///
 /variable.h////*///
 /version.h////*///
 /view.h////*///
 /tablecmds.h////*///
 /typecmds.h////*///
+/cluster.h////*///
+/vacuum.h////*///

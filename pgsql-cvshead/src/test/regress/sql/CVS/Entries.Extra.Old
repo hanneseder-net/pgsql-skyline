@@ -1,7 +1,6 @@
 /abstime.sql////*///
 /aggregates.sql////*///
 /alter_table.sql////*///
-/arrays.sql////*///
 /bit.sql////*///
 /boolean.sql////*///
 /box.sql////*///
@@ -25,7 +24,6 @@
 /date.sql////*///
 /delete.sql////*///
 /dependency.sql////*///
-/domain.sql////*///
 /drop.sql////*///
 /drop_if_exists.sql////*///
 /enum.sql////*///
@@ -58,7 +56,6 @@
 /numeric_big.sql////*///
 /numerology.sql////*///
 /oid.sql////*///
-/oidjoins.sql////*///
 /opr_sanity.sql////*///
 /path.sql////*///
 /plancache.sql////*///
@@ -100,7 +97,6 @@
 /transactions.sql////*///
 /triggers.sql////*///
 /truncate.sql////*///
-/type_sanity.sql////*///
 /union.sql////*///
 /update.sql////*///
 /uuid.sql////*///
@@ -108,3 +104,7 @@
 /varchar.sql////*///
 /without_oid.sql////*///
 /xml.sql////*///
+/arrays.sql////*///
+/domain.sql////*///
+/oidjoins.sql////*///
+/type_sanity.sql////*///

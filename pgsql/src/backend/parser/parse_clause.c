@@ -8,7 +8,7 @@
  *
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/backend/parser/parse_clause.c,v 1.165 2007/04/27 22:05:48 tgl Exp $
+ *	  $PostgreSQL: pgsql/src/backend/parser/parse_clause.c,v 1.164 2007/02/01 19:10:27 momjian Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -1195,8 +1195,8 @@ findTargetlistEntry(ParseState *pstate, Node *node, List **tlist, int clause)
 		char	   *name = strVal(linitial(((ColumnRef *) node)->fields));
 		int			location = ((ColumnRef *) node)->location;
 
-		/* FIXME: should SKYLINE be treated like GROUP? */
-		if (clause == GROUP_CLAUSE || clause == SKYLINE_CLAUSE)
+		/* FIXME: should SKYLINE be treated like GROUP?  || clause == SKYLINE_CLAUSE*/
+		if (clause == GROUP_CLAUSE)
 		{
 			/*
 			 * In GROUP BY, we must prefer a match against a FROM-clause
@@ -1301,6 +1301,21 @@ findTargetlistEntry(ParseState *pstate, Node *node, List **tlist, int clause)
 	 * end of the target list.	This target is given resjunk = TRUE so that it
 	 * will not be projected into the final tuple.
 	 */
+	//if (clause == SKYLINE_CLAUSE) {
+	//	if (IsA(node, ColumnRef) &&	list_length(((ColumnRef *) node)->fields) == 1)
+	//	{
+	//		char	   *name = strVal(linitial(((ColumnRef *) node)->fields));
+	//		int			location = ((ColumnRef *) node)->location;
+
+	//		if (colNameToVar(pstate, name, true, location) != NULL)
+	//			target_result = transformTargetEntry(pstate, node, expr, name, false);
+	//		else
+	//			target_result = transformTargetEntry(pstate, node, expr, NULL, false);
+	//	}
+	//	else
+	//		target_result = transformTargetEntry(pstate, node, expr, NULL, false);
+	//}
+	//else
 	target_result = transformTargetEntry(pstate, node, expr, NULL, true);
 
 	*tlist = lappend(*tlist, target_result);
@@ -1457,8 +1472,6 @@ transformSkylineClause(ParseState *pstate,
 							   skylineby->skylineby_nulls,
 							   skylineby->useOp,
 							   resolveUnknown);
-
-		tle->resjunk = 0;
 	}
 
 	return resultlist;

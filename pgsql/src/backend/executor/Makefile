@@ -20,7 +20,7 @@ OBJS = execAmi.o execGrouping.o execJunk.o execMain.o \
        nodeHashjoin.o nodeIndexscan.o nodeMaterial.o nodeMergejoin.o \
        nodeNestloop.o nodeFunctionscan.o nodeResult.o nodeSeqscan.o \
        nodeSetOp.o nodeSort.o nodeUnique.o \
-       nodeValuesscan.o nodeLimit.o nodeGroup.o \
+       nodeValuesscan.o nodeLimit.o nodeGroup.o nodeSkyline.o \
        nodeSubplan.o nodeSubqueryscan.o nodeTidscan.o tstoreReceiver.o spi.o
 
 all: SUBSYS.o

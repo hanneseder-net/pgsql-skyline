@@ -83,7 +83,29 @@ ExecCountSlotsSkyline(Skyline * node)
 TupleTableSlot *
 ExecSkyline(SkylineState *node)
 {
-	return ExecProcNode(outerPlanState(node));
+	TupleTableSlot *slot = ExecProcNode(outerPlanState(node));
+	Skyline *sl = (Skyline*)node->ss.ps.plan;
+	int i;
+
+/*
+		if (!get_compare_function_for_ordering_op(sortOperators[i],
+												  &sortFunction, &reverse))
+			elog(ERROR, "operator %u is not a valid ordering operator",
+				 sortOperators[i]);
+*/
+
+	if (slot != NULL) {
+		TupleDesc tdesc = slot->tts_tupleDescriptor; 
+	}
+	print_slot(slot);
+
+	printf("--ColIdx->");
+	for (i=0; i<(sl->numCols); i++) {
+		printf("%d ", sl->skylineColIdx[i]);
+	}
+	printf("\n");
+
+	return slot;
 }
 
 void

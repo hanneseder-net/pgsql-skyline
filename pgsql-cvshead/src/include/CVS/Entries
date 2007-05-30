@@ -8,7 +8,6 @@
 /pg_config.h.win32/1.42/Mon Apr 16 18:39:19 2007//
 /pg_config_manual.h/1.26/Fri Feb 23 21:36:19 2007//
 /pg_trace.h/1.2/Wed Oct  4 00:30:06 2006//
-/pgstat.h/1.58/Mon Apr 30 16:37:08 2007//
 /pgtime.h/1.15/Fri Jan  5 22:19:50 2007//
 /port.h/1.111/Fri Apr 13 10:30:30 2007//
 /postgres_ext.h/1.17/Tue Feb  6 09:16:08 2007//
@@ -34,3 +33,4 @@ D/tcop////
 D/utils////
 /fmgr.h/1.51/Tue May 15 21:22:57 2007//
 /postgres.h/1.81/Tue May 15 21:22:57 2007//
+/pgstat.h/1.61/Wed May 30 13:52:57 2007//

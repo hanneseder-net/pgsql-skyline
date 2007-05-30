@@ -29,7 +29,6 @@
 /pg_operator.h////*///
 /pg_opfamily.h////*///
 /pg_pltemplate.h////*///
-/pg_proc.h////*///
 /pg_rewrite.h////*///
 /pg_shdepend.h////*///
 /pg_shdescription.h////*///
@@ -38,9 +37,10 @@
 /pg_trigger.h////*///
 /toasting.h////*///
 /unused_oids////*///
-/catversion.h////*///
 /pg_attribute.h////*///
 /pg_class.h////*///
 /pg_type.h////*///
 /index.h////*///
 /pg_control.h////*///
+/catversion.h////*///
+/pg_proc.h////*///

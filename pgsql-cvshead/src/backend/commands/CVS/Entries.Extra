@@ -9,14 +9,12 @@
 /dbcommands.c////*///
 /define.c////*///
 /discard.c////*///
-/explain.c////*///
 /functioncmds.c////*///
 /indexcmds.c////*///
 /lockcmds.c////*///
 /opclasscmds.c////*///
 /operatorcmds.c////*///
 /portalcmds.c////*///
-/prepare.c////*///
 /proclang.c////*///
 /schemacmds.c////*///
 /sequence.c////*///
@@ -30,3 +28,5 @@
 /tablecmds.c////*///
 /vacuum.c////*///
 /vacuumlazy.c////*///
+/explain.c////*///
+/prepare.c////*///

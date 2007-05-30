@@ -9,10 +9,10 @@
 /ecpgtype.h////*///
 /pgtypes_date.h////*///
 /pgtypes_error.h////*///
-/pgtypes_interval.h////*///
 /pgtypes_numeric.h////*///
 /pgtypes_timestamp.h////*///
 /sql3types.h////*///
 /sqlca.h////*///
 /sqlda.h////*///
 /sqltypes.h////*///
+/pgtypes_interval.h////*///

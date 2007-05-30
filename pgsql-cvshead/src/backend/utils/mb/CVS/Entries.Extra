@@ -3,7 +3,6 @@
 /conv.c////*///
 /encnames.c////*///
 /iso.c////*///
-/mbutils.c////*///
 /wchar.c////*///
 /win1251.c////*///
 /win866.c////*///
@@ -11,3 +10,4 @@
 /wstrncmp.c////*///
 D/Unicode///////
 D/conversion_procs///////
+/mbutils.c////*///

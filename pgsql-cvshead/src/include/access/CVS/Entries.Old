@@ -28,9 +28,9 @@
 /twophase_rmgr.h/1.4/Fri Jan  5 22:19:51 2007//
 /valid.h/1.39/Fri Jan  5 22:19:51 2007//
 /xact.h/1.87/Mon Apr 30 21:01:53 2007//
-/xlog.h/1.76/Fri Jan  5 22:19:51 2007//
-/xlog_internal.h/1.20/Mon Apr 30 21:01:53 2007//
 /xlogdefs.h/1.17/Wed Feb 14 05:00:40 2007//
 /xlogutils.h/1.22/Fri Jan  5 22:19:51 2007//
 /rewriteheap.h/1.2/Sat May 19 08:06:17 2007//
+/xlog.h/1.77/Mon May 21 06:28:46 2007//
+/xlog_internal.h/1.21/Mon May 21 06:28:46 2007//
 D

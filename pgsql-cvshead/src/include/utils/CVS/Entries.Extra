@@ -5,7 +5,6 @@
 /catcache.h////*///
 /combocid.h////*///
 /date.h////*///
-/datetime.h////*///
 /datum.h////*///
 /dynahash.h////*///
 /dynamic_loader.h////*///
@@ -35,7 +34,6 @@
 /plancache.h////*///
 /portal.h////*///
 /ps_status.h////*///
-/rel.h////*///
 /relcache.h////*///
 /resowner.h////*///
 /selfuncs.h////*///
@@ -43,10 +41,12 @@
 /timestamp.h////*///
 /tqual.h////*///
 /tuplesort.h////*///
-/tuplestore.h////*///
 /typcache.h////*///
 /tzparser.h////*///
 /uuid.h////*///
 /varbit.h////*///
-/xml.h////*///
 /builtins.h////*///
+/datetime.h////*///
+/rel.h////*///
+/tuplestore.h////*///
+/xml.h////*///

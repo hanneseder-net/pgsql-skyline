@@ -38,9 +38,6 @@
 /float8-small-is-zero_1.out/1.5/Tue Jan  2 20:00:50 2007//
 /float8.out/1.25/Tue Jan  2 20:00:50 2007//
 /foreign_key.out/1.42/Wed Feb 14 01:58:58 2007//
-/geometry.out/1.25/Thu Feb  1 19:10:30 2007//
-/geometry_1.out/1.10/Thu Feb  1 20:11:18 2007//
-/geometry_2.out/1.7/Thu Feb  1 20:11:18 2007//
 /guc.out/1.4/Thu Apr 26 16:13:14 2007//
 /hash_index.out/1.6/Thu Apr  7 01:51:40 2005//
 /horology.out/1.65/Thu Feb  1 19:10:30 2007//
@@ -51,9 +48,6 @@
 /int4.out/1.15/Thu Apr  7 01:51:40 2005//
 /int8-exp-three-digits.out/1.8/Mon Dec  5 04:13:37 2005//
 /int8.out/1.11/Mon Dec  5 04:13:37 2005//
-/interval.out/1.18/Wed Sep  6 02:05:41 2006//
-/join.out/1.29/Fri Feb 16 00:14:01 2007//
-/join_1.out/1.11/Fri Feb 16 00:14:01 2007//
 /lseg.out/1.9/Thu Sep 25 06:58:06 2003//
 /mule_internal.out/1.5/Thu Mar 16 11:55:43 2000//
 /name.out/1.9/Thu Apr  7 01:51:40 2005//
@@ -66,7 +60,6 @@
 /path.out/1.6/Thu Sep 25 06:58:06 2003//
 /plancache.out/1.4/Fri Mar 23 19:53:52 2007//
 /plpgsql.out/1.54/Sun Apr 29 01:21:09 2007//
-/point.out/1.16/Tue Jan  9 02:14:16 2007//
 /polygon.out/1.13/Sun Sep 10 00:29:35 2006//
 /polymorphism.out/1.11/Tue May  1 18:53:52 2007//
 /portals.out/1.12/Thu Apr 12 06:53:48 2007//
@@ -79,7 +72,6 @@
 /reltime.out/1.9/Thu Apr  7 01:51:40 2005//
 /returning.out/1.4/Fri Oct  6 17:14:01 2006//
 /rowtypes.out/1.11/Fri Apr  6 04:21:44 2007//
-/rules.out/1.127/Fri Mar 30 18:34:56 2007//
 /sanity_check.out/1.35/Mon Apr  2 03:49:42 2007//
 /select.out/1.17/Wed Mar 21 22:18:12 2007//
 /select_distinct.out/1.5/Sun Dec 11 10:54:28 2005//
@@ -104,7 +96,6 @@
 /timestamp.out/1.35/Fri Feb 16 17:49:15 2007//
 /timestamptz.out/1.26/Sat Feb 17 01:51:42 2007//
 /timetz.out/1.8/Thu Feb  1 19:10:30 2007//
-/tinterval.out/1.12/Thu Apr  7 01:51:40 2005//
 /transactions.out/1.15/Thu Feb  1 19:10:30 2007//
 /triggers.out/1.24/Thu Feb  1 19:10:30 2007//
 /truncate.out/1.12/Thu Jun 29 16:07:29 2006//
@@ -115,12 +106,21 @@
 /varchar.out/1.4/Thu Apr  7 01:51:40 2005//
 /varchar_1.out/1.2/Thu Apr  7 01:51:40 2005//
 /without_oid.out/1.8/Fri Feb  9 03:35:35 2007//
-/xml.out/1.17/Thu Mar 22 20:26:30 2007//
-/xml_1.out/1.16/Thu Apr  5 13:53:24 2007//
 /alter_table.out/1.102/Sat May 12 09:16:20 2007//
 /arrays.out/1.33/Sat May 12 09:16:20 2007//
 /domain.out/1.41/Sat May 12 09:16:20 2007//
 /oidjoins.out/1.20/Sat May 12 09:16:21 2007//
 /type_sanity.out/1.30/Sat May 12 09:16:21 2007//
 /limit.out/1.5/Sat May 19 08:06:22 2007//
+/geometry.out/1.26/Wed May 30 13:52:58 2007//
+/geometry_1.out/1.11/Wed May 30 13:52:58 2007//
+/geometry_2.out/1.8/Wed May 30 13:52:58 2007//
+/interval.out/1.19/Wed May 30 13:52:58 2007//
+/join.out/1.30/Wed May 30 13:52:58 2007//
+/join_1.out/1.12/Wed May 30 13:52:58 2007//
+/point.out/1.17/Wed May 30 13:52:58 2007//
+/rules.out/1.128/Wed May 30 13:52:58 2007//
+/tinterval.out/1.13/Wed May 30 13:52:58 2007//
+/xml.out/1.18/Wed May 30 13:52:58 2007//
+/xml_1.out/1.17/Wed May 30 13:52:58 2007//
 D

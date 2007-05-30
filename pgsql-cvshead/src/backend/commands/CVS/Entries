@@ -9,14 +9,12 @@
 /dbcommands.c/1.194/Thu Apr 12 15:04:35 2007//
 /define.c/1.100/Fri Jan  5 22:19:26 2007//
 /discard.c/1.1/Thu Apr 26 16:13:10 2007//
-/explain.c/1.163/Fri May  4 21:29:52 2007//
 /functioncmds.c/1.83/Mon Apr  2 03:49:37 2007//
 /indexcmds.c/1.158/Wed May  2 21:08:45 2007//
 /lockcmds.c/1.16/Fri Jan  5 22:19:26 2007//
 /opclasscmds.c/1.54/Thu Feb  1 19:10:26 2007//
 /operatorcmds.c/1.35/Fri Jan  5 22:19:26 2007//
 /portalcmds.c/1.65/Fri Apr 27 22:05:47 2007//
-/prepare.c/1.75/Fri Apr 27 22:05:47 2007//
 /proclang.c/1.72/Mon Mar 26 16:58:38 2007//
 /schemacmds.c/1.45/Fri Mar 23 19:53:51 2007//
 /sequence.c/1.143/Thu Feb  1 19:10:26 2007//
@@ -30,4 +28,6 @@
 /tablecmds.c/1.225/Sat May 19 08:06:14 2007//
 /vacuum.c/1.351/Sat May 19 08:06:14 2007//
 /vacuumlazy.c/1.89/Sat May 19 08:06:14 2007//
+/explain.c/1.164/Wed May 30 13:52:55 2007//
+/prepare.c/1.76/Wed May 30 13:52:55 2007//
 D

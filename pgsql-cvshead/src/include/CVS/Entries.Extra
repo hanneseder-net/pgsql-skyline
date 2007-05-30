@@ -8,7 +8,6 @@
 /pg_config.h.win32////*///
 /pg_config_manual.h////*///
 /pg_trace.h////*///
-/pgstat.h////*///
 /pgtime.h////*///
 /port.h////*///
 /postgres_ext.h////*///
@@ -34,3 +33,4 @@ D/tcop///////
 D/utils///////
 /fmgr.h////*///
 /postgres.h////*///
+/pgstat.h////*///

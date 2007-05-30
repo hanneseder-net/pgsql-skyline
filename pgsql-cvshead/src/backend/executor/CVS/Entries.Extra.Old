@@ -14,16 +14,11 @@
 /nodeAgg.c////*///
 /nodeAppend.c////*///
 /nodeBitmapAnd.c////*///
-/nodeBitmapHeapscan.c////*///
-/nodeBitmapIndexscan.c////*///
 /nodeBitmapOr.c////*///
 /nodeFunctionscan.c////*///
 /nodeGroup.c////*///
 /nodeHash.c////*///
 /nodeHashjoin.c////*///
-/nodeIndexscan.c////*///
-/nodeMaterial.c////*///
-/nodeMergejoin.c////*///
 /nodeNestloop.c////*///
 /nodeResult.c////*///
 /nodeSeqscan.c////*///
@@ -37,4 +32,9 @@
 /tstoreReceiver.c////*///
 /nodeLimit.c////*///
 /nodeSubplan.c////*///
+/nodeBitmapHeapscan.c////*///
+/nodeBitmapIndexscan.c////*///
+/nodeIndexscan.c////*///
+/nodeMaterial.c////*///
+/nodeMergejoin.c////*///
 D/_deadcode///////

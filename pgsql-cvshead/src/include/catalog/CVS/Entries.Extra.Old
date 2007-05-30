@@ -14,7 +14,6 @@
 /pg_autovacuum.h////*///
 /pg_cast.h////*///
 /pg_constraint.h////*///
-/pg_control.h////*///
 /pg_conversion.h////*///
 /pg_database.h////*///
 /pg_depend.h////*///
@@ -44,3 +43,4 @@
 /pg_class.h////*///
 /pg_type.h////*///
 /index.h////*///
+/pg_control.h////*///

@@ -7,7 +7,7 @@
  * Portions Copyright (c) 1996-2007, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
- * $PostgreSQL: pgsql/src/include/nodes/relation.h,v 1.141 2007/04/21 21:01:45 tgl Exp $
+ * $PostgreSQL: pgsql/src/include/nodes/relation.h,v 1.143 2007/05/22 23:23:57 tgl Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -996,20 +996,20 @@ typedef struct MergeScanSelCache
  * relation includes all other relids appearing in those joinclauses.
  * The set of usable joinclauses, and thus the best inner indexscan,
  * thus varies depending on which outer relation we consider; so we have
- * to recompute the best such path for every join.	To avoid lots of
+ * to recompute the best such paths for every join.  To avoid lots of
  * redundant computation, we cache the results of such searches.  For
  * each relation we compute the set of possible otherrelids (all relids
  * appearing in joinquals that could become indexquals for this table).
  * Two outer relations whose relids have the same intersection with this
  * set will have the same set of available joinclauses and thus the same
- * best inner indexscan for the inner relation.  By taking the intersection
+ * best inner indexscans for the inner relation.  By taking the intersection
  * before scanning the cache, we avoid recomputing when considering
  * join rels that differ only by the inclusion of irrelevant other rels.
  *
  * The search key also includes a bool showing whether the join being
  * considered is an outer join.  Since we constrain the join order for
  * outer joins, I believe that this bool can only have one possible value
- * for any particular base relation; but store it anyway to avoid confusion.
+ * for any particular lookup key; but store it anyway to avoid confusion.
  */
 
 typedef struct InnerIndexscanInfo
@@ -1018,8 +1018,9 @@ typedef struct InnerIndexscanInfo
 	/* The lookup key: */
 	Relids		other_relids;	/* a set of relevant other relids */
 	bool		isouterjoin;	/* true if join is outer */
-	/* Best path for this lookup key: */
-	Path	   *best_innerpath; /* best inner indexscan, or NULL if none */
+	/* Best paths for this lookup key (NULL if no available indexscans): */
+	Path	   *cheapest_startup_innerpath;	/* cheapest startup cost */
+	Path	   *cheapest_total_innerpath;	/* cheapest total cost */
 } InnerIndexscanInfo;
 
 /*
@@ -1041,6 +1042,12 @@ typedef struct InnerIndexscanInfo
  * It is not valid for either min_lefthand or min_righthand to be empty sets;
  * if they were, this would break the logic that enforces join order.
  *
+ * delay_upper_joins is set TRUE if we detect a pushed-down clause that has
+ * to be evaluated after this join is formed (because it references the RHS).
+ * Any outer joins that have such a clause and this join in their RHS cannot
+ * commute with this join, because that would leave noplace to check the
+ * pushed-down clause.  (We don't track this for FULL JOINs, either.)
+ *
  * Note: OuterJoinInfo directly represents only LEFT JOIN and FULL JOIN;
  * RIGHT JOIN is handled by switching the inputs to make it a LEFT JOIN.
  * We make an OuterJoinInfo for FULL JOINs even though there is no flexibility
@@ -1054,6 +1061,7 @@ typedef struct OuterJoinInfo
 	Relids		min_righthand;	/* base relids in minimum RHS for join */
 	bool		is_full_join;	/* it's a FULL OUTER JOIN */
 	bool		lhs_strict;		/* joinclause is strict for some LHS rel */
+	bool		delay_upper_joins;	/* can't commute with upper RHS */
 } OuterJoinInfo;
 
 /*

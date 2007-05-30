@@ -28,8 +28,8 @@
 /twophase_rmgr.h////*///
 /valid.h////*///
 /xact.h////*///
-/xlog.h////*///
-/xlog_internal.h////*///
 /xlogdefs.h////*///
 /xlogutils.h////*///
 /rewriteheap.h////*///
+/xlog.h////*///
+/xlog_internal.h////*///

@@ -1,6 +1,5 @@
 /Makefile////*///
 /c.h////*///
-/fmgr.h////*///
 /funcapi.h////*///
 /getaddrinfo.h////*///
 /getopt_long.h////*///
@@ -12,7 +11,6 @@
 /pgstat.h////*///
 /pgtime.h////*///
 /port.h////*///
-/postgres.h////*///
 /postgres_ext.h////*///
 /postgres_fe.h////*///
 /rusagestub.h////*///
@@ -34,3 +32,5 @@ D/rewrite///////
 D/storage///////
 D/tcop///////
 D/utils///////
+/fmgr.h////*///
+/postgres.h////*///

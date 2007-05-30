@@ -38,9 +38,6 @@
 /float8-small-is-zero_1.out////*///
 /float8.out////*///
 /foreign_key.out////*///
-/geometry.out////*///
-/geometry_1.out////*///
-/geometry_2.out////*///
 /guc.out////*///
 /hash_index.out////*///
 /horology.out////*///
@@ -51,9 +48,6 @@
 /int4.out////*///
 /int8-exp-three-digits.out////*///
 /int8.out////*///
-/interval.out////*///
-/join.out////*///
-/join_1.out////*///
 /lseg.out////*///
 /mule_internal.out////*///
 /name.out////*///
@@ -66,7 +60,6 @@
 /path.out////*///
 /plancache.out////*///
 /plpgsql.out////*///
-/point.out////*///
 /polygon.out////*///
 /polymorphism.out////*///
 /portals.out////*///
@@ -79,7 +72,6 @@
 /reltime.out////*///
 /returning.out////*///
 /rowtypes.out////*///
-/rules.out////*///
 /sanity_check.out////*///
 /select.out////*///
 /select_distinct.out////*///
@@ -104,7 +96,6 @@
 /timestamp.out////*///
 /timestamptz.out////*///
 /timetz.out////*///
-/tinterval.out////*///
 /transactions.out////*///
 /triggers.out////*///
 /truncate.out////*///
@@ -115,11 +106,20 @@
 /varchar.out////*///
 /varchar_1.out////*///
 /without_oid.out////*///
-/xml.out////*///
-/xml_1.out////*///
 /alter_table.out////*///
 /arrays.out////*///
 /domain.out////*///
 /oidjoins.out////*///
 /type_sanity.out////*///
 /limit.out////*///
+/geometry.out////*///
+/geometry_1.out////*///
+/geometry_2.out////*///
+/interval.out////*///
+/join.out////*///
+/join_1.out////*///
+/point.out////*///
+/rules.out////*///
+/tinterval.out////*///
+/xml.out////*///
+/xml_1.out////*///

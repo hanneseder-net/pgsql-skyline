@@ -110,7 +110,7 @@ sub CopySetOfFiles
 
     my $subdirs = $norecurse?'':'/s';
     print "Copying $what" unless ($silent);
-    open($D, "dir /b $subdirs $spec |") || croak "Could not list $spec\n";
+    open($D, "cmd /c dir /b $subdirs $spec |") || croak "Could not list $spec\n";
     while (<$D>)
     {
         chomp;
@@ -375,7 +375,7 @@ sub GenerateNLSFiles
 
     print "Installing NLS files...";
     EnsureDirectories($target, "share/locale");
-    open($D,"dir /b /s nls.mk|") || croak "Could not list nls.mk\n";
+    open($D,"cmd /c dir /b /s nls.mk|") || croak "Could not list nls.mk\n";
     while (<$D>)
     {
         chomp;

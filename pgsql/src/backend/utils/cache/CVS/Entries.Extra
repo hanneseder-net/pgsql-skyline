@@ -1,8 +1,0 @@
-/Makefile////*///
-/catcache.c////*///
-/inval.c////*///
-/relcache.c////*///
-/syscache.c////*///
-/typcache.c////*///
-/lsyscache.c////*///
-/plancache.c////*///

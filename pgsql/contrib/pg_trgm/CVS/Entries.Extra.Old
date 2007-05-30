@@ -1,8 +1,0 @@
-/Makefile////*///
-/README.pg_trgm////*///
-/pg_trgm.sql.in////*///
-/trgm.h////*///
-/trgm_gin.c////*///
-/trgm_gist.c////*///
-/trgm_op.c////*///
-/uninstall_pg_trgm.sql////*///

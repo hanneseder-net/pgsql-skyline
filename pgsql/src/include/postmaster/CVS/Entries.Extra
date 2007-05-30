@@ -1,6 +1,0 @@
-/autovacuum.h////*///
-/bgwriter.h////*///
-/fork_process.h////*///
-/pgarch.h////*///
-/postmaster.h////*///
-/syslogger.h////*///

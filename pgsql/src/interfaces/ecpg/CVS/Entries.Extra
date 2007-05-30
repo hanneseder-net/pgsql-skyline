@@ -1,9 +1,0 @@
-/Makefile////*///
-/README.dynSQL////*///
-D/compatlib///////
-D/ecpglib///////
-D/include///////
-D/pgtypeslib///////
-D/preproc///////
-D/test///////
-/ChangeLog////*///

@@ -1,9 +1,0 @@
-/Makefile////*///
-/common.c////*///
-/datetime.c////*///
-/dt.h////*///
-/extern.h////*///
-/interval.c////*///
-/numeric.c////*///
-/timestamp.c////*///
-/dt_common.c////*///

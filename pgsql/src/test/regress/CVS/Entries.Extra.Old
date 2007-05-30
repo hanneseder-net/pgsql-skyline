@@ -1,8 +1,0 @@
-/GNUmakefile////*///
-/Makefile////*///
-/parallel_schedule////*///
-/pg_regress.c////*///
-/regress.c////*///
-/regressplans.sh////*///
-/resultmap////*///
-/serial_schedule////*///

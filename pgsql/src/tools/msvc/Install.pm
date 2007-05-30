@@ -385,7 +385,7 @@ sub GenerateNLSFiles
         my $prgm = $1;
         $prgm = 'postgres' if ($prgm eq 'backend');
         my $E;
-        open($E,"dir /b $dir\\*.po|") || croak "Could not list contents of $_\n";
+        open($E,"cmd /c dir /b $dir\\*.po|") || croak "Could not list contents of $_\n";
 
         while (<$E>)
         {

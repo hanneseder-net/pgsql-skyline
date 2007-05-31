@@ -7,7 +7,6 @@
 /bool.c////*///
 /cash.c////*///
 /char.c////*///
-/date.c////*///
 /datum.c////*///
 /dbsize.c////*///
 /domains.c////*///
@@ -57,3 +56,4 @@
 /datetime.c////*///
 /ruleutils.c////*///
 /xml.c////*///
+/date.c////*///

@@ -6,7 +6,6 @@
 /charset.sgml////*///
 /client-auth.sgml////*///
 /contacts.sgml////*///
-/cvs.sgml////*///
 /datetime.sgml////*///
 /dfunc.sgml////*///
 /diskusage.sgml////*///
@@ -85,10 +84,11 @@ D/ref///////
 /syntax.sgml////*///
 /catalogs.sgml////*///
 /ddl.sgml////*///
-/maintenance.sgml////*///
 /xtypes.sgml////*///
 /Makefile////*///
 /config.sgml////*///
 /datatype.sgml////*///
-/func.sgml////*///
 /info.sgml////*///
+/cvs.sgml////*///
+/func.sgml////*///
+/maintenance.sgml////*///

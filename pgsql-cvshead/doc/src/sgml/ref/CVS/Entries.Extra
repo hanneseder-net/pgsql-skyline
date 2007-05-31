@@ -107,7 +107,6 @@
 /start_transaction.sgml////*///
 /unlisten.sgml////*///
 /update.sgml////*///
-/vacuum.sgml////*///
 /vacuumdb.sgml////*///
 /values.sgml////*///
 /alter_domain.sgml////*///
@@ -137,3 +136,4 @@
 /prepare.sgml////*///
 /select.sgml////*///
 /alter_table.sgml////*///
+/vacuum.sgml////*///

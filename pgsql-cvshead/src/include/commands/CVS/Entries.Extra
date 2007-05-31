@@ -21,5 +21,5 @@
 /tablecmds.h////*///
 /typecmds.h////*///
 /cluster.h////*///
-/vacuum.h////*///
 /explain.h////*///
+/vacuum.h////*///

@@ -8,7 +8,6 @@
 /cash.c/1.70/Tue Feb 27 23:48:07 2007//
 /char.c/1.47/Tue Feb 27 23:48:07 2007//
 /date.c/1.129/Tue Feb 27 23:48:07 2007//
-/datetime.c/1.178/Thu Mar  1 14:52:03 2007//
 /datum.c/1.35/Fri Apr  6 04:21:42 2007//
 /dbsize.c/1.12/Sun Mar 11 05:22:00 2007//
 /domains.c/1.5/Fri Jan  5 22:19:40 2007//
@@ -31,7 +30,6 @@
 /misc.c/1.56/Fri Jan  5 22:19:41 2007//
 /nabstime.c/1.150/Tue Feb 27 23:48:08 2007//
 /name.c/1.60/Fri Jan  5 22:19:41 2007//
-/network.c/1.69/Fri Apr  6 04:21:43 2007//
 /not_in.c/1.46/Fri Jan  5 22:19:41 2007//
 /numeric.c/1.102/Tue May  8 18:56:47 2007//
 /numutils.c/1.75/Fri Jan  5 22:19:41 2007//
@@ -39,14 +37,12 @@
 /oracle_compat.c/1.70/Tue Feb 27 23:48:08 2007//
 /pg_locale.c/1.39/Fri Jan  5 22:19:41 2007//
 /pg_lzcompress.c/1.26/Fri Apr  6 04:21:43 2007//
-/pgstatfuncs.c/1.41/Fri Mar 30 18:34:55 2007//
 /pseudotypes.c/1.19/Mon Apr  2 03:49:39 2007//
 /quote.c/1.22/Tue Feb 27 23:48:08 2007//
 /regexp.c/1.71/Wed Mar 28 22:59:37 2007//
 /regproc.c/1.100/Fri Jan  5 22:19:41 2007//
 /ri_triggers.c/1.94/Tue Mar 27 23:21:10 2007//
 /rowtypes.c/1.19/Sat Mar  3 19:32:55 2007//
-/ruleutils.c/1.257/Tue Mar 27 23:21:10 2007//
 /selfuncs.c/1.234/Sat May  5 17:05:48 2007//
 /tid.c/1.57/Fri Jan  5 22:19:42 2007//
 /timestamp.c/1.176/Mon Apr 30 21:01:52 2007//
@@ -56,5 +52,9 @@
 /varlena.c/1.156/Fri Apr  6 04:21:43 2007//
 /version.c/1.15/Tue Feb 27 23:48:09 2007//
 /xid.c/1.10/Fri Jan  5 22:19:42 2007//
-/xml.c/1.42/Fri Apr  6 04:21:43 2007//
+/network.c/1.70/Sat May 19 08:06:15 2007//
+/pgstatfuncs.c/1.42/Sat May 19 08:06:15 2007//
+/datetime.c/1.180/Wed May 30 13:52:55 2007//
+/ruleutils.c/1.258/Wed May 30 13:52:56 2007//
+/xml.c/1.43/Wed May 30 13:52:56 2007//
 D

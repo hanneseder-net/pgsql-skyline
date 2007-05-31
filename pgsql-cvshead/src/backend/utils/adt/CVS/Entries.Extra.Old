@@ -8,7 +8,6 @@
 /cash.c////*///
 /char.c////*///
 /date.c////*///
-/datetime.c////*///
 /datum.c////*///
 /dbsize.c////*///
 /domains.c////*///
@@ -44,7 +43,6 @@
 /regproc.c////*///
 /ri_triggers.c////*///
 /rowtypes.c////*///
-/ruleutils.c////*///
 /selfuncs.c////*///
 /tid.c////*///
 /timestamp.c////*///
@@ -54,6 +52,8 @@
 /varlena.c////*///
 /version.c////*///
 /xid.c////*///
-/xml.c////*///
 /network.c////*///
 /pgstatfuncs.c////*///
+/datetime.c////*///
+/ruleutils.c////*///
+/xml.c////*///

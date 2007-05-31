@@ -7,9 +7,9 @@
 /slru.c////*///
 /subtrans.c////*///
 /transam.c////*///
-/twophase.c////*///
-/twophase_rmgr.c////*///
 /varsup.c////*///
-/xact.c////*///
 /xlogutils.c////*///
 /xlog.c////*///
+/twophase.c////*///
+/twophase_rmgr.c////*///
+/xact.c////*///

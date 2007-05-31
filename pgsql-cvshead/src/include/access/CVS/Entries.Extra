@@ -1,11 +1,9 @@
 /attnum.h////*///
 /clog.h////*///
-/genam.h////*///
 /gin.h////*///
 /gist.h////*///
 /gist_private.h////*///
 /gistscan.h////*///
-/hash.h////*///
 /hio.h////*///
 /htup.h////*///
 /itup.h////*///
@@ -28,8 +26,10 @@
 /xlogdefs.h////*///
 /xlogutils.h////*///
 /rewriteheap.h////*///
-/xlog.h////*///
 /xlog_internal.h////*///
 /heapam.h////*///
-/relscan.h////*///
 /twophase_rmgr.h////*///
+/genam.h////*///
+/hash.h////*///
+/relscan.h////*///
+/xlog.h////*///

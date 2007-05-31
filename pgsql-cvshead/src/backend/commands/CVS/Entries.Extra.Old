@@ -1,7 +1,6 @@
 /Makefile////*///
 /aggregatecmds.c////*///
 /alter.c////*///
-/analyze.c////*///
 /async.c////*///
 /comment.c////*///
 /conversioncmds.c////*///
@@ -26,8 +25,9 @@
 /typecmds.c////*///
 /cluster.c////*///
 /tablecmds.c////*///
-/vacuum.c////*///
-/vacuumlazy.c////*///
 /explain.c////*///
 /prepare.c////*///
+/analyze.c////*///
+/vacuum.c////*///
+/vacuumlazy.c////*///
 D/_deadcode///////

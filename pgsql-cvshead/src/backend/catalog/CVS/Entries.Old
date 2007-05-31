@@ -3,7 +3,6 @@
 /catalog.c/1.70/Sun Mar 25 19:45:14 2007//
 /dependency.c/1.65/Tue Mar 27 23:21:08 2007//
 /genbki.sh/1.42/Tue Feb  6 09:16:08 2007//
-/index.c/1.282/Thu Mar 29 00:15:37 2007//
 /indexing.c/1.114/Fri Jan  5 22:19:24 2007//
 /information_schema.sql/1.42/Tue Feb 27 18:49:43 2007//
 /namespace.c/1.96/Fri Apr 20 02:37:37 2007//
@@ -24,4 +23,5 @@
 /pg_type.c/1.113/Sat May 12 09:16:11 2007//
 /heap.c/1.321/Tue May 15 21:22:54 2007//
 /pg_shdepend.c/1.20/Tue May 15 21:22:54 2007//
+/index.c/1.283/Wed May 16 22:03:37 2007//
 D

@@ -107,7 +107,6 @@
 /start_transaction.sgml/1.16/Wed Jan 31 23:26:04 2007//
 /unlisten.sgml/1.29/Wed Jan 31 23:26:04 2007//
 /update.sgml/1.43/Thu Feb  1 00:28:19 2007//
-/vacuum.sgml/1.47/Wed Jan 31 23:26:04 2007//
 /vacuumdb.sgml/1.40/Mon Mar 26 17:23:37 2007//
 /values.sgml/1.4/Thu Feb  1 00:28:19 2007//
 /alter_domain.sgml/1.22/Sat May 12 09:16:11 2007//
@@ -137,4 +136,5 @@
 /prepare.sgml/1.23/Tue May 15 21:22:53 2007//
 /select.sgml/1.100/Tue May 15 21:22:53 2007//
 /alter_table.sgml/1.97/Sat May 19 08:06:13 2007//
+/vacuum.sgml/1.48/Thu May 31 10:06:50 2007//
 D

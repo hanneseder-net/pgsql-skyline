@@ -3,8 +3,8 @@
 /nbtcompare.c////*///
 /nbtpage.c////*///
 /nbtree.c////*///
-/nbtsearch.c////*///
 /nbtsort.c////*///
 /nbtutils.c////*///
 /nbtinsert.c////*///
 /nbtxlog.c////*///
+/nbtsearch.c////*///

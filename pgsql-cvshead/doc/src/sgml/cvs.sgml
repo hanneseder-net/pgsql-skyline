@@ -1,4 +1,4 @@
-<!-- $PostgreSQL: pgsql/doc/src/sgml/cvs.sgml,v 1.42 2007/03/27 01:45:22 momjian Exp $ -->
+<!-- $PostgreSQL: pgsql/doc/src/sgml/cvs.sgml,v 1.44 2007/05/30 18:00:08 momjian Exp $ -->
 
 <appendix id="cvs">
  <appendixinfo>
@@ -14,6 +14,10 @@
    <author>
     <firstname>Thomas</firstname>
     <surname>Lockhart</surname>
+   </author>
+   <author>
+    <firstname>David</firstname>
+    <surname>Fetter</surname>
    </author>
   </authorgroup>
   <date>1999-05-20</date>
@@ -149,6 +153,14 @@ cvs update
    latest development version.  For more info consult the manual that
    comes with <productname>CVS</productname>, or see the online
    documentation at <ulink url="http://www.nongnu.org/cvs/"></ulink>.
+  </para>
+  <para>
+   <productname>CVS</productname> has deficiencies.  For example,
+   generating diffs that add or remove files requires write access to the
+   CVS repository.  To work around such difficiencies, use
+   <productname>cvsutils</productname>, which is packaged in several
+   operating systems, and is available in source form at <ulink
+   url="http://www.red-bean.com/cvsutils/"></ulink>.
   </para>
  </sect1>
 

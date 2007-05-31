@@ -11,7 +11,6 @@
 /alter_opfamily.sgml////*///
 /alter_schema.sgml////*///
 /alter_sequence.sgml////*///
-/alter_table.sgml////*///
 /alter_tablespace.sgml////*///
 /alter_trigger.sgml////*///
 /alter_type.sgml////*///
@@ -137,3 +136,4 @@
 /pg_restore.sgml////*///
 /prepare.sgml////*///
 /select.sgml////*///
+/alter_table.sgml////*///

@@ -7,7 +7,6 @@
 /client-auth.sgml////*///
 /contacts.sgml////*///
 /cvs.sgml////*///
-/datatype.sgml////*///
 /datetime.sgml////*///
 /dfunc.sgml////*///
 /diskusage.sgml////*///
@@ -20,7 +19,6 @@
 /features.sgml////*///
 /filelist.sgml////*///
 /fixrtf////*///
-/func.sgml////*///
 /geqo.sgml////*///
 /gin.sgml////*///
 /gist.sgml////*///
@@ -28,7 +26,6 @@
 /history.sgml////*///
 /indexam.sgml////*///
 /indices.sgml////*///
-/info.sgml////*///
 /information_schema.sgml////*///
 /install-win32.sgml////*///
 /installation.sgml////*///
@@ -92,3 +89,6 @@ D/ref///////
 /xtypes.sgml////*///
 /Makefile////*///
 /config.sgml////*///
+/datatype.sgml////*///
+/func.sgml////*///
+/info.sgml////*///

@@ -1,8 +1,8 @@
 /Makefile////*///
-/autovacuum.c////*///
 /fork_process.c////*///
 /pgarch.c////*///
 /postmaster.c////*///
 /syslogger.c////*///
 /bgwriter.c////*///
 /pgstat.c////*///
+/autovacuum.c////*///

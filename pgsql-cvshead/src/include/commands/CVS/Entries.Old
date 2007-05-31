@@ -6,7 +6,6 @@
 /dbcommands.h/1.46/Fri Jan  5 22:19:53 2007//
 /defrem.h/1.81/Tue Mar 13 00:33:43 2007//
 /discard.h/1.1/Thu Apr 26 16:13:13 2007//
-/explain.h/1.30/Tue Mar 13 00:33:43 2007//
 /lockcmds.h/1.8/Fri Jan  5 22:19:53 2007//
 /portalcmds.h/1.23/Fri Apr 27 22:05:49 2007//
 /prepare.h/1.27/Mon Apr 16 18:21:07 2007//
@@ -23,4 +22,5 @@
 /typecmds.h/1.19/Sat May 12 09:16:16 2007//
 /cluster.h/1.33/Sat May 19 08:06:17 2007//
 /vacuum.h/1.71/Sat May 19 08:06:17 2007//
+/explain.h/1.31/Wed May 30 13:52:57 2007//
 D

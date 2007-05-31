@@ -1,0 +1,7 @@
+/Makefile////*///
+/README.pageinspect////*///
+/btreefuncs.c////*///
+/heapfuncs.c////*///
+/pageinspect.sql.in////*///
+/rawpage.c////*///
+/uninstall_pageinspect.sql////*///

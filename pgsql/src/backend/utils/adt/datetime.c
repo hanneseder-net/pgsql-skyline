@@ -8,7 +8,7 @@
  *
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/backend/utils/adt/datetime.c,v 1.178 2007/03/01 14:52:03 petere Exp $
+ *	  $PostgreSQL: pgsql/src/backend/utils/adt/datetime.c,v 1.180 2007/05/29 04:58:43 neilc Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -32,10 +32,10 @@
 
 static int DecodeNumber(int flen, char *field, bool haveTextMonth,
 			 int fmask, int *tmask,
-			 struct pg_tm * tm, fsec_t *fsec, int *is2digits);
+			 struct pg_tm * tm, fsec_t *fsec, bool *is2digits);
 static int DecodeNumberField(int len, char *str,
 				  int fmask, int *tmask,
-				  struct pg_tm * tm, fsec_t *fsec, int *is2digits);
+				  struct pg_tm * tm, fsec_t *fsec, bool *is2digits);
 static int DecodeTime(char *str, int fmask, int *tmask,
 		   struct pg_tm * tm, fsec_t *fsec);
 static int	DecodeTimezone(char *str, int *tzp);
@@ -668,8 +668,8 @@ DecodeDateTime(char **field, int *ftype, int nf,
 	int			dterr;
 	int			mer = HR24;
 	bool		haveTextMonth = FALSE;
-	int			is2digits = FALSE;
-	int			bc = FALSE;
+	bool		is2digits = FALSE;
+	bool		bc = FALSE;
 	pg_tz	   *namedTz = NULL;
 
 	/*
@@ -924,6 +924,7 @@ DecodeDateTime(char **field, int *ftype, int nf,
 #else
 								*fsec = frac;
 #endif
+								tmask = DTK_ALL_SECS_M;
 							}
 							break;
 
@@ -1476,7 +1477,7 @@ DecodeTimeOnly(char **field, int *ftype, int nf,
 	int			i;
 	int			val;
 	int			dterr;
-	int			is2digits = FALSE;
+	bool		is2digits = FALSE;
 	int			mer = HR24;
 	pg_tz	   *namedTz = NULL;
 
@@ -1699,6 +1700,7 @@ DecodeTimeOnly(char **field, int *ftype, int nf,
 #else
 								*fsec = frac;
 #endif
+								tmask = DTK_ALL_SECS_M;
 							}
 							break;
 
@@ -2047,8 +2049,8 @@ DecodeDate(char *str, int fmask, int *tmask, struct pg_tm * tm)
 				len;
 	int			dterr;
 	bool		haveTextMonth = FALSE;
-	int			bc = FALSE;
-	int			is2digits = FALSE;
+	bool		bc = FALSE;
+	bool		is2digits = FALSE;
 	int			type,
 				val,
 				dmask = 0;
@@ -2193,8 +2195,8 @@ DecodeDate(char *str, int fmask, int *tmask, struct pg_tm * tm)
  * Decode time string which includes delimiters.
  * Return 0 if okay, a DTERR code if not.
  *
- * Only check the lower limit on hours, since this same code
- *	can be used to represent time spans.
+ * Only check the lower limit on hours, since this same code can be
+ * used to represent time spans.
  */
 static int
 DecodeTime(char *str, int fmask, int *tmask, struct pg_tm * tm, fsec_t *fsec)
@@ -2270,7 +2272,7 @@ DecodeTime(char *str, int fmask, int *tmask, struct pg_tm * tm, fsec_t *fsec)
  */
 static int
 DecodeNumber(int flen, char *str, bool haveTextMonth, int fmask,
-			 int *tmask, struct pg_tm * tm, fsec_t *fsec, int *is2digits)
+			 int *tmask, struct pg_tm * tm, fsec_t *fsec, bool *is2digits)
 {
 	int			val;
 	char	   *cp;
@@ -2462,7 +2464,7 @@ DecodeNumber(int flen, char *str, bool haveTextMonth, int fmask,
  */
 static int
 DecodeNumberField(int len, char *str, int fmask,
-				  int *tmask, struct pg_tm * tm, fsec_t *fsec, int *is2digits)
+				  int *tmask, struct pg_tm * tm, fsec_t *fsec, bool *is2digits)
 {
 	char	   *cp;
 
@@ -2680,7 +2682,7 @@ DecodeSpecial(int field, char *lowtoken, int *val)
 int
 DecodeInterval(char **field, int *ftype, int nf, int *dtype, struct pg_tm * tm, fsec_t *fsec)
 {
-	int			is_before = FALSE;
+	bool		is_before = FALSE;
 	char	   *cp;
 	int			fmask = 0,
 				tmask,
@@ -2805,6 +2807,7 @@ DecodeInterval(char **field, int *ftype, int nf, int *dtype, struct pg_tm * tm, 
 #else
 						*fsec += (val + fval) * 1e-6;
 #endif
+						tmask = DTK_M(MICROSECOND);
 						break;
 
 					case DTK_MILLISEC:
@@ -2813,6 +2816,7 @@ DecodeInterval(char **field, int *ftype, int nf, int *dtype, struct pg_tm * tm, 
 #else
 						*fsec += (val + fval) * 1e-3;
 #endif
+						tmask = DTK_M(MILLISECOND);
 						break;
 
 					case DTK_SECOND:
@@ -2822,7 +2826,15 @@ DecodeInterval(char **field, int *ftype, int nf, int *dtype, struct pg_tm * tm, 
 #else
 						*fsec += fval;
 #endif
-						tmask = DTK_M(SECOND);
+						/*
+						 * If any subseconds were specified, consider
+						 * this microsecond and millisecond input as
+						 * well.
+						 */
+						if (fval == 0)
+							tmask = DTK_M(SECOND);
+						else
+							tmask = DTK_ALL_SECS_M;
 						break;
 
 					case DTK_MINUTE:
@@ -3519,8 +3531,8 @@ EncodeDateTime(struct pg_tm * tm, fsec_t fsec, int *tzp, char **tzn, int style, 
 int
 EncodeInterval(struct pg_tm * tm, fsec_t fsec, int style, char *str)
 {
-	int			is_before = FALSE;
-	int			is_nonzero = FALSE;
+	bool		is_before = FALSE;
+	bool		is_nonzero = FALSE;
 	char	   *cp = str;
 
 	/*

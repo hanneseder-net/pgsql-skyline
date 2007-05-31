@@ -17,7 +17,6 @@
 /proclang.c////*///
 /schemacmds.c////*///
 /sequence.c////*///
-/tablespace.c////*///
 /trigger.c////*///
 /user.c////*///
 /variable.c////*///
@@ -30,4 +29,5 @@
 /analyze.c////*///
 /vacuum.c////*///
 /vacuumlazy.c////*///
+/tablespace.c////*///
 D/_deadcode///////

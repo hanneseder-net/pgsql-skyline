@@ -8,7 +8,7 @@
 /ginget.c/1.7/Thu Feb  1 04:16:08 2007//
 /gininsert.c/1.8/Thu Feb  1 04:16:08 2007//
 /ginutil.c/1.10/Wed Jan 31 15:09:45 2007//
-/ginvacuum.c/1.12/Thu Feb  1 04:16:08 2007//
 /ginxlog.c/1.6/Fri Jan  5 22:19:21 2007//
 /ginscan.c/1.10/Wed May 30 13:52:55 2007//
+/ginvacuum.c/1.13/Thu May 31 21:35:31 2007//
 D

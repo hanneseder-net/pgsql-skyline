@@ -3,9 +3,9 @@
 /equivclass.c////*///
 /joinrels.c////*///
 /orindxpath.c////*///
-/pathkeys.c////*///
 /tidpath.c////*///
 /allpaths.c////*///
 /costsize.c////*///
 /indxpath.c////*///
 /joinpath.c////*///
+/pathkeys.c////*///

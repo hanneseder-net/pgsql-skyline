@@ -7,7 +7,7 @@
 /ginentrypage.c////*///
 /ginget.c////*///
 /gininsert.c////*///
-/ginscan.c////*///
 /ginutil.c////*///
 /ginvacuum.c////*///
 /ginxlog.c////*///
+/ginscan.c////*///

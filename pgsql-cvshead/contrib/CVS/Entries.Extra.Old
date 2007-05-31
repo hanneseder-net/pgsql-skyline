@@ -24,7 +24,6 @@ D/pgstattuple///////
 D/seg///////
 D/spi///////
 D/sslinfo///////
-D/start-scripts///////
 D/tablefunc///////
 D/tsearch2///////
 D/uuid-ossp///////
@@ -33,4 +32,5 @@ D/xml2///////
 /Makefile////*///
 /README////*///
 D/pageinspect///////
+D/start-scripts///////
 D/adddepend///////

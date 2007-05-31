@@ -9,4 +9,5 @@
 /strftime.c/1.11/Fri Jul 14 14:52:27 2006//
 /tzfile.h/1.6/Sat Oct 15 02:49:51 2005//
 /zic.c/1.21/Thu Feb  1 19:10:30 2007//
-D
+D/data////
+D/tznames////

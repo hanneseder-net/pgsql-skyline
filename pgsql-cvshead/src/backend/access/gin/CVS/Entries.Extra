@@ -8,6 +8,6 @@
 /ginget.c////*///
 /gininsert.c////*///
 /ginutil.c////*///
-/ginvacuum.c////*///
 /ginxlog.c////*///
 /ginscan.c////*///
+/ginvacuum.c////*///

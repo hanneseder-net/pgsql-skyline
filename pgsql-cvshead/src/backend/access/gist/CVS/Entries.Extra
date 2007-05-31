@@ -5,6 +5,6 @@
 /gistscan.c////*///
 /gistsplit.c////*///
 /gistutil.c////*///
-/gistvacuum.c////*///
 /gistxlog.c////*///
 /gistget.c////*///
+/gistvacuum.c////*///

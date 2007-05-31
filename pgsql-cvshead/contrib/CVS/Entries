@@ -24,7 +24,6 @@ D/pgstattuple////
 D/seg////
 D/spi////
 D/sslinfo////
-D/start-scripts////
 D/tablefunc////
 D/tsearch2////
 D/uuid-ossp////
@@ -33,3 +32,4 @@ D/xml2////
 /Makefile/1.76/Sat May 19 08:05:54 2007//
 /README/1.93/Sat May 19 08:05:54 2007//
 D/pageinspect////
+D/start-scripts////

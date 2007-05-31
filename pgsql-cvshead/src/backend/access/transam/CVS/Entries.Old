@@ -9,8 +9,8 @@
 /transam.c/1.69/Fri Jan  5 22:19:23 2007//
 /varsup.c/1.78/Thu Feb 15 23:23:22 2007//
 /xlogutils.c/1.50/Wed May  2 23:18:03 2007//
-/xlog.c/1.269/Mon May 21 06:28:34 2007//
 /twophase.c/1.31/Wed May 30 13:52:55 2007//
 /twophase_rmgr.c/1.5/Wed May 30 13:52:55 2007//
-/xact.c/1.243/Wed May 30 13:52:55 2007//
+/xact.c/1.244/Thu May 31 10:06:51 2007//
+/xlog.c/1.271/Thu May 31 10:06:52 2007//
 D

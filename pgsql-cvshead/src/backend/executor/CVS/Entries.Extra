@@ -34,6 +34,6 @@
 /nodeSubplan.c////*///
 /nodeBitmapHeapscan.c////*///
 /nodeBitmapIndexscan.c////*///
-/nodeIndexscan.c////*///
 /nodeMaterial.c////*///
 /nodeMergejoin.c////*///
+/nodeIndexscan.c////*///

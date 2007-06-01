@@ -25,7 +25,7 @@ ExecInitSkyline(Skyline *node, EState *estate, int eflags)
 	 * ExecQual or ExecProject.
 	 */
 
-#define SKYLINE_NSLOTS 2
+#define SKYLINE_NSLOTS 3
 #if 0
 	/*
 	 * create expression context
@@ -38,6 +38,8 @@ ExecInitSkyline(Skyline *node, EState *estate, int eflags)
 	 */
 	ExecInitScanTupleSlot(estate, &slstate->ss);
 	ExecInitResultTupleSlot(estate, &slstate->ss.ps);
+
+	slstate->sl_extraSlot = ExecInitExtraTupleSlot(estate);
 
 	/*
 	 * initialize child expressions
@@ -69,6 +71,8 @@ ExecInitSkyline(Skyline *node, EState *estate, int eflags)
 	 */
 	ExecAssignResultTypeFromTL(&slstate->ss.ps);
 	ExecAssignScanTypeFromOuterPlan(&slstate->ss);
+	ExecSetSlotDescriptor(slstate->sl_extraSlot,
+						  ExecGetResultType(outerPlanState(slstate)));
 	slstate->ss.ps.ps_ProjInfo = NULL;
 
 	return slstate;
@@ -83,7 +87,6 @@ ExecCountSlotsSkyline(Skyline * node)
 TupleTableSlot *
 ExecSkyline(SkylineState *node)
 {
-	TupleTableSlot *slot = ExecProcNode(outerPlanState(node));
 	Skyline *sl = (Skyline*)node->ss.ps.plan;
 	int i;
 
@@ -94,18 +97,48 @@ ExecSkyline(SkylineState *node)
 				 sortOperators[i]);
 */
 
+	if (sl->numCols == 1) {
+		if (!node->sl_done) {
+			TupleTableSlot *slot = NULL;
+
+			for (;;)
+			{
+				slot = ExecProcNode(outerPlanState(node));
+
+				if (TupIsNull(slot))
+					break;
+
+				if (TupIsNull(node->sl_extraSlot))
+					ExecCopySlot(node->sl_extraSlot, slot);
+			}
+			//print_slot(slot);
+
+			node->sl_done = true;
+			return node->sl_extraSlot;
+		}
+		else {
+			return NULL;
+		}
+	}
+	else {
+		// pipe the trough
+		TupleTableSlot *slot = ExecProcNode(outerPlanState(node));
+		return slot;
+	}
+
+	/*
 	if (slot != NULL) {
 		TupleDesc tdesc = slot->tts_tupleDescriptor; 
 	}
-	print_slot(slot);
+	*/
 
+	/*
 	printf("--ColIdx->");
 	for (i=0; i<(sl->numCols); i++) {
 		printf("%d ", sl->skylineColIdx[i]);
 	}
 	printf("\n");
-
-	return slot;
+	*/
 }
 
 void

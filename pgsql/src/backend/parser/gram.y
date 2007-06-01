@@ -6222,7 +6222,7 @@ skylineby:
 					$$->skylineby_nulls = SKYLINEBY_NULLS_DEFAULT;
 					$$->useOp = NIL;
 				}
-			| '(' a_expr ')' USING qual_Op
+			| '(' a_expr ')' USING qual_all_Op
 				{
 					$$ = makeNode(SkylineBy);
 					$$->node = $2;

@@ -1319,7 +1319,6 @@ typedef struct SkylineState
 {
 	ScanState	ss;				/* its first field is NodeTag */
 	bool		sl_done;
-	TupleTableSlot *sl_extraSlot;
 } SkylineState;
 
 /* ---------------------

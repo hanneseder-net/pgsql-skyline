@@ -6183,6 +6183,7 @@ having_clause:
 
 skyline_clause:
 			SKYLINE	BY skyline_by_list				{ $$ = $3; }
+			| SKYLINE BY DISTINCT skyline_by_list	{ $$ = $4; /* FIXME */ }
 			| /*EMPTY*/								{ $$ = NIL; }
 		;
 		
@@ -6199,7 +6200,7 @@ skyline_by_list:
 
 /* FIMXE: we require parantheses to avoid shift/reduce conflicts */
 skylineby: 
-			'(' a_expr ')' IDENT
+			'(' a_expr ')' IDENT opt_nulls_order
 				{
 					$$ = makeNode(SkylineBy);
 					$$->node = $2;
@@ -6211,23 +6212,23 @@ skylineby:
 						$$->skylineby_dir = SKYLINEBY_DIFF;
 					else
 						yyerror("syntax error");
-					$$->skylineby_nulls = SKYLINEBY_NULLS_DEFAULT;
+					$$->skylineby_nulls = $5;
 					$$->useOp = NIL;
 				}
-			| '(' a_expr ')'
+			| '(' a_expr ')' opt_nulls_order
 				{
 					$$ = makeNode(SkylineBy);
 					$$->node = $2;
 					$$->skylineby_dir = SKYLINEBY_DEFAULT;
-					$$->skylineby_nulls = SKYLINEBY_NULLS_DEFAULT;
+					$$->skylineby_nulls = $4;
 					$$->useOp = NIL;
 				}
-			| '(' a_expr ')' USING qual_all_Op
+			| '(' a_expr ')' USING qual_all_Op opt_nulls_order
 				{
 					$$ = makeNode(SkylineBy);
 					$$->node = $2;
 					$$->skylineby_dir = SKYLINEBY_USING;
-					$$->skylineby_nulls = SKYLINEBY_NULLS_DEFAULT;
+					$$->skylineby_nulls = $6;
 					$$->useOp = $5;
 				}
 		;

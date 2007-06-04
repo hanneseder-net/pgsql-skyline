@@ -1,8 +1,79 @@
 #include "postgres.h"
 
+#include "access/nbtree.h"
 #include "executor/execdebug.h"
 #include "executor/executor.h"
 #include "executor/nodeSkyline.h"
+#include "utils/lsyscache.h"
+
+
+/*
+ * Inline-able copy of FunctionCall2() to save some cycles in sorting.
+ */
+static inline Datum
+myFunctionCall2(FmgrInfo *flinfo, Datum arg1, Datum arg2)
+{
+	FunctionCallInfoData fcinfo;
+	Datum		result;
+
+	InitFunctionCallInfoData(fcinfo, flinfo, 2, NULL, NULL);
+
+	fcinfo.arg[0] = arg1;
+	fcinfo.arg[1] = arg2;
+	fcinfo.argnull[0] = false;
+	fcinfo.argnull[1] = false;
+
+	result = FunctionCallInvoke(&fcinfo);
+
+	/* Check for null result, since caller is clearly not expecting one */
+	if (fcinfo.isnull)
+		elog(ERROR, "function %u returned NULL", fcinfo.flinfo->fn_oid);
+
+	return result;
+}
+
+/*
+ * Apply a compare (sort) function (by now converted to fmgr lookup form)
+ * and return a 3-way comparison result.  This takes care of handling
+ * reverse-sort and NULLs-ordering properly.  We assume that DESC and
+ * NULLS_FIRST options are encoded in sk_flags the same way btree does it.
+ */
+static inline int32
+inlineApplyCompareFunction(FmgrInfo *compFunction, int sk_flags,
+						   Datum datum1, bool isNull1,
+						   Datum datum2, bool isNull2)
+{
+	int32		compare;
+
+	if (isNull1)
+	{
+		if (isNull2)
+			compare = 0;		/* NULL "=" NULL */
+		else if (sk_flags & SK_BT_NULLS_FIRST)
+			compare = -1;		/* NULL "<" NOT_NULL */
+		else
+			compare = 1;		/* NULL ">" NOT_NULL */
+	}
+	else if (isNull2)
+	{
+		if (sk_flags & SK_BT_NULLS_FIRST)
+			compare = 1;		/* NOT_NULL ">" NULL */
+		else
+			compare = -1;		/* NOT_NULL "<" NULL */
+	}
+	else
+	{
+		compare = DatumGetInt32(myFunctionCall2(compFunction,
+												datum1, datum2));
+
+		if (sk_flags & SK_BT_DESC)
+			compare = -compare;
+	}
+
+	return compare;
+}
+
+
 
 SkylineState *
 ExecInitSkyline(Skyline *node, EState *estate, int eflags)
@@ -25,7 +96,7 @@ ExecInitSkyline(Skyline *node, EState *estate, int eflags)
 	 * ExecQual or ExecProject.
 	 */
 
-#define SKYLINE_NSLOTS 3
+#define SKYLINE_NSLOTS 2
 #if 0
 	/*
 	 * create expression context
@@ -39,7 +110,8 @@ ExecInitSkyline(Skyline *node, EState *estate, int eflags)
 	ExecInitScanTupleSlot(estate, &slstate->ss);
 	ExecInitResultTupleSlot(estate, &slstate->ss.ps);
 
-	slstate->sl_extraSlot = ExecInitExtraTupleSlot(estate);
+	/* for extra slot */
+	// slstate->sl_extraSlot = ExecInitExtraTupleSlot(estate);
 
 	/*
 	 * initialize child expressions
@@ -71,8 +143,8 @@ ExecInitSkyline(Skyline *node, EState *estate, int eflags)
 	 */
 	ExecAssignResultTypeFromTL(&slstate->ss.ps);
 	ExecAssignScanTypeFromOuterPlan(&slstate->ss);
-	ExecSetSlotDescriptor(slstate->sl_extraSlot,
-						  ExecGetResultType(outerPlanState(slstate)));
+	/* for extra slot */
+	// ExecSetSlotDescriptor(slstate->sl_extraSlot, ExecGetResultType(outerPlanState(slstate)));
 	slstate->ss.ps.ps_ProjInfo = NULL;
 
 	return slstate;
@@ -84,37 +156,74 @@ ExecCountSlotsSkyline(Skyline * node)
 	return ExecCountSlotsNode(outerPlan(node)) + SKYLINE_NSLOTS;
 }
 
+static void
+ExecSkylineGetOrderingOp(Skyline *sl, int idx, FmgrInfo *compareOpFn, int *compareFlags)
+{
+	/* some sanity checks */
+	AssertArg(sl != NULL);
+	AssertArg(0 <= idx && idx < sl->numCols);
+	AssertArg(compareOpFn != NULL);
+	AssertArg(compareFlags != NULL);
+
+	{
+		Oid		compareOperator = sl->skylinebyOperators[idx];
+		Oid		compareFunction;
+		bool	reverse;
+
+		/* lookup the ordering function */
+		if (!get_compare_function_for_ordering_op(compareOperator, &compareFunction, &reverse))
+			elog(ERROR, "operator %u is not a valid ordering operator",	compareOperator);
+
+		fmgr_info(compareFunction, compareOpFn);
+
+		/* set ordering flags */
+		*compareFlags = reverse ? SK_BT_DESC : 0;
+		if (sl->nullsFirst[idx])
+			*compareFlags |= SK_BT_NULLS_FIRST;
+	}
+}
+
 TupleTableSlot *
 ExecSkyline(SkylineState *node)
 {
 	Skyline *sl = (Skyline*)node->ss.ps.plan;
-	int i;
-
-/*
-		if (!get_compare_function_for_ordering_op(sortOperators[i],
-												  &sortFunction, &reverse))
-			elog(ERROR, "operator %u is not a valid ordering operator",
-				 sortOperators[i]);
-*/
 
 	if (sl->numCols == 1) {
 		if (!node->sl_done) {
-			TupleTableSlot *slot = NULL;
+			int		compareFlags;
+			FmgrInfo	compareOpFn;
+			Datum	datum1;
+			Datum	datum2;
+			bool	isnull1;
+			bool	isnull2;
+			int		attnum = sl->skylineColIdx[0];
+			TupleTableSlot *resultSlot = node->ss.ps.ps_ResultTupleSlot;
+
+			ExecSkylineGetOrderingOp(sl, 0, &compareOpFn, &compareFlags);
 
 			for (;;)
 			{
-				slot = ExecProcNode(outerPlanState(node));
+				TupleTableSlot *slot = ExecProcNode(outerPlanState(node));
 
 				if (TupIsNull(slot))
 					break;
 
-				if (TupIsNull(node->sl_extraSlot))
-					ExecCopySlot(node->sl_extraSlot, slot);
+				if (TupIsNull(resultSlot)) {
+					ExecCopySlot(resultSlot, slot);
+					datum1 = slot_getattr(resultSlot, attnum, &isnull1);
+				}
+				else {
+					datum2 = slot_getattr(slot, attnum, &isnull2);
+
+					if (inlineApplyCompareFunction(&compareOpFn, compareFlags, datum1, isnull1, datum2, isnull2) > 0) {
+						ExecCopySlot(resultSlot, slot);
+						datum1 = slot_getattr(resultSlot, attnum, &isnull1);
+					}
+				}
 			}
-			//print_slot(slot);
 
 			node->sl_done = true;
-			return node->sl_extraSlot;
+			return resultSlot;
 		}
 		else {
 			return NULL;
@@ -133,6 +242,7 @@ ExecSkyline(SkylineState *node)
 	*/
 
 	/*
+	// print_slot(slot);
 	printf("--ColIdx->");
 	for (i=0; i<(sl->numCols); i++) {
 		printf("%d ", sl->skylineColIdx[i]);

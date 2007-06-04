@@ -2689,13 +2689,15 @@ add_sort_column(AttrNumber colIdx, Oid sortOp, bool nulls_first,
 }
 
 Skyline *
-make_skyline(PlannerInfo *root, Plan *lefttree, List *skylinecls)
+make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause)
 {
 	List	   *sub_tlist = lefttree->targetlist;
 	ListCell   *l;
 	Skyline	   *node = makeNode(Skyline);
 	Plan	   *plan = &node->plan;
 	int			numskylinecols;
+	SkylineClause   *sc = (SkylineClause*)skyline_clause;
+	List	   *skylinecls = sc->skyline_by_list;
 
 	copy_plan_costsize(plan, lefttree); /* only care about copying size */
 	/* FIXME: add costs for skyline */
@@ -2705,7 +2707,6 @@ make_skyline(PlannerInfo *root, Plan *lefttree, List *skylinecls)
 	plan->righttree = NULL;
 
 	numskylinecols = list_length(skylinecls);
-
 	
 	node->skylineColIdx = (AttrNumber *) palloc(numskylinecols * sizeof(AttrNumber));
 	node->skylinebyOperators = (Oid *) palloc(numskylinecols * sizeof(Oid));
@@ -2724,8 +2725,10 @@ make_skyline(PlannerInfo *root, Plan *lefttree, List *skylinecls)
 		numskylinecols++;
 		
 	}
-
+	
 	node->numCols = numskylinecols;
+
+	node->skyline_distinct = sc->skyline_distinct;
 
 	return node; /* to disable use: (Skyline*) lefttree; */
 }

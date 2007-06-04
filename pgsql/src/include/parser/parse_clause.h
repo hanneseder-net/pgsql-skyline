@@ -30,7 +30,7 @@ extern List *transformGroupClause(ParseState *pstate, List *grouplist,
 					 List **targetlist, List *sortClause);
 extern List *transformSortClause(ParseState *pstate, List *orderlist,
 					List **targetlist, bool resolveUnknown);
-extern List *transformSkylineClause(ParseState *pstate, List *skylinelist,
+extern Node *transformSkylineClause(ParseState *pstate, Node *skylineByClause,
 					List **targetlist, bool resolveUnknown);
 extern List *transformDistinctClause(ParseState *pstate, List *distinctlist,
 						List **targetlist, List **sortClause);

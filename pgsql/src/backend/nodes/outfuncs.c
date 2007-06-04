@@ -570,6 +570,7 @@ _outSkyline(StringInfo str, Skyline *node)
 
 	_outPlanInfo(str, (Plan *) node);
 
+	WRITE_BOOL_FIELD(skyline_distinct);
 	WRITE_INT_FIELD(numCols);
 
 	appendStringInfo(str, " :skylineColIdx");
@@ -1582,7 +1583,7 @@ _outSelectStmt(StringInfo str, SelectStmt *node)
 	WRITE_NODE_FIELD(whereClause);
 	WRITE_NODE_FIELD(groupClause);
 	WRITE_NODE_FIELD(havingClause);
-	WRITE_NODE_FIELD(skylineClause);
+	WRITE_NODE_FIELD(skylineByClause);
 	WRITE_NODE_FIELD(valuesLists);
 	WRITE_NODE_FIELD(sortClause);
 	WRITE_NODE_FIELD(limitOffset);
@@ -1761,9 +1762,18 @@ _outGroupClause(StringInfo str, GroupClause *node)
 }
 
 static void
-_outSkylineBy(StringInfo str, SkylineBy *node)
+_outSkylineClause(StringInfo str, SkylineClause *node)
 {
 	WRITE_NODE_TYPE("SKYLINECLAUSE");
+
+	WRITE_BOOL_FIELD(skyline_distinct);
+	WRITE_NODE_FIELD(skyline_by_list);
+}
+
+static void
+_outSkylineBy(StringInfo str, SkylineBy *node)
+{
+	WRITE_NODE_TYPE("SKYLINEBY");
 
 	WRITE_UINT_FIELD(tleSortGroupRef);
 	WRITE_OID_FIELD(sortop);
@@ -2382,6 +2392,9 @@ _outNode(StringInfo str, void *obj)
 				break;
 			case T_GroupClause:
 				_outGroupClause(str, obj);
+				break;
+			case T_SkylineClause:
+				_outSkylineClause(str, obj);
 				break;
 			case T_SkylineBy:
 				_outSkylineBy(str, obj);

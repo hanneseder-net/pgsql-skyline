@@ -568,6 +568,7 @@ _copySkyline(Skyline *from)
 	 */
 	CopyPlanFields((Plan *) from, (Plan *) newnode);
 
+	COPY_SCALAR_FIELD(skyline_distinct);
 	COPY_SCALAR_FIELD(numCols);
 	COPY_POINTER_FIELD(skylineColIdx, from->numCols * sizeof(AttrNumber));
 	COPY_POINTER_FIELD(skylinebyOperators, from->numCols * sizeof(Oid));
@@ -1562,7 +1563,8 @@ _copySkylineClause(SkylineClause *from)
 {
 	SkylineClause *newnode = makeNode(SkylineClause);
 
-	COPY_SCALAR_FIELD(
+	COPY_SCALAR_FIELD(skyline_distinct);
+	COPY_NODE_FIELD(skyline_by_list);
 
 	return newnode;
 }
@@ -1733,6 +1735,17 @@ _copySortBy(SortBy *from)
 	COPY_SCALAR_FIELD(sortby_nulls);
 	COPY_NODE_FIELD(useOp);
 	COPY_NODE_FIELD(node);
+
+	return newnode;
+}
+
+static SkylineByClause *
+_copySkylineByClause(SkylineByClause *from)
+{
+	SkylineByClause	*newnode = makeNode(SkylineByClause);
+
+	COPY_SCALAR_FIELD(skyline_distinct);
+	COPY_NODE_FIELD(skyline_by_list);
 
 	return newnode;
 }
@@ -1948,7 +1961,7 @@ _copySelectStmt(SelectStmt *from)
 	COPY_NODE_FIELD(whereClause);
 	COPY_NODE_FIELD(groupClause);
 	COPY_NODE_FIELD(havingClause);
-	COPY_NODE_FIELD(skylineClause);
+	COPY_NODE_FIELD(skylineByClause);
 	COPY_NODE_FIELD(valuesLists);
 	COPY_NODE_FIELD(sortClause);
 	COPY_NODE_FIELD(limitOffset);
@@ -3555,6 +3568,9 @@ copyObject(void *from)
 		case T_SortBy:
 			retval = _copySortBy(from);
 			break;
+		case T_SkylineByClause:
+			retval = _copySkylineByClause(from);
+			break;
 		case T_SkylineByExpr:
 			retval = _copySkylineByExpr(from);
 			break;
@@ -3590,6 +3606,9 @@ copyObject(void *from)
 			break;
 		case T_GroupClause:
 			retval = _copyGroupClause(from);
+			break;
+		case T_SkylineClause:
+			retval = _copySkylineClause(from);
 			break;
 		case T_SkylineBy:
 			retval = _copySkylineBy(from);

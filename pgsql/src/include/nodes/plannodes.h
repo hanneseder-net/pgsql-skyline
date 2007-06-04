@@ -457,7 +457,7 @@ typedef struct Sort
 typedef struct Skyline
 {
 	Plan		plan;
-	bool		skylineDistinct;
+	bool		skyline_distinct;
 	int			numCols;
 	AttrNumber *skylineColIdx;
 	Oid		   *skylinebyOperators;

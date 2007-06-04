@@ -2102,7 +2102,7 @@ transformSelectStmt(ParseState *pstate, SelectStmt *stmt)
 												  &qry->sortClause);
 
 	qry->skylineClause = transformSkylineClause(pstate,
-												stmt->skylineClause,
+												stmt->skylineByClause,
 												&qry->targetList,
 												true /* fix unknowns */ );
 

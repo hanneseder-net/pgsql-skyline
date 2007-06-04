@@ -4,6 +4,7 @@
 #include "executor/execdebug.h"
 #include "executor/executor.h"
 #include "executor/nodeSkyline.h"
+#include "utils/logtape.h"
 #include "utils/lsyscache.h"
 
 
@@ -188,7 +189,7 @@ ExecSkyline(SkylineState *node)
 {
 	Skyline *sl = (Skyline*)node->ss.ps.plan;
 
-	if (sl->numCols == 1) {
+	if (sl->numCols == 1 && sl->skyline_distinct) {
 		if (!node->sl_done) {
 			int		compareFlags;
 			FmgrInfo	compareOpFn;
@@ -229,6 +230,13 @@ ExecSkyline(SkylineState *node)
 			return NULL;
 		}
 	}
+	/*
+	else if (sl->numCols == 1 && !sl->skyline_distinct) {
+		LogicalTapeSet *lts = LogicalTapeSetCreate(1);
+
+		LogicalTapeSetClose(lts);
+	}
+	*/
 	else {
 		// pipe the trough
 		TupleTableSlot *slot = ExecProcNode(outerPlanState(node));

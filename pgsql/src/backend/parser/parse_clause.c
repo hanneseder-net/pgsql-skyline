@@ -1449,32 +1449,43 @@ transformGroupClause(ParseState *pstate, List *grouplist,
 	return result;
 }
 
-List *
+Node *
 transformSkylineClause(ParseState *pstate,
-					   List *skylinelist,
+					   Node *skylineByClause,
 					   List **targetlist,
 					   bool resolveUnknown)
 {
-	List	   *resultlist = NIL;
-	ListCell   *slitem;
+	if (skylineByClause == NULL)
+		return NULL;
 
-	foreach(slitem, skylinelist)
 	{
-		SkylineByExpr	*skylineby = lfirst(slitem);
-		TargetEntry *tle;
+		SkylineByClause	*sbc = (SkylineByClause*)skylineByClause;
+		List	   *resultlist = NIL;
+		ListCell   *slitem;
+		List	   *skylinelist = sbc->skyline_by_list;
+		SkylineClause  *node = makeNode(SkylineClause);
 
-		tle = findTargetlistEntry(pstate, skylineby->node,
-								  targetlist, SKYLINE_CLAUSE);
+		foreach(slitem, skylinelist)
+		{
+			SkylineByExpr	*skylineby = lfirst(slitem);
+			TargetEntry *tle;
 
-		resultlist = addTargetToSkylineList(pstate, tle,
-							   resultlist, *targetlist,
-							   skylineby->skylineby_dir,
-							   skylineby->skylineby_nulls,
-							   skylineby->useOp,
-							   resolveUnknown);
+			tle = findTargetlistEntry(pstate, skylineby->node,
+									  targetlist, SKYLINE_CLAUSE);
+
+			resultlist = addTargetToSkylineList(pstate, tle,
+								   resultlist, *targetlist,
+								   skylineby->skylineby_dir,
+								   skylineby->skylineby_nulls,
+								   skylineby->useOp,
+								   resolveUnknown);
+		}
+
+		node->skyline_distinct = sbc->skyline_distinct;
+		node->skyline_by_list = resultlist;
+
+		return (Node*)node;
 	}
-
-	return resultlist;
 }
 
 

@@ -1460,7 +1460,7 @@ transformSkylineClause(ParseState *pstate,
 
 	foreach(slitem, skylinelist)
 	{
-		SkylineBy	*skylineby = lfirst(slitem);
+		SkylineByExpr	*skylineby = lfirst(slitem);
 		TargetEntry *tle;
 
 		tle = findTargetlistEntry(pstate, skylineby->node,
@@ -1836,7 +1836,7 @@ addTargetToSkylineList(ParseState *pstate, TargetEntry *tle,
 	/* avoid making duplicate sortlist entries */
 	if (!targetIsInSortList(tle, skylineop, skylinelist))
 	{
-		SkylineClause *skylinecl = makeNode(SkylineClause);
+		SkylineBy *skylinecl = makeNode(SkylineBy);
 
 		/* FIXME: what is it good for? */
 		/* NOTE: I think this is just for GROUP/SORT */

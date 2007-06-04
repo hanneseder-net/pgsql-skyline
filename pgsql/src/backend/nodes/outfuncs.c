@@ -1761,7 +1761,7 @@ _outGroupClause(StringInfo str, GroupClause *node)
 }
 
 static void
-_outSkylineClause(StringInfo str, GroupClause *node)
+_outSkylineBy(StringInfo str, SkylineBy *node)
 {
 	WRITE_NODE_TYPE("SKYLINECLAUSE");
 
@@ -2383,8 +2383,8 @@ _outNode(StringInfo str, void *obj)
 			case T_GroupClause:
 				_outGroupClause(str, obj);
 				break;
-			case T_SkylineClause:
-				_outSkylineClause(str, obj);
+			case T_SkylineBy:
+				_outSkylineBy(str, obj);
 				break;
 			case T_RowMarkClause:
 				_outRowMarkClause(str, obj);

@@ -136,7 +136,7 @@ typedef struct Query
 
 	Node	   *havingQual;		/* qualifications applied to groups */
 
-	List	   *skylineClause;	/* a list of SkylineClause's */
+	Node	   *skylineClause;	/* a SkylineClause */
 
 	List	   *distinctClause; /* a list of SortClause's */
 
@@ -362,16 +362,26 @@ typedef struct SortBy
 } SortBy;
 
 /*
- * SkylineBy - for SKYLINE BY clause
+ * SkylineByExpr - for SKYLINE BY clause
  */
-typedef struct SkylineBy
+typedef struct SkylineByExpr
 {
 	NodeTag		type;
 	SkylineByDir skylineby_dir;	/* MIN/MAX/DIFF/USING */
 	SkylineByNulls skylineby_nulls; /* NULLS FIRST/LAST */
 	List	   *useOp;			/* name of op to use, of SKYLINEBY_USING */
-	Node	   *node;
-} SkylineBy;
+	Node	   *node;			/* the expression to skyline by */
+} SkylineByExpr;
+
+/*
+ * SkylineByClause - returned by the Parser for SKYLINE BY clause
+ */
+typedef struct SkylineByClause
+{
+	NodeTag		type;
+	bool		skyline_distinct; /* SKYLINE BY _DISTINCT_ */
+	List	   *skyline_by_list; /* a list of SkylineByExpr */
+} SkylineByClause;
 
 /*
  * RangeSubselect - subquery appearing in a FROM clause
@@ -671,7 +681,23 @@ typedef struct SortClause
  * at the moment ... breaking them apart is work for another day.
  */
 typedef SortClause GroupClause;
-typedef SortClause SkylineClause;
+
+/*
+ * SkylineClause
+ *
+ * The analyzer transforms a SkylineByClause into SkylineClause.
+ * While the skyline_by_list is transformed from SkylineByExpr into SkylineBy
+ */
+typedef struct SkylineClause
+{
+	NodeTag		type;
+	bool		skyline_distinct;
+	List	   *skyline_by_list; /* list of SkylineBy's */
+} SkylineClause;
+
+typedef SortClause SkylineBy; /* by now a SkylineBy is the same as a SortClause */
+
+
 
 /*
  * RowMarkClause -
@@ -771,7 +797,7 @@ typedef struct SelectStmt
 	Node	   *whereClause;	/* WHERE qualification */
 	List	   *groupClause;	/* GROUP BY clauses */
 	Node	   *havingClause;	/* HAVING conditional-expression */
-	List	   *skylineClause;	/* SKYLINE clause */
+	Node	   *skylineByClause;/* SKYLINE BY clause */
 
 	/*
 	 * In a "leaf" node representing a VALUES list, the above fields are all

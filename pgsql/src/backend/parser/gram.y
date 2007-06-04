@@ -135,7 +135,7 @@ static Node *makeXmlExpr(XmlExprOp op, char *name, List *named_args, List *args)
 	FuncWithArgs		*funwithargs;
 	DefElem				*defelt;
 	SortBy				*sortby;
-	SkylineBy			*skylineby;
+	SkylineByExpr		*skyline_by_expr;
 	JoinExpr			*jexpr;
 	IndexElem			*ielem;
 	Alias				*alias;
@@ -243,13 +243,15 @@ static Node *makeXmlExpr(XmlExprOp op, char *name, List *named_args, List *args)
 				target_list insert_column_list set_target_list
 				set_clause_list set_clause multiple_set_clause
 				ctext_expr_list ctext_row def_list indirection opt_indirection
-				group_clause skyline_clause TriggerFuncArgs select_limit
+				group_clause TriggerFuncArgs select_limit
 				opt_select_limit opclass_item_list opclass_drop_list
 				opt_opfamily transaction_mode_list_or_empty
 				TableFuncElementList opt_type_modifiers
 				prep_type_clause
 				execute_param_clause using_clause returning_clause
 				enum_val_list
+
+%type <node>	skyline_clause
 
 %type <range>	OptTempTableName
 %type <into>	into_clause create_as_target
@@ -309,7 +311,7 @@ static Node *makeXmlExpr(XmlExprOp op, char *name, List *named_args, List *args)
 %type <value>	NumericOnly FloatOnly IntegerOnly
 %type <alias>	alias_clause
 %type <sortby>	sortby
-%type <skylineby> skylineby
+%type <skyline_by_expr> skyline_by_expr
 %type <ielem>	index_elem
 %type <node>	table_ref
 %type <jexpr>	joined_table
@@ -6000,7 +6002,7 @@ simple_select:
 					n->whereClause = $6;
 					n->groupClause = $7;
 					n->havingClause = $8;
-					n->skylineClause = $9;
+					n->skylineByClause = $9;
 					$$ = (Node *)n;
 				}
 			| values_clause							{ $$ = $1; }
@@ -6182,27 +6184,39 @@ having_clause:
 		;
 
 skyline_clause:
-			SKYLINE	BY skyline_by_list				{ $$ = $3; }
-			| SKYLINE BY DISTINCT skyline_by_list	{ $$ = $4; /* FIXME */ }
+			SKYLINE	BY skyline_by_list				
+				{
+					SkylineByClause *n = makeNode(SkylineByClause);
+					n->skyline_by_list = $3; 
+					n->skyline_distinct = false;
+					$$ = (Node *)n;
+				}
+			| SKYLINE BY DISTINCT skyline_by_list
+				{
+					SkylineByClause *n = makeNode(SkylineByClause);
+					n->skyline_by_list = $4;
+					n->skyline_distinct = true;
+					$$ = (Node *)n;
+				}
 			| /*EMPTY*/								{ $$ = NIL; }
 		;
 		
 skyline_by_list:
-			skylineby
+			skyline_by_expr
 				{
 					$$ = list_make1($1);
 				}
-			| skyline_by_list ',' skylineby
+			| skyline_by_list ',' skyline_by_expr
 				{
 					$$ = lappend($1, $3);
 				}
 		;
 
 /* FIMXE: we require parantheses to avoid shift/reduce conflicts */
-skylineby: 
+skyline_by_expr: 
 			'(' a_expr ')' IDENT opt_nulls_order
 				{
-					$$ = makeNode(SkylineBy);
+					$$ = makeNode(SkylineByExpr);
 					$$->node = $2;
 					if (strcmp($4, "min") == 0)
 						$$->skylineby_dir = SKYLINEBY_MIN;
@@ -6217,7 +6231,7 @@ skylineby:
 				}
 			| '(' a_expr ')' opt_nulls_order
 				{
-					$$ = makeNode(SkylineBy);
+					$$ = makeNode(SkylineByExpr);
 					$$->node = $2;
 					$$->skylineby_dir = SKYLINEBY_DEFAULT;
 					$$->skylineby_nulls = $4;
@@ -6225,7 +6239,7 @@ skylineby:
 				}
 			| '(' a_expr ')' USING qual_all_Op opt_nulls_order
 				{
-					$$ = makeNode(SkylineBy);
+					$$ = makeNode(SkylineByExpr);
 					$$->node = $2;
 					$$->skylineby_dir = SKYLINEBY_USING;
 					$$->skylineby_nulls = $6;

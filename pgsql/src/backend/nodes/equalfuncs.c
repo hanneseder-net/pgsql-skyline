@@ -1735,7 +1735,7 @@ _equalSortBy(SortBy *a, SortBy *b)
 }
 
 static bool
-_equalSkylineBy(SkylineBy *a, SkylineBy *b)
+_equalSkylineByExpr(SkylineByExpr *a, SkylineByExpr *b)
 {
 	COMPARE_SCALAR_FIELD(skylineby_dir);
 	COMPARE_SCALAR_FIELD(skylineby_nulls);
@@ -2439,8 +2439,8 @@ equal(void *a, void *b)
 		case T_SortBy:
 			retval = _equalSortBy(a, b);
 			break;
-		case T_SkylineBy:
-			retval = _equalSkylineBy(a, b);
+		case T_SkylineByExpr:
+			retval = _equalSkylineByExpr(a, b);
 			break;
 		case T_RangeSubselect:
 			retval = _equalRangeSubselect(a, b);
@@ -2476,8 +2476,8 @@ equal(void *a, void *b)
 			/* GroupClause is equivalent to SortClause */
 			retval = _equalSortClause(a, b);
 			break;
-		case T_SkylineClause:
-			/* SkylineClause is equivalent to SortClause */
+		case T_SkylineBy:
+			/* SkylineBy is equivalent to SortClause */
 			retval = _equalSortClause(a, b);
 			break;
 		case T_RowMarkClause:

@@ -2714,7 +2714,7 @@ make_skyline(PlannerInfo *root, Plan *lefttree, List *skylinecls)
 	numskylinecols=0;
 	foreach(l, skylinecls)
 	{
-		SkylineClause *skylinecl = (SkylineClause *) lfirst(l);
+		SkylineBy *skylinecl = (SkylineBy *) lfirst(l);
 		TargetEntry *tle = get_sortgroupclause_tle(skylinecl, sub_tlist);
 
 		node->skylineColIdx[numskylinecols] = tle->resno;

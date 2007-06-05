@@ -1,0 +1,55 @@
+select year, count(*)
+from logfile
+group by year
+skyline by month min;
+
+
+select year, count(*)
+from logfile
+group by year
+skyline by year min;
+
+==>
+
+select year, count(*), month
+from logfile
+group by year, month
+skyline by month min
+
+hm? i.e. the skyline expr has to be added to the group by.
+the result might be a bit unexpected if the skyline expr
+is not part of the result nor of the group by clause
+
+
+01 2000
+02 2000
+01 2001
+01 2001
+
+select year, count(*) from logfile group by year
+
+2000 2
+2001 2
+
+
+select year, count(*), month from logfile group by year, month
+
+
+2000 1 01
+2000 1 02
+2001 2 01
+
+skyline by month min
+
+2000 1 01
+2001 2 01
+
+
+
+skyline
+  aggrate
+     scan
+
+
+Eder=# select id, count(*) from e2d100 group by id skyline by (d1) min;
+ERROR:  column "e2d100.d1" must appear in the GROUP BY clause or be used in an aggregate function

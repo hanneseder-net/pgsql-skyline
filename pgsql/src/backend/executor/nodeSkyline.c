@@ -76,7 +76,66 @@ inlineApplyCompareFunction(FmgrInfo *compFunction, int sk_flags,
 	return compare;
 }
 
+int
+ExecSkylineIsDominating(SkylineState *node, TupleTableSlot *inner_slot, TupleTableSlot *slot)
+{
+	Skyline	*sl = (Skyline*)node->ss.ps.plan;
+	int		i;
+	bool	cmp_lt = false;
+	bool	cmp_gt = false;
 
+	for (i=0; i<sl->numCols; ++i) {
+		Datum	datum1;
+		Datum	datum2;
+		bool	isnull1;
+		bool	isnull2;
+		int		attnum = sl->skylineColIdx[i];
+		int		cmp;
+
+		datum1 = slot_getattr(inner_slot, attnum, &isnull1);
+		datum2 = slot_getattr(slot, attnum, &isnull2);
+
+		cmp = inlineApplyCompareFunction(&(node->compareOpFn[i]), node->compareFlags[i], datum1, isnull1, datum2, isnull2);
+		if (cmp < 0)
+			cmp_lt = true;
+		else if (cmp > 0)
+			cmp_gt = true;
+	}
+
+	if (cmp_lt && !cmp_gt)
+		return -1;
+	else if (!cmp_lt && cmp_gt)
+		return 1;
+	else
+		return 0; /* it's incompare able */
+}
+
+static void
+ExecSkylineGetOrderingOp(Skyline *sl, int idx, FmgrInfo *compareOpFn, int *compareFlags)
+{
+	/* some sanity checks */
+	AssertArg(sl != NULL);
+	AssertArg(0 <= idx && idx < sl->numCols);
+	AssertArg(compareOpFn != NULL);
+	AssertArg(compareFlags != NULL);
+
+	{
+		Oid		compareOperator = sl->skylinebyOperators[idx];
+		Oid		compareFunction;
+		bool	reverse;
+
+		/* lookup the ordering function */
+		if (!get_compare_function_for_ordering_op(compareOperator, &compareFunction, &reverse))
+			elog(ERROR, "operator %u is not a valid ordering operator",	compareOperator);
+
+		fmgr_info(compareFunction, compareOpFn);
+
+		/* set ordering flags */
+		*compareFlags = reverse ? SK_BT_DESC : 0;
+		if (sl->nullsFirst[idx])
+			*compareFlags |= SK_BT_NULLS_FIRST;
+	}
+}
 
 SkylineState *
 ExecInitSkyline(Skyline *node, EState *estate, int eflags)
@@ -137,6 +196,8 @@ ExecInitSkyline(Skyline *node, EState *estate, int eflags)
 	 */
 	eflags &= ~(EXEC_FLAG_REWIND | EXEC_FLAG_BACKWARD | EXEC_FLAG_MARK);
 #endif
+	/* for testing we want the child node to support rewind and mark */
+	eflags |= EXEC_FLAG_REWIND | EXEC_FLAG_BACKWARD | EXEC_FLAG_MARK;
 
 	outerPlanState(slstate) = ExecInitNode(outerPlan(node), estate, eflags);
 
@@ -150,6 +211,17 @@ ExecInitSkyline(Skyline *node, EState *estate, int eflags)
 	// ExecSetSlotDescriptor(slstate->sl_extraSlot, ExecGetResultType(outerPlanState(slstate)));
 	slstate->ss.ps.ps_ProjInfo = NULL;
 
+	/* cache compare function info */
+	{
+		int i;
+
+		slstate->compareOpFn = (FmgrInfo *) palloc(node->numCols * sizeof(FmgrInfo));
+		slstate->compareFlags = (int *) palloc(node->numCols  * sizeof(int));
+
+		for (i=0; i<node->numCols; ++i)
+			ExecSkylineGetOrderingOp(node, i, &(slstate->compareOpFn[i]), &slstate->compareFlags[i]);
+	}
+
 	return slstate;
 }
 
@@ -159,33 +231,6 @@ ExecCountSlotsSkyline(Skyline * node)
 	return ExecCountSlotsNode(outerPlan(node)) + SKYLINE_NSLOTS;
 }
 
-static void
-ExecSkylineGetOrderingOp(Skyline *sl, int idx, FmgrInfo *compareOpFn, int *compareFlags)
-{
-	/* some sanity checks */
-	AssertArg(sl != NULL);
-	AssertArg(0 <= idx && idx < sl->numCols);
-	AssertArg(compareOpFn != NULL);
-	AssertArg(compareFlags != NULL);
-
-	{
-		Oid		compareOperator = sl->skylinebyOperators[idx];
-		Oid		compareFunction;
-		bool	reverse;
-
-		/* lookup the ordering function */
-		if (!get_compare_function_for_ordering_op(compareOperator, &compareFunction, &reverse))
-			elog(ERROR, "operator %u is not a valid ordering operator",	compareOperator);
-
-		fmgr_info(compareFunction, compareOpFn);
-
-		/* set ordering flags */
-		*compareFlags = reverse ? SK_BT_DESC : 0;
-		if (sl->nullsFirst[idx])
-			*compareFlags |= SK_BT_NULLS_FIRST;
-	}
-}
-
 TupleTableSlot *
 ExecSkyline(SkylineState *node)
 {
@@ -193,16 +238,14 @@ ExecSkyline(SkylineState *node)
 
 	if (sl->numCols == 1 && sl->skyline_distinct) {
 		if (!node->sl_done) {
-			int		compareFlags;
-			FmgrInfo	compareOpFn;
+			int		compareFlags = node->compareFlags[0];
+			FmgrInfo	compareOpFn = node->compareOpFn[0];
 			Datum	datum1;
 			Datum	datum2;
 			bool	isnull1;
 			bool	isnull2;
 			int		attnum = sl->skylineColIdx[0];
 			TupleTableSlot *resultSlot = node->ss.ps.ps_ResultTupleSlot;
-
-			ExecSkylineGetOrderingOp(sl, 0, &compareOpFn, &compareFlags);
 
 			for (;;)
 			{
@@ -233,10 +276,10 @@ ExecSkyline(SkylineState *node)
 		}
 	}
 	else if (sl->numCols == 1 && !sl->skyline_distinct) {
-		Tuplestorestate *tsstate = NULL;
+		/* FIXME handle by reference types correctly, see tuplesort_putdatum, datumCopy */
 		if (!node->sl_done) {
-			int		compareFlags;
-			FmgrInfo	compareOpFn;
+			int		compareFlags = node->compareFlags[0];
+			FmgrInfo	compareOpFn = node->compareOpFn[0];
 			Datum	datum1;
 			Datum	datum2;
 			bool	isnull1;
@@ -245,10 +288,8 @@ ExecSkyline(SkylineState *node)
 			int		attnum = sl->skylineColIdx[0];
 			TupleTableSlot *resultSlot = node->ss.ps.ps_ResultTupleSlot;
 
-			ExecSkylineGetOrderingOp(sl, 0, &compareOpFn, &compareFlags);
-
-			node->tuplestorestate = tsstate = tuplestore_begin_heap(false, false, 1024 /* FIXME maxKBytes */);
-			tuplestore_set_eflags(tsstate, EXEC_FLAG_MARK);
+			node->tuplestorestate = tuplestore_begin_heap(false, false, 1024 /* FIXME maxKBytes */);
+			tuplestore_set_eflags(node->tuplestorestate, EXEC_FLAG_MARK);
 			for (;;)
 			{
 				TupleTableSlot *slot = ExecProcNode(outerPlanState(node));
@@ -258,7 +299,7 @@ ExecSkyline(SkylineState *node)
 
 				if (first) {
 					datum1 = slot_getattr(slot, attnum, &isnull1);
-					tuplestore_puttupleslot(tsstate, slot);
+					tuplestore_puttupleslot(node->tuplestorestate, slot);
 
 					first = false;
 				}
@@ -269,13 +310,13 @@ ExecSkyline(SkylineState *node)
 					cmp = inlineApplyCompareFunction(&compareOpFn, compareFlags, datum1, isnull1, datum2, isnull2);
 
 					if (cmp == 0) {
-						tuplestore_puttupleslot(tsstate, slot);
+						tuplestore_puttupleslot(node->tuplestorestate, slot);
 					}
 					else if (cmp > 0) {
 						datum1 = datum2; isnull1 = isnull2;
 
-						tuplestore_catchup(tsstate);
-						tuplestore_puttupleslot(tsstate, slot);
+						tuplestore_catchup(node->tuplestorestate);
+						tuplestore_puttupleslot(node->tuplestorestate, slot);
 					}
 				}
 			}
@@ -285,49 +326,73 @@ ExecSkyline(SkylineState *node)
 			/* fall trough to the sl_done, to return the first tuple */
 		}
 	
+		Assert(node->sl_done);
 
 		/* pipe out the tuples from the tuplestore */
-		tsstate = (Tuplestorestate*)node->tuplestorestate;
-		
-		if (tsstate == NULL) 
-			return NULL;
+		Assert(node->tuplestorestate != NULL);
 
-		if (tuplestore_gettupleslot(tsstate, true, node->ss.ps.ps_ResultTupleSlot)) {
+		if (tuplestore_gettupleslot(node->tuplestorestate, true, node->ss.ps.ps_ResultTupleSlot))
 			return node->ss.ps.ps_ResultTupleSlot;
-		}
-		else {
-			tuplestore_end(tsstate);
-			node->tuplestorestate = tsstate = NULL;
+		else
 			return NULL;
-		}
 	}
 	else {
-		// pipe the trough
-		TupleTableSlot *slot = ExecProcNode(outerPlanState(node));
-		return slot;
-	}
+		TupleTableSlot *resultSlot = node->ss.ps.ps_ResultTupleSlot;
 
-	/*
-	if (slot != NULL) {
-		TupleDesc tdesc = slot->tts_tupleDescriptor; 
-	}
-	*/
+		if (!node->sl_done) {
+			ExecMarkPos(outerPlanState(node));
+			node->sl_done = true;
+		}
 
-	/*
-	// print_slot(slot);
-	printf("--ColIdx->");
-	for (i=0; i<(sl->numCols); i++) {
-		printf("%d ", sl->skylineColIdx[i]);
+		Assert(node->sl_done);
+
+		for (;;) {
+			TupleTableSlot *slot;
+
+			ExecRestrPos(outerPlanState(node));
+			slot = ExecProcNode(outerPlanState(node));
+			ExecMarkPos(outerPlanState(node));
+
+			if (TupIsNull(slot))
+				return NULL;
+
+			ExecCopySlot(resultSlot, slot);
+
+			ExecReScan(outerPlanState(node), NULL);
+
+			for (;;) {
+				TupleTableSlot *inner_slot = ExecProcNode(outerPlanState(node));
+				int cmp;
+
+				if (TupIsNull(inner_slot)) {
+					/* the tuple in the resultSlot is not dominated, return it */
+					return resultSlot;
+				}
+
+				/* is inner_slot dominating resultSlot? */
+
+				cmp = ExecSkylineIsDominating(node, inner_slot, resultSlot);
+				if (cmp < 0) {
+					break;
+				}
+			}
+		}
 	}
-	printf("\n");
-	*/
 }
+
 
 void
 ExecEndSkyline(SkylineState *node)
 {
 	SO1_printf("ExecEndSkyline: %s\n",
 			   "shutting down skyline node");
+
+	/* free tuple store state if allocated */
+	if (node->tuplestorestate) {
+		tuplestore_end((Tuplestorestate*)node->tuplestorestate);
+		node->tuplestorestate = NULL;
+	}
+
 #if 0
 	ExecFreeExprContext(&node->ss.ps);
 #endif

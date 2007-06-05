@@ -1319,6 +1319,7 @@ typedef struct SkylineState
 {
 	ScanState	ss;				/* its first field is NodeTag */
 	bool		sl_done;
+	void	   *tuplestorestate;
 } SkylineState;
 
 /* ---------------------

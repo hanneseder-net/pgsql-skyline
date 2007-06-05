@@ -6198,7 +6198,7 @@ skyline_clause:
 					n->skyline_distinct = true;
 					$$ = (Node *)n;
 				}
-			| /*EMPTY*/								{ $$ = NIL; }
+			| /*EMPTY*/								{ $$ = NULL; }
 		;
 		
 skyline_by_list:

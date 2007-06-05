@@ -4,13 +4,14 @@
 #include "executor/execdebug.h"
 #include "executor/executor.h"
 #include "executor/nodeSkyline.h"
-#include "utils/logtape.h"
+#include "utils/tuplestore.h"
 #include "utils/lsyscache.h"
 
 
 /*
  * Inline-able copy of FunctionCall2() to save some cycles in sorting.
  */
+/* TODO: this is from tublesort.c, export it there */
 static inline Datum
 myFunctionCall2(FmgrInfo *flinfo, Datum arg1, Datum arg2)
 {
@@ -39,6 +40,7 @@ myFunctionCall2(FmgrInfo *flinfo, Datum arg1, Datum arg2)
  * reverse-sort and NULLs-ordering properly.  We assume that DESC and
  * NULLS_FIRST options are encoded in sk_flags the same way btree does it.
  */
+/* TODO: this is from tublesort.c, export it there */
 static inline int32
 inlineApplyCompareFunction(FmgrInfo *compFunction, int sk_flags,
 						   Datum datum1, bool isNull1,
@@ -210,15 +212,15 @@ ExecSkyline(SkylineState *node)
 					break;
 
 				if (TupIsNull(resultSlot)) {
+					datum1 = slot_getattr(slot, attnum, &isnull1);
 					ExecCopySlot(resultSlot, slot);
-					datum1 = slot_getattr(resultSlot, attnum, &isnull1);
 				}
 				else {
 					datum2 = slot_getattr(slot, attnum, &isnull2);
 
 					if (inlineApplyCompareFunction(&compareOpFn, compareFlags, datum1, isnull1, datum2, isnull2) > 0) {
+						datum1 = datum2; isnull1 = isnull2;
 						ExecCopySlot(resultSlot, slot);
-						datum1 = slot_getattr(resultSlot, attnum, &isnull1);
 					}
 				}
 			}
@@ -230,13 +232,75 @@ ExecSkyline(SkylineState *node)
 			return NULL;
 		}
 	}
-	/*
 	else if (sl->numCols == 1 && !sl->skyline_distinct) {
-		LogicalTapeSet *lts = LogicalTapeSetCreate(1);
+		Tuplestorestate *tsstate = NULL;
+		if (!node->sl_done) {
+			int		compareFlags;
+			FmgrInfo	compareOpFn;
+			Datum	datum1;
+			Datum	datum2;
+			bool	isnull1;
+			bool	isnull2;
+			bool	first = true;
+			int		attnum = sl->skylineColIdx[0];
+			TupleTableSlot *resultSlot = node->ss.ps.ps_ResultTupleSlot;
 
-		LogicalTapeSetClose(lts);
+			ExecSkylineGetOrderingOp(sl, 0, &compareOpFn, &compareFlags);
+
+			node->tuplestorestate = tsstate = tuplestore_begin_heap(false, false, 1024 /* FIXME maxKBytes */);
+			tuplestore_set_eflags(tsstate, EXEC_FLAG_MARK);
+			for (;;)
+			{
+				TupleTableSlot *slot = ExecProcNode(outerPlanState(node));
+
+				if (TupIsNull(slot))
+					break;
+
+				if (first) {
+					datum1 = slot_getattr(slot, attnum, &isnull1);
+					tuplestore_puttupleslot(tsstate, slot);
+
+					first = false;
+				}
+				else {
+					int cmp;
+					datum2 = slot_getattr(slot, attnum, &isnull2);
+
+					cmp = inlineApplyCompareFunction(&compareOpFn, compareFlags, datum1, isnull1, datum2, isnull2);
+
+					if (cmp == 0) {
+						tuplestore_puttupleslot(tsstate, slot);
+					}
+					else if (cmp > 0) {
+						datum1 = datum2; isnull1 = isnull2;
+
+						tuplestore_catchup(tsstate);
+						tuplestore_puttupleslot(tsstate, slot);
+					}
+				}
+			}
+
+			node->sl_done = true;
+
+			/* fall trough to the sl_done, to return the first tuple */
+		}
+	
+
+		/* pipe out the tuples from the tuplestore */
+		tsstate = (Tuplestorestate*)node->tuplestorestate;
+		
+		if (tsstate == NULL) 
+			return NULL;
+
+		if (tuplestore_gettupleslot(tsstate, true, node->ss.ps.ps_ResultTupleSlot)) {
+			return node->ss.ps.ps_ResultTupleSlot;
+		}
+		else {
+			tuplestore_end(tsstate);
+			node->tuplestorestate = tsstate = NULL;
+			return NULL;
+		}
 	}
-	*/
 	else {
 		// pipe the trough
 		TupleTableSlot *slot = ExecProcNode(outerPlanState(node));

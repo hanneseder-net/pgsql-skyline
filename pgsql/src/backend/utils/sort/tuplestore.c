@@ -707,6 +707,43 @@ tuplestore_rescan(Tuplestorestate *state)
 	}
 }
 
+
+/*
+ * tuplsestore_catchup	- move current postion to writepos
+ */
+void
+tuplestore_catchup(Tuplestorestate *state)
+{
+	Assert(state->eflags & EXEC_FLAG_MARK);
+
+	switch(state->status)
+	{
+		case TSS_INMEM:
+			state->eof_reached = false;
+			state->current = state->memtupcount;
+			if (!(state->eflags & (EXEC_FLAG_BACKWARD | EXEC_FLAG_REWIND)))
+				tuplestore_trim(state, 0);
+			break;
+		case TSS_WRITEFILE:
+			state->eof_reached = false;
+			BufFileTell(state->myfile,
+						&state->readpos_file,
+						&state->readpos_offset);
+			break;
+		case TSS_READFILE:
+			state->eof_reached = false;
+			if (BufFileSeek(state->myfile,
+							state->writepos_file,
+							state->writepos_offset,
+							SEEK_SET) != 0)
+				elog(ERROR, "tuplestore_move_readpos_to_writepos failed");
+			break;
+		default:
+			elog(ERROR, "invalid tuplestore state");
+			break;
+	}
+}
+
 /*
  * tuplestore_markpos	- saves current position in the tuple sequence
  */

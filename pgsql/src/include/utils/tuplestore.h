@@ -66,5 +66,6 @@ extern bool tuplestore_ateof(Tuplestorestate *state);
 extern void tuplestore_rescan(Tuplestorestate *state);
 extern void tuplestore_markpos(Tuplestorestate *state);
 extern void tuplestore_restorepos(Tuplestorestate *state);
+extern void tuplestore_catchup(Tuplestorestate *state);
 
 #endif   /* TUPLESTORE_H */

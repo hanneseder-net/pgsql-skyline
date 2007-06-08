@@ -4,6 +4,11 @@ insert into foo (id, price, dist) values (2, 1, 10);
 insert into foo (id, price, dist) values (3, 5, 5);
 insert into foo (id, price, dist) values (4, 10, 10);
 
+create table abc(id int, d1 varchar(32), d2 varchar(32));
+insert into abc (id, d1, d2) values (1, 'Hannes', 'Eder');
+insert into abc (id, d1, d2) values (2, 'Wiebke', 'Bernhard');
+insert into abc (id, d1, d2) values (3, 'Fang', 'Wei');
+insert into abc (id, d1, d2) values (4, 'Reinhard', 'Pichler');
 
 set debug_pretty_print to on;
 set debug_print_parse to on;

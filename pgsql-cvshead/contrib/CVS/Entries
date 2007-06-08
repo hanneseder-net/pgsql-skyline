@@ -1,3 +1,5 @@
+/Makefile/1.77/Sat Jun  2 11:40:26 2007//
+/README/1.93/Sat May 19 08:05:54 2007//
 /contrib-global.mk/1.10/Tue Sep 27 17:43:31 2005//
 D/adminpack////
 D/btree_gist////
@@ -13,6 +15,7 @@ D/isn////
 D/lo////
 D/ltree////
 D/oid2name////
+D/pageinspect////
 D/pg_buffercache////
 D/pg_freespacemap////
 D/pg_standby////
@@ -24,12 +27,9 @@ D/pgstattuple////
 D/seg////
 D/spi////
 D/sslinfo////
+D/start-scripts////
 D/tablefunc////
 D/tsearch2////
 D/uuid-ossp////
 D/vacuumlo////
 D/xml2////
-/README/1.93/Sat May 19 08:05:54 2007//
-D/pageinspect////
-D/start-scripts////
-/Makefile/1.77/Sat Jun  2 11:40:26 2007//

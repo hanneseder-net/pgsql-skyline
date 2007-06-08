@@ -1,7 +1,7 @@
 /Makefile////*///
+/README////*///
 /buf_init.c////*///
 /buf_table.c////*///
-/README////*///
 /bufmgr.c////*///
 /freelist.c////*///
 /localbuf.c////*///

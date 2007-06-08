@@ -1,5 +1,5 @@
 /Makefile////*///
-/hio.c////*///
-/tuptoaster.c////*///
-/rewriteheap.c////*///
 /heapam.c////*///
+/hio.c////*///
+/rewriteheap.c////*///
+/tuptoaster.c////*///

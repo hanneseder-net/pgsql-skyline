@@ -5,6 +5,7 @@ D/bootstrap///////
 D/catalog///////
 D/commands///////
 D/executor///////
+D/include///////
 D/lib///////
 D/libpq///////
 D/main///////
@@ -19,4 +20,3 @@ D/rewrite///////
 D/storage///////
 D/tcop///////
 D/utils///////
-D/include///////

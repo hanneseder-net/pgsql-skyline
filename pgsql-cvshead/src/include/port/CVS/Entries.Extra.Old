@@ -19,6 +19,6 @@
 /univel.h////*///
 /unixware.h////*///
 /win32.h////*///
+D/darwin///////
 D/win32///////
 D/win32_msvc///////
-D/darwin///////

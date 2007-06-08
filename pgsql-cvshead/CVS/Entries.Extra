@@ -1,12 +1,12 @@
 /COPYRIGHT///////
 /GNUmakefile.in///////
 /Makefile///////
-/README///////
 /README.CVS///////
+/README///////
 /aclocal.m4///////
+/configure.in///////
+/configure///////
 D/config///////
 D/contrib///////
 D/doc///////
 D/src///////
-/configure///////
-/configure.in///////

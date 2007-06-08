@@ -1,8 +1,9 @@
-/Makefile////*///
 /Makefile.regress////*///
+/Makefile////*///
 /pg_regress.sh////*///
 /regression.h////*///
 D/compat_informix///////
+D/complex///////
 D/connect///////
 D/expected///////
 D/performance///////
@@ -10,4 +11,3 @@ D/pgtypeslib///////
 D/preproc///////
 D/sql///////
 D/thread///////
-D/complex///////

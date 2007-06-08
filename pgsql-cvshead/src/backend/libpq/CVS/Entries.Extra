@@ -2,13 +2,13 @@
 /README.SSL////*///
 /auth.c////*///
 /be-fsstubs.c////*///
+/be-secure.c////*///
 /crypt.c////*///
 /hba.c////*///
 /ip.c////*///
 /md5.c////*///
 /pg_hba.conf.sample////*///
 /pg_ident.conf.sample////*///
+/pqcomm.c////*///
 /pqformat.c////*///
 /pqsignal.c////*///
-/be-secure.c////*///
-/pqcomm.c////*///

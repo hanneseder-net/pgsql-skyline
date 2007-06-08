@@ -1,4 +1,7 @@
+/Makefile////*///
+/README////*///
 /contrib-global.mk////*///
+D/adddepend///////
 D/adminpack///////
 D/btree_gist///////
 D/chkpass///////
@@ -13,6 +16,7 @@ D/isn///////
 D/lo///////
 D/ltree///////
 D/oid2name///////
+D/pageinspect///////
 D/pg_buffercache///////
 D/pg_freespacemap///////
 D/pg_standby///////
@@ -24,13 +28,9 @@ D/pgstattuple///////
 D/seg///////
 D/spi///////
 D/sslinfo///////
+D/start-scripts///////
 D/tablefunc///////
 D/tsearch2///////
 D/uuid-ossp///////
 D/vacuumlo///////
 D/xml2///////
-/README////*///
-D/pageinspect///////
-D/start-scripts///////
-/Makefile////*///
-D/adddepend///////

@@ -1,6 +1,7 @@
 /FAQ////*///
 /FAQ_AIX////*///
 /FAQ_CYGWIN////*///
+/FAQ_DEV////*///
 /FAQ_HPUX////*///
 /FAQ_IRIX////*///
 /FAQ_MINGW////*///
@@ -23,8 +24,7 @@
 /Makefile////*///
 /README.mb.big5////*///
 /README.mb.jp////*///
+/TODO////*///
 /bug.template////*///
 D/TODO.detail///////
 D/src///////
-/FAQ_DEV////*///
-/TODO////*///

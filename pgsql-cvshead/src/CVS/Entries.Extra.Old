@@ -1,12 +1,13 @@
 /DEVELOPERS////*///
-/Makefile////*///
 /Makefile.global.in////*///
 /Makefile.shlib////*///
+/Makefile////*///
 /bcc32.mak////*///
 /nls-global.mk////*///
 /win32.mak////*///
 D/backend///////
 D/bin///////
+D/corba///////
 D/include///////
 D/interfaces///////
 D/makefiles///////
@@ -17,4 +18,3 @@ D/test///////
 D/timezone///////
 D/tools///////
 D/tutorial///////
-D/corba///////

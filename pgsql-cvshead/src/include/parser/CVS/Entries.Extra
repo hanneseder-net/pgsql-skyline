@@ -3,6 +3,7 @@
 /keywords.h////*///
 /parse_agg.h////*///
 /parse_clause.h////*///
+/parse_coerce.h////*///
 /parse_expr.h////*///
 /parse_func.h////*///
 /parse_node.h////*///
@@ -13,4 +14,3 @@
 /parser.h////*///
 /parsetree.h////*///
 /scansup.h////*///
-/parse_coerce.h////*///

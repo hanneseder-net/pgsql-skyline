@@ -2,6 +2,7 @@
 /README////*///
 /ialloc.c////*///
 /localtime.c////*///
+/pgtz.c////*///
 /pgtz.h////*///
 /private.h////*///
 /scheck.c////*///
@@ -10,4 +11,3 @@
 /zic.c////*///
 D/data///////
 D/tznames///////
-/pgtz.c////*///

@@ -1,6 +1,11 @@
 /backendid.h////*///
 /block.h////*///
+/buf.h////*///
+/buf_internals.h////*///
+/buffile.h////*///
+/bufmgr.h////*///
 /bufpage.h////*///
+/fd.h////*///
 /freespace.h////*///
 /ipc.h////*///
 /item.h////*///
@@ -9,6 +14,7 @@
 /itemptr.h////*///
 /large_object.h////*///
 /lmgr.h////*///
+/lock.h////*///
 /lwlock.h////*///
 /off.h////*///
 /pg_sema.h////*///
@@ -16,6 +22,7 @@
 /pmsignal.h////*///
 /pos.h////*///
 /proc.h////*///
+/procarray.h////*///
 /relfilenode.h////*///
 /s_lock.h////*///
 /shmem.h////*///
@@ -23,10 +30,3 @@
 /sinvaladt.h////*///
 /smgr.h////*///
 /spin.h////*///
-/buf.h////*///
-/buf_internals.h////*///
-/bufmgr.h////*///
-/lock.h////*///
-/procarray.h////*///
-/buffile.h////*///
-/fd.h////*///

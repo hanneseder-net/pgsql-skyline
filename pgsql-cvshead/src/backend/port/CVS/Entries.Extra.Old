@@ -5,6 +5,7 @@
 /sysv_shmem.c////*///
 /win32_sema.c////*///
 /win32_shmem.c////*///
+D/BSD44_derived///////
 D/aix///////
 D/darwin///////
 D/dynloader///////
@@ -13,4 +14,3 @@ D/nextstep///////
 D/sunos4///////
 D/tas///////
 D/win32///////
-D/BSD44_derived///////

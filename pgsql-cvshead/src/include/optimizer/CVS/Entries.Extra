@@ -1,4 +1,5 @@
 /clauses.h////*///
+/cost.h////*///
 /geqo.h////*///
 /geqo_copy.h////*///
 /geqo_gene.h////*///
@@ -10,14 +11,13 @@
 /geqo_selection.h////*///
 /joininfo.h////*///
 /pathnode.h////*///
+/paths.h////*///
+/plancat.h////*///
 /planmain.h////*///
+/planner.h////*///
 /predtest.h////*///
 /prep.h////*///
 /restrictinfo.h////*///
 /subselect.h////*///
 /tlist.h////*///
 /var.h////*///
-/cost.h////*///
-/paths.h////*///
-/plancat.h////*///
-/planner.h////*///

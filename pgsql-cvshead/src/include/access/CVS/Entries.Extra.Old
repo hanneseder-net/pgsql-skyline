@@ -6,6 +6,7 @@
 /gist_private.h////*///
 /gistscan.h////*///
 /hash.h////*///
+/heapam.h////*///
 /hio.h////*///
 /htup.h////*///
 /itup.h////*///
@@ -13,6 +14,8 @@
 /nbtree.h////*///
 /printtup.h////*///
 /reloptions.h////*///
+/relscan.h////*///
+/rewriteheap.h////*///
 /rmgr.h////*///
 /sdir.h////*///
 /skey.h////*///
@@ -23,13 +26,10 @@
 /tupmacs.h////*///
 /tuptoaster.h////*///
 /twophase.h////*///
+/twophase_rmgr.h////*///
 /valid.h////*///
 /xact.h////*///
-/xlogdefs.h////*///
-/xlogutils.h////*///
-/rewriteheap.h////*///
 /xlog.h////*///
 /xlog_internal.h////*///
-/heapam.h////*///
-/relscan.h////*///
-/twophase_rmgr.h////*///
+/xlogdefs.h////*///
+/xlogutils.h////*///

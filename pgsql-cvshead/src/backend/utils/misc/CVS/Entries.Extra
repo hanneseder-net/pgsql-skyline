@@ -3,10 +3,10 @@
 /README////*///
 /check_guc////*///
 /guc-file.l////*///
+/guc.c////*///
 /help_config.c////*///
 /pg_rusage.c////*///
+/postgresql.conf.sample////*///
 /ps_status.c////*///
 /superuser.c////*///
 /tzparser.c////*///
-/postgresql.conf.sample////*///
-/guc.c////*///

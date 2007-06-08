@@ -1,7 +1,7 @@
 /DEVELOPERS////*///
-/Makefile////*///
 /Makefile.global.in////*///
 /Makefile.shlib////*///
+/Makefile////*///
 /bcc32.mak////*///
 /nls-global.mk////*///
 /win32.mak////*///

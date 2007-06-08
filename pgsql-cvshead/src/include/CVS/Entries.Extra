@@ -1,5 +1,6 @@
 /Makefile////*///
 /c.h////*///
+/fmgr.h////*///
 /funcapi.h////*///
 /getaddrinfo.h////*///
 /getopt_long.h////*///
@@ -8,8 +9,10 @@
 /pg_config.h.win32////*///
 /pg_config_manual.h////*///
 /pg_trace.h////*///
+/pgstat.h////*///
 /pgtime.h////*///
 /port.h////*///
+/postgres.h////*///
 /postgres_ext.h////*///
 /postgres_fe.h////*///
 /rusagestub.h////*///
@@ -31,6 +34,3 @@ D/rewrite///////
 D/storage///////
 D/tcop///////
 D/utils///////
-/fmgr.h////*///
-/postgres.h////*///
-/pgstat.h////*///

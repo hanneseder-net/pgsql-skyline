@@ -63,6 +63,7 @@
 /preproc-type.c/1.8/Sat Mar 17 19:25:23 2007//
 /preproc-type.stderr/1.1/Fri Sep  8 09:03:40 2006//
 /preproc-type.stdout/1.1/Fri Sep  8 09:03:40 2006//
+/preproc-variable.c/1.10/Wed May 30 13:52:57 2007//
 /preproc-variable.stderr/1.3/Sat Mar 17 19:25:23 2007//
 /preproc-variable.stdout/1.2/Tue Sep 26 07:56:56 2006//
 /preproc-whenever.c/1.7/Sat Mar 17 19:25:23 2007//
@@ -127,5 +128,4 @@
 /thread-thread_implicit.c/1.12/Thu Mar 29 15:30:52 2007//
 /thread-thread_implicit.stderr/1.1/Wed Aug  2 14:14:03 2006//
 /thread-thread_implicit.stdout/1.2/Thu Mar 29 12:02:24 2007//
-/preproc-variable.c/1.10/Wed May 30 13:52:57 2007//
 D

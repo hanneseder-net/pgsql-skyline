@@ -16,6 +16,8 @@
 /compat_informix-rnull.stderr////*///
 /compat_informix-rnull.stdout////*///
 /compat_informix-test_informix.c////*///
+/compat_informix-test_informix.stderr////*///
+/compat_informix-test_informix.stdout////*///
 /compat_informix-test_informix2.c////*///
 /compat_informix-test_informix2.stderr////*///
 /compat_informix-test_informix2.stdout////*///
@@ -61,6 +63,7 @@
 /preproc-type.c////*///
 /preproc-type.stderr////*///
 /preproc-type.stdout////*///
+/preproc-variable.c////*///
 /preproc-variable.stderr////*///
 /preproc-variable.stdout////*///
 /preproc-whenever.c////*///
@@ -125,6 +128,3 @@
 /thread-thread_implicit.c////*///
 /thread-thread_implicit.stderr////*///
 /thread-thread_implicit.stdout////*///
-/preproc-variable.c////*///
-/compat_informix-test_informix.stderr////*///
-/compat_informix-test_informix.stdout////*///

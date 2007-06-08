@@ -7,10 +7,10 @@
 /slru.c/1.40/Fri Jan  5 22:19:23 2007//
 /subtrans.c/1.18/Fri Jan  5 22:19:23 2007//
 /transam.c/1.69/Fri Jan  5 22:19:23 2007//
-/varsup.c/1.78/Thu Feb 15 23:23:22 2007//
-/xlogutils.c/1.50/Wed May  2 23:18:03 2007//
 /twophase.c/1.31/Wed May 30 13:52:55 2007//
 /twophase_rmgr.c/1.5/Wed May 30 13:52:55 2007//
+/varsup.c/1.78/Thu Feb 15 23:23:22 2007//
 /xact.c/1.244/Thu May 31 10:06:51 2007//
 /xlog.c/1.272/Thu May 31 21:35:31 2007//
+/xlogutils.c/1.50/Wed May  2 23:18:03 2007//
 D

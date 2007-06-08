@@ -1,4 +1,3 @@
-/Makefile////*///
 /Makefile.aix////*///
 /Makefile.bsdi////*///
 /Makefile.cygwin////*///
@@ -19,4 +18,5 @@
 /Makefile.univel////*///
 /Makefile.unixware////*///
 /Makefile.win32////*///
+/Makefile////*///
 /pgxs.mk////*///

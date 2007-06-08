@@ -3,11 +3,11 @@
 /ginarrayproc.c////*///
 /ginbtree.c////*///
 /ginbulk.c////*///
-/gininsert.c////*///
-/ginutil.c////*///
-/ginscan.c////*///
 /gindatapage.c////*///
 /ginentrypage.c////*///
 /ginget.c////*///
+/gininsert.c////*///
+/ginscan.c////*///
+/ginutil.c////*///
 /ginvacuum.c////*///
 /ginxlog.c////*///

@@ -1,10 +1,10 @@
 /Makefile////*///
 /README////*///
 /gist.c////*///
+/gistget.c////*///
 /gistproc.c////*///
 /gistscan.c////*///
 /gistsplit.c////*///
 /gistutil.c////*///
 /gistvacuum.c////*///
 /gistxlog.c////*///
-/gistget.c////*///

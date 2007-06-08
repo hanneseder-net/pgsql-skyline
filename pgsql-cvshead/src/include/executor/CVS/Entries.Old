@@ -3,6 +3,7 @@
 /execdesc.h/1.34/Tue Feb 20 17:32:17 2007//
 /executor.h/1.139/Tue Feb 27 01:11:25 2007//
 /functions.h/1.29/Fri Jan  5 22:19:54 2007//
+/hashjoin.h/1.46/Sun Jun  3 20:16:02 2007//
 /instrument.h/1.17/Fri Jan  5 22:19:54 2007//
 /nodeAgg.h/1.28/Fri Jan  5 22:19:54 2007//
 /nodeAppend.h/1.26/Fri Jan  5 22:19:54 2007//
@@ -13,6 +14,7 @@
 /nodeFunctionscan.h/1.10/Fri Jan  5 22:19:54 2007//
 /nodeGroup.h/1.31/Fri Jan  5 22:19:54 2007//
 /nodeHash.h/1.44/Tue Jan 30 01:33:36 2007//
+/nodeHashjoin.h/1.35/Sun Jun  3 20:16:02 2007//
 /nodeIndexscan.h/1.30/Fri Jan  5 22:19:54 2007//
 /nodeLimit.h/1.14/Fri Jan  5 22:19:54 2007//
 /nodeMaterial.h/1.26/Fri Jan  5 22:19:54 2007//
@@ -31,6 +33,4 @@
 /spi_priv.h/1.29/Mon Apr 16 17:21:23 2007//
 /tstoreReceiver.h/1.9/Fri Jan  5 22:19:55 2007//
 /tuptable.h/1.37/Fri Jan  5 22:19:55 2007//
-/hashjoin.h/1.46/Sun Jun  3 20:16:02 2007//
-/nodeHashjoin.h/1.35/Sun Jun  3 20:16:02 2007//
 D

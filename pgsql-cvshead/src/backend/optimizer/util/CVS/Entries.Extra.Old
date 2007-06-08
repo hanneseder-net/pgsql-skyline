@@ -2,9 +2,9 @@
 /clauses.c////*///
 /joininfo.c////*///
 /pathnode.c////*///
+/plancat.c////*///
+/predtest.c////*///
 /relnode.c////*///
 /restrictinfo.c////*///
 /tlist.c////*///
 /var.c////*///
-/predtest.c////*///
-/plancat.c////*///

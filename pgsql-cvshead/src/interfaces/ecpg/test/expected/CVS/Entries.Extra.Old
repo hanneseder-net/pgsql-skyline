@@ -63,7 +63,6 @@
 /preproc-type.c////*///
 /preproc-type.stderr////*///
 /preproc-type.stdout////*///
-/preproc-variable.c////*///
 /preproc-variable.stderr////*///
 /preproc-variable.stdout////*///
 /preproc-whenever.c////*///
@@ -128,3 +127,4 @@
 /thread-thread_implicit.c////*///
 /thread-thread_implicit.stderr////*///
 /thread-thread_implicit.stdout////*///
+/preproc-variable.c////*///

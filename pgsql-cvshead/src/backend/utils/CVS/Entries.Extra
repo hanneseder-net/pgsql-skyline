@@ -1,5 +1,4 @@
 /.cvsignore////*///
-/Gen_fmgrtab.sh////*///
 /Makefile////*///
 /probes.d////*///
 D/adt///////
@@ -14,3 +13,4 @@ D/mmgr///////
 D/resowner///////
 D/sort///////
 D/time///////
+/Gen_fmgrtab.sh////*///

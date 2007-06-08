@@ -1,7 +1,6 @@
 /Makefile////*///
 /aclchk.c////*///
 /catalog.c////*///
-/dependency.c////*///
 /genbki.sh////*///
 /indexing.c////*///
 /information_schema.sql////*///
@@ -21,6 +20,7 @@
 /toasting.c////*///
 /README////*///
 /pg_type.c////*///
-/heap.c////*///
 /pg_shdepend.c////*///
 /index.c////*///
+/heap.c////*///
+/dependency.c////*///

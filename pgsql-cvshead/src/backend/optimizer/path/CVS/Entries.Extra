@@ -5,7 +5,7 @@
 /orindxpath.c////*///
 /tidpath.c////*///
 /allpaths.c////*///
-/costsize.c////*///
 /indxpath.c////*///
 /joinpath.c////*///
 /pathkeys.c////*///
+/costsize.c////*///

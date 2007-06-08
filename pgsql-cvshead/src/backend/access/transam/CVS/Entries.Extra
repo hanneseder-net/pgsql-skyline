@@ -11,5 +11,5 @@
 /xlogutils.c////*///
 /twophase.c////*///
 /twophase_rmgr.c////*///
-/xact.c////*///
 /xlog.c////*///
+/xact.c////*///

@@ -4,11 +4,7 @@
 /analyze.c////*///
 /gram.y////*///
 /keywords.c////*///
-/parse_agg.c////*///
 /parse_clause.c////*///
-/parse_coerce.c////*///
-/parse_expr.c////*///
-/parse_func.c////*///
 /parse_node.c////*///
 /parse_oper.c////*///
 /parse_relation.c////*///
@@ -17,3 +13,7 @@
 /scan.l////*///
 /scansup.c////*///
 /parse_type.c////*///
+/parse_expr.c////*///
+/parse_agg.c////*///
+/parse_coerce.c////*///
+/parse_func.c////*///

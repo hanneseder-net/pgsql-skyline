@@ -1,7 +1,6 @@
 /Makefile////*///
 /aclchk.c////*///
 /catalog.c////*///
-/dependency.c////*///
 /genbki.sh////*///
 /indexing.c////*///
 /information_schema.sql////*///
@@ -14,13 +13,14 @@
 /pg_largeobject.c////*///
 /pg_namespace.c////*///
 /pg_operator.c////*///
-/pg_proc.c////*///
 /sql_feature_packages.txt////*///
 /sql_features.txt////*///
 /system_views.sql////*///
 /toasting.c////*///
 /README////*///
 /pg_type.c////*///
-/heap.c////*///
 /pg_shdepend.c////*///
 /index.c////*///
+/heap.c////*///
+/dependency.c////*///
+/pg_proc.c////*///

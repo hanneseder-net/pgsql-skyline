@@ -38,7 +38,7 @@
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/backend/utils/sort/tuplestore.c,v 1.31 2007/05/21 17:57:34 tgl Exp $
+ *	  $PostgreSQL: pgsql/src/backend/utils/sort/tuplestore.c,v 1.33 2007/06/07 19:19:57 tgl Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -46,6 +46,7 @@
 #include "postgres.h"
 
 #include "access/heapam.h"
+#include "commands/tablespace.h"
 #include "executor/executor.h"
 #include "storage/buffile.h"
 #include "utils/memutils.h"
@@ -423,8 +424,10 @@ tuplestore_puttuple_common(Tuplestorestate *state, void *tuple)
 				return;
 
 			/*
-			 * Nope; time to switch to tape-based operation.
+			 * Nope; time to switch to tape-based operation.  Make sure that
+			 * the temp file(s) are created in suitable temp tablespaces.
 			 */
+			PrepareTempTablespaces();
 			state->myfile = BufFileCreateTemp(state->interXact);
 			state->status = TSS_WRITEFILE;
 			dumptuples(state);

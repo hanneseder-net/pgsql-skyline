@@ -1,5 +1,4 @@
 /Makefile////*///
-/clauses.c////*///
 /joininfo.c////*///
 /pathnode.c////*///
 /relnode.c////*///
@@ -8,3 +7,4 @@
 /var.c////*///
 /predtest.c////*///
 /plancat.c////*///
+/clauses.c////*///

@@ -10,7 +10,7 @@
  * Written by Peter Eisentraut <peter_e@gmx.net>.
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/backend/utils/misc/guc.c,v 1.391 2007/05/08 16:33:51 petere Exp $
+ *	  $PostgreSQL: pgsql/src/backend/utils/misc/guc.c,v 1.395 2007/06/05 21:50:19 tgl Exp $
  *
  *--------------------------------------------------------------------
  */
@@ -103,6 +103,7 @@ extern bool Log_disconnections;
 extern int	CommitDelay;
 extern int	CommitSiblings;
 extern char *default_tablespace;
+extern char *temp_tablespaces;
 extern bool fullPageWrites;
 
 #ifdef TRACE_SORT
@@ -1968,6 +1969,16 @@ static struct config_string ConfigureNamesString[] =
 	},
 
 	{
+		{"temp_tablespaces", PGC_USERSET, CLIENT_CONN_STATEMENT,
+			gettext_noop("Sets the tablespace(s) to use for temporary tables and sort files."),
+			NULL,
+			GUC_LIST_INPUT | GUC_LIST_QUOTE
+		},
+		&temp_tablespaces,
+		"", assign_temp_tablespaces, NULL
+	},
+
+	{
 		{"default_transaction_isolation", PGC_USERSET, CLIENT_CONN_STATEMENT,
 			gettext_noop("Sets the transaction isolation level of each new transaction."),
 			gettext_noop("Each SQL transaction has an isolation level, which "
@@ -1979,7 +1990,7 @@ static struct config_string ConfigureNamesString[] =
 
 	{
 		{"session_replication_role", PGC_SUSET, CLIENT_CONN_STATEMENT,
-			gettext_noop("Sets the sessions behaviour for triggers and rewrite rules."),
+			gettext_noop("Sets the sessions behavior for triggers and rewrite rules."),
 			gettext_noop("Each session can be either"
 						 " \"origin\", \"replica\" or \"local\".")
 		},
@@ -6259,27 +6270,27 @@ assign_defaultxactisolevel(const char *newval, bool doit, GucSource source)
 static const char *
 assign_session_replication_role(const char *newval, bool doit, GucSource source)
 {
-	if (HaveCachedPlans())
-		elog(ERROR, "session_replication_role cannot be changed "
-					"after prepared plans have been cached");
+	int		newrole;
 
 	if (pg_strcasecmp(newval, "origin") == 0)
-	{
-		if (doit)
-			SessionReplicationRole = SESSION_REPLICATION_ROLE_ORIGIN;
-	}
+		newrole = SESSION_REPLICATION_ROLE_ORIGIN;
 	else if (pg_strcasecmp(newval, "replica") == 0)
-	{
-		if (doit)
-			SessionReplicationRole = SESSION_REPLICATION_ROLE_REPLICA;
-	}
+		newrole = SESSION_REPLICATION_ROLE_REPLICA;
 	else if (pg_strcasecmp(newval, "local") == 0)
-	{
-		if (doit)
-			SessionReplicationRole = SESSION_REPLICATION_ROLE_LOCAL;
-	}
+		newrole = SESSION_REPLICATION_ROLE_LOCAL;
 	else
 		return NULL;
+
+	/*
+	 * Must flush the plan cache when changing replication role; but don't
+	 * flush unnecessarily.
+	 */
+	if (doit && SessionReplicationRole != newrole)
+	{
+		ResetPlanCache();
+		SessionReplicationRole = newrole;
+	}
+
 	return newval;
 }
 

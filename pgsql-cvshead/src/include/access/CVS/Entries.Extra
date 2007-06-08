@@ -30,6 +30,6 @@
 /heapam.h////*///
 /twophase_rmgr.h////*///
 /genam.h////*///
-/hash.h////*///
 /relscan.h////*///
 /xlog.h////*///
+/hash.h////*///

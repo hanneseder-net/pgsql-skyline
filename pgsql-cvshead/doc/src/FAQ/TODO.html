@@ -8,7 +8,7 @@
 <body bgcolor="#FFFFFF" text="#000000" link="#FF0000" vlink="#A00000" alink="#0000FF">
 <h1><a name="section_1">PostgreSQL TODO List</a></h1>
 <p>Current maintainer:     Bruce Momjian (<a href="mailto:bruce@momjian.us">bruce@momjian.us</a>)<br/>
-Last updated:           Wed May 30 16:26:02 EDT 2007
+Last updated:           Sun Jun  3 14:49:04 EDT 2007
 </p>
 <p>The most recent version of this document can be viewed at<br/>
 <a href="http://www.postgresql.org/docs/faqs.TODO.html">http://www.postgresql.org/docs/faqs.TODO.html</a>.
@@ -133,9 +133,6 @@ first.  There is also a developer's wiki at<br/>
 </p>
     </li><li>-<em>Add a GUC variable to control the tablespace for temporary objects</em>
           and sort files
-<p>          It could start with a random tablespace from a supplied list and
-          cycle through the list.
-</p>
     </li><li>Allow WAL replay of CREATE TABLESPACE to work when the directory
           structure on the recovery computer is different from the original
     </li><li>Allow per-tablespace quotas
@@ -506,10 +503,6 @@ first.  There is also a developer's wiki at<br/>
   get dropped while the DROP operation is happening
 <p>  <a href="http://archives.postgresql.org/pgsql-hackers/2007-01/msg00937.php">http://archives.postgresql.org/pgsql-hackers/2007-01/msg00937.php</a>
 </p>
-  </li><li>Fix self-referential UPDATEs that see inconsistent row versions in
-  read-committed mode
-<p>  <a href="http://archives.postgresql.org/pgsql-hackers/2007-05/msg00507.php">http://archives.postgresql.org/pgsql-hackers/2007-05/msg00507.php</a>
-</p>
   </li><li>CREATE
   <ul>
     <li>Allow CREATE TABLE AS to determine column lengths for complex
@@ -528,6 +521,11 @@ first.  There is also a developer's wiki at<br/>
     <li>Allow UPDATE tab SET ROW (col, ...) = (SELECT...)
 <p>          <a href="http://archives.postgresql.org/pgsql-hackers/2006-07/msg01306.php">http://archives.postgresql.org/pgsql-hackers/2006-07/msg01306.php</a>
           <a href="http://archives.postgresql.org/pgsql-hackers/2007-03/msg00865.php">http://archives.postgresql.org/pgsql-hackers/2007-03/msg00865.php</a>
+</p>
+    </li><li>Research self-referential UPDATEs that see inconsistent row versions
+          in read-committed mode
+<p>          <a href="http://archives.postgresql.org/pgsql-hackers/2007-05/msg00507.php">http://archives.postgresql.org/pgsql-hackers/2007-05/msg00507.php</a>
+          <a href="http://archives.postgresql.org/pgsql-hackers/2007-06/msg00016.php">http://archives.postgresql.org/pgsql-hackers/2007-06/msg00016.php</a>
 </p>
   </li></ul>
   </li><li>ALTER
@@ -970,8 +968,8 @@ first.  There is also a developer's wiki at<br/>
 <h1><a name="section_14">Cache Usage</a></h1>
 
 <ul>
-  <li>Allow free-behind capability for large sequential scans, perhaps using
-  posix_fadvise()
+  <li>Allow free-behind capability for large sequential scans to avoid
+  kernel cache spoiling
 <p>  Posix_fadvise() can control both sequential/random file caching and
   free-behind behavior, but it is unclear how the setting affects other
   backends that also have the file open, and the feature is not supported

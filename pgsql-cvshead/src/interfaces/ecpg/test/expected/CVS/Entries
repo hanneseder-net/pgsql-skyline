@@ -16,8 +16,6 @@
 /compat_informix-rnull.stderr/1.2/Sat Mar 17 19:25:23 2007//
 /compat_informix-rnull.stdout/1.1/Sat Aug 19 15:10:00 2006//
 /compat_informix-test_informix.c/1.12/Sat Mar 17 19:25:23 2007//
-/compat_informix-test_informix.stderr/1.5/Sat Mar 17 19:25:23 2007//
-/compat_informix-test_informix.stdout/1.3/Mon Aug  7 13:17:02 2006//
 /compat_informix-test_informix2.c/1.13/Sat Mar 17 19:25:23 2007//
 /compat_informix-test_informix2.stderr/1.6/Sat Mar 17 19:25:23 2007//
 /compat_informix-test_informix2.stdout/1.1/Wed Aug  2 14:14:02 2006//
@@ -128,4 +126,6 @@
 /thread-thread_implicit.stderr/1.1/Wed Aug  2 14:14:03 2006//
 /thread-thread_implicit.stdout/1.2/Thu Mar 29 12:02:24 2007//
 /preproc-variable.c/1.10/Wed May 30 13:52:57 2007//
+/compat_informix-test_informix.stderr/1.6/Mon Jun  4 08:43:41 2007//
+/compat_informix-test_informix.stdout/1.4/Mon Jun  4 08:43:41 2007//
 D

@@ -2,7 +2,6 @@
 /aggregates.sql////*///
 /alter_table.sql////*///
 /bit.sql////*///
-/boolean.sql////*///
 /box.sql////*///
 /btree_index.sql////*///
 /case.sql////*///
@@ -34,7 +33,6 @@
 /euc_tw.sql////*///
 /float4.sql////*///
 /float8.sql////*///
-/foreign_key.sql////*///
 /guc.sql////*///
 /hash_index.sql////*///
 /horology.sql////*///
@@ -79,10 +77,7 @@
 /sequence.sql////*///
 /sql_ascii.sql////*///
 /stats.sql////*///
-/strings.sql////*///
-/subselect.sql////*///
 /temp.sql////*///
-/text.sql////*///
 /time.sql////*///
 /timestamp.sql////*///
 /timestamptz.sql////*///
@@ -108,3 +103,8 @@
 /rules.sql////*///
 /tinterval.sql////*///
 /xml.sql////*///
+/boolean.sql////*///
+/foreign_key.sql////*///
+/strings.sql////*///
+/subselect.sql////*///
+/text.sql////*///

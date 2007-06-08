@@ -1,8 +1,6 @@
 /backendid.h////*///
 /block.h////*///
-/buffile.h////*///
 /bufpage.h////*///
-/fd.h////*///
 /freespace.h////*///
 /ipc.h////*///
 /item.h////*///
@@ -18,7 +16,6 @@
 /pmsignal.h////*///
 /pos.h////*///
 /proc.h////*///
-/procarray.h////*///
 /relfilenode.h////*///
 /s_lock.h////*///
 /shmem.h////*///
@@ -30,3 +27,6 @@
 /buf_internals.h////*///
 /bufmgr.h////*///
 /lock.h////*///
+/procarray.h////*///
+/buffile.h////*///
+/fd.h////*///

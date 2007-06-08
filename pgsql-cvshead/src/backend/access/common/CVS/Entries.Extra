@@ -2,6 +2,6 @@
 /heaptuple.c////*///
 /indextuple.c////*///
 /printtup.c////*///
-/reloptions.c////*///
 /scankey.c////*///
 /tupdesc.c////*///
+/reloptions.c////*///

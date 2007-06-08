@@ -1,7 +1,6 @@
 /FAQ////*///
 /FAQ_AIX////*///
 /FAQ_CYGWIN////*///
-/FAQ_DEV////*///
 /FAQ_HPUX////*///
 /FAQ_IRIX////*///
 /FAQ_MINGW////*///
@@ -27,5 +26,6 @@
 /bug.template////*///
 D/TODO.detail///////
 D/src///////
+/FAQ_DEV////*///
 /TODO////*///
 D/man///////

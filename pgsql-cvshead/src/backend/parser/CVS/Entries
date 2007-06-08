@@ -4,11 +4,7 @@
 /analyze.c/1.363/Fri Apr 27 22:05:48 2007//
 /gram.y/2.591/Fri Apr 27 22:05:48 2007//
 /keywords.c/1.187/Thu Apr 26 16:13:12 2007//
-/parse_agg.c/1.77/Thu Feb  1 19:10:27 2007//
 /parse_clause.c/1.165/Fri Apr 27 22:05:48 2007//
-/parse_coerce.c/2.153/Mon Apr  2 03:49:38 2007//
-/parse_expr.c/1.217/Fri Apr 27 22:05:48 2007//
-/parse_func.c/1.195/Tue Mar 27 23:21:10 2007//
 /parse_node.c/1.97/Sat Mar 17 00:11:04 2007//
 /parse_oper.c/1.95/Mon Apr  2 03:49:39 2007//
 /parse_relation.c/1.127/Fri Jan  5 22:19:34 2007//
@@ -17,4 +13,8 @@
 /scan.l/1.139/Fri Jan  5 22:19:34 2007//
 /scansup.c/1.35/Fri Jan  5 22:19:34 2007//
 /parse_type.c/1.90/Sat May 12 09:16:12 2007//
+/parse_expr.c/1.218/Wed Jun  6 16:05:50 2007//
+/parse_agg.c/1.78/Thu Jun  7 10:42:35 2007//
+/parse_coerce.c/2.155/Thu Jun  7 10:42:35 2007//
+/parse_func.c/1.197/Thu Jun  7 10:42:35 2007//
 D

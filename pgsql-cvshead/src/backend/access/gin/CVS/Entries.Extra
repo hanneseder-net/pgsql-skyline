@@ -1,13 +1,13 @@
 /Makefile////*///
 /README////*///
 /ginarrayproc.c////*///
-/ginbtree.c////*///
 /ginbulk.c////*///
+/ginutil.c////*///
+/ginscan.c////*///
 /gindatapage.c////*///
 /ginentrypage.c////*///
 /ginget.c////*///
-/gininsert.c////*///
-/ginutil.c////*///
 /ginxlog.c////*///
-/ginscan.c////*///
+/ginbtree.c////*///
+/gininsert.c////*///
 /ginvacuum.c////*///

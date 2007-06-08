@@ -12,7 +12,6 @@
 /proclang.h/1.12/Mon Mar 26 16:58:41 2007//
 /schemacmds.h/1.16/Tue Mar 13 00:33:43 2007//
 /sequence.h/1.38/Fri Jan  5 22:19:54 2007//
-/tablespace.h/1.16/Tue Mar  6 02:06:15 2007//
 /trigger.h/1.62/Mon Mar 19 23:38:31 2007//
 /user.h/1.30/Wed Oct  4 00:30:08 2006//
 /variable.h/1.29/Fri Jan  5 22:19:54 2007//
@@ -23,4 +22,5 @@
 /cluster.h/1.33/Sat May 19 08:06:17 2007//
 /explain.h/1.31/Wed May 30 13:52:57 2007//
 /vacuum.h/1.72/Thu May 31 10:06:58 2007//
+/tablespace.h/1.18/Fri Jun  8 07:10:12 2007//
 D

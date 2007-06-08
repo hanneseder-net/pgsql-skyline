@@ -8,3 +8,6 @@
 /cubeparse.y////*///
 /cubescan.l////*///
 /uninstall_cube.sql////*///
+D/data///////
+D/expected///////
+D/sql///////

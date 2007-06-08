@@ -2,4 +2,15 @@
 /Gen_fmgrtab.sh/1.35/Mon Jan 22 01:35:21 2007//
 /Makefile/1.25/Fri Feb  9 15:55:58 2007//
 /probes.d/1.1/Mon Jul 24 16:32:45 2006//
-D
+D/adt////
+D/cache////
+D/error////
+D/fmgr////
+D/hash////
+D/init////
+D/mb////
+D/misc////
+D/mmgr////
+D/resowner////
+D/sort////
+D/time////

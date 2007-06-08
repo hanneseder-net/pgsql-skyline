@@ -3,7 +3,6 @@
 /execdesc.h////*///
 /executor.h////*///
 /functions.h////*///
-/hashjoin.h////*///
 /instrument.h////*///
 /nodeAgg.h////*///
 /nodeAppend.h////*///
@@ -14,7 +13,6 @@
 /nodeFunctionscan.h////*///
 /nodeGroup.h////*///
 /nodeHash.h////*///
-/nodeHashjoin.h////*///
 /nodeIndexscan.h////*///
 /nodeLimit.h////*///
 /nodeMaterial.h////*///
@@ -33,3 +31,5 @@
 /spi_priv.h////*///
 /tstoreReceiver.h////*///
 /tuptable.h////*///
+/hashjoin.h////*///
+/nodeHashjoin.h////*///

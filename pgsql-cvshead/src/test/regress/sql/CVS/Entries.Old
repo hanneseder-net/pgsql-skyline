@@ -2,7 +2,6 @@
 /aggregates.sql/1.13/Fri Jul 28 18:33:04 2006//
 /alter_table.sql/1.56/Wed Feb 14 01:58:58 2007//
 /bit.sql/1.2/Tue May 22 16:37:17 2001//
-/boolean.sql/1.7/Thu Apr  7 01:51:41 2005//
 /box.sql/1.7/Sun Sep 10 00:29:35 2006//
 /btree_index.sql/1.5/Thu Jan  6 06:41:55 2000//
 /case.sql/1.6/Wed Feb  2 21:49:09 2005//
@@ -34,8 +33,6 @@
 /euc_tw.sql/1.1/Tue Feb  2 19:04:43 1999//
 /float4.sql/1.9/Tue Jan  2 20:00:50 2007//
 /float8.sql/1.15/Wed Jun  8 21:15:29 2005//
-/foreign_key.sql/1.18/Wed Feb 14 01:58:58 2007//
-/geometry.sql/1.10/Tue Jan  9 02:14:16 2007//
 /guc.sql/1.4/Thu Apr 26 16:13:15 2007//
 /hash_index.sql/1.6/Thu Apr  7 01:51:41 2005//
 /horology.sql/1.33/Tue Jul 25 03:51:22 2006//
@@ -45,8 +42,6 @@
 /int2.sql/1.7/Thu Apr  7 01:51:41 2005//
 /int4.sql/1.9/Thu Apr  7 01:51:41 2005//
 /int8.sql/1.9/Mon Dec  5 04:13:38 2005//
-/interval.sql/1.11/Wed Sep  6 02:05:41 2006//
-/join.sql/1.20/Fri Feb 16 00:14:01 2007//
 /lseg.sql/1.3/Wed Jan  5 06:07:57 2000//
 /mule_internal.sql/1.2/Tue Jun 16 07:29:54 1998//
 /name.sql/1.8/Thu Apr  7 01:51:41 2005//
@@ -59,7 +54,6 @@
 /path.sql/1.3/Wed Jan  5 06:07:58 2000//
 /plancache.sql/1.4/Fri Mar 23 19:53:52 2007//
 /plpgsql.sql/1.47/Sun Apr 29 01:21:09 2007//
-/point.sql/1.12/Tue Jan  9 02:14:16 2007//
 /polygon.sql/1.9/Sun Sep 10 00:29:35 2006//
 /polymorphism.sql/1.4/Tue May  1 18:53:52 2007//
 /portals.sql/1.9/Thu Apr 12 06:53:49 2007//
@@ -72,7 +66,6 @@
 /reltime.sql/1.5/Thu Apr  7 01:51:41 2005//
 /returning.sql/1.3/Sat Sep  2 17:06:52 2006//
 /rowtypes.sql/1.8/Fri Apr  6 04:21:44 2007//
-/rules.sql/1.33/Mon Feb 27 16:09:50 2006//
 /sanity_check.sql/1.6/Sun Aug  6 04:35:21 2006//
 /select.sql/1.13/Wed Mar 21 22:18:12 2007//
 /select_distinct.sql/1.5/Sun Dec 11 10:54:28 2005//
@@ -84,15 +77,12 @@
 /sequence.sql/1.4/Sun Oct  2 23:50:16 2005//
 /sql_ascii.sql/1.1/Mon Mar  6 01:29:54 2000//
 /stats.sql/1.9/Mon Apr 30 03:23:49 2007//
-/strings.sql/1.20/Fri Apr  6 04:21:44 2007//
-/subselect.sql/1.9/Wed Nov 23 17:21:04 2005//
 /temp.sql/1.8/Fri Apr 20 02:37:38 2007//
 /text.sql/1.3/Tue Jan  4 16:21:02 2000//
 /time.sql/1.6/Thu Jul  6 01:46:38 2006//
 /timestamp.sql/1.20/Fri Feb 16 17:49:15 2007//
 /timestamptz.sql/1.14/Sat Feb 17 01:51:42 2007//
 /timetz.sql/1.4/Thu Jul  6 01:46:38 2006//
-/tinterval.sql/1.7/Thu Apr  7 01:51:41 2005//
 /transactions.sql/1.13/Sun Feb 26 18:36:23 2006//
 /triggers.sql/1.13/Mon Jun 26 17:24:41 2006//
 /truncate.sql/1.5/Thu Jun 29 16:07:29 2006//
@@ -102,10 +92,20 @@
 /vacuum.sql/1.1/Sat Jul 20 04:58:14 2002//
 /varchar.sql/1.4/Thu Apr  7 01:51:41 2005//
 /without_oid.sql/1.7/Fri Feb  9 03:35:35 2007//
-/xml.sql/1.14/Thu Mar 22 20:26:30 2007//
 /arrays.sql/1.26/Sat May 12 09:16:21 2007//
 /domain.sql/1.24/Sat May 12 09:16:21 2007//
 /oidjoins.sql/1.20/Sat May 12 09:16:21 2007//
 /type_sanity.sql/1.30/Sat May 12 09:16:21 2007//
 /limit.sql/1.5/Sat May 19 08:06:22 2007//
+/geometry.sql/1.11/Wed May 30 13:52:58 2007//
+/interval.sql/1.12/Wed May 30 13:52:58 2007//
+/join.sql/1.21/Wed May 30 13:52:58 2007//
+/point.sql/1.13/Wed May 30 13:52:58 2007//
+/rules.sql/1.34/Wed May 30 13:52:58 2007//
+/tinterval.sql/1.8/Wed May 30 13:52:58 2007//
+/xml.sql/1.15/Wed May 30 13:52:58 2007//
+/boolean.sql/1.8/Sat Jun  2 11:40:34 2007//
+/foreign_key.sql/1.19/Wed Jun  6 16:06:07 2007//
+/strings.sql/1.21/Wed Jun  6 16:06:07 2007//
+/subselect.sql/1.10/Wed Jun  6 16:06:07 2007//
 D

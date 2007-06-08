@@ -1,4 +1,4 @@
 /Makefile////*///
 /dynahash.c////*///
-/hashfn.c////*///
 /pg_crc.c////*///
+/hashfn.c////*///

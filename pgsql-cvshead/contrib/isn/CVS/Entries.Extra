@@ -5,7 +5,7 @@
 /Makefile////*///
 /README.isn////*///
 /UPC.h////*///
+/uninstall_isn.sql////*///
 /isn.c////*///
 /isn.h////*///
 /isn.sql.in////*///
-/uninstall_isn.sql////*///

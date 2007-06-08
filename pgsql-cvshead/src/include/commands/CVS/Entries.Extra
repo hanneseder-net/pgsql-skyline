@@ -12,7 +12,6 @@
 /proclang.h////*///
 /schemacmds.h////*///
 /sequence.h////*///
-/tablespace.h////*///
 /trigger.h////*///
 /user.h////*///
 /variable.h////*///
@@ -23,3 +22,4 @@
 /cluster.h////*///
 /explain.h////*///
 /vacuum.h////*///
+/tablespace.h////*///

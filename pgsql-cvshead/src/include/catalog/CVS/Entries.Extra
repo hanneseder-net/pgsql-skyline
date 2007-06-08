@@ -12,7 +12,6 @@
 /pg_auth_members.h////*///
 /pg_authid.h////*///
 /pg_autovacuum.h////*///
-/pg_cast.h////*///
 /pg_constraint.h////*///
 /pg_conversion.h////*///
 /pg_database.h////*///
@@ -26,7 +25,6 @@
 /pg_listener.h////*///
 /pg_namespace.h////*///
 /pg_opclass.h////*///
-/pg_operator.h////*///
 /pg_opfamily.h////*///
 /pg_pltemplate.h////*///
 /pg_rewrite.h////*///
@@ -39,8 +37,10 @@
 /unused_oids////*///
 /pg_attribute.h////*///
 /pg_class.h////*///
-/pg_type.h////*///
 /index.h////*///
 /pg_control.h////*///
+/pg_cast.h////*///
 /catversion.h////*///
+/pg_operator.h////*///
 /pg_proc.h////*///
+/pg_type.h////*///

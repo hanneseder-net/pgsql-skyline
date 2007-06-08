@@ -6,7 +6,6 @@
 /charset.sgml/2.83/Sun Apr 15 10:56:25 2007//
 /client-auth.sgml/1.98/Sat Mar 24 21:46:23 2007//
 /contacts.sgml/1.9/Fri Mar 10 19:10:47 2006//
-/cvs.sgml/1.42/Tue Mar 27 01:45:22 2007//
 /datetime.sgml/2.56/Wed Jan 31 20:56:16 2007//
 /dfunc.sgml/1.35/Thu Feb  1 00:28:16 2007//
 /diskusage.sgml/1.18/Wed Jan 31 20:56:16 2007//
@@ -14,7 +13,6 @@
 /docguide.sgml/1.71/Fri Feb 16 03:50:28 2007//
 /ecpg.sgml/1.83/Tue Apr 17 17:30:35 2007//
 /errcodes.sgml/1.22/Wed Jan 31 20:56:17 2007//
-/extend.sgml/1.34/Mon Apr  2 03:49:36 2007//
 /external-projects.sgml/1.16/Thu May  3 15:47:48 2007//
 /features.sgml/2.27/Sat Feb  3 17:59:35 2007//
 /filelist.sgml/1.49/Fri Nov 17 16:38:44 2006//
@@ -34,7 +32,6 @@
 /legal.sgml/1.22/Fri Jan  5 22:19:21 2007//
 /libpq.sgml/1.235/Fri Mar 30 03:19:02 2007//
 /lobj.sgml/1.46/Wed Mar 14 00:15:26 2007//
-/manage-ag.sgml/2.53/Thu Feb  1 00:28:17 2007//
 /mk_feature_tables.pl/2.2/Sat Mar 11 04:38:30 2006//
 /monitoring.sgml/1.50/Fri Apr 27 20:08:43 2007//
 /mvcc.sgml/2.69/Sun Feb 18 01:21:49 2007//
@@ -44,7 +41,6 @@
 /planstats.sgml/1.8/Wed Jan 31 20:56:18 2007//
 /plhandler.sgml/1.7/Sat Sep 16 00:30:14 2006//
 /plperl.sgml/2.66/Fri May  4 14:55:32 2007//
-/plpgsql.sgml/1.109/Sun Apr 29 01:21:08 2007//
 /plpython.sgml/1.38/Thu Feb  1 00:28:17 2007//
 /pltcl.sgml/2.46/Wed Feb 21 03:27:31 2007//
 /postgres.sgml/1.81/Wed Jan 31 20:56:18 2007//
@@ -64,7 +60,6 @@
 /sql.sgml/1.46/Fri Feb 16 03:50:29 2007//
 /standalone-install.sgml/2.6/Sat Nov 29 19:51:37 2003//
 /start.sgml/1.44/Wed Jan 31 20:56:19 2007//
-/storage.sgml/1.17/Fri Apr  6 04:21:41 2007//
 /stylesheet-common.xsl/1.1/Sun Dec 10 16:01:06 2006//
 /stylesheet-fo.xsl/1.1/Sun Dec 10 16:01:06 2006//
 /stylesheet-hh.xsl/1.2/Sun Dec 10 16:01:06 2006//
@@ -72,23 +67,28 @@
 /stylesheet.dsl/1.32/Fri Dec 15 16:50:07 2006//
 /stylesheet.xsl/1.3/Sun Dec 10 16:01:06 2006//
 /trigger.sgml/1.50/Wed Feb 14 01:58:56 2007//
-/typeconv.sgml/1.51/Thu Feb  1 19:10:24 2007//
 /user-manag.sgml/1.39/Thu Feb  1 00:28:18 2007//
 /wal.sgml/1.43/Wed Jan 31 20:56:19 2007//
 /xaggr.sgml/1.35/Thu Feb  1 00:28:18 2007//
-/xfunc.sgml/1.127/Mon Apr  2 03:49:37 2007//
 /xindex.sgml/1.60/Wed Apr 25 19:48:27 2007//
 /xoper.sgml/1.42/Tue Feb  6 04:38:31 2007//
 /xplang.sgml/1.34/Thu Feb  1 00:28:18 2007//
 D/ref////
 /array.sgml/1.61/Sat May 12 09:16:10 2007//
-/syntax.sgml/1.118/Sat May 12 09:16:11 2007//
-/catalogs.sgml/2.152/Tue May 15 21:22:53 2007//
 /ddl.sgml/1.75/Tue May 15 21:22:53 2007//
-/maintenance.sgml/1.74/Tue May 15 21:22:53 2007//
 /xtypes.sgml/1.29/Tue May 15 21:22:53 2007//
 /Makefile/1.97/Sat May 19 08:06:12 2007//
-/config.sgml/1.124/Sat May 19 08:06:13 2007//
-/datatype.sgml/1.202/Wed May 30 13:52:55 2007//
-/func.sgml/1.380/Wed May 30 13:52:55 2007//
 /info.sgml/1.25/Wed May 30 13:52:55 2007//
+/cvs.sgml/1.44/Thu May 31 10:06:50 2007//
+/maintenance.sgml/1.75/Thu May 31 10:06:50 2007//
+/config.sgml/1.125/Sun Jun  3 20:15:59 2007//
+/manage-ag.sgml/2.54/Sun Jun  3 20:15:59 2007//
+/storage.sgml/1.18/Sun Jun  3 20:15:59 2007//
+/catalogs.sgml/2.153/Wed Jun  6 16:05:49 2007//
+/syntax.sgml/1.119/Wed Jun  6 16:05:49 2007//
+/typeconv.sgml/1.52/Wed Jun  6 16:05:49 2007//
+/datatype.sgml/1.204/Thu Jun  7 10:42:34 2007//
+/extend.sgml/1.35/Thu Jun  7 10:42:35 2007//
+/func.sgml/1.382/Thu Jun  7 10:42:35 2007//
+/plpgsql.sgml/1.110/Thu Jun  7 10:42:35 2007//
+/xfunc.sgml/1.128/Thu Jun  7 10:42:35 2007//

@@ -2,8 +2,8 @@
 /fork_process.c/1.7/Fri Jan  5 22:19:36 2007//
 /pgarch.c/1.29/Sat Feb 10 14:58:54 2007//
 /postmaster.c/1.527/Thu Mar 22 19:53:30 2007//
-/syslogger.c/1.30/Fri Jan  5 22:19:36 2007//
 /bgwriter.c/1.38/Wed May 30 13:52:55 2007//
-/pgstat.c/1.158/Wed May 30 13:52:55 2007//
 /autovacuum.c/1.47/Thu May 31 10:06:53 2007//
+/syslogger.c/1.31/Tue Jun  5 07:10:21 2007//
+/pgstat.c/1.159/Fri Jun  8 07:10:08 2007//
 D

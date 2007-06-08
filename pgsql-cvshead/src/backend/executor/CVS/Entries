@@ -3,13 +3,10 @@
 /execAmi.c/1.92/Mon Feb 19 02:23:11 2007//
 /execGrouping.c/1.25/Tue Feb  6 02:59:11 2007//
 /execJunk.c/1.56/Fri Jan  5 22:19:27 2007//
-/execMain.c/1.293/Fri Apr 27 22:05:47 2007//
 /execProcnode.c/1.61/Tue Feb 27 01:11:25 2007//
-/execQual.c/1.217/Fri Apr  6 04:21:42 2007//
 /execScan.c/1.41/Fri Feb  2 00:07:03 2007//
 /execTuples.c/1.99/Fri Jan  5 22:19:27 2007//
 /execUtils.c/1.147/Tue Feb 27 01:11:25 2007//
-/functions.c/1.116/Fri Apr 27 22:05:47 2007//
 /instrument.c/1.19/Fri Jan  5 22:19:28 2007//
 /nodeAgg.c/1.152/Mon Apr  2 03:49:38 2007//
 /nodeAppend.c/1.72/Fri Jan  5 22:19:28 2007//
@@ -17,8 +14,6 @@
 /nodeBitmapOr.c/1.8/Fri Jan  5 22:19:28 2007//
 /nodeFunctionscan.c/1.44/Thu Feb 22 22:00:23 2007//
 /nodeGroup.c/1.69/Thu Feb 22 23:44:24 2007//
-/nodeHash.c/1.111/Thu Feb 22 22:49:27 2007//
-/nodeHashjoin.c/1.89/Fri Feb  2 00:07:03 2007//
 /nodeNestloop.c/1.45/Fri Feb  2 00:07:03 2007//
 /nodeResult.c/1.40/Thu Feb 22 23:44:25 2007//
 /nodeSeqscan.c/1.63/Fri Jan  5 22:19:28 2007//
@@ -37,4 +32,9 @@
 /nodeMaterial.c/1.59/Wed May 30 13:52:55 2007//
 /nodeMergejoin.c/1.88/Wed May 30 13:52:55 2007//
 /nodeIndexscan.c/1.123/Thu May 31 21:35:31 2007//
+/execMain.c/1.294/Sun Jun  3 20:15:59 2007//
+/execQual.c/1.218/Wed Jun  6 16:05:49 2007//
+/functions.c/1.117/Thu Jun  7 10:42:35 2007//
+/nodeHash.c/1.114/Fri Jun  8 07:10:07 2007//
+/nodeHashjoin.c/1.91/Fri Jun  8 07:10:07 2007//
 D

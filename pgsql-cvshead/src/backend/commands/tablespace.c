@@ -37,7 +37,7 @@
  *
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/backend/commands/tablespace.c,v 1.46 2007/05/31 15:13:02 petere Exp $
+ *	  $PostgreSQL: pgsql/src/backend/commands/tablespace.c,v 1.48 2007/06/07 19:19:56 tgl Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -63,10 +63,12 @@
 #include "utils/fmgroids.h"
 #include "utils/guc.h"
 #include "utils/lsyscache.h"
+#include "utils/memutils.h"
 
 
-/* GUC variable */
+/* GUC variables */
 char	   *default_tablespace = NULL;
+char	   *temp_tablespaces = NULL;
 
 
 static bool remove_tablespace_directories(Oid tablespaceoid, bool redo);
@@ -903,15 +905,28 @@ assign_default_tablespace(const char *newval, bool doit, GucSource source)
 /*
  * GetDefaultTablespace -- get the OID of the current default tablespace
  *
- * May return InvalidOid to indicate "use the database's default tablespace"
+ * Regular objects and temporary objects have different default tablespaces,
+ * hence the forTemp parameter must be specified.
+ *
+ * May return InvalidOid to indicate "use the database's default tablespace".
+ *
+ * Note that caller is expected to check appropriate permissions for any
+ * result other than InvalidOid.
  *
  * This exists to hide (and possibly optimize the use of) the
  * default_tablespace GUC variable.
  */
 Oid
-GetDefaultTablespace(void)
+GetDefaultTablespace(bool forTemp)
 {
 	Oid			result;
+
+	/* The temp-table case is handled elsewhere */
+	if (forTemp)
+	{
+		PrepareTempTablespaces();
+		return GetNextTempTableSpace();
+	}
 
 	/* Fast path for default_tablespace == "" */
 	if (default_tablespace == NULL || default_tablespace[0] == '\0')
@@ -937,6 +952,207 @@ GetDefaultTablespace(void)
 
 
 /*
+ * Routines for handling the GUC variable 'temp_tablespaces'.
+ */
+
+/* assign_hook: validate new temp_tablespaces, do extra actions as needed */
+const char *
+assign_temp_tablespaces(const char *newval, bool doit, GucSource source)
+{
+	char	   *rawname;
+	List	   *namelist;
+
+	/* Need a modifiable copy of string */
+	rawname = pstrdup(newval);
+
+	/* Parse string into list of identifiers */
+	if (!SplitIdentifierString(rawname, ',', &namelist))
+	{
+		/* syntax error in name list */
+		pfree(rawname);
+		list_free(namelist);
+		return NULL;
+	}
+
+	/*
+	 * If we aren't inside a transaction, we cannot do database access so
+	 * cannot verify the individual names.	Must accept the list on faith.
+	 * Fortunately, there's then also no need to pass the data to fd.c.
+	 */
+	if (IsTransactionState())
+	{
+		/*
+		 * If we error out below, or if we are called multiple times in one
+		 * transaction, we'll leak a bit of TopTransactionContext memory.
+		 * Doesn't seem worth worrying about.
+		 */
+		Oid	   *tblSpcs;
+		int		numSpcs;
+		ListCell   *l;
+
+		tblSpcs = (Oid *) MemoryContextAlloc(TopTransactionContext,
+									list_length(namelist) * sizeof(Oid));
+		numSpcs = 0;
+		foreach(l, namelist)
+		{
+			char	   *curname = (char *) lfirst(l);
+			Oid			curoid;
+			AclResult	aclresult;
+
+			/* Allow an empty string (signifying database default) */
+			if (curname[0] == '\0')
+			{
+				tblSpcs[numSpcs++] = InvalidOid;
+				continue;
+			}
+
+			/* Else verify that name is a valid tablespace name */
+			curoid = get_tablespace_oid(curname);
+			if (curoid == InvalidOid)
+			{
+				/*
+				 * In an interactive SET command, we ereport for bad info.
+				 * Otherwise, silently ignore any bad list elements.
+				 */
+				if (source >= PGC_S_INTERACTIVE)
+					ereport(ERROR,
+							(errcode(ERRCODE_UNDEFINED_OBJECT),
+							 errmsg("tablespace \"%s\" does not exist",
+									curname)));
+				continue;
+			}
+
+			/*
+			 * Allow explicit specification of database's default tablespace
+			 * in temp_tablespaces without triggering permissions checks.
+			 */
+			if (curoid == MyDatabaseTableSpace)
+			{
+				tblSpcs[numSpcs++] = InvalidOid;
+				continue;
+			}
+
+			/* Check permissions similarly */
+			aclresult = pg_tablespace_aclcheck(curoid, GetUserId(),
+											   ACL_CREATE);
+			if (aclresult != ACLCHECK_OK)
+			{
+				if (source >= PGC_S_INTERACTIVE)
+					aclcheck_error(aclresult, ACL_KIND_TABLESPACE, curname);
+				continue;
+			}
+
+			tblSpcs[numSpcs++] = curoid;
+		}
+
+		/* If actively "doing it", give the new list to fd.c */
+		if (doit)
+			SetTempTablespaces(tblSpcs, numSpcs);
+		else
+			pfree(tblSpcs);
+	}
+
+	pfree(rawname);
+	list_free(namelist);
+
+	return newval;
+}
+
+/*
+ * PrepareTempTablespaces -- prepare to use temp tablespaces
+ *
+ * If we have not already done so in the current transaction, parse the
+ * temp_tablespaces GUC variable and tell fd.c which tablespace(s) to use
+ * for temp files.
+ */
+void
+PrepareTempTablespaces(void)
+{
+	char	   *rawname;
+	List	   *namelist;
+	Oid		   *tblSpcs;
+	int			numSpcs;
+	ListCell   *l;
+
+	/* No work if already done in current transaction */
+	if (TempTablespacesAreSet())
+		return;
+
+	/*
+	 * Can't do catalog access unless within a transaction.  This is just
+	 * a safety check in case this function is called by low-level code that
+	 * could conceivably execute outside a transaction.  Note that in such
+	 * a scenario, fd.c will fall back to using the current database's default
+	 * tablespace, which should always be OK.
+	 */
+	if (!IsTransactionState())
+		return;
+
+	/* Need a modifiable copy of string */
+	rawname = pstrdup(temp_tablespaces);
+
+	/* Parse string into list of identifiers */
+	if (!SplitIdentifierString(rawname, ',', &namelist))
+	{
+		/* syntax error in name list */
+		SetTempTablespaces(NULL, 0);
+		pfree(rawname);
+		list_free(namelist);
+		return;
+	}
+
+	/* Store tablespace OIDs in an array in TopTransactionContext */
+	tblSpcs = (Oid *) MemoryContextAlloc(TopTransactionContext,
+									list_length(namelist) * sizeof(Oid));
+	numSpcs = 0;
+	foreach(l, namelist)
+	{
+		char	   *curname = (char *) lfirst(l);
+		Oid			curoid;
+		AclResult	aclresult;
+
+		/* Allow an empty string (signifying database default) */
+		if (curname[0] == '\0')
+		{
+			tblSpcs[numSpcs++] = InvalidOid;
+			continue;
+		}
+
+		/* Else verify that name is a valid tablespace name */
+		curoid = get_tablespace_oid(curname);
+		if (curoid == InvalidOid)
+		{
+			/* Silently ignore any bad list elements */
+			continue;
+		}
+
+		/*
+		 * Allow explicit specification of database's default tablespace
+		 * in temp_tablespaces without triggering permissions checks.
+		 */
+		if (curoid == MyDatabaseTableSpace)
+		{
+			tblSpcs[numSpcs++] = InvalidOid;
+			continue;
+		}
+
+		/* Check permissions similarly */
+		aclresult = pg_tablespace_aclcheck(curoid, GetUserId(),
+										   ACL_CREATE);
+		if (aclresult != ACLCHECK_OK)
+			continue;
+
+		tblSpcs[numSpcs++] = curoid;
+	}
+
+	SetTempTablespaces(tblSpcs, numSpcs);
+
+	pfree(rawname);
+	list_free(namelist);
+}
+
+
+/*
  * get_tablespace_oid - given a tablespace name, look up the OID
  *
  * Returns InvalidOid if tablespace name not found.
@@ -950,7 +1166,11 @@ get_tablespace_oid(const char *tablespacename)
 	HeapTuple	tuple;
 	ScanKeyData entry[1];
 
-	/* Search pg_tablespace */
+	/*
+	 * Search pg_tablespace.  We use a heapscan here even though there is an
+	 * index on name, on the theory that pg_tablespace will usually have just
+	 * a few entries and so an indexed lookup is a waste of effort.
+	 */
 	rel = heap_open(TableSpaceRelationId, AccessShareLock);
 
 	ScanKeyInit(&entry[0],
@@ -960,6 +1180,7 @@ get_tablespace_oid(const char *tablespacename)
 	scandesc = heap_beginscan(rel, SnapshotNow, 1, entry);
 	tuple = heap_getnext(scandesc, ForwardScanDirection);
 
+	/* We assume that there can be at most one matching tuple */
 	if (HeapTupleIsValid(tuple))
 		result = HeapTupleGetOid(tuple);
 	else
@@ -985,7 +1206,11 @@ get_tablespace_name(Oid spc_oid)
 	HeapTuple	tuple;
 	ScanKeyData entry[1];
 
-	/* Search pg_tablespace */
+	/*
+	 * Search pg_tablespace.  We use a heapscan here even though there is an
+	 * index on oid, on the theory that pg_tablespace will usually have just
+	 * a few entries and so an indexed lookup is a waste of effort.
+	 */
 	rel = heap_open(TableSpaceRelationId, AccessShareLock);
 
 	ScanKeyInit(&entry[0],

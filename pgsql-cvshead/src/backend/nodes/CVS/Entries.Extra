@@ -1,6 +1,5 @@
 /Makefile////*///
 /README////*///
-/bitmapset.c////*///
 /list.c////*///
 /makefuncs.c////*///
 /nodeFuncs.c////*///
@@ -8,9 +7,10 @@
 /params.c////*///
 /print.c////*///
 /read.c////*///
-/readfuncs.c////*///
 /tidbitmap.c////*///
 /value.c////*///
+/bitmapset.c////*///
 /copyfuncs.c////*///
 /equalfuncs.c////*///
 /outfuncs.c////*///
+/readfuncs.c////*///

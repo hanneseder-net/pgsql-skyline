@@ -8,7 +8,7 @@
 /md5.c////*///
 /pg_hba.conf.sample////*///
 /pg_ident.conf.sample////*///
-/pqcomm.c////*///
 /pqformat.c////*///
 /pqsignal.c////*///
 /be-secure.c////*///
+/pqcomm.c////*///

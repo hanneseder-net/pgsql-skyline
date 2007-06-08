@@ -1,6 +1,5 @@
 /Makefile////*///
 /README////*///
-/hashfunc.c////*///
 /hashinsert.c////*///
 /hashscan.c////*///
 /hashutil.c////*///
@@ -8,3 +7,4 @@
 /hash.c////*///
 /hashovfl.c////*///
 /hashpage.c////*///
+/hashfunc.c////*///

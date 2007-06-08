@@ -8,4 +8,6 @@
 /cubeparse.y/1.17/Tue Feb 27 23:48:05 2007//
 /cubescan.l/1.11/Sat Mar 11 04:38:28 2006//
 /uninstall_cube.sql/1.4/Sun Sep 10 17:36:51 2006//
-D
+D/data////
+D/expected////
+D/sql////

@@ -3,13 +3,10 @@
 /execAmi.c////*///
 /execGrouping.c////*///
 /execJunk.c////*///
-/execMain.c////*///
 /execProcnode.c////*///
-/execQual.c////*///
 /execScan.c////*///
 /execTuples.c////*///
 /execUtils.c////*///
-/functions.c////*///
 /instrument.c////*///
 /nodeAgg.c////*///
 /nodeAppend.c////*///
@@ -17,8 +14,6 @@
 /nodeBitmapOr.c////*///
 /nodeFunctionscan.c////*///
 /nodeGroup.c////*///
-/nodeHash.c////*///
-/nodeHashjoin.c////*///
 /nodeNestloop.c////*///
 /nodeResult.c////*///
 /nodeSeqscan.c////*///
@@ -37,4 +32,9 @@
 /nodeMaterial.c////*///
 /nodeMergejoin.c////*///
 /nodeIndexscan.c////*///
+/execMain.c////*///
+/execQual.c////*///
+/functions.c////*///
+/nodeHash.c////*///
+/nodeHashjoin.c////*///
 D/_deadcode///////

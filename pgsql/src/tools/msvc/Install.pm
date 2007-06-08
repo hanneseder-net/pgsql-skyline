@@ -10,6 +10,9 @@ use warnings;
 use Carp;
 use File::Basename;
 use File::Copy;
+use File::Find;
+use File::Glob;
+use File::Spec;
 
 use Exporter;
 our (@ISA,@EXPORT_OK);
@@ -99,6 +102,41 @@ sub CopyFiles
     print "\n";
 }
 
+sub FindFiles
+{
+    my $spec = shift;
+    my $nonrecursive = shift;
+    my $pat = basename($spec);
+    my $dir = dirname($spec);
+
+    if ($dir eq '') { $dir = '.'; }
+
+    -d $dir || croak "Could not list directory $dir: $!\n";
+
+    if ($nonrecursive)
+    {
+        return glob($spec);
+    }
+
+    # borrowed from File::DosGlob
+    # escape regex metachars but not glob chars
+    $pat =~ s:([].+^\-\${}[|]):\\$1:g;
+    # and convert DOS-style wildcards to regex
+    $pat =~ s/\*/.*/g;
+    $pat =~ s/\?/.?/g;
+
+    $pat = '^' . $pat . '\z';
+
+    my @res;
+    find(
+        {
+            wanted => sub { /$pat/s && push (@res, File::Spec->canonpath($File::Find::name)); }
+        },
+        $dir
+    );
+    return @res;
+}
+
 sub CopySetOfFiles
 {
     my $what = shift;
@@ -106,21 +144,18 @@ sub CopySetOfFiles
     my $target = shift;
     my $silent = shift;
     my $norecurse = shift;
-    my $D;
 
-    my $subdirs = $norecurse?'':'/s';
     print "Copying $what" unless ($silent);
-    open($D, "cmd /c dir /b $subdirs $spec |") || croak "Could not list $spec\n";
-    while (<$D>)
+
+    foreach (FindFiles($spec, $norecurse))
     {
-        chomp;
         next if /regress/; # Skip temporary install in regression subdir
-        my $tgt = $target . basename($_);
+        my $src = $_;
+        my $tgt = $target . basename($src);
         print ".";
-        my $src = $norecurse?(dirname($spec) . '/' . $_):$_;
-        copy($src, $tgt) || croak "Could not copy $src: $!\n";
+        copy($src, $tgt) || croak "Could not copy $src to $tgt: $!\n";
     }
-    close($D);
+
     print "\n";
 }
 
@@ -371,25 +406,20 @@ sub GenerateNLSFiles
 {
     my $target = shift;
     my $nlspath = shift;
-    my $D;
 
     print "Installing NLS files...";
     EnsureDirectories($target, "share/locale");
-    open($D,"cmd /c dir /b /s nls.mk|") || croak "Could not list nls.mk\n";
-    while (<$D>)
+
+    foreach (FindFiles("nls.mk"))
     {
-        chomp;
         s/nls.mk/po/;
         my $dir = $_;
         next unless ($dir =~ /([^\\]+)\\po$/);
         my $prgm = $1;
         $prgm = 'postgres' if ($prgm eq 'backend');
-        my $E;
-        open($E,"cmd /c dir /b $dir\\*.po|") || croak "Could not list contents of $_\n";
 
-        while (<$E>)
+        foreach (FindFiles("$dir\\*.po", 1))
         {
-            chomp;
             my $lang;
             next unless /^(.*)\.po/;
             $lang = $1;
@@ -401,9 +431,8 @@ sub GenerateNLSFiles
               && croak("Could not run msgfmt on $dir\\$_");
             print ".";
         }
-        close($E);
     }
-    close($D);
+
     print "\n";
 }
 

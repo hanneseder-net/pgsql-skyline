@@ -7,7 +7,7 @@
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/backend/storage/file/buffile.c,v 1.25 2007/01/05 22:19:37 momjian Exp $
+ *	  $PostgreSQL: pgsql/src/backend/storage/file/buffile.c,v 1.28 2007/06/07 19:19:57 tgl Exp $
  *
  * NOTES:
  *
@@ -41,6 +41,8 @@
  * The maximum safe file size is presumed to be RELSEG_SIZE * BLCKSZ.
  * Note we adhere to this limit whether or not LET_OS_MANAGE_FILESIZE
  * is defined, although md.c ignores it when that symbol is defined.
+ * The reason for doing this is that we'd like large temporary BufFiles
+ * to be spread across multiple tablespaces when available.
  */
 #define MAX_PHYSICAL_FILESIZE  (RELSEG_SIZE * BLCKSZ)
 
@@ -85,7 +87,7 @@ static int	BufFileFlush(BufFile *file);
 
 /*
  * Create a BufFile given the first underlying physical file.
- * NOTE: caller must set isTemp true if appropriate.
+ * NOTE: caller must set isTemp and isInterXact if appropriate.
  */
 static BufFile *
 makeBufFile(File firstfile)
@@ -98,6 +100,7 @@ makeBufFile(File firstfile)
 	file->offsets = (long *) palloc(sizeof(long));
 	file->offsets[0] = 0L;
 	file->isTemp = false;
+	file->isInterXact = false;
 	file->dirty = false;
 	file->curFile = 0;
 	file->curOffset = 0L;
@@ -132,6 +135,9 @@ extendBufFile(BufFile *file)
  * Create a BufFile for a new temporary file (which will expand to become
  * multiple temporary files if more than MAX_PHYSICAL_FILESIZE bytes are
  * written to it).
+ *
+ * If interXact is true, the temp file will not be automatically deleted
+ * at end of transaction.
  *
  * Note: if interXact is true, the caller had better be calling us in a
  * memory context that will survive across transaction boundaries.
@@ -289,7 +295,7 @@ BufFileDumpBuffer(BufFile *file)
 				return;			/* seek failed, give up */
 			file->offsets[file->curFile] = file->curOffset;
 		}
-		bytestowrite = FileWrite(thisfile, file->buffer, bytestowrite);
+		bytestowrite = FileWrite(thisfile, file->buffer + wpos, bytestowrite);
 		if (bytestowrite <= 0)
 			return;				/* failed to write */
 		file->offsets[file->curFile] += bytestowrite;

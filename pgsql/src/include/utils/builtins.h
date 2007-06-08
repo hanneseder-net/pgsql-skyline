@@ -7,7 +7,7 @@
  * Portions Copyright (c) 1996-2007, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
- * $PostgreSQL: pgsql/src/include/utils/builtins.h,v 1.293 2007/05/17 23:31:49 tgl Exp $
+ * $PostgreSQL: pgsql/src/include/utils/builtins.h,v 1.296 2007/06/06 23:00:46 tgl Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -70,6 +70,7 @@ extern Datum boolin(PG_FUNCTION_ARGS);
 extern Datum boolout(PG_FUNCTION_ARGS);
 extern Datum boolrecv(PG_FUNCTION_ARGS);
 extern Datum boolsend(PG_FUNCTION_ARGS);
+extern Datum booltext(PG_FUNCTION_ARGS);
 extern Datum booleq(PG_FUNCTION_ARGS);
 extern Datum boolne(PG_FUNCTION_ARGS);
 extern Datum boollt(PG_FUNCTION_ARGS);
@@ -113,8 +114,6 @@ extern Datum enum_ne(PG_FUNCTION_ARGS);
 extern Datum enum_ge(PG_FUNCTION_ARGS);
 extern Datum enum_gt(PG_FUNCTION_ARGS);
 extern Datum enum_cmp(PG_FUNCTION_ARGS);
-extern Datum enum_text(PG_FUNCTION_ARGS);
-extern Datum text_enum(PG_FUNCTION_ARGS);
 extern Datum enum_smaller(PG_FUNCTION_ARGS);
 extern Datum enum_larger(PG_FUNCTION_ARGS);
 extern Datum enum_first(PG_FUNCTION_ARGS);
@@ -138,12 +137,8 @@ extern Datum int4recv(PG_FUNCTION_ARGS);
 extern Datum int4send(PG_FUNCTION_ARGS);
 extern Datum i2toi4(PG_FUNCTION_ARGS);
 extern Datum i4toi2(PG_FUNCTION_ARGS);
-extern Datum int2_text(PG_FUNCTION_ARGS);
-extern Datum text_int2(PG_FUNCTION_ARGS);
 extern Datum int4_bool(PG_FUNCTION_ARGS);
 extern Datum bool_int4(PG_FUNCTION_ARGS);
-extern Datum int4_text(PG_FUNCTION_ARGS);
-extern Datum text_int4(PG_FUNCTION_ARGS);
 extern Datum int4eq(PG_FUNCTION_ARGS);
 extern Datum int4ne(PG_FUNCTION_ARGS);
 extern Datum int4lt(PG_FUNCTION_ARGS);
@@ -332,10 +327,6 @@ extern Datum i4tof(PG_FUNCTION_ARGS);
 extern Datum i2tof(PG_FUNCTION_ARGS);
 extern Datum ftoi4(PG_FUNCTION_ARGS);
 extern Datum ftoi2(PG_FUNCTION_ARGS);
-extern Datum text_float8(PG_FUNCTION_ARGS);
-extern Datum text_float4(PG_FUNCTION_ARGS);
-extern Datum float8_text(PG_FUNCTION_ARGS);
-extern Datum float4_text(PG_FUNCTION_ARGS);
 extern Datum dround(PG_FUNCTION_ARGS);
 extern Datum dceil(PG_FUNCTION_ARGS);
 extern Datum dfloor(PG_FUNCTION_ARGS);
@@ -444,8 +435,6 @@ extern Datum oidge(PG_FUNCTION_ARGS);
 extern Datum oidgt(PG_FUNCTION_ARGS);
 extern Datum oidlarger(PG_FUNCTION_ARGS);
 extern Datum oidsmaller(PG_FUNCTION_ARGS);
-extern Datum oid_text(PG_FUNCTION_ARGS);
-extern Datum text_oid(PG_FUNCTION_ARGS);
 extern Datum oidvectorin(PG_FUNCTION_ARGS);
 extern Datum oidvectorout(PG_FUNCTION_ARGS);
 extern Datum oidvectorrecv(PG_FUNCTION_ARGS);
@@ -469,6 +458,8 @@ extern Datum anyarray_in(PG_FUNCTION_ARGS);
 extern Datum anyarray_out(PG_FUNCTION_ARGS);
 extern Datum anyarray_recv(PG_FUNCTION_ARGS);
 extern Datum anyarray_send(PG_FUNCTION_ARGS);
+extern Datum anynonarray_in(PG_FUNCTION_ARGS);
+extern Datum anynonarray_out(PG_FUNCTION_ARGS);
 extern Datum anyenum_in(PG_FUNCTION_ARGS);
 extern Datum anyenum_out(PG_FUNCTION_ARGS);
 extern Datum void_in(PG_FUNCTION_ARGS);
@@ -780,8 +771,6 @@ extern Datum network_show(PG_FUNCTION_ARGS);
 extern Datum inet_abbrev(PG_FUNCTION_ARGS);
 extern Datum cidr_abbrev(PG_FUNCTION_ARGS);
 extern double convert_network_to_scalar(Datum value, Oid typid);
-extern Datum text_cidr(PG_FUNCTION_ARGS);
-extern Datum text_inet(PG_FUNCTION_ARGS);
 extern Datum inet_to_cidr(PG_FUNCTION_ARGS);
 extern Datum inet_set_masklen(PG_FUNCTION_ARGS);
 extern Datum cidr_set_masklen(PG_FUNCTION_ARGS);
@@ -812,8 +801,6 @@ extern Datum macaddr_ge(PG_FUNCTION_ARGS);
 extern Datum macaddr_gt(PG_FUNCTION_ARGS);
 extern Datum macaddr_ne(PG_FUNCTION_ARGS);
 extern Datum macaddr_trunc(PG_FUNCTION_ARGS);
-extern Datum macaddr_text(PG_FUNCTION_ARGS);
-extern Datum text_macaddr(PG_FUNCTION_ARGS);
 extern Datum hashmacaddr(PG_FUNCTION_ARGS);
 
 /* numeric.c */
@@ -864,8 +851,6 @@ extern Datum numeric_float8(PG_FUNCTION_ARGS);
 extern Datum numeric_float8_no_overflow(PG_FUNCTION_ARGS);
 extern Datum float4_numeric(PG_FUNCTION_ARGS);
 extern Datum numeric_float4(PG_FUNCTION_ARGS);
-extern Datum text_numeric(PG_FUNCTION_ARGS);
-extern Datum numeric_text(PG_FUNCTION_ARGS);
 extern Datum numeric_accum(PG_FUNCTION_ARGS);
 extern Datum numeric_avg_accum(PG_FUNCTION_ARGS);
 extern Datum int2_accum(PG_FUNCTION_ARGS);
@@ -968,7 +953,5 @@ extern Datum uuid_gt(PG_FUNCTION_ARGS);
 extern Datum uuid_ne(PG_FUNCTION_ARGS);
 extern Datum uuid_cmp(PG_FUNCTION_ARGS);
 extern Datum uuid_hash(PG_FUNCTION_ARGS);
-extern Datum text_uuid(PG_FUNCTION_ARGS);
-extern Datum uuid_text(PG_FUNCTION_ARGS);
 
 #endif   /* BUILTINS_H */

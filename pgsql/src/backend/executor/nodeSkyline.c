@@ -236,6 +236,8 @@ ExecSkyline(SkylineState *node)
 {
 	Skyline *sl = (Skyline*)node->ss.ps.plan;
 
+	/* FIXME: the 1d cases do not handle by-ref-types correctly */
+	/* FIXME handle by reference types correctly, see tuplesort_putdatum, datumCopy */
 	if (sl->numCols == 1 && sl->skyline_distinct) {
 		if (!node->sl_done) {
 			int		compareFlags = node->compareFlags[0];
@@ -275,6 +277,7 @@ ExecSkyline(SkylineState *node)
 			return NULL;
 		}
 	}
+#ifdef NOT_INCLUDED	
 	else if (sl->numCols == 1 && !sl->skyline_distinct) {
 		/* FIXME handle by reference types correctly, see tuplesort_putdatum, datumCopy */
 		if (!node->sl_done) {
@@ -336,6 +339,7 @@ ExecSkyline(SkylineState *node)
 		else
 			return NULL;
 	}
+#endif
 	else {
 		TupleTableSlot *resultSlot = node->ss.ps.ps_ResultTupleSlot;
 

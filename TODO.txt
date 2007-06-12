@@ -3,3 +3,4 @@
   * use Materialize only if needed
   * implement tuple_window
   * implement block nested loop algorithem
+  * use slot_getsomeattrs(..., max(attnum)) to ensure speedy access on slot_getattr

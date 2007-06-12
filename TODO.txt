@@ -1,0 +1,5 @@
+  * support SKYLINE BY in VIEWs
+  * DIFF in 1d
+  * use Materialize only if needed
+  * implement tuple_window
+  * implement block nested loop algorithem

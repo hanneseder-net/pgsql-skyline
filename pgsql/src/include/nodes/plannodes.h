@@ -462,6 +462,7 @@ typedef struct Skyline
 	AttrNumber *skylineColIdx;
 	Oid		   *skylinebyOperators;
 	bool	   *nullsFirst;
+	int		   *skylineByDir;
 } Skyline;
 
 /* ---------------

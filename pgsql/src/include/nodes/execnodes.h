@@ -1332,7 +1332,9 @@ typedef struct SkylineState
 {
 	ScanState	ss;				/* its first field is NodeTag */
 	bool		sl_done;
-	Tuplestorestate	*tuplestorestate;
+	int64		sl_pos;
+
+	Tuplestorestate	*tuplestorestate; /* FIXME: maybe no longer needed, used for 1d distinct */
 
 	FmgrInfo   *compareOpFn;
 	int		   *compareFlags;

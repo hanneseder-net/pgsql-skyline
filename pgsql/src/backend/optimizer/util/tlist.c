@@ -130,6 +130,26 @@ get_sortgroupclause_tle(SortClause *sortClause,
 	return NULL;				/* keep compiler quiet */
 }
 
+TargetEntry *
+get_skylineclause_tle(SkylineBy *skylineBy,
+						List *targetList)
+{
+	Index		refnumber = skylineBy->tleSkylineRef;
+	ListCell   *l;
+
+	foreach(l, targetList)
+	{
+		TargetEntry *tle = (TargetEntry *) lfirst(l);
+
+		if (tle->ressortgroupref == refnumber)
+			return tle;
+	}
+
+	elog(ERROR, "ORDER/GROUP BY expression not found in targetlist");
+	return NULL;				/* keep compiler quiet */
+}
+
+
 /*
  * get_sortgroupclause_expr
  *		Find the targetlist entry matching the given SortClause

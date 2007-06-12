@@ -574,16 +574,20 @@ _outSkyline(StringInfo str, Skyline *node)
 	WRITE_INT_FIELD(numCols);
 
 	appendStringInfo(str, " :skylineColIdx");
-	for (i = 0; i < node->numCols; i++)
+	for (i = 0; i < node->numCols; ++i)
 		appendStringInfo(str, " %d", node->skylineColIdx[i]);
 
 	appendStringInfo(str, " :skylinebyOperators");
-	for (i = 0; i < node->numCols; i++)
+	for (i = 0; i < node->numCols; ++i)
 		appendStringInfo(str, " %u", node->skylinebyOperators[i]);
 
 	appendStringInfo(str, " :nullsFirst");
-	for (i = 0; i < node->numCols; i++)
+	for (i = 0; i < node->numCols; ++i)
 		appendStringInfo(str, " %s", booltostr(node->nullsFirst[i]));
+
+	appendStringInfo(str, " :skylineByDir");
+	for (i = 0; i < node->numCols; ++i)
+		appendStringInfo(str, " %d", node->skylineByDir[i]);
 }
 
 static void
@@ -1785,9 +1789,10 @@ _outSkylineBy(StringInfo str, SkylineBy *node)
 {
 	WRITE_NODE_TYPE("SKYLINEBY");
 
-	WRITE_UINT_FIELD(tleSortGroupRef);
+	WRITE_UINT_FIELD(tleSkylineRef);
 	WRITE_OID_FIELD(sortop);
 	WRITE_BOOL_FIELD(nulls_first);
+	WRITE_INT_FIELD(skylineby_dir);
 }
 
 static void

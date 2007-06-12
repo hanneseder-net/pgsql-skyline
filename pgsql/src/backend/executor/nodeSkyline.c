@@ -4,6 +4,7 @@
 #include "executor/execdebug.h"
 #include "executor/executor.h"
 #include "executor/nodeSkyline.h"
+#include "utils/datum.h"
 #include "utils/tuplestore.h"
 #include "utils/lsyscache.h"
 
@@ -76,14 +77,21 @@ inlineApplyCompareFunction(FmgrInfo *compFunction, int sk_flags,
 	return compare;
 }
 
+#define SKYLINE_CMP_ALL_EQ 1
+#define SKYLINE_CMP_FIRST_DOMINATES 2
+#define SYKLINE_CMP_SECOND_DOMINATES 3
+#define SKYLINE_CMP_INCOMPARABLE 4
+
 int
 ExecSkylineIsDominating(SkylineState *node, TupleTableSlot *inner_slot, TupleTableSlot *slot)
 {
 	Skyline	*sl = (Skyline*)node->ss.ps.plan;
 	int		i;
+	bool	cmp_all_eq = true;
 	bool	cmp_lt = false;
 	bool	cmp_gt = false;
-
+	bool	cmp_diff_eq = true;
+	
 	for (i=0; i<sl->numCols; ++i) {
 		Datum	datum1;
 		Datum	datum2;
@@ -96,18 +104,40 @@ ExecSkylineIsDominating(SkylineState *node, TupleTableSlot *inner_slot, TupleTab
 		datum2 = slot_getattr(slot, attnum, &isnull2);
 
 		cmp = inlineApplyCompareFunction(&(node->compareOpFn[i]), node->compareFlags[i], datum1, isnull1, datum2, isnull2);
-		if (cmp < 0)
-			cmp_lt = true;
-		else if (cmp > 0)
-			cmp_gt = true;
+
+		cmp_all_eq &= (cmp == 0);
+
+		switch (sl->skylineByDir[i]) {
+			case SKYLINEBY_DEFAULT:
+			case SKYLINEBY_MIN:
+			case SKYLINEBY_MAX:
+			case SKYLINEBY_USING:
+				if (cmp < 0)
+					cmp_lt = true;
+				else if (cmp > 0)
+					cmp_gt = true;
+
+				break;
+			case SKYLINEBY_DIFF:
+				cmp_diff_eq = cmp_diff_eq && (cmp == 0);
+
+				break;
+			default:
+				elog(ERROR, "unrecognized skylineby_dir: %d", sl->skylineByDir[i]);
+				break;
+		}
 	}
 
-	if (cmp_lt && !cmp_gt)
-		return -1;
-	else if (!cmp_lt && cmp_gt)
-		return 1;
-	else
-		return 0; /* it's incompare able */
+	if (cmp_all_eq)
+		return SKYLINE_CMP_ALL_EQ;
+
+	if (cmp_lt && !cmp_gt && cmp_diff_eq)
+		return SKYLINE_CMP_FIRST_DOMINATES;
+
+	if (!cmp_lt && cmp_gt && cmp_diff_eq)
+		return SYKLINE_CMP_SECOND_DOMINATES;
+
+	return SKYLINE_CMP_INCOMPARABLE;
 }
 
 static void
@@ -125,6 +155,7 @@ ExecSkylineGetOrderingOp(Skyline *sl, int idx, FmgrInfo *compareOpFn, int *compa
 		bool	reverse;
 
 		/* lookup the ordering function */
+		// FIXME: fix wording for error message
 		if (!get_compare_function_for_ordering_op(compareOperator, &compareFunction, &reverse))
 			elog(ERROR, "operator %u is not a valid ordering operator",	compareOperator);
 
@@ -236,8 +267,6 @@ ExecSkyline(SkylineState *node)
 {
 	Skyline *sl = (Skyline*)node->ss.ps.plan;
 
-	/* FIXME: the 1d cases do not handle by-ref-types correctly */
-	/* FIXME handle by reference types correctly, see tuplesort_putdatum, datumCopy */
 	if (sl->numCols == 1 && sl->skyline_distinct) {
 		if (!node->sl_done) {
 			int		compareFlags = node->compareFlags[0];
@@ -257,15 +286,16 @@ ExecSkyline(SkylineState *node)
 					break;
 
 				if (TupIsNull(resultSlot)) {
-					datum1 = slot_getattr(slot, attnum, &isnull1);
 					ExecCopySlot(resultSlot, slot);
+					datum1 = slot_getattr(resultSlot, attnum, &isnull1);
 				}
 				else {
 					datum2 = slot_getattr(slot, attnum, &isnull2);
 
 					if (inlineApplyCompareFunction(&compareOpFn, compareFlags, datum1, isnull1, datum2, isnull2) > 0) {
-						datum1 = datum2; isnull1 = isnull2;
+						/* using the result slot avoids copying of varlen attrs */
 						ExecCopySlot(resultSlot, slot);
+						datum1 = slot_getattr(resultSlot, attnum, &isnull1);
 					}
 				}
 			}
@@ -277,9 +307,7 @@ ExecSkyline(SkylineState *node)
 			return NULL;
 		}
 	}
-#ifdef NOT_INCLUDED	
 	else if (sl->numCols == 1 && !sl->skyline_distinct) {
-		/* FIXME handle by reference types correctly, see tuplesort_putdatum, datumCopy */
 		if (!node->sl_done) {
 			int		compareFlags = node->compareFlags[0];
 			FmgrInfo	compareOpFn = node->compareOpFn[0];
@@ -290,6 +318,10 @@ ExecSkyline(SkylineState *node)
 			bool	first = true;
 			int		attnum = sl->skylineColIdx[0];
 			TupleTableSlot *resultSlot = node->ss.ps.ps_ResultTupleSlot;
+			int16	typlen;
+			bool	typbyval;
+
+			get_typlenbyval(resultSlot->tts_tupleDescriptor->attrs[sl->skylineColIdx[0]-1]->atttypid, &typlen, &typbyval);
 
 			node->tuplestorestate = tuplestore_begin_heap(false, false, 1024 /* FIXME maxKBytes */);
 			tuplestore_set_eflags(node->tuplestorestate, EXEC_FLAG_MARK);
@@ -301,7 +333,7 @@ ExecSkyline(SkylineState *node)
 					break;
 
 				if (first) {
-					datum1 = slot_getattr(slot, attnum, &isnull1);
+					datum1 = datumCopy(slot_getattr(slot, attnum, &isnull1), typbyval, typlen);
 					tuplestore_puttupleslot(node->tuplestorestate, slot);
 
 					first = false;
@@ -316,13 +348,18 @@ ExecSkyline(SkylineState *node)
 						tuplestore_puttupleslot(node->tuplestorestate, slot);
 					}
 					else if (cmp > 0) {
-						datum1 = datum2; isnull1 = isnull2;
+						if (DatumGetPointer(datum1) != NULL)
+							datumFree(datum1, typbyval, typlen);
+						datum1 = datumCopy(datum2, typbyval, typlen); isnull1 = isnull2;
 
 						tuplestore_catchup(node->tuplestorestate);
 						tuplestore_puttupleslot(node->tuplestorestate, slot);
 					}
 				}
 			}
+
+			if (DatumGetPointer(datum1) != NULL)
+				datumFree(datum1, typbyval, typlen);
 
 			node->sl_done = true;
 
@@ -339,12 +376,12 @@ ExecSkyline(SkylineState *node)
 		else
 			return NULL;
 	}
-#endif
 	else {
 		TupleTableSlot *resultSlot = node->ss.ps.ps_ResultTupleSlot;
 
 		if (!node->sl_done) {
 			ExecMarkPos(outerPlanState(node));
+			node->sl_pos = 0;
 			node->sl_done = true;
 		}
 
@@ -352,21 +389,26 @@ ExecSkyline(SkylineState *node)
 
 		for (;;) {
 			TupleTableSlot *slot;
+			ItemPointerData resultPointer;
+			int64 sl_innerpos = 0;
 
 			ExecRestrPos(outerPlanState(node));
 			slot = ExecProcNode(outerPlanState(node));
+			node->sl_pos++;
 			ExecMarkPos(outerPlanState(node));
 
 			if (TupIsNull(slot))
 				return NULL;
 
 			ExecCopySlot(resultSlot, slot);
+			ItemPointerCopy(&(slot->tts_tuple->t_self), &resultPointer);
 
 			ExecReScan(outerPlanState(node), NULL);
 
 			for (;;) {
-				TupleTableSlot *inner_slot = ExecProcNode(outerPlanState(node));
 				int cmp;
+				TupleTableSlot *inner_slot = ExecProcNode(outerPlanState(node));
+				sl_innerpos++;
 
 				if (TupIsNull(inner_slot)) {
 					/* the tuple in the resultSlot is not dominated, return it */
@@ -374,11 +416,18 @@ ExecSkyline(SkylineState *node)
 				}
 
 				/* is inner_slot dominating resultSlot? */
-
 				cmp = ExecSkylineIsDominating(node, inner_slot, resultSlot);
-				if (cmp < 0) {
-					break;
+
+				if (sl->skyline_distinct) {
+					if (cmp == SKYLINE_CMP_ALL_EQ) {
+						/* the inner tuple is before the result tuple, so don't output the result tuple */
+						if (sl_innerpos < node->sl_pos)
+							break;
+					}
 				}
+					
+				if (cmp == SKYLINE_CMP_FIRST_DOMINATES)
+					break;
 			}
 		}
 	}

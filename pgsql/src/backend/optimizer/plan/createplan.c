@@ -2712,16 +2712,18 @@ make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause)
 	node->skylineColIdx = (AttrNumber *) palloc(numskylinecols * sizeof(AttrNumber));
 	node->skylinebyOperators = (Oid *) palloc(numskylinecols * sizeof(Oid));
 	node->nullsFirst = (bool *) palloc(numskylinecols * sizeof(bool));
+	node->skylineByDir = (int *) palloc(numskylinecols * sizeof(int));
 
 	numskylinecols=0;
 	foreach(l, skylinecls)
 	{
 		SkylineBy *skylinecl = (SkylineBy *) lfirst(l);
-		TargetEntry *tle = get_sortgroupclause_tle(skylinecl, sub_tlist);
+		TargetEntry *tle = get_skylineclause_tle(skylinecl, sub_tlist);
 
 		node->skylineColIdx[numskylinecols] = tle->resno;
 		node->skylinebyOperators[numskylinecols] = skylinecl->sortop;
 		node->nullsFirst[numskylinecols] = skylinecl->nulls_first;
+		node->skylineByDir[numskylinecols] = (int)skylinecl->skylineby_dir;
 
 		numskylinecols++;
 		

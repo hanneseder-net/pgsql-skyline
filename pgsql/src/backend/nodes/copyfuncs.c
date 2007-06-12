@@ -573,6 +573,7 @@ _copySkyline(Skyline *from)
 	COPY_POINTER_FIELD(skylineColIdx, from->numCols * sizeof(AttrNumber));
 	COPY_POINTER_FIELD(skylinebyOperators, from->numCols * sizeof(Oid));
 	COPY_POINTER_FIELD(nullsFirst, from->numCols * sizeof(bool));
+	COPY_POINTER_FIELD(skylineByDir, from->numCols * sizeof(int));
 
 	return newnode;
 }
@@ -1589,9 +1590,10 @@ _copySkylineBy(SkylineBy *from)
 {
 	SkylineBy *newnode = makeNode(SkylineBy);
 
-	COPY_SCALAR_FIELD(tleSortGroupRef);
+	COPY_SCALAR_FIELD(tleSkylineRef);
 	COPY_SCALAR_FIELD(sortop);
 	COPY_SCALAR_FIELD(nulls_first);
+	COPY_SCALAR_FIELD(skylineby_dir);
 
 	return newnode;
 }

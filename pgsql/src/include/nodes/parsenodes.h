@@ -695,8 +695,15 @@ typedef struct SkylineClause
 	List	   *skyline_by_list; /* list of SkylineBy's */
 } SkylineClause;
 
-typedef SortClause SkylineBy; /* by now a SkylineBy is the same as a SortClause */
 
+typedef struct SkylineBy
+{
+	NodeTag		type;
+	Index		tleSkylineRef;		/* reference into targetlist */
+	Oid			sortop;				/* the ordering operator ('<' op) */
+	bool		nulls_first;		/* do NULLs come before normal values? */
+	SkylineByDir	skylineby_dir;
+} SkylineBy;
 
 
 /*

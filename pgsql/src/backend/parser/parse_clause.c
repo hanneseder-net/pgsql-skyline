@@ -1807,17 +1807,14 @@ addTargetToSkylineList(ParseState *pstate, TargetEntry *tle,
 	{
 		case SKYLINEBY_DEFAULT:
 		case SKYLINEBY_MIN:
+		case SKYLINEBY_DIFF:
+			/* skyline diff must be treated special later */
 			skylineop = ordering_oper_opid(restype);
 			reverse = false;
 			break;
 		case SKYLINEBY_MAX:
 			skylineop = reverse_ordering_oper_opid(restype);
 			reverse = true;
-			break;
-		case SKYLINEBY_DIFF:
-			elog(ERROR, "unsupported skylineby_dir: %d", skylineby_dir);
-			skylineop = InvalidOid;
-			reverse = false;
 			break;
 		case SKYLINEBY_USING:
 			Assert(skylineby_opname != NIL);
@@ -1829,6 +1826,7 @@ addTargetToSkylineList(ParseState *pstate, TargetEntry *tle,
 			 * Verify it's a valid ordering operator, and determine
 			 * whether to consider it like ASC or DESC.
 			 */
+			// FIXME: fix wording for error message
 			if (!get_compare_function_for_ordering_op(skylineop,
 													  &cmpfunc, &reverse))
 				ereport(ERROR,
@@ -1836,6 +1834,7 @@ addTargetToSkylineList(ParseState *pstate, TargetEntry *tle,
 						 errmsg("operator %s is not a valid ordering operator",
 								strVal(llast(skylineby_opname))),
 						 errhint("Ordering operators must be \"<\" or \">\" members of btree operator families.")));
+
 			break;
 		default:
 			elog(ERROR, "unrecognized skylineby_dir: %d", skylineby_dir);
@@ -1851,9 +1850,10 @@ addTargetToSkylineList(ParseState *pstate, TargetEntry *tle,
 
 		/* FIXME: what is it good for? */
 		/* NOTE: I think this is just for GROUP/SORT */
-		skylinecl->tleSortGroupRef = assignSortGroupRef(tle, targetlist);
+		skylinecl->tleSkylineRef = assignSortGroupRef(tle, targetlist);
 
 		skylinecl->sortop = skylineop;
+		skylinecl->skylineby_dir = skylineby_dir;
 
 		switch (skylineby_nulls)
 		{

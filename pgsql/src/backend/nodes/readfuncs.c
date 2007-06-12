@@ -218,6 +218,36 @@ _readGroupClause(void)
 }
 
 /*
+ * _readSkylineClause
+ */
+static SkylineClause *
+_readSkylineClause(void)
+{
+	READ_LOCALS(SkylineClause);
+
+	READ_BOOL_FIELD(skyline_distinct);
+	READ_NODE_FIELD(skyline_by_list);
+
+	READ_DONE();
+}
+
+/*
+ * _readSkylineBy
+ */
+static SkylineBy *
+_readSkylineBy(void)
+{
+	READ_LOCALS(SkylineBy);
+
+	READ_UINT_FIELD(tleSkylineRef);
+	READ_OID_FIELD(sortop);
+	READ_BOOL_FIELD(nulls_first);
+	READ_INT_FIELD(skylineby_dir);
+
+	READ_DONE();
+}
+
+/*
  * _readRowMarkClause
  */
 static RowMarkClause *
@@ -1020,6 +1050,10 @@ parseNodeString(void)
 		return_value = _readSortClause();
 	else if (MATCH("GROUPCLAUSE", 11))
 		return_value = _readGroupClause();
+	else if (MATCH("SKYLINECLAUSE", 13))
+		return_value = _readSkylineClause();
+	else if (MATCH("SKYLINEBY", 9))
+		return_value = _readSkylineBy();
 	else if (MATCH("ROWMARKCLAUSE", 13))
 		return_value = _readRowMarkClause();
 	else if (MATCH("SETOPERATIONSTMT", 16))

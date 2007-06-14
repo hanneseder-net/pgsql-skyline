@@ -1,0 +1,10 @@
+/ChangeLog////*///
+/Makefile////*///
+/README.dynSQL////*///
+D/compatlib///////
+D/doc///////
+D/ecpglib///////
+D/include///////
+D/pgtypeslib///////
+D/preproc///////
+D/test///////

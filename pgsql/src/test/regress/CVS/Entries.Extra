@@ -1,0 +1,15 @@
+/GNUmakefile////*///
+/Makefile////*///
+/parallel_schedule////*///
+/pg_regress.c////*///
+/pg_regress.h////*///
+/pg_regress_main.c////*///
+/regress.c////*///
+/regressplans.sh////*///
+/resultmap////*///
+/serial_schedule////*///
+D/data///////
+D/expected///////
+D/input///////
+D/output///////
+D/sql///////

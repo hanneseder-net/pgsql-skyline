@@ -1,0 +1,15 @@
+/Makefile.regress////*///
+/Makefile////*///
+/ecpg_schedule////*///
+/pg_regress_ecpg.c////*///
+/regression.h////*///
+/resultmap////*///
+D/compat_informix///////
+D/complex///////
+D/connect///////
+D/expected///////
+D/performance///////
+D/pgtypeslib///////
+D/preproc///////
+D/sql///////
+D/thread///////

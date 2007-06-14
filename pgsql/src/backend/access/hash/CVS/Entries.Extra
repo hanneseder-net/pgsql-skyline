@@ -1,0 +1,10 @@
+/Makefile////*///
+/README////*///
+/hash.c////*///
+/hashfunc.c////*///
+/hashinsert.c////*///
+/hashovfl.c////*///
+/hashpage.c////*///
+/hashscan.c////*///
+/hashsearch.c////*///
+/hashutil.c////*///

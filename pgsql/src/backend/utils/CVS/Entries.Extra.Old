@@ -1,0 +1,16 @@
+/.cvsignore////*///
+/Gen_fmgrtab.sh////*///
+/Makefile////*///
+/probes.d////*///
+D/adt///////
+D/cache///////
+D/error///////
+D/fmgr///////
+D/hash///////
+D/init///////
+D/mb///////
+D/misc///////
+D/mmgr///////
+D/resowner///////
+D/sort///////
+D/time///////

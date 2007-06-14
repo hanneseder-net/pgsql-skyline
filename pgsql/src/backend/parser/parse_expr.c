@@ -8,7 +8,7 @@
  *
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/backend/parser/parse_expr.c,v 1.218 2007/06/05 21:31:05 tgl Exp $
+ *	  $PostgreSQL: pgsql/src/backend/parser/parse_expr.c,v 1.220 2007/06/11 22:22:42 tgl Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -59,10 +59,10 @@ static Node *transformMinMaxExpr(ParseState *pstate, MinMaxExpr *m);
 static Node *transformXmlExpr(ParseState *pstate, XmlExpr *x);
 static Node *transformXmlSerialize(ParseState *pstate, XmlSerialize *xs);
 static Node *transformBooleanTest(ParseState *pstate, BooleanTest *b);
+static Node *transformCurrentOfExpr(ParseState *pstate, CurrentOfExpr *cexpr);
 static Node *transformColumnRef(ParseState *pstate, ColumnRef *cref);
 static Node *transformWholeRowRef(ParseState *pstate, char *schemaname,
 					 char *relname, int location);
-static Node *transformBooleanTest(ParseState *pstate, BooleanTest *b);
 static Node *transformIndirection(ParseState *pstate, Node *basenode,
 					 List *indirection);
 static Node *typecast_expression(ParseState *pstate, Node *expr,
@@ -241,6 +241,10 @@ transformExpr(ParseState *pstate, Node *expr)
 
 		case T_BooleanTest:
 			result = transformBooleanTest(pstate, (BooleanTest *) expr);
+			break;
+
+		case T_CurrentOfExpr:
+			result = transformCurrentOfExpr(pstate, (CurrentOfExpr *) expr);
 			break;
 
 			/*********************************************
@@ -534,57 +538,69 @@ transformColumnRef(ParseState *pstate, ColumnRef *cref)
 	return node;
 }
 
-static Node *
-transformParamRef(ParseState *pstate, ParamRef *pref)
+/*
+ * Locate the parameter type info for the given parameter number, and
+ * return a pointer to it.
+ */
+static Oid *
+find_param_type(ParseState *pstate, int paramno)
 {
-	int			paramno = pref->number;
-	ParseState *toppstate;
-	Param	   *param;
+	Oid	   *result;
 
 	/*
 	 * Find topmost ParseState, which is where paramtype info lives.
 	 */
-	toppstate = pstate;
-	while (toppstate->parentParseState != NULL)
-		toppstate = toppstate->parentParseState;
+	while (pstate->parentParseState != NULL)
+		pstate = pstate->parentParseState;
 
 	/* Check parameter number is in range */
 	if (paramno <= 0)			/* probably can't happen? */
 		ereport(ERROR,
 				(errcode(ERRCODE_UNDEFINED_PARAMETER),
 				 errmsg("there is no parameter $%d", paramno)));
-	if (paramno > toppstate->p_numparams)
+	if (paramno > pstate->p_numparams)
 	{
-		if (!toppstate->p_variableparams)
+		if (!pstate->p_variableparams)
 			ereport(ERROR,
 					(errcode(ERRCODE_UNDEFINED_PARAMETER),
 					 errmsg("there is no parameter $%d",
 							paramno)));
 		/* Okay to enlarge param array */
-		if (toppstate->p_paramtypes)
-			toppstate->p_paramtypes =
-				(Oid *) repalloc(toppstate->p_paramtypes,
-								 paramno * sizeof(Oid));
+		if (pstate->p_paramtypes)
+			pstate->p_paramtypes = (Oid *) repalloc(pstate->p_paramtypes,
+													paramno * sizeof(Oid));
 		else
-			toppstate->p_paramtypes =
-				(Oid *) palloc(paramno * sizeof(Oid));
+			pstate->p_paramtypes = (Oid *) palloc(paramno * sizeof(Oid));
 		/* Zero out the previously-unreferenced slots */
-		MemSet(toppstate->p_paramtypes + toppstate->p_numparams,
+		MemSet(pstate->p_paramtypes + pstate->p_numparams,
 			   0,
-			   (paramno - toppstate->p_numparams) * sizeof(Oid));
-		toppstate->p_numparams = paramno;
+			   (paramno - pstate->p_numparams) * sizeof(Oid));
+		pstate->p_numparams = paramno;
 	}
-	if (toppstate->p_variableparams)
+
+	result = &pstate->p_paramtypes[paramno - 1];
+
+	if (pstate->p_variableparams)
 	{
 		/* If not seen before, initialize to UNKNOWN type */
-		if (toppstate->p_paramtypes[paramno - 1] == InvalidOid)
-			toppstate->p_paramtypes[paramno - 1] = UNKNOWNOID;
+		if (*result == InvalidOid)
+			*result = UNKNOWNOID;
 	}
+
+	return result;
+}
+
+static Node *
+transformParamRef(ParseState *pstate, ParamRef *pref)
+{
+	int			paramno = pref->number;
+	Oid		   *pptype = find_param_type(pstate, paramno);
+	Param	   *param;
 
 	param = makeNode(Param);
 	param->paramkind = PARAM_EXTERN;
 	param->paramid = paramno;
-	param->paramtype = toppstate->p_paramtypes[paramno - 1];
+	param->paramtype = *pptype;
 	param->paramtypmod = -1;
 
 	return (Node *) param;
@@ -1581,6 +1597,43 @@ transformBooleanTest(ParseState *pstate, BooleanTest *b)
 	return (Node *) b;
 }
 
+static Node *
+transformCurrentOfExpr(ParseState *pstate, CurrentOfExpr *cexpr)
+{
+	int		sublevels_up;
+
+	/* CURRENT OF can only appear at top level of UPDATE/DELETE */
+	Assert(pstate->p_target_rangetblentry != NULL);
+	cexpr->cvarno = RTERangeTablePosn(pstate,
+									  pstate->p_target_rangetblentry,
+									  &sublevels_up);
+	Assert(sublevels_up == 0);
+
+	/* If a parameter is used, it must be of type REFCURSOR */
+	if (cexpr->cursor_name == NULL)
+	{
+		Oid		   *pptype = find_param_type(pstate, cexpr->cursor_param);
+
+		if (pstate->p_variableparams && *pptype == UNKNOWNOID)
+		{
+			/* resolve unknown param type as REFCURSOR */
+			*pptype = REFCURSOROID;
+		}
+		else if (*pptype != REFCURSOROID)
+		{
+			ereport(ERROR,
+					(errcode(ERRCODE_AMBIGUOUS_PARAMETER),
+					 errmsg("inconsistent types deduced for parameter $%d",
+							cexpr->cursor_param),
+					 errdetail("%s versus %s",
+							   format_type_be(*pptype),
+							   format_type_be(REFCURSOROID))));
+		}
+	}
+
+	return (Node *) cexpr;
+}
+
 /*
  * Construct a whole-row reference to represent the notation "relation.*".
  *
@@ -1862,6 +1915,9 @@ exprType(Node *expr)
 			break;
 		case T_SetToDefault:
 			type = ((SetToDefault *) expr)->typeId;
+			break;
+		case T_CurrentOfExpr:
+			type = BOOLOID;
 			break;
 		default:
 			elog(ERROR, "unrecognized node type: %d", (int) nodeTag(expr));

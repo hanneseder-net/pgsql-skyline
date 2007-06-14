@@ -28,6 +28,7 @@ sub Install
     require 'config.pl';
 
     chdir("../../..") if (-f "../../../configure");
+    chdir("../../../..") if (-f "../../../../configure");
     my $conf = "";
     if (-d "debug")
     {
@@ -150,6 +151,7 @@ sub CopySetOfFiles
     foreach (FindFiles($spec, $norecurse))
     {
         next if /regress/; # Skip temporary install in regression subdir
+        next if /ecpg.test/; # Skip temporary install in regression subdir
         my $src = $_;
         my $tgt = $target . basename($src);
         print ".";

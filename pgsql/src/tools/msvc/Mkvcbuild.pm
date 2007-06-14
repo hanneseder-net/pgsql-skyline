@@ -3,7 +3,7 @@ package Mkvcbuild;
 #
 # Package that generates build files for msvc build
 #
-# $PostgreSQL: pgsql/src/tools/msvc/Mkvcbuild.pm,v 1.11 2007/04/27 16:45:54 mha Exp $
+# $PostgreSQL: pgsql/src/tools/msvc/Mkvcbuild.pm,v 1.13 2007/06/12 18:31:28 mha Exp $
 #
 use Carp;
 use Win32;
@@ -148,11 +148,21 @@ sub mkvcbuild
     my $ecpg = $solution->AddProject('ecpg','exe','interfaces','src\interfaces\ecpg\preproc');
     $ecpg->AddIncludeDir('src\interfaces\ecpg\include');
     $ecpg->AddIncludeDir('src\interfaces\libpq');
+    $ecpg->AddPrefixInclude('src\interfaces\ecpg\preproc');
     $ecpg->AddFiles('src\interfaces\ecpg\preproc','pgc.l','preproc.y');
     $ecpg->AddDefine('MAJOR_VERSION=4');
     $ecpg->AddDefine('MINOR_VERSION=2');
     $ecpg->AddDefine('PATCHLEVEL=1');
     $ecpg->AddReference($libpgport);
+
+    my $pgregress_ecpg = $solution->AddProject('pg_regress_ecpg','exe','misc');
+    $pgregress_ecpg->AddFile('src\interfaces\ecpg\test\pg_regress_ecpg.c');
+    $pgregress_ecpg->AddFile('src\test\regress\pg_regress.c');
+    $pgregress_ecpg->AddIncludeDir('src\port');
+    $pgregress_ecpg->AddIncludeDir('src\test\regress');
+    $pgregress_ecpg->AddDefine('HOST_TUPLE="i686-pc-win32vc"');
+    $pgregress_ecpg->AddDefine('FRONTEND');
+    $pgregress_ecpg->AddReference($libpgport);
 
     # src/bin
     my $initdb = AddSimpleFrontend('initdb', 1);
@@ -315,6 +325,7 @@ sub mkvcbuild
 
     my $pgregress = $solution->AddProject('pg_regress','exe','misc');
     $pgregress->AddFile('src\test\regress\pg_regress.c');
+    $pgregress->AddFile('src\test\regress\pg_regress_main.c');
     $pgregress->AddIncludeDir('src\port');
     $pgregress->AddDefine('HOST_TUPLE="i686-pc-win32vc"');
     $pgregress->AddDefine('FRONTEND');

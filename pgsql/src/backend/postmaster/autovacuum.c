@@ -10,7 +10,7 @@
  *
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/backend/postmaster/autovacuum.c,v 1.47 2007/05/30 20:11:57 tgl Exp $
+ *	  $PostgreSQL: pgsql/src/backend/postmaster/autovacuum.c,v 1.50 2007/06/13 21:24:55 alvherre Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -18,6 +18,7 @@
 
 #include <signal.h>
 #include <sys/types.h>
+#include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -72,6 +73,10 @@ int			autovacuum_vac_cost_delay;
 int			autovacuum_vac_cost_limit;
 
 int			Log_autovacuum = -1;
+
+
+/* maximum sleep duration in the launcher, in seconds */
+#define AV_SLEEP_QUANTUM 10
 
 /* Flags to tell if we are in an autovacuum process */
 static bool am_autovacuum_launcher = false;
@@ -197,7 +202,8 @@ NON_EXEC_STATIC void AutoVacWorkerMain(int argc, char *argv[]);
 NON_EXEC_STATIC void AutoVacLauncherMain(int argc, char *argv[]);
 
 static Oid do_start_worker(void);
-static uint64 launcher_determine_sleep(bool canlaunch, bool recursing);
+static void launcher_determine_sleep(bool canlaunch, bool recursing,
+						 struct timeval *nap);
 static void launch_worker(TimestampTz now);
 static List *get_database_list(void);
 static void rebuild_database_list(Oid newdb);
@@ -487,7 +493,7 @@ AutoVacLauncherMain(int argc, char *argv[])
 
 	for (;;)
 	{
-		uint64		micros;
+		struct timeval nap;
 		bool	can_launch;
 		TimestampTz current_time = 0;
 
@@ -498,11 +504,39 @@ AutoVacLauncherMain(int argc, char *argv[])
 		if (!PostmasterIsAlive(true))
 			exit(1);
 
-		micros = launcher_determine_sleep(AutoVacuumShmem->av_freeWorkers !=
-										  INVALID_OFFSET, false);
+		launcher_determine_sleep(AutoVacuumShmem->av_freeWorkers !=
+  								 INVALID_OFFSET, false, &nap);
 
-		/* Sleep for a while according to schedule */
-		pg_usleep(micros);
+		/*
+		 * Sleep for a while according to schedule.  We only sleep in
+		 * AV_SLEEP_QUANTUM second intervals, in order to promptly notice
+		 * postmaster death.
+		 */
+		while (nap.tv_sec > 0 || nap.tv_usec > 0)
+		{
+			uint32	sleeptime;
+
+			sleeptime = nap.tv_usec;
+			nap.tv_usec = 0;
+
+			if (nap.tv_sec > 0)
+			{
+				sleeptime += Min(nap.tv_sec, AV_SLEEP_QUANTUM) * 1000000;
+				nap.tv_sec -= Min(nap.tv_sec, AV_SLEEP_QUANTUM);
+			}
+			
+			pg_usleep(sleeptime);
+
+			/*
+			 * Emergency bailout if postmaster has died.  This is to avoid the
+			 * necessity for manual cleanup of all postmaster children.
+			 */
+			if (!PostmasterIsAlive(true))
+				exit(1);
+
+			if (avlauncher_shutdown_request || got_SIGHUP || got_SIGUSR1)
+				break;
+		}
 
 		/* the normal shutdown case */
 		if (avlauncher_shutdown_request)
@@ -647,16 +681,15 @@ AutoVacLauncherMain(int argc, char *argv[])
 }
 
 /*
- * Determine the time to sleep, in microseconds, based on the database list.
+ * Determine the time to sleep, based on the database list.
  *
  * The "canlaunch" parameter indicates whether we can start a worker right now,
- * for example due to the workers being all busy.
+ * for example due to the workers being all busy.  If this is false, we will
+ * cause a long sleep, which will be interrupted when a worker exits.
  */
-static uint64
-launcher_determine_sleep(bool canlaunch, bool recursing)
+static void
+launcher_determine_sleep(bool canlaunch, bool recursing, struct timeval *nap)
 {
-	long	secs;
-	int		usecs;
 	Dlelem *elem;
 
 	/*
@@ -667,23 +700,28 @@ launcher_determine_sleep(bool canlaunch, bool recursing)
 	 */
 	if (!canlaunch)
 	{
-		secs = autovacuum_naptime;
-		usecs = 0;
+		nap->tv_sec = autovacuum_naptime;
+		nap->tv_usec = 0;
 	}
 	else if ((elem = DLGetTail(DatabaseList)) != NULL)
 	{
 		avl_dbase  *avdb = DLE_VAL(elem);
 		TimestampTz	current_time = GetCurrentTimestamp();
 		TimestampTz	next_wakeup;
+		long	secs;
+		int		usecs;
 
 		next_wakeup = avdb->adl_next_worker;
 		TimestampDifference(current_time, next_wakeup, &secs, &usecs);
+
+		nap->tv_sec = secs;
+		nap->tv_usec = usecs;
 	}
 	else
 	{
 		/* list is empty, sleep for whole autovacuum_naptime seconds  */
-		secs = autovacuum_naptime;
-		usecs = 0;
+		nap->tv_sec = autovacuum_naptime;
+		nap->tv_usec = 0;
 	}
 
 	/*
@@ -696,20 +734,19 @@ launcher_determine_sleep(bool canlaunch, bool recursing)
 	 * We only recurse once.  rebuild_database_list should always return times
 	 * in the future, but it seems best not to trust too much on that.
 	 */
-	if (secs == 0L && usecs == 0 && !recursing)
+	if (nap->tv_sec == 0L && nap->tv_usec == 0 && !recursing)
 	{
 		rebuild_database_list(InvalidOid);
-		return launcher_determine_sleep(canlaunch, true);
+		launcher_determine_sleep(canlaunch, true, nap);
+		return;
 	}
 
 	/* 100ms is the smallest time we'll allow the launcher to sleep */
-	if (secs <= 0L && usecs <= 100000)
+	if (nap->tv_sec <= 0L && nap->tv_usec <= 100000)
 	{
-		secs = 0L;
-		usecs = 100000;	/* 100 ms */
+		nap->tv_sec = 0L;
+		nap->tv_usec = 100000;	/* 100 ms */
 	}
-
-	return secs * 1000000 + usecs;
 }
 
 /*
@@ -1548,7 +1585,11 @@ static void
 autovac_balance_cost(void)
 {
 	WorkerInfo	worker;
-	int         vac_cost_limit = (autovacuum_vac_cost_limit >= 0 ?
+	/*
+	 * note: in cost_limit, zero also means use value from elsewhere, because
+	 * zero is not a valid value.
+	 */
+	int         vac_cost_limit = (autovacuum_vac_cost_limit > 0 ?
 								  autovacuum_vac_cost_limit : VacuumCostLimit);
 	int         vac_cost_delay = (autovacuum_vac_cost_delay >= 0 ?
 								  autovacuum_vac_cost_delay : VacuumCostDelay);
@@ -1595,7 +1636,11 @@ autovac_balance_cost(void)
 			int     limit = (int)
 				(cost_avail * worker->wi_cost_limit_base / cost_total);
 
-			worker->wi_cost_limit = Min(limit, worker->wi_cost_limit_base);
+			/*
+			 * We put a lower bound of 1 to the cost_limit, to avoid division-
+			 * by-zero in the vacuum code.
+			 */
+			worker->wi_cost_limit = Max(Min(limit, worker->wi_cost_limit_base), 1);
 
 			elog(DEBUG2, "autovac_balance_cost(pid=%u db=%u, rel=%u, cost_limit=%d, cost_delay=%d)",
 				 worker->wi_workerpid, worker->wi_dboid,
@@ -2140,12 +2185,14 @@ table_recheck_autovac(Oid relid)
 		 * there is a tuple in pg_autovacuum, use it; else, use the GUC
 		 * defaults.  Note that the fields may contain "-1" (or indeed any
 		 * negative value), which means use the GUC defaults for each setting.
+		 * In cost_limit, the value 0 also means to use the value from
+		 * elsewhere.
 		 */
 		if (avForm != NULL)
 		{
-			vac_cost_limit = (avForm->vac_cost_limit >= 0) ?
+			vac_cost_limit = (avForm->vac_cost_limit > 0) ?
 				avForm->vac_cost_limit :
-				((autovacuum_vac_cost_limit >= 0) ?
+				((autovacuum_vac_cost_limit > 0) ?
 				 autovacuum_vac_cost_limit : VacuumCostLimit);
 
 			vac_cost_delay = (avForm->vac_cost_delay >= 0) ?
@@ -2158,7 +2205,7 @@ table_recheck_autovac(Oid relid)
 		}
 		else
 		{
-			vac_cost_limit = (autovacuum_vac_cost_limit >= 0) ?
+			vac_cost_limit = (autovacuum_vac_cost_limit > 0) ?
 				autovacuum_vac_cost_limit : VacuumCostLimit;
 
 			vac_cost_delay = (autovacuum_vac_cost_delay >= 0) ?

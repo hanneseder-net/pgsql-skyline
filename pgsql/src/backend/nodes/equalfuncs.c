@@ -18,7 +18,7 @@
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/backend/nodes/equalfuncs.c,v 1.308 2007/06/05 21:31:04 tgl Exp $
+ *	  $PostgreSQL: pgsql/src/backend/nodes/equalfuncs.c,v 1.310 2007/06/11 22:22:40 tgl Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -594,6 +594,16 @@ _equalSetToDefault(SetToDefault *a, SetToDefault *b)
 {
 	COMPARE_SCALAR_FIELD(typeId);
 	COMPARE_SCALAR_FIELD(typeMod);
+
+	return true;
+}
+
+static bool
+_equalCurrentOfExpr(CurrentOfExpr *a, CurrentOfExpr *b)
+{
+	COMPARE_SCALAR_FIELD(cvarno);
+	COMPARE_STRING_FIELD(cursor_name);
+	COMPARE_SCALAR_FIELD(cursor_param);
 
 	return true;
 }
@@ -2154,6 +2164,9 @@ equal(void *a, void *b)
 			break;
 		case T_SetToDefault:
 			retval = _equalSetToDefault(a, b);
+			break;
+		case T_CurrentOfExpr:
+			retval = _equalCurrentOfExpr(a, b);
 			break;
 		case T_TargetEntry:
 			retval = _equalTargetEntry(a, b);

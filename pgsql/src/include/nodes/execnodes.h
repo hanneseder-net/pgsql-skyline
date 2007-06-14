@@ -20,6 +20,7 @@
 #include "nodes/tidbitmap.h"
 #include "utils/hsearch.h"
 #include "utils/tuplestore.h"
+#include "utils/tuplewindow.h"
 
 
 /* ----------------
@@ -1334,7 +1335,8 @@ typedef struct SkylineState
 	bool		sl_done;
 	int64		sl_pos;
 
-	Tuplestorestate	*tuplestorestate; /* FIXME: maybe no longer needed, used for 1d distinct */
+	Tuplestorestate	*tuplestorestate; /* used for 1d distinct */
+	TupleWindowState *window;
 
 	FmgrInfo   *compareOpFn;
 	int		   *compareFlags;

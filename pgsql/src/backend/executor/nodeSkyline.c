@@ -4,8 +4,10 @@
 #include "executor/execdebug.h"
 #include "executor/executor.h"
 #include "executor/nodeSkyline.h"
+#include "miscadmin.h"
 #include "utils/datum.h"
 #include "utils/tuplestore.h"
+#include "utils/tuplewindow.h"
 #include "utils/lsyscache.h"
 
 
@@ -323,7 +325,7 @@ ExecSkyline(SkylineState *node)
 
 			get_typlenbyval(resultSlot->tts_tupleDescriptor->attrs[sl->skylineColIdx[0]-1]->atttypid, &typlen, &typbyval);
 
-			node->tuplestorestate = tuplestore_begin_heap(false, false, 1024 /* FIXME maxKBytes */);
+			node->tuplestorestate = tuplestore_begin_heap(false, false, work_mem);
 			tuplestore_set_eflags(node->tuplestorestate, EXEC_FLAG_MARK);
 			for (;;)
 			{
@@ -377,6 +379,65 @@ ExecSkyline(SkylineState *node)
 			return NULL;
 	}
 	else {
+		if (!node->sl_done) {
+			TupleWindowState *window = node->window = tuplewindow_begin(work_mem);
+
+			for (;;) {
+				TupleTableSlot *slot = ExecProcNode(outerPlanState(node));
+				TupleTableSlot *inner_slot = node->ss.ps.ps_ResultTupleSlot;
+
+				if (TupIsNull(slot))
+					break;
+
+				tuplewindow_rewind(window);
+				for (;;) {
+					int cmp;
+
+					if (tuplewindow_ateof(window)) {
+						// slot is not dominated, put it in the window 
+						// TODO: check for avilable space
+						tuplewindow_puttupleslot(window, slot);
+						break;
+					}
+				
+					tuplewindow_gettupleslot(window, inner_slot);
+
+					cmp = ExecSkylineIsDominating(node, inner_slot, slot);
+
+					if (sl->skyline_distinct && cmp == SKYLINE_CMP_ALL_EQ)
+						break;
+
+					// slot is dominated by a inner_slot in the window, so fetch the next
+					if (cmp == SKYLINE_CMP_FIRST_DOMINATES)
+						break;
+					
+					if (cmp == SYKLINE_CMP_SECOND_DOMINATES)
+						tuplewindow_removecurrent(window);
+
+					tuplewindow_movenext(window);
+				}
+			}
+
+			// tuplewindow_end(window);
+			tuplewindow_rewind(window);
+			node->sl_done = true;
+		}
+
+		{
+			TupleWindowState *window = node->window;
+
+			if (tuplewindow_ateof(window))
+				return NULL;
+			else {
+				TupleTableSlot *resultSlot = node->ss.ps.ps_ResultTupleSlot;
+				tuplewindow_gettupleslot(window, resultSlot);
+				tuplewindow_movenext(window);
+				return resultSlot;
+			}
+		}
+	}
+
+#ifdef NOT_USED
 		TupleTableSlot *resultSlot = node->ss.ps.ps_ResultTupleSlot;
 
 		if (!node->sl_done) {
@@ -431,6 +492,7 @@ ExecSkyline(SkylineState *node)
 			}
 		}
 	}
+	#endif
 }
 
 

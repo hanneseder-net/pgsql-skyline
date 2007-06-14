@@ -74,9 +74,9 @@
 /point.out/1.17/Wed May 30 13:52:58 2007//
 /polygon.out/1.13/Sun Sep 10 00:29:35 2006//
 /polymorphism.out/1.11/Tue May  1 18:53:52 2007//
-/portals.out/1.12/Thu Apr 12 06:53:48 2007//
+/portals.out/1.14/Tue Jun 12 07:05:56 2007//
 /portals_p2.out/1.4/Mon Jul 16 05:07:00 2001//
-/prepare.out/1.13/Thu Apr 12 06:53:48 2007//
+/prepare.out/1.14/Sat Jun  9 20:54:25 2007//
 /prepared_xacts.out/1.4/Thu Oct 13 23:12:04 2005//
 /privileges.out/1.36/Thu Feb  1 19:10:30 2007//
 /random.out/1.5/Mon Mar 15 15:46:25 2004//
@@ -104,13 +104,13 @@
 /strings.out/1.32/Wed Jun  6 16:06:07 2007//
 /subselect.out/1.15/Wed Jun  6 16:06:07 2007//
 /temp.out/1.13/Fri Apr 20 02:37:38 2007//
-/text.out/1.3/Tue Jan  4 16:19:34 2000//
+/text.out/1.4/Thu Jun  7 10:42:42 2007//
 /time.out/1.13/Thu Feb  1 19:10:30 2007//
 /timestamp.out/1.35/Fri Feb 16 17:49:15 2007//
 /timestamptz.out/1.26/Sat Feb 17 01:51:42 2007//
 /timetz.out/1.8/Thu Feb  1 19:10:30 2007//
 /tinterval.out/1.13/Wed May 30 13:52:58 2007//
-/transactions.out/1.16/Mon Jun  4 08:43:44 2007//
+/transactions.out/1.17/Sat Jun  9 20:54:25 2007//
 /triggers.out/1.24/Thu Feb  1 19:10:30 2007//
 /truncate.out/1.12/Thu Jun 29 16:07:29 2006//
 /type_sanity.out/1.30/Sat May 12 09:16:21 2007//

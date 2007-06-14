@@ -7,9 +7,9 @@
 /miscadmin.h/1.194/Mon Apr 16 18:29:56 2007//
 /pg_config.h.in/1.117/Fri May  4 15:20:52 2007//
 /pg_config.h.win32/1.42/Mon Apr 16 18:39:19 2007//
-/pg_config_manual.h/1.26/Fri Feb 23 21:36:19 2007//
+/pg_config_manual.h/1.27/Sat Jun  9 11:02:41 2007//
 /pg_trace.h/1.2/Wed Oct  4 00:30:06 2006//
-/pgstat.h/1.61/Wed May 30 13:52:57 2007//
+/pgstat.h/1.62/Sat Jun  9 20:54:10 2007//
 /pgtime.h/1.15/Fri Jan  5 22:19:50 2007//
 /port.h/1.111/Fri Apr 13 10:30:30 2007//
 /postgres.h/1.81/Tue May 15 21:22:57 2007//

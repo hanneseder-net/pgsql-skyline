@@ -1,6 +1,7 @@
 /Makefile////*///
 /README////*///
 /execAmi.c////*///
+/execCurrent.c////*///
 /execGrouping.c////*///
 /execJunk.c////*///
 /execMain.c////*///

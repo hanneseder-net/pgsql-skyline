@@ -1,14 +1,14 @@
 /Makefile/1.97/Sat May 19 08:06:12 2007//
 /advanced.sgml/1.54/Thu Feb  1 00:28:16 2007//
 /arch-dev.sgml/2.29/Wed Jan 31 20:56:16 2007//
-/array.sgml/1.61/Sat May 12 09:16:10 2007//
+/array.sgml/1.62/Fri Jun  8 07:10:06 2007//
 /backup.sgml/2.97/Thu Feb  1 00:28:16 2007//
 /biblio.sgml/1.27/Thu Feb  8 04:31:37 2007//
 /bki.sgml/1.21/Thu Feb  1 00:28:16 2007//
-/catalogs.sgml/2.153/Wed Jun  6 16:05:49 2007//
+/catalogs.sgml/2.154/Sat Jun  9 11:02:29 2007//
 /charset.sgml/2.83/Sun Apr 15 10:56:25 2007//
 /client-auth.sgml/1.98/Sat Mar 24 21:46:23 2007//
-/config.sgml/1.125/Sun Jun  3 20:15:59 2007//
+/config.sgml/1.126/Fri Jun  8 07:10:06 2007//
 /contacts.sgml/1.9/Fri Mar 10 19:10:47 2006//
 /cvs.sgml/1.44/Thu May 31 10:06:50 2007//
 /datatype.sgml/1.204/Thu Jun  7 10:42:34 2007//
@@ -53,7 +53,7 @@
 /planstats.sgml/1.8/Wed Jan 31 20:56:18 2007//
 /plhandler.sgml/1.7/Sat Sep 16 00:30:14 2006//
 /plperl.sgml/2.66/Fri May  4 14:55:32 2007//
-/plpgsql.sgml/1.110/Thu Jun  7 10:42:35 2007//
+/plpgsql.sgml/1.112/Tue Jun 12 07:05:41 2007//
 /plpython.sgml/1.38/Thu Feb  1 00:28:17 2007//
 /pltcl.sgml/2.46/Wed Feb 21 03:27:31 2007//
 /postgres.sgml/1.81/Wed Jan 31 20:56:18 2007//

@@ -1,7 +1,9 @@
 /Makefile.regress////*///
 /Makefile////*///
-/pg_regress.sh////*///
+/ecpg_schedule////*///
+/pg_regress_ecpg.c////*///
 /regression.h////*///
+/resultmap////*///
 D/compat_informix///////
 D/connect///////
 D/expected///////

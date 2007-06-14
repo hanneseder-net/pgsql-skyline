@@ -6,7 +6,7 @@
 /gist_private.h/1.26/Sat Jan 20 18:43:35 2007//
 /gistscan.h/1.31/Fri Jan  5 22:19:51 2007//
 /hash.h/1.82/Fri Jun  1 18:35:00 2007//
-/heapam.h/1.124/Wed May 30 13:52:57 2007//
+/heapam.h/1.126/Sat Jun  9 20:54:10 2007//
 /hio.h/1.34/Fri Jan  5 22:19:51 2007//
 /htup.h/1.93/Fri Apr  6 04:21:43 2007//
 /itup.h/1.48/Fri Jan  5 22:19:51 2007//
@@ -14,7 +14,7 @@
 /nbtree.h/1.113/Wed Apr 11 20:47:38 2007//
 /printtup.h/1.35/Fri Jan  5 22:19:51 2007//
 /reloptions.h/1.3/Fri Jan  5 22:19:51 2007//
-/relscan.h/1.54/Thu May 31 10:06:57 2007//
+/relscan.h/1.56/Sat Jun  9 20:54:10 2007//
 /rewriteheap.h/1.2/Sat May 19 08:06:17 2007//
 /rmgr.h/1.17/Sun Nov  5 22:42:10 2006//
 /sdir.h/1.19/Fri Jan  5 22:19:51 2007//

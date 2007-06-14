@@ -1,12 +1,12 @@
 /Makefile/1.18/Sat Jan 20 20:45:38 2007//
 /allpaths.c/1.164/Wed May 30 13:52:55 2007//
-/clausesel.c/1.85/Sat Apr 21 21:01:44 2007//
-/costsize.c/1.184/Wed Jun  6 16:05:50 2007//
+/clausesel.c/1.86/Tue Jun 12 07:05:44 2007//
+/costsize.c/1.185/Tue Jun 12 07:05:44 2007//
 /equivclass.c/1.2/Mon Jan 22 20:00:39 2007//
 /indxpath.c/1.222/Wed May 30 13:52:55 2007//
 /joinpath.c/1.112/Wed May 30 13:52:55 2007//
 /joinrels.c/1.86/Fri Feb 16 00:14:01 2007//
 /orindxpath.c/1.82/Fri Jan  5 22:19:31 2007//
 /pathkeys.c/1.85/Thu May 31 21:35:31 2007//
-/tidpath.c/1.29/Fri Jan  5 22:19:31 2007//
+/tidpath.c/1.30/Tue Jun 12 07:05:44 2007//
 D/_deadcode////

@@ -10,7 +10,7 @@
  * Portions Copyright (c) 1996-2007, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
- * $PostgreSQL: pgsql/src/include/nodes/primnodes.h,v 1.130 2007/06/05 21:31:08 tgl Exp $
+ * $PostgreSQL: pgsql/src/include/nodes/primnodes.h,v 1.132 2007/06/11 22:22:42 tgl Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -914,6 +914,26 @@ typedef struct SetToDefault
 	Oid			typeId;			/* type for substituted value */
 	int32		typeMod;		/* typemod for substituted value */
 } SetToDefault;
+
+/*
+ * Node representing [WHERE] CURRENT OF cursor_name
+ *
+ * CURRENT OF is a bit like a Var, in that it carries the rangetable index
+ * of the target relation being constrained; this aids placing the expression
+ * correctly during planning.  We can assume however that its "levelsup" is
+ * always zero, due to the syntactic constraints on where it can appear.
+ *
+ * The referenced cursor can be represented either as a hardwired string
+ * or as a reference to a run-time parameter of type REFCURSOR.  The latter
+ * case is for the convenience of plpgsql.
+ */
+typedef struct CurrentOfExpr
+{
+	Expr		xpr;
+	Index		cvarno;			/* RT index of target relation */
+	char	   *cursor_name;	/* name of referenced cursor, or NULL */
+	int			cursor_param;	/* refcursor parameter number, or 0 */
+} CurrentOfExpr;
 
 /*--------------------
  * TargetEntry -

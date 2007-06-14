@@ -8,6 +8,7 @@
 /builddoc.bat////*///
 /clean.bat////*///
 /config.pl////*///
+/ecpg_regression.proj////*///
 /gendef.pl////*///
 /getregress.pl////*///
 /install.bat////*///

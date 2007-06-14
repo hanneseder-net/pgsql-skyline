@@ -9,7 +9,7 @@
  *
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/backend/utils/adt/ruleutils.c,v 1.259 2007/06/05 21:31:06 tgl Exp $
+ *	  $PostgreSQL: pgsql/src/backend/utils/adt/ruleutils.c,v 1.261 2007/06/11 22:22:42 tgl Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -3086,6 +3086,7 @@ isSimpleNode(Node *node, Node *parentNode, int prettyFlags)
 		case T_Param:
 		case T_CoerceToDomainValue:
 		case T_SetToDefault:
+		case T_CurrentOfExpr:
 			/* single words: always simple */
 			return true;
 
@@ -4132,6 +4133,19 @@ get_rule_expr(Node *node, deparse_context *context,
 
 		case T_SetToDefault:
 			appendStringInfo(buf, "DEFAULT");
+			break;
+
+		case T_CurrentOfExpr:
+			{
+				CurrentOfExpr *cexpr = (CurrentOfExpr *) node;
+
+				if (cexpr->cursor_name)
+					appendStringInfo(buf, "CURRENT OF %s",
+									 quote_identifier(cexpr->cursor_name));
+				else
+					appendStringInfo(buf, "CURRENT OF $%d",
+									 cexpr->cursor_param);
+			}
 			break;
 
 		case T_List:

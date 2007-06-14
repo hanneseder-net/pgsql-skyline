@@ -66,9 +66,9 @@
 /point.sql/1.13/Wed May 30 13:52:58 2007//
 /polygon.sql/1.9/Sun Sep 10 00:29:35 2006//
 /polymorphism.sql/1.4/Tue May  1 18:53:52 2007//
-/portals.sql/1.9/Thu Apr 12 06:53:49 2007//
+/portals.sql/1.11/Tue Jun 12 07:05:56 2007//
 /portals_p2.sql/1.4/Mon Jul 16 05:07:00 2001//
-/prepare.sql/1.5/Thu Apr 12 06:53:49 2007//
+/prepare.sql/1.6/Sat Jun  9 20:54:25 2007//
 /prepared_xacts.sql/1.1/Fri Jun 17 22:32:51 2005//
 /privileges.sql/1.19/Tue Sep  5 21:08:36 2006//
 /random.sql/1.5/Mon Mar 15 15:46:25 2004//
@@ -91,13 +91,13 @@
 /strings.sql/1.21/Wed Jun  6 16:06:07 2007//
 /subselect.sql/1.10/Wed Jun  6 16:06:07 2007//
 /temp.sql/1.8/Fri Apr 20 02:37:38 2007//
-/text.sql/1.3/Tue Jan  4 16:21:02 2000//
+/text.sql/1.4/Thu Jun  7 10:42:42 2007//
 /time.sql/1.6/Thu Jul  6 01:46:38 2006//
 /timestamp.sql/1.20/Fri Feb 16 17:49:15 2007//
 /timestamptz.sql/1.14/Sat Feb 17 01:51:42 2007//
 /timetz.sql/1.4/Thu Jul  6 01:46:38 2006//
 /tinterval.sql/1.8/Wed May 30 13:52:58 2007//
-/transactions.sql/1.13/Sun Feb 26 18:36:23 2006//
+/transactions.sql/1.14/Sat Jun  9 20:54:25 2007//
 /triggers.sql/1.13/Mon Jun 26 17:24:41 2006//
 /truncate.sql/1.5/Thu Jun 29 16:07:29 2006//
 /type_sanity.sql/1.30/Sat May 12 09:16:21 2007//

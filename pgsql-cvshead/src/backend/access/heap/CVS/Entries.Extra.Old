@@ -2,4 +2,5 @@
 /heapam.c////*///
 /hio.c////*///
 /rewriteheap.c////*///
+/syncscan.c////*///
 /tuptoaster.c////*///

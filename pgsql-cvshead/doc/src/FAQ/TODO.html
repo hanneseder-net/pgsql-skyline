@@ -8,7 +8,7 @@
 <body bgcolor="#FFFFFF" text="#000000" link="#FF0000" vlink="#A00000" alink="#0000FF">
 <h1><a name="section_1">PostgreSQL TODO List</a></h1>
 <p>Current maintainer:     Bruce Momjian (<a href="mailto:bruce@momjian.us">bruce@momjian.us</a>)<br/>
-Last updated:           Sun Jun  3 14:49:04 EDT 2007
+Last updated:           Wed Jun 13 17:37:56 EDT 2007
 </p>
 <p>The most recent version of this document can be viewed at<br/>
 <a href="http://www.postgresql.org/docs/faqs.TODO.html">http://www.postgresql.org/docs/faqs.TODO.html</a>.
@@ -470,7 +470,7 @@ first.  There is also a developer's wiki at<br/>
   </li><li>Add GUC to issue notice about statements that use unjoined tables
   </li><li>Allow EXPLAIN to identify tables that were skipped because of 
   constraint_exclusion
-  </li><li>Allow EXPLAIN output to be more easily processed by scripts
+  </li><li>Allow EXPLAIN output to be more easily processed by scripts, perhaps XML
   </li><li>Enable standard_conforming_strings
   </li><li>Make standard_conforming_strings the default in 8.4?
 <p>  When this is done, backslash-quote should be prohibited in non-E''
@@ -606,13 +606,7 @@ first.  There is also a developer's wiki at<br/>
   </li></ul>
   </li><li>CURSOR
   <ul>
-    <li>Allow UPDATE/DELETE WHERE CURRENT OF cursor
-<p>          This requires using the row ctid to map cursor rows back to the
-          original heap row. This become more complicated if WITH HOLD cursors
-          are to be supported because WITH HOLD cursors have a copy of the row
-          and no FOR UPDATE lock.
-          <a href="http://archives.postgresql.org/pgsql-hackers/2007-01/msg01014.php">http://archives.postgresql.org/pgsql-hackers/2007-01/msg01014.php</a>
-</p>
+    <li>-<em>Allow UPDATE/DELETE WHERE CURRENT OF cursor</em>
     </li><li>Prevent DROP TABLE from dropping a row referenced by its own open
           cursor?
   </li></ul>
@@ -1010,18 +1004,8 @@ first.  There is also a developer's wiki at<br/>
     </li><li>Query execute plan
     </li><li>Query results
   </li></ul>
-  </li><li>Allow sequential scans to take advantage of other concurrent
+  </li><li>-<em>Allow sequential scans to take advantage of other concurrent</em>
   sequential scans, also called "Synchronised Scanning"
-<p>  One possible implementation is to start sequential scans from the lowest
-  numbered buffer in the shared cache, and when reaching the end wrap
-  around to the beginning, rather than always starting sequential scans
-  at the start of the table.
-</p>
-<p>  <a href="http://archives.postgresql.org/pgsql-patches/2006-12/msg00076.php">http://archives.postgresql.org/pgsql-patches/2006-12/msg00076.php</a>
-  <a href="http://archives.postgresql.org/pgsql-hackers/2006-12/msg00408.php">http://archives.postgresql.org/pgsql-hackers/2006-12/msg00408.php</a>
-  <a href="http://archives.postgresql.org/pgsql-hackers/2006-12/msg00784.php">http://archives.postgresql.org/pgsql-hackers/2006-12/msg00784.php</a>
-  <a href="http://archives.postgresql.org/pgsql-hackers/2007-03/msg00415.php">http://archives.postgresql.org/pgsql-hackers/2007-03/msg00415.php</a>
-</p>
   </li><li>Consider increasing internal areas when shared buffers is increased
 <p>  <a href="http://archives.postgresql.org/pgsql-hackers/2005-10/msg01419.php">http://archives.postgresql.org/pgsql-hackers/2005-10/msg01419.php</a>
 </p>

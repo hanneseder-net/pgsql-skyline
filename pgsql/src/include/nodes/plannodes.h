@@ -454,6 +454,15 @@ typedef struct Sort
  *		skyline node
  * ----------------
  */
+
+typedef enum SkylineMethode
+{
+	SM_1DIM,
+	SM_1DIM_DISTINCT,
+	SM_SIMPLENESTEDLOOP,
+	SM_BLOCKNESTEDLOOP
+} SkylineMethode;
+
 typedef struct Skyline
 {
 	Plan		plan;
@@ -463,6 +472,8 @@ typedef struct Skyline
 	Oid		   *skylinebyOperators;
 	bool	   *nullsFirst;
 	int		   *skylineByDir;
+	List	   *skyline_by_options;
+	SkylineMethode skyline_methode;
 } Skyline;
 
 /* ---------------

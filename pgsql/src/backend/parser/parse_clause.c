@@ -1483,6 +1483,7 @@ transformSkylineClause(ParseState *pstate,
 
 		node->skyline_distinct = sbc->skyline_distinct;
 		node->skyline_by_list = resultlist;
+		node->skyline_by_options = sbc->skyline_by_options;
 
 		return (Node*)node;
 	}

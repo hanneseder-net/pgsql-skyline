@@ -1329,17 +1329,30 @@ typedef struct GroupState
 	bool		grp_done;		/* indicates completion of Group scan */
 } GroupState;
 
+typedef enum SkylineStatus SkylineStatus;
+
+typedef enum SkylineSource SkylineSource;
+
 typedef struct SkylineState
 {
 	ScanState	ss;				/* its first field is NodeTag */
-	bool		sl_done;
-	int64		sl_pos;
+	SkylineStatus	status;
+	SkylineMethode	skyline_methode;
+
+	FmgrInfo   *compareOpFn;	/* compare funtions */
+	int		   *compareFlags;
+
+	int64		sl_pos;			/* used for simple nested loop */
 
 	Tuplestorestate	*tuplestorestate; /* used for 1d distinct */
-	TupleWindowState *window;
 
-	FmgrInfo   *compareOpFn;
-	int		   *compareFlags;
+	TupleWindowState *window;	/* used for Block Nested Loop (BNL) */
+	int64		timestampIn;
+	int64		timestampOut;
+	SkylineSource	source;
+	Tuplestorestate *tempIn;
+	Tuplestorestate *tempOut;
+	TupleTableSlot	*extraSlot;
 } SkylineState;
 
 /* ---------------------

@@ -330,6 +330,7 @@ typedef enum NodeTag
 	T_SortBy,
 	T_SkylineByClause,
 	T_SkylineByExpr,
+	T_SkylineOption,
 	T_RangeSubselect,
 	T_RangeFunction,
 	T_TypeName,

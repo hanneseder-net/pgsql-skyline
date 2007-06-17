@@ -136,6 +136,7 @@ static Node *makeXmlExpr(XmlExprOp op, char *name, List *named_args, List *args)
 	DefElem				*defelt;
 	SortBy				*sortby;
 	SkylineByExpr		*skyline_by_expr;
+	SkylineOption		*slopt;
 	JoinExpr			*jexpr;
 	IndexElem			*ielem;
 	Alias				*alias;
@@ -295,6 +296,9 @@ static Node *makeXmlExpr(XmlExprOp op, char *name, List *named_args, List *args)
 %type <istmt>	insert_rest
 
 %type <vsetstmt> set_rest
+
+%type <slopt> skyline_option
+%type <list>	skyline_options opt_skyline_options
 
 %type <node>	TableElement ConstraintElem TableFuncElement
 %type <node>	columnDef
@@ -6184,18 +6188,20 @@ having_clause:
 		;
 
 skyline_clause:
-			SKYLINE	BY skyline_by_list				
+			SKYLINE	BY skyline_by_list opt_skyline_options
 				{
 					SkylineByClause *n = makeNode(SkylineByClause);
 					n->skyline_by_list = $3; 
 					n->skyline_distinct = false;
+					n->skyline_by_options = $4;
 					$$ = (Node *)n;
 				}
-			| SKYLINE BY DISTINCT skyline_by_list
+			| SKYLINE BY DISTINCT skyline_by_list opt_skyline_options
 				{
 					SkylineByClause *n = makeNode(SkylineByClause);
 					n->skyline_by_list = $4;
 					n->skyline_distinct = true;
+					n->skyline_by_options = $5;
 					$$ = (Node *)n;
 				}
 			| /*EMPTY*/								{ $$ = NULL; }
@@ -6246,7 +6252,39 @@ skyline_by_expr:
 					$$->useOp = $5;
 				}
 		;
-		
+
+opt_skyline_options:
+			WITH skyline_options					{ $$ = $2; }
+			| /* EMPTY */							{ $$ = NIL; }
+		;
+
+skyline_options:
+			skyline_option
+				{ 
+					$$ = list_make1($1);
+				}
+			| skyline_options ',' skyline_option
+				{
+					$$ = lappend($1, $3);
+				}
+		;
+
+skyline_option:
+			var_name
+				{
+					SkylineOption *n = makeNode(SkylineOption);
+					n->name = $1;
+					n->value = makeIntConst(1);
+					$$ = n;
+				}
+			| var_name '=' var_value
+				{
+					SkylineOption *n = makeNode(SkylineOption);
+					n->name = $1;
+					n->value = $3;
+					$$ = n;
+				}
+		;
 
 for_locking_clause:
 			for_locking_items						{ $$ = $1; }

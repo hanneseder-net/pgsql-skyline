@@ -2688,10 +2688,45 @@ add_sort_column(AttrNumber colIdx, Oid sortOp, bool nulls_first,
 	return numCols + 1;
 }
 
+#ifdef NOT_USED
+static bool
+skyline_option_get_int(List *skyline_by_options, char *name, int *value)
+{
+	ListCell	*l;
+
+	AssertArg(name != NULL);
+	AssertArg(value != NULL);
+
+	foreach(l, skyline_by_options)
+	{
+		SkylineOption *option = (SkylineOption *) lfirst(l);
+		if (strcmp(option->name, name) == 0)
+		{
+			A_Const    *arg = (A_Const *) option->value;
+
+			if (!IsA(arg, A_Const))
+				elog(ERROR, "unrecognized node type: %d", (int) nodeTag(arg));
+
+			switch (nodeTag(&arg->val))
+			{
+				case T_Integer:
+					*value = intVal(&arg->val);
+					return true;
+
+				default:
+					return false;
+			}
+	}
+
+	return false;
+}
+#endif
+
+
 Skyline *
 make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause)
 {
-	Plan	   *outertree = (Plan *)make_material(lefttree); /* FIXME: use lefttree */
+	Plan	   *outertree = lefttree;
 	List	   *sub_tlist = outertree->targetlist;
 	ListCell   *l;
 	Skyline	   *node = makeNode(Skyline);
@@ -2732,6 +2767,44 @@ make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause)
 	node->numCols = numskylinecols;
 
 	node->skyline_distinct = sc->skyline_distinct;
+	node->skyline_by_options = sc->skyline_by_options;
+
+	if (node->numCols == 1 && !node->skyline_distinct)
+		node->skyline_methode = SM_1DIM;
+	else if (node->numCols == 1 && node->skyline_distinct)
+		node->skyline_methode = SM_1DIM_DISTINCT;
+	else {
+		SkylineMethode methode = SM_BLOCKNESTEDLOOP;
+		ListCell	*l;
+		foreach(l, node->skyline_by_options)
+		{
+			SkylineOption *option = (SkylineOption *) lfirst(l);
+
+			if (strcmp(option->name, "bnl") == 0 ||
+				strcmp(option->name, "blocknestedloop") == 0)
+			{
+				methode = SM_BLOCKNESTEDLOOP;
+			}
+			else if (strcmp(option->name, "snl") == 0 ||
+					 strcmp(option->name, "simplenestedloop") == 0 ||
+					 strcmp(option->name, "nl") == 0 ||
+					 strcmp(option->name, "nestedloop") == 0)
+			{
+				methode = SM_SIMPLENESTEDLOOP;
+			}
+			else
+			{
+				elog(WARNING, "unknown option `%s' for SKYLINE BY", option->name);
+			}
+		}			
+
+		if (methode == SM_SIMPLENESTEDLOOP)
+		{
+			/* for the simple nested loop we need a materialize as outer plan */
+			plan->lefttree = (Plan *)make_material(plan->lefttree);
+		}
+		node->skyline_methode = methode;
+	}
 
 	return node; /* to disable use: (Skyline*) lefttree; */
 }

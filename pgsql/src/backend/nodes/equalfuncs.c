@@ -1767,6 +1767,7 @@ _equalSkylineByClause(SkylineByClause *a, SkylineByClause *b)
 {
 	COMPARE_SCALAR_FIELD(skyline_distinct);
 	COMPARE_NODE_FIELD(skyline_by_list);
+	COMPARE_NODE_FIELD(skyline_by_options);
 
 	return true;
 }
@@ -1778,6 +1779,15 @@ _equalSkylineByExpr(SkylineByExpr *a, SkylineByExpr *b)
 	COMPARE_SCALAR_FIELD(skylineby_nulls);
 	COMPARE_NODE_FIELD(useOp);
 	COMPARE_NODE_FIELD(node);
+
+	return true;
+}
+
+static bool
+_eqaulSkylineOption(SkylineOption *a, SkylineOption *b)
+{
+	COMPARE_STRING_FIELD(name);
+	COMPARE_NODE_FIELD(value);
 
 	return true;
 }
@@ -1898,6 +1908,7 @@ _equalSkylineClause(SkylineClause *a, SkylineClause *b)
 {
 	COMPARE_SCALAR_FIELD(skyline_distinct);
 	COMPARE_NODE_FIELD(skyline_by_list);
+	COMPARE_NODE_FIELD(skyline_by_options);
 
 	return true;
 }
@@ -2496,6 +2507,9 @@ equal(void *a, void *b)
 			break;
 		case T_SkylineByExpr:
 			retval = _equalSkylineByExpr(a, b);
+			break;
+		case T_SkylineOption:
+			retval = _eqaulSkylineOption(a, b);
 			break;
 		case T_RangeSubselect:
 			retval = _equalRangeSubselect(a, b);

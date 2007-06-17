@@ -588,6 +588,9 @@ _outSkyline(StringInfo str, Skyline *node)
 	appendStringInfo(str, " :skylineByDir");
 	for (i = 0; i < node->numCols; ++i)
 		appendStringInfo(str, " %d", node->skylineByDir[i]);
+
+	WRITE_NODE_FIELD(skyline_by_options);
+	WRITE_INT_FIELD(skyline_methode);
 }
 
 static void
@@ -1792,6 +1795,7 @@ _outSkylineClause(StringInfo str, SkylineClause *node)
 
 	WRITE_BOOL_FIELD(skyline_distinct);
 	WRITE_NODE_FIELD(skyline_by_list);
+	WRITE_NODE_FIELD(skyline_by_options);
 }
 
 static void
@@ -1803,6 +1807,15 @@ _outSkylineBy(StringInfo str, SkylineBy *node)
 	WRITE_OID_FIELD(sortop);
 	WRITE_BOOL_FIELD(nulls_first);
 	WRITE_INT_FIELD(skylineby_dir);
+}
+
+static void
+_outSkylineOption(StringInfo str, SkylineOption *node)
+{
+	WRITE_NODE_TYPE("SKYLINEOPTION");
+
+	WRITE_STRING_FIELD(name);
+	WRITE_NODE_FIELD(value);
 }
 
 static void
@@ -2429,6 +2442,9 @@ _outNode(StringInfo str, void *obj)
 				break;
 			case T_SkylineBy:
 				_outSkylineBy(str, obj);
+				break;
+			case T_SkylineOption:
+				_outSkylineOption(str, obj);
 				break;
 			case T_RowMarkClause:
 				_outRowMarkClause(str, obj);

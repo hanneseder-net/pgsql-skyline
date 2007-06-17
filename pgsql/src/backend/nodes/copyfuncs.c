@@ -574,6 +574,8 @@ _copySkyline(Skyline *from)
 	COPY_POINTER_FIELD(skylinebyOperators, from->numCols * sizeof(Oid));
 	COPY_POINTER_FIELD(nullsFirst, from->numCols * sizeof(bool));
 	COPY_POINTER_FIELD(skylineByDir, from->numCols * sizeof(int));
+	COPY_NODE_FIELD(skyline_by_options);
+	COPY_SCALAR_FIELD(skyline_methode);
 
 	return newnode;
 }
@@ -1596,6 +1598,7 @@ _copySkylineClause(SkylineClause *from)
 
 	COPY_SCALAR_FIELD(skyline_distinct);
 	COPY_NODE_FIELD(skyline_by_list);
+	COPY_NODE_FIELD(skyline_by_options);
 
 	return newnode;
 }
@@ -1609,6 +1612,17 @@ _copySkylineBy(SkylineBy *from)
 	COPY_SCALAR_FIELD(sortop);
 	COPY_SCALAR_FIELD(nulls_first);
 	COPY_SCALAR_FIELD(skylineby_dir);
+
+	return newnode;
+}
+
+static SkylineOption *
+_copySkylineOption(SkylineOption *from)
+{
+	SkylineOption *newnode = makeNode(SkylineOption);
+
+	COPY_STRING_FIELD(name);
+	COPY_NODE_FIELD(value);
 
 	return newnode;
 }
@@ -1778,6 +1792,7 @@ _copySkylineByClause(SkylineByClause *from)
 
 	COPY_SCALAR_FIELD(skyline_distinct);
 	COPY_NODE_FIELD(skyline_by_list);
+	COPY_NODE_FIELD(skyline_by_options);
 
 	return newnode;
 }
@@ -3611,6 +3626,9 @@ copyObject(void *from)
 			break;
 		case T_SkylineByExpr:
 			retval = _copySkylineByExpr(from);
+			break;
+		case T_SkylineOption:
+			retval = _copySkylineOption(from);
 			break;
 		case T_RangeSubselect:
 			retval = _copyRangeSubselect(from);

@@ -379,8 +379,9 @@ typedef struct SkylineByExpr
 typedef struct SkylineByClause
 {
 	NodeTag		type;
-	bool		skyline_distinct; /* SKYLINE BY _DISTINCT_ */
-	List	   *skyline_by_list; /* a list of SkylineByExpr */
+	bool		skyline_distinct;	/* SKYLINE BY _DISTINCT_ */
+	List	   *skyline_by_list;	/* a list of SkylineByExpr */
+	List	   *skyline_by_options;	/* a list of SkylineOption */
 } SkylineByClause;
 
 /*
@@ -683,6 +684,16 @@ typedef struct SortClause
 typedef SortClause GroupClause;
 
 /*
+ * SkylineOption
+ */
+typedef struct SkylineOption
+{
+	NodeTag		type;
+	char	   *name;
+	Node	   *value;
+} SkylineOption;
+
+/*
  * SkylineClause
  *
  * The analyzer transforms a SkylineByClause into SkylineClause.
@@ -693,6 +704,7 @@ typedef struct SkylineClause
 	NodeTag		type;
 	bool		skyline_distinct;
 	List	   *skyline_by_list; /* list of SkylineBy's */
+	List	   *skyline_by_options;
 } SkylineClause;
 
 

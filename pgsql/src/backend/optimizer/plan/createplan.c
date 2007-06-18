@@ -2688,40 +2688,6 @@ add_sort_column(AttrNumber colIdx, Oid sortOp, bool nulls_first,
 	return numCols + 1;
 }
 
-#ifdef NOT_USED
-static bool
-skyline_option_get_int(List *skyline_by_options, char *name, int *value)
-{
-	ListCell	*l;
-
-	AssertArg(name != NULL);
-	AssertArg(value != NULL);
-
-	foreach(l, skyline_by_options)
-	{
-		SkylineOption *option = (SkylineOption *) lfirst(l);
-		if (strcmp(option->name, name) == 0)
-		{
-			A_Const    *arg = (A_Const *) option->value;
-
-			if (!IsA(arg, A_Const))
-				elog(ERROR, "unrecognized node type: %d", (int) nodeTag(arg));
-
-			switch (nodeTag(&arg->val))
-			{
-				case T_Integer:
-					*value = intVal(&arg->val);
-					return true;
-
-				default:
-					return false;
-			}
-	}
-
-	return false;
-}
-#endif
-
 
 Skyline *
 make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause)
@@ -2791,6 +2757,11 @@ make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause)
 					 strcmp(option->name, "nestedloop") == 0)
 			{
 				methode = SM_SIMPLENESTEDLOOP;
+			}
+			else if (strcmp(option->name, "window") == 0 ||
+					 strcmp(option->name, "windowsize") == 0)
+			{
+				/* ignore them here, they are used in the executor */
 			}
 			else
 			{

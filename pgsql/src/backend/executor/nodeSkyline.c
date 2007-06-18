@@ -184,6 +184,39 @@ ExecSkylineGetOrderingOp(Skyline *sl, int idx, FmgrInfo *compareOpFn, int *compa
 	}
 }
 
+static bool
+skyline_option_get_int(List *skyline_by_options, char *name, int *value)
+{
+	ListCell	*l;
+
+	AssertArg(name != NULL);
+	AssertArg(value != NULL);
+
+	foreach(l, skyline_by_options)
+	{
+		SkylineOption *option = (SkylineOption *) lfirst(l);
+		if (strcmp(option->name, name) == 0)
+		{
+			A_Const    *arg = (A_Const *) option->value;
+
+			if (!IsA(arg, A_Const))
+				elog(ERROR, "unrecognized node type: %d", (int) nodeTag(arg));
+
+			switch (nodeTag(&arg->val))
+			{
+				case T_Integer:
+					*value = intVal(&arg->val);
+					return true;
+
+				default:
+					return false;
+			}
+		}
+	}
+
+	return false;
+}
+
 SkylineState *
 ExecInitSkyline(Skyline *node, EState *estate, int eflags)
 {
@@ -282,7 +315,7 @@ ExecCountSlotsSkyline(Skyline * node)
 
 
 static TupleTableSlot *
-ExecSkyline_1Dim(SkylineState *node, Skyline *sl)
+ExecSkyline_1DimDistinct(SkylineState *node, Skyline *sl)
 {
 	switch (node->status)
 	{
@@ -333,7 +366,7 @@ ExecSkyline_1Dim(SkylineState *node, Skyline *sl)
 }
 
 static TupleTableSlot *
-ExecSkyline_1DimDistinct(SkylineState *node, Skyline *sl)
+ExecSkyline_1Dim(SkylineState *node, Skyline *sl)
 {
 	for (;;)
 	{
@@ -574,17 +607,24 @@ ExecSkyline_BlockNestedLoop(SkylineState *node, Skyline *sl)
 		break;
 
 	case SS_INIT:
-		// FIXME: work_mem instead of 1
-		node->window = tuplewindow_begin(1);
-		node->source = SS_OUTER;
-		node->tempIn = NULL;
-		/* NOTE: tempOut should go directly to the tempFile, therefore we set work_mem = 0 */
-		node->tempOut = tuplestore_begin_heap(false, false, 0);
-		
-		node->timestampIn = 0;
-		node->timestampOut = 0;
+		{
+			int window_size = work_mem;
 
-		node->status = SS_PROCESS;
+			// can be overrided by an option, otherwise use entire work_mem
+			skyline_option_get_int(sl->skyline_by_options, "window", &window_size) ||
+				skyline_option_get_int(sl->skyline_by_options, "windowsize", &window_size);
+
+			node->window = tuplewindow_begin(window_size);
+			node->source = SS_OUTER;
+			node->tempIn = NULL;
+			/* NOTE: tempOut should go directly to the tempFile, therefore we set work_mem = 0 */
+			node->tempOut = tuplestore_begin_heap(false, false, 0);
+			
+			node->timestampIn = 0;
+			node->timestampOut = 0;
+
+			node->status = SS_PROCESS;
+		}
 		break;
 
 	case SS_PIPEOUT:

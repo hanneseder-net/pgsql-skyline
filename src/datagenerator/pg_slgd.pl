@@ -13,7 +13,7 @@ my $ksldg = "ksldg";
 sub init()
 {
     use Getopt::Std;
-    my $opt_string = 'hecad:n:rt:i';
+    my $opt_string = 'hecad:n:p:rt:i';
     getopts( "$opt_string", \%opt ) or usage();
     usage() if $opt{h};
 }
@@ -34,6 +34,7 @@ usage: $0 [-hecadnrti] -- [OPTIONS FOR $ksldg]
  -e|-c|-a  : distribution
  -d DIM    : dimensions
  -n NUMBER : number of vectors
+ -p PAD    : add PAD long varchar for padding
  -r        : (re)create table
  -t TABLE  : override default table name [eca]$DIMd$NUMBER
  -i        : unique id for every vector
@@ -53,12 +54,19 @@ die "$0: error: you must spec. exactly one distribution, stopped at" if ($opt{e}
 $header=1;
 $id = 1;
 $prefix = "";
+$suffix = "";
 $dist = $opt{e} ? "e" : $opt{c} ? "c" : $opt{a} ? "a" : "?";
 $dim = $opt{d};
 $n = $opt{n};
+$pad = $opt{p};
 $ksldg_args = join(" ", "-$dist", "-d $dim", "-n $n", @ARGV);
 
 $table = "$dist${dim}d$n";
+
+if ($pad) {
+  $table = $table . "p${pad}";
+  $suffix = ";\"" . ("X" x $pad) . "\"";
+}
 
 if ($opt{t} ne "") {
   $table = $opt{t};
@@ -80,12 +88,15 @@ while ($line = <KSLDG>) {
       push @defs, "d$i float";
     }
 
+    push @flds, "pad${pad}" if ($opt{p});
+    push @defs, "pad${pad} varchar(${pad})" if ($opt{p});
+
     if ($opt{r}) {
       print "drop table if exists $table;\n";
       print "create table $table (", join(", ", @defs), ");\n";
     }
 
-    print "copy $table(", join(", ", @flds), ") from stdin delimiters ';';\n";
+    print "copy $table(", join(", ", @flds), ") from stdin delimiters ';' csv quote '\"';\n";
     $header = 0;
   }
 
@@ -95,8 +106,9 @@ while ($line = <KSLDG>) {
   }
 
   $line =~ s/ /;/g;
+  chomp $line;
 
-  print "$prefix$line";
+  print "$prefix$line$suffix\n";
 }
 close KSLDG || die "bad $ksldg: $! $?";
 print "\\.\n";

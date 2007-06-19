@@ -2740,7 +2740,7 @@ make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause)
 	else if (node->numCols == 1 && node->skyline_distinct)
 		node->skyline_methode = SM_1DIM_DISTINCT;
 	else {
-		SkylineMethode methode = SM_BLOCKNESTEDLOOP;
+		SkylineMethode methode = SM_UNKNOWN;
 		ListCell	*l;
 		foreach(l, node->skyline_by_options)
 		{
@@ -2749,6 +2749,9 @@ make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause)
 			if (strcmp(option->name, "bnl") == 0 ||
 				strcmp(option->name, "blocknestedloop") == 0)
 			{
+				if (methode != SM_UNKNOWN)
+					elog(WARNING, "previous skyline methode overwritten, now using `%s' for SKYLINE BY", option->name);
+
 				methode = SM_BLOCKNESTEDLOOP;
 			}
 			else if (strcmp(option->name, "snl") == 0 ||
@@ -2756,6 +2759,9 @@ make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause)
 					 strcmp(option->name, "nl") == 0 ||
 					 strcmp(option->name, "nestedloop") == 0)
 			{
+				if (methode != SM_UNKNOWN)
+					elog(WARNING, "previous skyline methode overwritten, now using `%s' for SKYLINE BY", option->name);
+
 				methode = SM_SIMPLENESTEDLOOP;
 			}
 			else if (strcmp(option->name, "window") == 0 ||
@@ -2767,7 +2773,11 @@ make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause)
 			{
 				elog(WARNING, "unknown option `%s' for SKYLINE BY", option->name);
 			}
-		}			
+		}
+
+		/* default block nested loop */
+		if (methode == SM_UNKNOWN)
+			methode = SM_BLOCKNESTEDLOOP;
 
 		if (methode == SM_SIMPLENESTEDLOOP)
 		{

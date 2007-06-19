@@ -457,6 +457,7 @@ typedef struct Sort
 
 typedef enum SkylineMethode
 {
+	SM_UNKNOWN,
 	SM_1DIM,
 	SM_1DIM_DISTINCT,
 	SM_SIMPLENESTEDLOOP,

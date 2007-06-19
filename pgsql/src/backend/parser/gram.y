@@ -6263,9 +6263,9 @@ skyline_options:
 				{ 
 					$$ = list_make1($1);
 				}
-			| skyline_options ',' skyline_option
+			| skyline_options skyline_option
 				{
-					$$ = lappend($1, $3);
+					$$ = lappend($1, $2);
 				}
 		;
 

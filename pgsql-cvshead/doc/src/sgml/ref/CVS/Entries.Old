@@ -57,8 +57,8 @@
 /createlang.sgml/1.41/Tue May 15 21:22:53 2007//
 /createuser.sgml/1.48/Mon Jun  4 20:00:12 2007//
 /deallocate.sgml/1.10/Thu Apr 12 06:53:46 2007//
-/declare.sgml/1.40/Wed Jan 31 23:26:03 2007//
-/delete.sgml/1.30/Thu Feb  1 00:28:19 2007//
+/declare.sgml/1.41/Tue Jun 12 07:05:41 2007//
+/delete.sgml/1.31/Tue Jun 12 07:05:41 2007//
 /discard.sgml/1.2/Thu Apr 26 18:00:24 2007//
 /drop_aggregate.sgml/1.31/Tue May 15 21:22:53 2007//
 /drop_cast.sgml/1.8/Sat Sep 16 00:30:18 2006//
@@ -133,7 +133,7 @@
 /start_transaction.sgml/1.16/Wed Jan 31 23:26:04 2007//
 /truncate.sgml/1.24/Sat May 12 09:16:11 2007//
 /unlisten.sgml/1.29/Wed Jan 31 23:26:04 2007//
-/update.sgml/1.43/Thu Feb  1 00:28:19 2007//
+/update.sgml/1.44/Tue Jun 12 07:05:41 2007//
 /vacuum.sgml/1.48/Thu May 31 10:06:50 2007//
 /vacuumdb.sgml/1.41/Mon Jun  4 20:00:12 2007//
 /values.sgml/1.4/Thu Feb  1 00:28:19 2007//

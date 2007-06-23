@@ -120,11 +120,11 @@
 /sql-show.c////*///
 /sql-show.stderr////*///
 /sql-show.stdout////*///
-/thread-thread-thread.stdout////*///
 /thread-thread.c////*///
 /thread-thread.stderr////*///
 /thread-thread.stdout////*///
-/thread-thread_implicit-thread.stdout////*///
+/thread-thread_2.stdout////*///
 /thread-thread_implicit.c////*///
 /thread-thread_implicit.stderr////*///
 /thread-thread_implicit.stdout////*///
+/thread-thread_implicit_2.stdout////*///

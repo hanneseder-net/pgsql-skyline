@@ -1,6 +1,7 @@
 /Makefile.regress////*///
 /Makefile////*///
 /ecpg_schedule////*///
+/ecpg_schedule_tcp////*///
 /pg_regress_ecpg.c////*///
 /regression.h////*///
 /resultmap////*///

@@ -6,7 +6,7 @@
 /cluster.c/1.162/Sat May 19 08:06:13 2007//
 /comment.c/1.96/Thu Feb  1 19:10:25 2007//
 /conversioncmds.c/1.31/Wed Feb 14 01:58:56 2007//
-/copy.c/1.283/Fri Apr 27 22:05:46 2007//
+/copy.c/1.285/Sat Jun 23 07:56:15 2007//
 /dbcommands.c/1.195/Sat Jun  2 11:40:29 2007//
 /define.c/1.100/Fri Jan  5 22:19:26 2007//
 /discard.c/1.1/Thu Apr 26 16:13:10 2007//
@@ -24,9 +24,9 @@
 /tablecmds.c/1.227/Mon Jun  4 08:43:36 2007//
 /tablespace.c/1.48/Fri Jun  8 07:10:07 2007//
 /trigger.c/1.214/Mon Mar 19 23:38:29 2007//
-/typecmds.c/1.104/Sat May 12 09:16:12 2007//
+/typecmds.c/1.106/Sat Jun 23 07:56:15 2007//
 /user.c/1.176/Thu Feb  1 19:10:26 2007//
-/vacuum.c/1.352/Thu May 31 10:06:52 2007//
+/vacuum.c/1.353/Sat Jun 23 07:56:15 2007//
 /vacuumlazy.c/1.90/Thu May 31 10:06:52 2007//
 /variable.c/1.120/Fri Jan  5 22:19:27 2007//
 /view.c/1.100/Tue Mar 13 00:33:40 2007//

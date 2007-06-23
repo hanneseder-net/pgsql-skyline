@@ -3,7 +3,7 @@
 /README/1.5/Thu Jul  1 00:51:24 2004//
 /check_guc/1.10/Sat Sep  2 13:12:50 2006//
 /guc-file.l/1.50/Sat Apr 21 20:02:40 2007//
-/guc.c/1.396/Sat Jun  9 11:02:40 2007//
+/guc.c/1.397/Thu Jun 14 07:08:44 2007//
 /help_config.c/1.18/Fri Jan  5 22:19:46 2007//
 /pg_rusage.c/1.5/Fri Jan  5 22:19:46 2007//
 /postgresql.conf.sample/1.216/Sun Jun  3 20:16:01 2007//

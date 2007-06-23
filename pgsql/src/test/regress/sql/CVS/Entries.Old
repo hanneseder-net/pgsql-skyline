@@ -94,7 +94,7 @@
 /text.sql/1.4/Thu Jun  7 10:42:42 2007//
 /time.sql/1.6/Thu Jul  6 01:46:38 2006//
 /timestamp.sql/1.20/Fri Feb 16 17:49:15 2007//
-/timestamptz.sql/1.14/Sat Feb 17 01:51:42 2007//
+/timestamptz.sql/1.15/Thu Jun 14 07:08:53 2007//
 /timetz.sql/1.4/Thu Jul  6 01:46:38 2006//
 /tinterval.sql/1.8/Wed May 30 13:52:58 2007//
 /transactions.sql/1.14/Sat Jun  9 20:54:25 2007//

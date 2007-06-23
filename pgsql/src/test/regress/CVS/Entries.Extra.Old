@@ -2,6 +2,8 @@
 /Makefile////*///
 /parallel_schedule////*///
 /pg_regress.c////*///
+/pg_regress.h////*///
+/pg_regress_main.c////*///
 /regress.c////*///
 /regressplans.sh////*///
 /resultmap////*///

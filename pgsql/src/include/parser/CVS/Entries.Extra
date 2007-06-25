@@ -11,6 +11,7 @@
 /parse_relation.h////*///
 /parse_target.h////*///
 /parse_type.h////*///
+/parse_utilcmd.h////*///
 /parser.h////*///
 /parsetree.h////*///
 /scansup.h////*///

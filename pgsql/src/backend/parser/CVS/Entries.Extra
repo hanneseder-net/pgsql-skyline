@@ -14,6 +14,7 @@
 /parse_relation.c////*///
 /parse_target.c////*///
 /parse_type.c////*///
+/parse_utilcmd.c////*///
 /parser.c////*///
 /scan.l////*///
 /scansup.c////*///

@@ -1,0 +1,177 @@
+(* Content-type: application/mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 6.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       145,          7]
+NotebookDataLength[      6096,        168]
+NotebookOptionsPosition[      5710,        150]
+NotebookOutlinePosition[      6071,        166]
+CellTagsIndexPosition[      6028,        163]
+WindowFrame->Normal
+ContainsDynamic->False*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"PlotSkyline3D", "[", "skyline_", "]"}], " ", ":=", " ", 
+  RowBox[{"Graphics3D", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"Gray", ",", 
+      RowBox[{"Cuboid", "[", 
+       RowBox[{
+        RowBox[{"{", 
+         RowBox[{
+          RowBox[{"Min", "[", 
+           RowBox[{"skyline", "\[LeftDoubleBracket]", 
+            RowBox[{"All", ",", "1"}], "\[RightDoubleBracket]"}], "]"}], ",", 
+          
+          RowBox[{"Min", "[", 
+           RowBox[{"skyline", "\[LeftDoubleBracket]", 
+            RowBox[{"All", ",", "2"}], "\[RightDoubleBracket]"}], "]"}], ",", 
+          "0"}], "}"}], ",", " ", 
+        RowBox[{"{", 
+         RowBox[{
+          RowBox[{"1", "+", 
+           RowBox[{"Max", "[", 
+            RowBox[{"skyline", "\[LeftDoubleBracket]", 
+             RowBox[{"All", ",", "1"}], "\[RightDoubleBracket]"}], "]"}]}], 
+          ",", 
+          RowBox[{"1", "+", 
+           RowBox[{"Max", "[", 
+            RowBox[{"skyline", "\[LeftDoubleBracket]", 
+             RowBox[{"All", ",", "2"}], "\[RightDoubleBracket]"}], "]"}]}], 
+          ",", " ", 
+          RowBox[{"-", "0.1"}]}], "}"}]}], "]"}], ",", " ", "Red"}], "}"}], 
+    " ", "~", "Join", "~", " ", 
+    RowBox[{"Map", "[", 
+     RowBox[{
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{"Opacity", "[", 
+          RowBox[{"If", "[", 
+           RowBox[{
+            RowBox[{
+             RowBox[{
+             "#", "\[LeftDoubleBracket]", "4", "\[RightDoubleBracket]"}], 
+             "\[Equal]", "1"}], ",", "0.7", ",", "0.1"}], "]"}], "]"}], ",", 
+         " ", 
+         RowBox[{"Cuboid", "[", 
+          RowBox[{
+           RowBox[{"{", 
+            RowBox[{
+             RowBox[{
+              RowBox[{
+              "#", "\[LeftDoubleBracket]", "1", "\[RightDoubleBracket]"}], 
+              "+", "0.2"}], ",", 
+             RowBox[{
+              RowBox[{
+              "#", "\[LeftDoubleBracket]", "2", "\[RightDoubleBracket]"}], 
+              "+", "0.2"}], ",", "0"}], "}"}], ",", " ", 
+           RowBox[{"{", 
+            RowBox[{
+             RowBox[{
+              RowBox[{
+              "#", "\[LeftDoubleBracket]", "1", "\[RightDoubleBracket]"}], 
+              "+", "0.8"}], ",", 
+             RowBox[{
+              RowBox[{
+              "#", "\[LeftDoubleBracket]", "2", "\[RightDoubleBracket]"}], 
+              "+", "0.8"}], ",", 
+             RowBox[{
+             "#", "\[LeftDoubleBracket]", "3", "\[RightDoubleBracket]"}]}], 
+            "}"}]}], "]"}]}], " ", "}"}], " ", "&"}], ",", " ", "skyline"}], 
+     "]"}]}], "]"}]}]], "Input",
+ CellChangeTimes->{{3.3919408460625*^9, 3.391941085921875*^9}, {
+  3.391941128625*^9, 3.391941151015625*^9}, {3.39194134109375*^9, 
+  3.391941394109375*^9}, {3.3919414581875*^9, 3.391941462765625*^9}, {
+  3.391941833890625*^9, 3.391941891890625*^9}, {3.391942017734375*^9, 
+  3.39194207384375*^9}, {3.391942131171875*^9, 3.391942140921875*^9}, {
+  3.391942250390625*^9, 3.39194226978125*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"PlotSkyline3D", "[", 
+  RowBox[{"{", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"0", ",", "0", ",", "1", ",", "1"}], "}"}], ",", " ", 
+    RowBox[{"{", 
+     RowBox[{"0", ",", "1", ",", "0.8", ",", "0"}], "}"}], ",", " ", 
+    RowBox[{"{", 
+     RowBox[{"0", ",", "2", ",", "3", ",", "1"}], "}"}], ",", " ", 
+    RowBox[{"{", 
+     RowBox[{"1", ",", "0", ",", "1", ",", "1"}], "}"}], ",", 
+    RowBox[{"{", 
+     RowBox[{"1", ",", "1", ",", "2", ",", "1"}], "}"}], ",", " ", 
+    RowBox[{"{", 
+     RowBox[{"1", ",", "2", ",", "2", ",", "0"}], "}"}], ",", 
+    RowBox[{"{", 
+     RowBox[{"1", ",", "3", ",", "1", ",", "0"}], "}"}], ",", " ", 
+    RowBox[{"{", 
+     RowBox[{"2", ",", "1", ",", "1", ",", "1"}], "}"}]}], "}"}], 
+  "]"}]], "Input",
+ CellChangeTimes->{{3.39194115325*^9, 3.391941262953125*^9}, {
+  3.391941303421875*^9, 3.391941314390625*^9}, {3.391941465671875*^9, 
+  3.39194146696875*^9}}],
+
+Cell[BoxData[
+ Graphics3DBox[{
+   {GrayLevel[0.5], CuboidBox[{0, 0, 0}, {3, 4, -0.1}]}, 
+   {RGBColor[1, 0, 0], 
+    {Opacity[0.7], CuboidBox[{0.2, 0.2, 0}, {0.8, 0.8, 1}]}, 
+    {Opacity[0.1], CuboidBox[{0.2, 1.2, 0}, {0.8, 1.8, 0.8}]}, 
+    {Opacity[0.7], CuboidBox[{0.2, 2.2, 0}, {0.8, 2.8, 3}]}, 
+    {Opacity[0.7], CuboidBox[{1.2, 0.2, 0}, {1.8, 0.8, 1}]}, 
+    {Opacity[0.7], CuboidBox[{1.2, 1.2, 0}, {1.8, 1.8, 2}]}, 
+    {Opacity[0.1], CuboidBox[{1.2, 2.2, 0}, {1.8, 2.8, 2}]}, 
+    {Opacity[0.1], CuboidBox[{1.2, 3.2, 0}, {1.8, 3.8, 1}]}, 
+    {Opacity[0.7], CuboidBox[{2.2, 1.2, 0}, {2.8, 1.8, 1}]}}},
+  ImageSize->{563.8749852117201, 815.},
+  ViewPoint->{-1.319301820385094, -2.895355979356319, 1.1516755009698634`},
+  ViewVertical->{-0.2863928533181026, -0.31341275539911584`, 
+   1.1935558551712735`}]], "Output",
+ CellChangeTimes->{{3.391941197140625*^9, 3.391941226375*^9}, {
+   3.391941256953125*^9, 3.391941263265625*^9}, {3.391941315578125*^9, 
+   3.391941397328125*^9}, 3.39194146740625*^9, {3.391941863421875*^9, 
+   3.39194189321875*^9}, {3.39194204496875*^9, 3.391942075296875*^9}, 
+   3.39194214278125*^9, {3.391942252859375*^9, 3.391942271171875*^9}}]
+}, Open  ]]
+},
+WindowSize->{814, 968},
+WindowMargins->{{0, Automatic}, {Automatic, 0}},
+ShowSelection->True,
+FrontEndVersion->"6.0 for Microsoft Windows (32-bit) (April 27, 2007)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[568, 21, 2993, 77, 152, "Input"],
+Cell[CellGroupData[{
+Cell[3586, 102, 930, 23, 52, "Input"],
+Cell[4519, 127, 1175, 20, 830, "Output"]
+}, Open  ]]
+}
+]
+*)
+
+(* End of internal cache information *)

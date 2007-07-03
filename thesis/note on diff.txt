@@ -1,0 +1,3 @@
+from CGCL2003:
+
+The diff directive works as a group by within the skyline, and the skyline for each group of diff attributes’ values is found.

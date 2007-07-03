@@ -1,0 +1,7 @@
+http://de.wikipedia.org/wiki/Normalverteilung#Box-Muller-Methode
+
+die zwölfer regel scheint problematisch,
+
+ein mal spektrum analysieren
+
+ev. erf verwenden #include <math.h>

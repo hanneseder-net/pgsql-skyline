@@ -50,12 +50,12 @@
 /create_table_as.sgml/1.37/Sun Jun  3 20:15:59 2007//
 /create_tablespace.sgml/1.8/Wed Jan 31 23:26:03 2007//
 /create_trigger.sgml/1.47/Thu Feb  1 19:10:24 2007//
-/create_type.sgml/1.71/Sat May 12 09:16:11 2007//
+/create_type.sgml/1.72/Sat Jun 23 07:56:15 2007//
 /create_user.sgml/1.40/Tue May 15 21:22:53 2007//
 /create_view.sgml/1.35/Thu Feb  1 00:28:18 2007//
-/createdb.sgml/1.45/Mon Jun  4 20:00:12 2007//
+/createdb.sgml/1.46/Sat Jun 23 07:56:15 2007//
 /createlang.sgml/1.41/Tue May 15 21:22:53 2007//
-/createuser.sgml/1.48/Mon Jun  4 20:00:12 2007//
+/createuser.sgml/1.50/Sat Jun 23 07:56:15 2007//
 /deallocate.sgml/1.10/Thu Apr 12 06:53:46 2007//
 /declare.sgml/1.41/Tue Jun 12 07:05:41 2007//
 /delete.sgml/1.31/Tue Jun 12 07:05:41 2007//
@@ -83,9 +83,9 @@
 /drop_type.sgml/1.30/Tue May 15 21:22:53 2007//
 /drop_user.sgml/1.24/Tue May 15 21:22:53 2007//
 /drop_view.sgml/1.23/Sat Sep 16 00:30:18 2006//
-/dropdb.sgml/1.32/Mon Jun  4 20:00:12 2007//
+/dropdb.sgml/1.33/Sat Jun 23 07:56:15 2007//
 /droplang.sgml/1.30/Mon Mar 26 17:23:36 2007//
-/dropuser.sgml/1.37/Mon Jun  4 20:00:12 2007//
+/dropuser.sgml/1.38/Sat Jun 23 07:56:15 2007//
 /ecpg-ref.sgml/1.32/Wed Jan 31 23:26:03 2007//
 /end.sgml/1.14/Sat Sep 16 00:30:18 2006//
 /execute.sgml/1.15/Tue May 15 21:22:53 2007//

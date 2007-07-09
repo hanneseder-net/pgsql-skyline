@@ -8,7 +8,7 @@
  *
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/interfaces/libpq/fe-connect.c,v 1.345 2007/03/08 19:27:28 mha Exp $
+ *	  $PostgreSQL: pgsql/src/interfaces/libpq/fe-connect.c,v 1.347 2007/07/08 18:28:55 tgl Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -1666,6 +1666,10 @@ keep_going:						/* We will come back to here until there is
 				 */
 				conn->inStart = conn->inCursor;
 
+				/* Save the authentication request type, if first one. */
+				if (conn->areq == AUTH_REQ_OK)
+					conn->areq = areq;
+
 				/* Respond to the request if necessary. */
 
 				/*
@@ -1873,6 +1877,7 @@ makeEmptyPGconn(void)
 	conn->std_strings = false;	/* unless server says differently */
 	conn->verbosity = PQERRORS_DEFAULT;
 	conn->sock = -1;
+	conn->areq = AUTH_REQ_OK;	/* until we receive something else */
 #ifdef USE_SSL
 	conn->allow_ssl_try = true;
 	conn->wait_ssl_try = false;
@@ -3389,6 +3394,19 @@ PQbackendPID(const PGconn *conn)
 	if (!conn || conn->status != CONNECTION_OK)
 		return 0;
 	return conn->be_pid;
+}
+
+int
+PQconnectionUsedPassword(const PGconn *conn)
+{
+	if (!conn)
+		return false;
+	if (conn->areq == AUTH_REQ_MD5 ||
+		conn->areq == AUTH_REQ_CRYPT ||
+		conn->areq == AUTH_REQ_PASSWORD)
+		return true;
+	else
+		return false;
 }
 
 int

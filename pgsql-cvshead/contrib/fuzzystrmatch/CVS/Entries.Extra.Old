@@ -1,0 +1,8 @@
+/Makefile////*///
+/README.fuzzystrmatch////*///
+/README.soundex////*///
+/dmetaphone.c////*///
+/fuzzystrmatch.c////*///
+/fuzzystrmatch.h////*///
+/fuzzystrmatch.sql.in////*///
+/uninstall_fuzzystrmatch.sql////*///

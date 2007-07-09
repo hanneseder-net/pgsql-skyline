@@ -14,3 +14,6 @@
 /ltxtquery_io.c////*///
 /ltxtquery_op.c////*///
 /uninstall_ltree.sql////*///
+D/data///////
+D/expected///////
+D/sql///////

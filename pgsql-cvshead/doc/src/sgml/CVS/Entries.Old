@@ -5,15 +5,15 @@
 /backup.sgml/2.97/Thu Feb  1 00:28:16 2007//
 /biblio.sgml/1.27/Thu Feb  8 04:31:37 2007//
 /bki.sgml/1.21/Thu Feb  1 00:28:16 2007//
-/catalogs.sgml/2.154/Sat Jun  9 11:02:29 2007//
+/catalogs.sgml/2.155/Sat Jun 23 07:56:14 2007//
 /charset.sgml/2.83/Sun Apr 15 10:56:25 2007//
 /client-auth.sgml/1.98/Sat Mar 24 21:46:23 2007//
-/config.sgml/1.126/Fri Jun  8 07:10:06 2007//
+/config.sgml/1.128/Sat Jun 23 07:56:14 2007//
 /contacts.sgml/1.9/Fri Mar 10 19:10:47 2006//
 /cvs.sgml/1.44/Thu May 31 10:06:50 2007//
 /datatype.sgml/1.204/Thu Jun  7 10:42:34 2007//
 /datetime.sgml/2.56/Wed Jan 31 20:56:16 2007//
-/ddl.sgml/1.75/Tue May 15 21:22:53 2007//
+/ddl.sgml/1.76/Sat Jun 23 07:56:15 2007//
 /dfunc.sgml/1.35/Thu Feb  1 00:28:16 2007//
 /diskusage.sgml/1.18/Wed Jan 31 20:56:16 2007//
 /dml.sgml/1.16/Thu Feb  1 00:28:16 2007//
@@ -72,7 +72,7 @@
 /spi.sgml/1.57/Thu May  3 15:05:56 2007//
 /sql.sgml/1.46/Fri Feb 16 03:50:29 2007//
 /standalone-install.sgml/2.6/Sat Nov 29 19:51:37 2003//
-/start.sgml/1.44/Wed Jan 31 20:56:19 2007//
+/start.sgml/1.45/Sat Jun 23 07:56:15 2007//
 /storage.sgml/1.18/Sun Jun  3 20:15:59 2007//
 /stylesheet-common.xsl/1.1/Sun Dec 10 16:01:06 2006//
 /stylesheet-fo.xsl/1.1/Sun Dec 10 16:01:06 2006//

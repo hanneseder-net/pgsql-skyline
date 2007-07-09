@@ -3,3 +3,5 @@
 /earthdistance.c////*///
 /earthdistance.sql.in////*///
 /uninstall_earthdistance.sql////*///
+D/expected///////
+D/sql///////

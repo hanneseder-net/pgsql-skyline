@@ -7,7 +7,7 @@
  * Portions Copyright (c) 1996-2007, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
- * $PostgreSQL: pgsql/src/interfaces/libpq/libpq-fe.h,v 1.136 2007/03/03 19:52:46 momjian Exp $
+ * $PostgreSQL: pgsql/src/interfaces/libpq/libpq-fe.h,v 1.138 2007/07/08 18:28:55 tgl Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -263,6 +263,7 @@ extern int	PQserverVersion(const PGconn *conn);
 extern char *PQerrorMessage(const PGconn *conn);
 extern int	PQsocket(const PGconn *conn);
 extern int	PQbackendPID(const PGconn *conn);
+extern int	PQconnectionUsedPassword(const PGconn *conn);
 extern int	PQclientEncoding(const PGconn *conn);
 extern int	PQsetClientEncoding(PGconn *conn, const char *encoding);
 
@@ -424,7 +425,8 @@ extern void PQfreemem(void *ptr);
 /* Exists for backward compatibility.  bjm 2003-03-24 */
 #define PQfreeNotify(ptr) PQfreemem(ptr)
 
-/* Define the string so all uses are consistent. */
+/* Error when no password was given. */
+/* Note: depending on this is deprecated; use PQconnectionUsedPassword(). */
 #define PQnoPasswordSupplied	"fe_sendauth: no password supplied\n"
 
 /*

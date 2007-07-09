@@ -25,4 +25,6 @@
 /btree_utils_var.c/1.18/Tue Feb 27 23:48:05 2007//
 /btree_utils_var.h/1.7/Fri Jul 14 05:28:27 2006//
 /uninstall_btree_gist.sql/1.2/Mon Mar 13 18:04:57 2006//
-D
+D/data////
+D/expected////
+D/sql////

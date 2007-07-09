@@ -1,0 +1,5 @@
+/Makefile////*///
+/README.pg_freespacemap////*///
+/pg_freespacemap.c////*///
+/pg_freespacemap.sql.in////*///
+/uninstall_pg_freespacemap.sql////*///

@@ -10,7 +10,7 @@
  *
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/backend/tcop/utility.c,v 1.281 2007/06/23 22:12:52 tgl Exp $
+ *	  $PostgreSQL: pgsql/src/backend/tcop/utility.c,v 1.283 2007/07/03 01:30:37 neilc Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -1152,7 +1152,7 @@ ProcessUtility(Node *parsetree,
 				ereport(ERROR,
 						(errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
 						 errmsg("must be superuser to do CHECKPOINT")));
-			RequestCheckpoint(true, false);
+			RequestCheckpoint(CHECKPOINT_IMMEDIATE | CHECKPOINT_FORCE | CHECKPOINT_WAIT);
 			break;
 
 		case T_ReindexStmt:
@@ -1574,6 +1574,9 @@ CreateCommandTag(Node *parsetree)
 				case OBJECT_SCHEMA:
 					tag = "ALTER SCHEMA";
 					break;
+				case OBJECT_SEQUENCE:
+					tag = "ALTER SEQUENCE";
+					break;
 				case OBJECT_COLUMN:
 				case OBJECT_TABLE:
 					tag = "ALTER TABLE";
@@ -1583,6 +1586,9 @@ CreateCommandTag(Node *parsetree)
 					break;
 				case OBJECT_TRIGGER:
 					tag = "ALTER TRIGGER";
+					break;
+				case OBJECT_VIEW:
+					tag = "ALTER VIEW";
 					break;
 				default:
 					tag = "???";

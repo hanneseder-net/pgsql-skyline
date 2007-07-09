@@ -50,3 +50,5 @@
 /sha2.c////*///
 /sha2.h////*///
 /uninstall_pgcrypto.sql////*///
+D/expected///////
+D/sql///////

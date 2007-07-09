@@ -17,7 +17,7 @@
 /pg_largeobject.c/1.27/Fri Jan  5 22:19:25 2007//
 /pg_namespace.c/1.17/Fri Jan  5 22:19:25 2007//
 /pg_operator.c/1.100/Fri Jan  5 22:19:25 2007//
-/pg_proc.c/1.144/Mon Apr  2 03:49:37 2007//
+/pg_proc.c/1.145/Thu Jun  7 10:42:35 2007//
 /pg_shdepend.c/1.20/Tue May 15 21:22:54 2007//
 /pg_type.c/1.113/Sat May 12 09:16:11 2007//
 /sql_feature_packages.txt/1.3/Thu Dec  2 22:51:28 2004//

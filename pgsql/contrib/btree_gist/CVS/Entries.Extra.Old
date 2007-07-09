@@ -25,3 +25,6 @@
 /btree_utils_var.c////*///
 /btree_utils_var.h////*///
 /uninstall_btree_gist.sql////*///
+D/data///////
+D/expected///////
+D/sql///////

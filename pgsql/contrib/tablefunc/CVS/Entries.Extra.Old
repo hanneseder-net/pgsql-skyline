@@ -4,3 +4,6 @@
 /tablefunc.h////*///
 /tablefunc.sql.in////*///
 /uninstall_tablefunc.sql////*///
+D/data///////
+D/expected///////
+D/sql///////

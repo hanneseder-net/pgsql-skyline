@@ -6,7 +6,7 @@
  * Portions Copyright (c) 1996-2007, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
- * $PostgreSQL: pgsql/src/include/access/xlog.h,v 1.78 2007/05/30 20:12:02 tgl Exp $
+ * $PostgreSQL: pgsql/src/include/access/xlog.h,v 1.80 2007/06/30 19:12:02 tgl Exp $
  */
 #ifndef XLOG_H
 #define XLOG_H
@@ -16,6 +16,7 @@
 #include "lib/stringinfo.h"
 #include "storage/buf.h"
 #include "utils/pg_crc.h"
+#include "utils/timestamp.h"
 
 
 /*
@@ -150,12 +151,48 @@ extern char *XLogArchiveCommand;
 extern int	XLogArchiveTimeout;
 extern char *XLOG_sync_method;
 extern const char XLOG_sync_method_default[];
+extern bool log_checkpoints;
 
 #define XLogArchivingActive()	(XLogArchiveCommand[0] != '\0')
 
 #ifdef WAL_DEBUG
 extern bool XLOG_DEBUG;
 #endif
+
+/*
+ * OR-able request flag bits for checkpoints.  The "cause" bits are used only
+ * for logging purposes.  Note: the flags must be defined so that it's
+ * sensible to OR together request flags arising from different requestors.
+ */
+
+/* These directly affect the behavior of CreateCheckPoint and subsidiaries */
+#define CHECKPOINT_IS_SHUTDOWN	0x0001		/* Checkpoint is for shutdown */
+#define CHECKPOINT_IMMEDIATE	0x0002		/* Do it without delays */
+#define CHECKPOINT_FORCE		0x0004		/* Force even if no activity */
+/* These are important to RequestCheckpoint */
+#define CHECKPOINT_WAIT			0x0008		/* Wait for completion */
+/* These indicate the cause of a checkpoint request */
+#define CHECKPOINT_CAUSE_XLOG	0x0010		/* XLOG consumption */
+#define CHECKPOINT_CAUSE_TIME	0x0020		/* Elapsed time */
+
+/* Checkpoint statistics */
+typedef struct CheckpointStatsData
+{
+	TimestampTz ckpt_start_t;		/* start of checkpoint */
+	TimestampTz ckpt_write_t;		/* start of flushing buffers */
+	TimestampTz ckpt_sync_t;		/* start of fsyncs */
+	TimestampTz ckpt_sync_end_t;	/* end of fsyncs */
+	TimestampTz ckpt_end_t;			/* end of checkpoint */
+
+	int			ckpt_bufs_written;	/* # of buffers written */
+
+	int			ckpt_segs_added;	/* # of new xlog segments created */
+	int			ckpt_segs_removed;	/* # of xlog segments deleted */
+	int			ckpt_segs_recycled;	/* # of xlog segments recycled */
+} CheckpointStatsData;
+
+extern CheckpointStatsData CheckpointStats;
+
 
 extern XLogRecPtr XLogInsert(RmgrId rmid, uint8 info, XLogRecData *rdata);
 extern void XLogFlush(XLogRecPtr RecPtr);
@@ -171,9 +208,10 @@ extern void BootStrapXLOG(void);
 extern void StartupXLOG(void);
 extern void ShutdownXLOG(int code, Datum arg);
 extern void InitXLOGAccess(void);
-extern void CreateCheckPoint(bool shutdown, bool force);
+extern void CreateCheckPoint(int flags);
 extern void XLogPutNextOid(Oid nextOid);
 extern XLogRecPtr GetRedoRecPtr(void);
+extern XLogRecPtr GetInsertRecPtr(void);
 extern void GetNextXidAndEpoch(TransactionId *xid, uint32 *epoch);
 
 #endif   /* XLOG_H */

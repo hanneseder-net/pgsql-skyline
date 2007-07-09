@@ -9,3 +9,6 @@
 /segscan.l////*///
 /sort-segments.pl////*///
 /uninstall_seg.sql////*///
+D/data///////
+D/expected///////
+D/sql///////

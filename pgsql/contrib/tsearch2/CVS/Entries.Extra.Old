@@ -44,3 +44,13 @@
 /wparser.c////*///
 /wparser.h////*///
 /wparser_def.c////*///
+D/data///////
+D/docs///////
+D/expected///////
+D/gendict///////
+D/ispell///////
+D/my2ispell///////
+D/snowball///////
+D/sql///////
+D/stopword///////
+D/wordparser///////

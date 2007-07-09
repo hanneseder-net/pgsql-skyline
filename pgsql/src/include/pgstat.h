@@ -5,7 +5,7 @@
  *
  *	Copyright (c) 2001-2007, PostgreSQL Global Development Group
  *
- *	$PostgreSQL: pgsql/src/include/pgstat.h,v 1.62 2007/06/09 18:49:55 tgl Exp $
+ *	$PostgreSQL: pgsql/src/include/pgstat.h,v 1.64 2007/07/08 22:23:16 tgl Exp $
  * ----------
  */
 #ifndef PGSTAT_H
@@ -291,10 +291,8 @@ typedef struct PgStat_MsgBgWriter
 	PgStat_Counter  m_timed_checkpoints;
 	PgStat_Counter	m_requested_checkpoints;
 	PgStat_Counter	m_buf_written_checkpoints;
-	PgStat_Counter	m_buf_written_lru;
-	PgStat_Counter	m_buf_written_all;
-	PgStat_Counter	m_maxwritten_lru;
-	PgStat_Counter	m_maxwritten_all;
+	PgStat_Counter	m_buf_written_clean;
+	PgStat_Counter	m_maxwritten_clean;
 } PgStat_MsgBgWriter;
 
 
@@ -392,10 +390,8 @@ typedef struct PgStat_GlobalStats
 	PgStat_Counter  timed_checkpoints;
 	PgStat_Counter  requested_checkpoints;
 	PgStat_Counter  buf_written_checkpoints;
-	PgStat_Counter  buf_written_lru;
-	PgStat_Counter  buf_written_all;
-	PgStat_Counter  maxwritten_lru;
-	PgStat_Counter  maxwritten_all;
+	PgStat_Counter  buf_written_clean;
+	PgStat_Counter  maxwritten_clean;
 } PgStat_GlobalStats;
 
 
@@ -490,7 +486,6 @@ extern void pgstat_ping(void);
 extern void pgstat_report_tabstat(bool force);
 extern void pgstat_vacuum_tabstat(void);
 extern void pgstat_drop_database(Oid databaseid);
-extern void pgstat_drop_relation(Oid relid);
 
 extern void pgstat_clear_snapshot(void);
 extern void pgstat_reset_counters(void);

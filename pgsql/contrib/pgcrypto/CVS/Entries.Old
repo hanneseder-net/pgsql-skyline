@@ -50,4 +50,5 @@
 /sha2.c/1.9/Fri Apr  6 05:36:50 2007//
 /sha2.h/1.4/Thu Jul 13 04:15:25 2006//
 /uninstall_pgcrypto.sql/1.2/Tue Sep  5 21:26:48 2006//
-D
+D/expected////
+D/sql////

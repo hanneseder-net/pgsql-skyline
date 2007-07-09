@@ -19,6 +19,7 @@
 /alter_trigger.sgml////*///
 /alter_type.sgml////*///
 /alter_user.sgml////*///
+/alter_view.sgml////*///
 /analyze.sgml////*///
 /begin.sgml////*///
 /checkpoint.sgml////*///

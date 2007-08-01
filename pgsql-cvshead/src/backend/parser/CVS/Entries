@@ -14,7 +14,7 @@
 /parse_relation.c/1.127/Fri Jan  5 22:19:34 2007//
 /parse_target.c/1.154/Sat Feb  3 14:06:54 2007//
 /parse_type.c/1.91/Sat Jun 23 07:56:15 2007//
-/parse_utilcmd.c/2.1/Sat Jun 23 22:12:51 2007//
+/parse_utilcmd.c/2.2/Wed Aug  1 09:00:50 2007//
 /parser.c/1.71/Tue Jan  9 02:14:14 2007//
 /scan.l/1.139/Fri Jan  5 22:19:34 2007//
 /scansup.c/1.35/Fri Jan  5 22:19:34 2007//

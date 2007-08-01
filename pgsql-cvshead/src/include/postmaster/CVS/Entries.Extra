@@ -4,3 +4,4 @@
 /pgarch.h////*///
 /postmaster.h////*///
 /syslogger.h////*///
+/walwriter.h////*///

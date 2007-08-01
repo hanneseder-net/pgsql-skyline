@@ -8,7 +8,7 @@
  *
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/interfaces/libpq/fe-connect.c,v 1.347 2007/07/08 18:28:55 tgl Exp $
+ *	  $PostgreSQL: pgsql/src/interfaces/libpq/fe-connect.c,v 1.351 2007/07/23 17:52:06 mha Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -181,10 +181,16 @@ static const PQconninfoOption PQconninfoOptions[] = {
 	{"sslmode", "PGSSLMODE", DefaultSSLMode, NULL,
 	"SSL-Mode", "", 8},			/* sizeof("disable") == 8 */
 
-#ifdef KRB5
-	/* Kerberos authentication supports specifying the service name */
+#if defined(KRB5) || defined(ENABLE_GSS) || defined(ENABLE_SSPI)
+	/* Kerberos and GSSAPI authentication support specifying the service name */
 	{"krbsrvname", "PGKRBSRVNAME", PG_KRB_SRVNAM, NULL,
 	"Kerberos-service-name", "", 20},
+#endif
+
+#if defined(ENABLE_GSS) && defined(ENABLE_SSPI)
+	/* GSSAPI and SSPI both enabled, give a way to override which is used by default */
+	{"gsslib", "PGGSSLIB", NULL, NULL,
+	"GSS-library", "", 7},		/* sizeof("gssapi") = 7 */
 #endif
 
 	/* Terminating entry --- MUST BE LAST */
@@ -412,9 +418,13 @@ connectOptions1(PGconn *conn, const char *conninfo)
 		conn->sslmode = strdup("require");
 	}
 #endif
-#ifdef KRB5
+#if defined(KRB5) || defined(ENABLE_GSS) || defined(ENABLE_SSPI)
 	tmp = conninfo_getval(connOptions, "krbsrvname");
 	conn->krbsrvname = tmp ? strdup(tmp) : NULL;
+#endif
+#if defined(ENABLE_GSS) && defined(ENABLE_SSPI)
+	tmp = conninfo_getval(connOptions, "gsslib");
+	conn->gsslib = tmp ? strdup(tmp) : NULL;
 #endif
 
 	/*
@@ -1496,12 +1506,13 @@ keep_going:						/* We will come back to here until there is
 
 				/*
 				 * Try to validate message length before using it.
-				 * Authentication requests can't be very large.  Errors can be
+				 * Authentication requests can't be very large, although GSS
+				 * auth requests may not be that small.  Errors can be
 				 * a little larger, but not huge.  If we see a large apparent
 				 * length in an error, it means we're really talking to a
 				 * pre-3.0-protocol server; cope.
 				 */
-				if (beresp == 'R' && (msgLength < 8 || msgLength > 100))
+				if (beresp == 'R' && (msgLength < 8 || msgLength > 2000))
 				{
 					printfPQExpBuffer(&conn->errorMessage,
 									  libpq_gettext(
@@ -1660,6 +1671,41 @@ keep_going:						/* We will come back to here until there is
 						return PGRES_POLLING_READING;
 					}
 				}
+#if defined(ENABLE_GSS) || defined(ENABLE_SSPI)
+				/*
+				 * Continue GSSAPI/SSPI authentication
+				 */
+				if (areq == AUTH_REQ_GSS_CONT)
+				{
+					int llen = msgLength - 4;
+					/*
+					 * We can be called repeatedly for the same buffer.
+					 * Avoid re-allocating the buffer in this case - 
+					 * just re-use the old buffer.
+					 */
+					if (llen != conn->ginbuf.length)
+					{
+						if (conn->ginbuf.value)
+							free(conn->ginbuf.value);
+
+						conn->ginbuf.length = llen;
+						conn->ginbuf.value = malloc(llen);
+						if (!conn->ginbuf.value)
+						{
+							printfPQExpBuffer(&conn->errorMessage,
+											  libpq_gettext("out of memory allocating GSSAPI buffer (%i)"),
+											  llen);
+							goto error_return;
+						}
+					}
+
+					if (pqGetnchar(conn->ginbuf.value, llen, conn))
+					{
+						/* We'll come back when there is more data. */
+						return PGRES_POLLING_READING;
+					}
+				}
+#endif
 
 				/*
 				 * OK, we successfully read the message; mark data consumed
@@ -1677,12 +1723,7 @@ keep_going:						/* We will come back to here until there is
 				 * avoid the Kerberos code doing a hostname look-up.
 				 */
 
-				/*
-				 * XXX fe-auth.c has not been fixed to support PQExpBuffers,
-				 * so:
-				 */
-				if (pg_fe_sendauth(areq, conn, conn->pghost, conn->pgpass,
-								   conn->errorMessage.data) != STATUS_OK)
+				if (pg_fe_sendauth(areq, conn) != STATUS_OK)
 				{
 					conn->errorMessage.len = strlen(conn->errorMessage.data);
 					goto error_return;
@@ -1957,7 +1998,7 @@ freePGconn(PGconn *conn)
 		free(conn->pgpass);
 	if (conn->sslmode)
 		free(conn->sslmode);
-#ifdef KRB5
+#if defined(KRB5) || defined(ENABLE_GSS) || defined(ENABLE_SSPI)
 	if (conn->krbsrvname)
 		free(conn->krbsrvname);
 #endif
@@ -1973,6 +2014,39 @@ freePGconn(PGconn *conn)
 		notify = notify->next;
 		free(prev);
 	}
+#ifdef ENABLE_GSS
+	{
+		OM_uint32	min_s;
+		if (conn->gctx)
+			gss_delete_sec_context(&min_s, &conn->gctx, GSS_C_NO_BUFFER);
+		if (conn->gtarg_nam)
+			gss_release_name(&min_s, &conn->gtarg_nam);
+		if (conn->ginbuf.length)
+			gss_release_buffer(&min_s, &conn->ginbuf);
+		if (conn->goutbuf.length)
+			gss_release_buffer(&min_s, &conn->goutbuf);
+	}
+#endif
+#ifdef ENABLE_SSPI
+	{
+		if (conn->ginbuf.length)
+			free(conn->ginbuf.value);
+
+		if (conn->sspitarget)
+			free(conn->sspitarget);
+
+		if (conn->sspicred)
+		{
+			FreeCredentialsHandle(conn->sspicred);
+			free(conn->sspicred);
+		}
+		if (conn->sspictx)
+		{
+			DeleteSecurityContext(conn->sspictx);
+			free(conn->sspictx);
+		}
+	}
+#endif
 	pstatus = conn->pstatus;
 	while (pstatus != NULL)
 	{
@@ -2995,7 +3069,6 @@ conninfo_parse(const char *conninfo, PQExpBuffer errorMessage)
 	char	   *cp2;
 	PQconninfoOption *options;
 	PQconninfoOption *option;
-	char		errortmp[PQERRORMSG_LENGTH];
 
 	/* Make a working copy of PQconninfoOptions */
 	options = malloc(sizeof(PQconninfoOptions));
@@ -3218,8 +3291,7 @@ conninfo_parse(const char *conninfo, PQExpBuffer errorMessage)
 		 */
 		if (strcmp(option->keyword, "user") == 0)
 		{
-			option->val = pg_fe_getauthname(errortmp);
-			/* note any error message is thrown away */
+			option->val = pg_fe_getauthname(errorMessage);
 			continue;
 		}
 	}

@@ -8,7 +8,7 @@
  *
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/pl/plpgsql/src/pl_funcs.c,v 1.59 2007/04/29 01:21:09 neilc Exp $
+ *	  $PostgreSQL: pgsql/src/pl/plpgsql/src/pl_funcs.c,v 1.63 2007/07/25 04:19:08 neilc Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -147,15 +147,14 @@ plpgsql_ns_setlocal(bool flag)
  * ----------
  */
 void
-plpgsql_ns_push(char *label)
+plpgsql_ns_push(const char *label)
 {
 	PLpgSQL_ns *new;
 
 	if (label == NULL)
 		label = "";
 
-	new = palloc(sizeof(PLpgSQL_ns));
-	memset(new, 0, sizeof(PLpgSQL_ns));
+	new = palloc0(sizeof(PLpgSQL_ns));
 	new->upper = ns_current;
 	ns_current = new;
 
@@ -224,7 +223,7 @@ plpgsql_ns_additem(int itemtype, int itemno, const char *name)
  * ----------
  */
 PLpgSQL_nsitem *
-plpgsql_ns_lookup(char *name, char *label)
+plpgsql_ns_lookup(const char *name, const char *label)
 {
 	PLpgSQL_ns *ns;
 	int			i;
@@ -236,11 +235,11 @@ plpgsql_ns_lookup(char *name, char *label)
 	{
 		for (ns = ns_current; ns != NULL; ns = ns->upper)
 		{
-			if (!strcmp(ns->items[0]->name, label))
+			if (strcmp(ns->items[0]->name, label) == 0)
 			{
 				for (i = 1; i < ns->items_used; i++)
 				{
-					if (!strcmp(ns->items[i]->name, name))
+					if (strcmp(ns->items[i]->name, name) == 0)
 						return ns->items[i];
 				}
 				return NULL;	/* name not found in specified label */
@@ -254,7 +253,7 @@ plpgsql_ns_lookup(char *name, char *label)
 	 */
 	for (ns = ns_current; ns != NULL; ns = ns->upper)
 	{
-		if (!strcmp(ns->items[0]->name, name))
+		if (strcmp(ns->items[0]->name, name) == 0)
 			return ns->items[0];
 	}
 
@@ -265,7 +264,7 @@ plpgsql_ns_lookup(char *name, char *label)
 	{
 		for (i = 1; i < ns->items_used; i++)
 		{
-			if (!strcmp(ns->items[i]->name, name))
+			if (strcmp(ns->items[i]->name, name) == 0)
 				return ns->items[i];
 		}
 		if (ns_localmode)
@@ -288,14 +287,13 @@ plpgsql_ns_rename(char *oldname, char *newname)
 	int			i;
 
 	/*
-	 * Lookup name in the namestack; do the lookup in the current namespace
-	 * only.
+	 * Lookup name in the namestack
 	 */
 	for (ns = ns_current; ns != NULL; ns = ns->upper)
 	{
 		for (i = 1; i < ns->items_used; i++)
 		{
-			if (!strcmp(ns->items[i]->name, oldname))
+			if (strcmp(ns->items[i]->name, oldname) == 0)
 			{
 				newitem = palloc(sizeof(PLpgSQL_nsitem) + strlen(newname));
 				newitem->itemtype = ns->items[i]->itemtype;
@@ -430,39 +428,41 @@ plpgsql_stmt_typename(PLpgSQL_stmt *stmt)
 		case PLPGSQL_STMT_ASSIGN:
 			return _("assignment");
 		case PLPGSQL_STMT_IF:
-			return _("if");
+			return "IF";
 		case PLPGSQL_STMT_LOOP:
-			return _("loop");
+			return "LOOP";
 		case PLPGSQL_STMT_WHILE:
-			return _("while");
+			return "WHILE";
 		case PLPGSQL_STMT_FORI:
-			return _("for with integer loop variable");
+			return _("FOR with integer loop variable");
 		case PLPGSQL_STMT_FORS:
-			return _("for over select rows");
+			return _("FOR over SELECT rows");
 		case PLPGSQL_STMT_EXIT:
-			return _("exit");
+			return "EXIT";
 		case PLPGSQL_STMT_RETURN:
-			return _("return");
+			return "RETURN";
 		case PLPGSQL_STMT_RETURN_NEXT:
-			return _("return next");
+			return "RETURN NEXT";
+		case PLPGSQL_STMT_RETURN_QUERY:
+			return "RETURN QUERY";
 		case PLPGSQL_STMT_RAISE:
-			return _("raise");
+			return "RAISE";
 		case PLPGSQL_STMT_EXECSQL:
 			return _("SQL statement");
 		case PLPGSQL_STMT_DYNEXECUTE:
-			return _("execute statement");
+			return _("EXECUTE statement");
 		case PLPGSQL_STMT_DYNFORS:
-			return _("for over execute statement");
+			return _("FOR over EXECUTE statement");
 		case PLPGSQL_STMT_GETDIAG:
-			return _("get diagnostics");
+			return "GET DIAGNOSTICS";
 		case PLPGSQL_STMT_OPEN:
-			return _("open");
+			return "OPEN";
 		case PLPGSQL_STMT_FETCH:
-			return _("fetch");
+			return "FETCH";
 		case PLPGSQL_STMT_CLOSE:
-			return _("close");
+			return "CLOSE";
 		case PLPGSQL_STMT_PERFORM:
-			return _("perform");
+			return "PERFORM";
 	}
 
 	return "unknown";
@@ -486,6 +486,7 @@ static void dump_fors(PLpgSQL_stmt_fors *stmt);
 static void dump_exit(PLpgSQL_stmt_exit *stmt);
 static void dump_return(PLpgSQL_stmt_return *stmt);
 static void dump_return_next(PLpgSQL_stmt_return_next *stmt);
+static void dump_return_query(PLpgSQL_stmt_return_query *stmt);
 static void dump_raise(PLpgSQL_stmt_raise *stmt);
 static void dump_execsql(PLpgSQL_stmt_execsql *stmt);
 static void dump_dynexecute(PLpgSQL_stmt_dynexecute *stmt);
@@ -543,6 +544,9 @@ dump_stmt(PLpgSQL_stmt *stmt)
 			break;
 		case PLPGSQL_STMT_RETURN_NEXT:
 			dump_return_next((PLpgSQL_stmt_return_next *) stmt);
+			break;
+		case PLPGSQL_STMT_RETURN_QUERY:
+			dump_return_query((PLpgSQL_stmt_return_query *) stmt);
 			break;
 		case PLPGSQL_STMT_RAISE:
 			dump_raise((PLpgSQL_stmt_raise *) stmt);
@@ -701,8 +705,8 @@ dump_fori(PLpgSQL_stmt_fori *stmt)
 	dump_expr(stmt->upper);
 	printf("\n");
 	dump_ind();
-	printf("    by = ");
-	dump_expr(stmt->by);
+	printf("    step = ");
+	dump_expr(stmt->step);
 	printf("\n");
 	dump_indent -= 2;
 
@@ -877,6 +881,15 @@ dump_return_next(PLpgSQL_stmt_return_next *stmt)
 		dump_expr(stmt->expr);
 	else
 		printf("NULL");
+	printf("\n");
+}
+
+static void
+dump_return_query(PLpgSQL_stmt_return_query *stmt)
+{
+	dump_ind();
+	printf("RETURN QUERY ");
+	dump_expr(stmt->query);
 	printf("\n");
 }
 

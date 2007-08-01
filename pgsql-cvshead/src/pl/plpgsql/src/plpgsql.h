@@ -8,7 +8,7 @@
  *
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/pl/plpgsql/src/plpgsql.h,v 1.88 2007/04/29 01:21:09 neilc Exp $
+ *	  $PostgreSQL: pgsql/src/pl/plpgsql/src/plpgsql.h,v 1.91 2007/07/25 04:19:09 neilc Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -83,6 +83,7 @@ enum
 	PLPGSQL_STMT_EXIT,
 	PLPGSQL_STMT_RETURN,
 	PLPGSQL_STMT_RETURN_NEXT,
+	PLPGSQL_STMT_RETURN_QUERY,
 	PLPGSQL_STMT_RAISE,
 	PLPGSQL_STMT_EXECSQL,
 	PLPGSQL_STMT_DYNEXECUTE,
@@ -402,7 +403,7 @@ typedef struct
 	PLpgSQL_var *var;
 	PLpgSQL_expr *lower;
 	PLpgSQL_expr *upper;
-	PLpgSQL_expr *by;
+	PLpgSQL_expr *step;			/* NULL means default (ie, BY 1) */
 	int			reverse;
 	List	   *body;			/* List of statements */
 } PLpgSQL_stmt_fori;
@@ -492,6 +493,13 @@ typedef struct
 	PLpgSQL_expr *expr;
 	int			retvarno;
 } PLpgSQL_stmt_return_next;
+
+typedef struct
+{								/* RETURN QUERY statement */
+	int			cmd_type;
+	int			lineno;
+	PLpgSQL_expr *query;
+} PLpgSQL_stmt_return_query;
 
 typedef struct
 {								/* RAISE statement			*/
@@ -770,10 +778,10 @@ extern char *plpgsql_dstring_get(PLpgSQL_dstring *ds);
  */
 extern void plpgsql_ns_init(void);
 extern bool plpgsql_ns_setlocal(bool flag);
-extern void plpgsql_ns_push(char *label);
+extern void plpgsql_ns_push(const char *label);
 extern void plpgsql_ns_pop(void);
 extern void plpgsql_ns_additem(int itemtype, int itemno, const char *name);
-extern PLpgSQL_nsitem *plpgsql_ns_lookup(char *name, char *nsname);
+extern PLpgSQL_nsitem *plpgsql_ns_lookup(const char *name, const char *nsname);
 extern void plpgsql_ns_rename(char *oldname, char *newname);
 
 /* ----------

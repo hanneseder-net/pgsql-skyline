@@ -10,7 +10,7 @@
  * Written by Peter Eisentraut <peter_e@gmx.net>.
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/backend/utils/misc/guc.c,v 1.404 2007/06/30 19:12:02 tgl Exp $
+ *	  $PostgreSQL: pgsql/src/backend/utils/misc/guc.c,v 1.407 2007/07/24 04:54:09 tgl Exp $
  *
  *--------------------------------------------------------------------
  */
@@ -54,6 +54,7 @@
 #include "postmaster/bgwriter.h"
 #include "postmaster/postmaster.h"
 #include "postmaster/syslogger.h"
+#include "postmaster/walwriter.h"
 #include "storage/fd.h"
 #include "storage/freespace.h"
 #include "tcop/tcopprot.h"
@@ -1040,7 +1041,7 @@ static struct config_bool ConfigureNamesBool[] =
 
 	{
 		{"krb_caseins_users", PGC_POSTMASTER, CONN_AUTH_SECURITY,
-			gettext_noop("Sets whether Kerberos user names should be treated as case-insensitive."),
+			gettext_noop("Sets whether Kerberos and GSSAPI user names should be treated as case-insensitive."),
 			NULL
 		},
 		&pg_krb_caseins_users,
@@ -1348,7 +1349,7 @@ static struct config_int ConfigureNamesInt[] =
 			GUC_UNIT_MS
 		},
 		&autovacuum_vac_cost_delay,
-		-1, -1, 1000, NULL, NULL
+		20, -1, 1000, NULL, NULL
 	},
 
 	{
@@ -1510,6 +1511,16 @@ static struct config_int ConfigureNamesInt[] =
 	},
 
 	{
+		{"wal_writer_delay", PGC_SIGHUP, WAL_SETTINGS,
+			gettext_noop("WAL writer sleep time between WAL flushes."),
+			NULL,
+			GUC_UNIT_MS
+		},
+		&WalWriterDelay,
+		200, 1, 10000, NULL, NULL
+	},
+
+	{
 		{"commit_delay", PGC_USERSET, WAL_CHECKPOINTS,
 			gettext_noop("Sets the delay in microseconds between transaction commit and "
 						 "flushing WAL to disk."),
@@ -1656,7 +1667,7 @@ static struct config_int ConfigureNamesInt[] =
 			NULL
 		},
 		&autovacuum_vac_thresh,
-		500, 0, INT_MAX, NULL, NULL
+		50, 0, INT_MAX, NULL, NULL
 	},
 	{
 		{"autovacuum_analyze_threshold", PGC_SIGHUP, AUTOVACUUM,
@@ -1664,7 +1675,7 @@ static struct config_int ConfigureNamesInt[] =
 			NULL
 		},
 		&autovacuum_anl_thresh,
-		250, 0, INT_MAX, NULL, NULL
+		50, 0, INT_MAX, NULL, NULL
 	},
 	{
 		/* see varsup.c for why this is PGC_POSTMASTER not PGC_SIGHUP */

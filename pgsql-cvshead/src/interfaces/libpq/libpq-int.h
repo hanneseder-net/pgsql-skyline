@@ -12,7 +12,7 @@
  * Portions Copyright (c) 1996-2007, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
- * $PostgreSQL: pgsql/src/interfaces/libpq/libpq-int.h,v 1.121 2007/07/08 18:28:56 tgl Exp $
+ * $PostgreSQL: pgsql/src/interfaces/libpq/libpq-int.h,v 1.126 2007/07/23 18:59:50 tgl Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -44,6 +44,30 @@
 /* include stuff found in fe only */
 #include "pqexpbuffer.h"
 
+#ifdef ENABLE_GSS
+#if defined(HAVE_GSSAPI_H)
+#include <gssapi.h>
+#else
+#include <gssapi/gssapi.h>
+#endif
+#endif
+
+#ifdef ENABLE_SSPI
+#define SECURITY_WIN32
+#include <security.h>
+#undef SECURITY_WIN32
+
+#ifndef ENABLE_GSS
+/*
+ * Define a fake structure compatible with GSSAPI on Unix.
+ */
+typedef struct {
+	void *value;
+	int length;
+} gss_buffer_desc;
+#endif
+#endif /* ENABLE_SSPI */
+
 #ifdef USE_SSL
 #include <openssl/ssl.h>
 #include <openssl/err.h>
@@ -52,8 +76,7 @@
 /*
  * POSTGRES backend dependent Constants.
  */
-#define PQERRORMSG_LENGTH 1024
-#define CMDSTATUS_LEN 40
+#define CMDSTATUS_LEN 64		/* should match COMPLETION_TAG_BUFSIZE */
 
 /*
  * PGresult and the subsidiary types PGresAttDesc, PGresAttValue
@@ -268,7 +291,7 @@ struct pg_conn
 	char	   *pguser;			/* Postgres username and password, if any */
 	char	   *pgpass;
 	char	   *sslmode;		/* SSL mode (require,prefer,allow,disable) */
-#ifdef KRB5
+#if defined(KRB5) || defined(ENABLE_GSS) || defined(ENABLE_SSPI)
 	char	   *krbsrvname;		/* Kerberos service name */
 #endif
 
@@ -350,6 +373,26 @@ struct pg_conn
 	char		peer_cn[SM_USER + 1];	/* peer common name */
 #endif
 
+#ifdef ENABLE_GSS
+	gss_ctx_id_t	gctx;		/* GSS context */
+	gss_name_t		gtarg_nam;	/* GSS target name */
+	gss_buffer_desc	ginbuf;		/* GSS input token */
+	gss_buffer_desc	goutbuf;	/* GSS output token */
+#endif
+
+#ifdef ENABLE_SSPI
+#ifndef ENABLE_GSS
+	gss_buffer_desc	ginbuf;		/* GSS input token */
+#else
+	char			*gsslib;	/* What GSS librart to use ("gssapi" or "sspi") */
+#endif
+	CredHandle		*sspicred;	/* SSPI credentials handle */
+	CtxtHandle		*sspictx;	/* SSPI context */
+	char			*sspitarget;/* SSPI target name */
+	int				usesspi;	/* Indicate if SSPI is in use on the connection */
+#endif
+
+
 	/* Buffer for current error message */
 	PQExpBufferData errorMessage;		/* expansible string */
 
@@ -398,7 +441,6 @@ extern pgthreadlock_t pg_g_threadlock;
 #define pglock_thread()		((void) 0)
 #define pgunlock_thread()	((void) 0)
 #endif
-
 
 /* === in fe-exec.c === */
 

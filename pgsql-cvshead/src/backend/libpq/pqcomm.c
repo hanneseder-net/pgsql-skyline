@@ -30,7 +30,7 @@
  * Portions Copyright (c) 1996-2007, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
- *	$PostgreSQL: pgsql/src/backend/libpq/pqcomm.c,v 1.192 2007/06/04 11:59:20 mha Exp $
+ *	$PostgreSQL: pgsql/src/backend/libpq/pqcomm.c,v 1.195 2007/07/24 11:16:36 mha Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -173,6 +173,22 @@ pq_close(int code, Datum arg)
 {
 	if (MyProcPort != NULL)
 	{
+#if defined(ENABLE_GSS) || defined(ENABLE_SSPI)
+#ifdef ENABLE_GSS
+		OM_uint32	min_s;
+
+		/* Shutdown GSSAPI layer */
+		if (MyProcPort->gss->ctx)
+			gss_delete_sec_context(&min_s, MyProcPort->gss->ctx, NULL);
+
+		if (MyProcPort->gss->cred)
+			gss_release_cred(&min_s, MyProcPort->gss->cred);
+#endif /* ENABLE_GSS */
+		/* GSS and SSPI share the port->gss struct */
+
+		free(MyProcPort->gss);
+#endif /* ENABLE_GSS || ENABLE_SSPI */
+
 		/* Cleanly shut down SSL layer */
 		secure_close(MyProcPort);
 
@@ -229,7 +245,6 @@ StreamServerPort(int family, char *hostName, unsigned short portNumber,
 	int			fd,
 				err;
 	int			maxconn;
-	int			one = 1;
 	int			ret;
 	char		portNumberStr[32];
 	const char *familyDesc;
@@ -240,6 +255,9 @@ StreamServerPort(int family, char *hostName, unsigned short portNumber,
 	struct addrinfo hint;
 	int			listen_index = 0;
 	int			added = 0;
+#if !defined(WIN32) || defined(IPV6_V6ONLY)
+	int			one = 1;
+#endif
 
 	/* Initialize hint structure */
 	MemSet(&hint, 0, sizeof(hint));

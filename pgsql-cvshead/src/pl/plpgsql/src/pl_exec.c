@@ -8,7 +8,7 @@
  *
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/pl/plpgsql/src/pl_exec.c,v 1.197 2007/06/05 21:31:08 tgl Exp $
+ *	  $PostgreSQL: pgsql/src/pl/plpgsql/src/pl_exec.c,v 1.199 2007/07/25 04:19:08 neilc Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -105,6 +105,8 @@ static int exec_stmt_return(PLpgSQL_execstate *estate,
 				 PLpgSQL_stmt_return *stmt);
 static int exec_stmt_return_next(PLpgSQL_execstate *estate,
 					  PLpgSQL_stmt_return_next *stmt);
+static int exec_stmt_return_query(PLpgSQL_execstate *estate,
+					  PLpgSQL_stmt_return_query *stmt);
 static int exec_stmt_raise(PLpgSQL_execstate *estate,
 				PLpgSQL_stmt_raise *stmt);
 static int exec_stmt_execsql(PLpgSQL_execstate *estate,
@@ -1244,6 +1246,10 @@ exec_stmt(PLpgSQL_execstate *estate, PLpgSQL_stmt *stmt)
 			rc = exec_stmt_return_next(estate, (PLpgSQL_stmt_return_next *) stmt);
 			break;
 
+		case PLPGSQL_STMT_RETURN_QUERY:
+			rc = exec_stmt_return_query(estate, (PLpgSQL_stmt_return_query *) stmt);
+			break;
+
 		case PLPGSQL_STMT_RAISE:
 			rc = exec_stmt_raise(estate, (PLpgSQL_stmt_raise *) stmt);
 			break;
@@ -1517,8 +1523,7 @@ exec_stmt_while(PLpgSQL_execstate *estate, PLpgSQL_stmt_while *stmt)
 /* ----------
  * exec_stmt_fori			Iterate an integer variable
  *					from a lower to an upper value
- *					incrementing or decrementing in BY value
- *					Loop can be left with exit.
+ *					incrementing or decrementing by the BY value
  * ----------
  */
 static int
@@ -1526,16 +1531,18 @@ exec_stmt_fori(PLpgSQL_execstate *estate, PLpgSQL_stmt_fori *stmt)
 {
 	PLpgSQL_var *var;
 	Datum		value;
-	Datum		by_value;
-	Oid			valtype;
 	bool		isnull;
+	Oid			valtype;
+	int32		loop_value;
+	int32		end_value;
+	int32		step_value;
 	bool		found = false;
 	int			rc = PLPGSQL_RC_OK;
 
 	var = (PLpgSQL_var *) (estate->datums[stmt->var->varno]);
 
 	/*
-	 * Get the value of the lower bound into the loop var
+	 * Get the value of the lower bound
 	 */
 	value = exec_eval_expr(estate, stmt->lower, &isnull, &valtype);
 	value = exec_cast_value(value, valtype, var->datatype->typoid,
@@ -1546,8 +1553,7 @@ exec_stmt_fori(PLpgSQL_execstate *estate, PLpgSQL_stmt_fori *stmt)
 		ereport(ERROR,
 				(errcode(ERRCODE_NULL_VALUE_NOT_ALLOWED),
 				 errmsg("lower bound of FOR loop cannot be NULL")));
-	var->value = value;
-	var->isnull = false;
+	loop_value = DatumGetInt32(value);
 	exec_eval_cleanup(estate);
 
 	/*
@@ -1562,22 +1568,32 @@ exec_stmt_fori(PLpgSQL_execstate *estate, PLpgSQL_stmt_fori *stmt)
 		ereport(ERROR,
 				(errcode(ERRCODE_NULL_VALUE_NOT_ALLOWED),
 				 errmsg("upper bound of FOR loop cannot be NULL")));
+	end_value = DatumGetInt32(value);
 	exec_eval_cleanup(estate);
 
 	/*
-	 * Get the by value
+	 * Get the step value
 	 */
-	by_value = exec_eval_expr(estate, stmt->by, &isnull, &valtype);
-	by_value = exec_cast_value(by_value, valtype, var->datatype->typoid,
-							   &(var->datatype->typinput),
-							   var->datatype->typioparam,
-							   var->datatype->atttypmod, isnull);
-
-	if (isnull)
-		ereport(ERROR,
-				(errcode(ERRCODE_NULL_VALUE_NOT_ALLOWED),
-				 errmsg("by value of FOR loop cannot be NULL")));
-	exec_eval_cleanup(estate);
+	if (stmt->step)
+	{
+		value = exec_eval_expr(estate, stmt->step, &isnull, &valtype);
+		value = exec_cast_value(value, valtype, var->datatype->typoid,
+								&(var->datatype->typinput),
+								var->datatype->typioparam,
+								var->datatype->atttypmod, isnull);
+		if (isnull)
+			ereport(ERROR,
+					(errcode(ERRCODE_NULL_VALUE_NOT_ALLOWED),
+					 errmsg("BY value of FOR loop cannot be NULL")));
+		step_value = DatumGetInt32(value);
+		exec_eval_cleanup(estate);
+		if (step_value <= 0)
+			ereport(ERROR,
+					(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+					 errmsg("BY value of FOR loop must be greater than zero")));
+	}
+	else
+		step_value = 1;
 
 	/*
 	 * Now do the loop
@@ -1585,20 +1601,26 @@ exec_stmt_fori(PLpgSQL_execstate *estate, PLpgSQL_stmt_fori *stmt)
 	for (;;)
 	{
 		/*
-		 * Check bounds
+		 * Check against upper bound
 		 */
 		if (stmt->reverse)
 		{
-			if ((int4) (var->value) < (int4) value)
+			if (loop_value < end_value)
 				break;
 		}
 		else
 		{
-			if ((int4) (var->value) > (int4) value)
+			if (loop_value > end_value)
 				break;
 		}
 
 		found = true;			/* looped at least once */
+
+		/*
+		 * Assign current value to loop var
+		 */
+		var->value = Int32GetDatum(loop_value);
+		var->isnull = false;
 
 		/*
 		 * Execute the statements
@@ -1625,13 +1647,12 @@ exec_stmt_fori(PLpgSQL_execstate *estate, PLpgSQL_stmt_fori *stmt)
 			 * current statement's label, if any: return RC_EXIT so that the
 			 * EXIT continues to propagate up the stack.
 			 */
-
 			break;
 		}
 		else if (rc == PLPGSQL_RC_CONTINUE)
 		{
 			if (estate->exitlabel == NULL)
-				/* anonymous continue, so re-run the current loop */
+				/* unlabelled continue, so re-run the current loop */
 				rc = PLPGSQL_RC_OK;
 			else if (stmt->label != NULL &&
 					 strcmp(stmt->label, estate->exitlabel) == 0)
@@ -1652,12 +1673,21 @@ exec_stmt_fori(PLpgSQL_execstate *estate, PLpgSQL_stmt_fori *stmt)
 		}
 
 		/*
-		 * Increase/decrease loop var
+		 * Increase/decrease loop value, unless it would overflow, in which
+		 * case exit the loop.
 		 */
 		if (stmt->reverse)
-			var->value -= by_value;
+		{
+			if ((int32) (loop_value - step_value) > loop_value)
+				break;
+			loop_value -= step_value;
+		}
 		else
-			var->value += by_value;
+		{
+			if ((int32) (loop_value + step_value) < loop_value)
+				break;
+			loop_value += step_value;
+		}
 	}
 
 	/*
@@ -2109,6 +2139,59 @@ exec_stmt_return_next(PLpgSQL_execstate *estate,
 		if (free_tuple)
 			heap_freetuple(tuple);
 	}
+
+	return PLPGSQL_RC_OK;
+}
+
+/* ----------
+ * exec_stmt_return_query		Evaluate a query and add it to the
+ *								list of tuples returned by the current
+ *								SRF.
+ * ----------
+ */
+static int
+exec_stmt_return_query(PLpgSQL_execstate *estate,
+					   PLpgSQL_stmt_return_query *stmt)
+{
+	Portal 		portal;
+
+	if (!estate->retisset)
+		ereport(ERROR,
+				(errcode(ERRCODE_SYNTAX_ERROR),
+				 errmsg("cannot use RETURN QUERY in a non-SETOF function")));
+
+	if (estate->tuple_store == NULL)
+		exec_init_tuple_store(estate);
+
+	exec_run_select(estate, stmt->query, 0, &portal);
+
+	if (!compatible_tupdesc(estate->rettupdesc, portal->tupDesc))
+		ereport(ERROR,
+				(errcode(ERRCODE_DATATYPE_MISMATCH),
+				 errmsg("structure of query does not match function result type")));
+
+	while (true)
+	{
+		MemoryContext 	old_cxt;
+		int 			i;
+
+		SPI_cursor_fetch(portal, true, 50);
+		if (SPI_processed == 0)
+			break;
+
+		old_cxt = MemoryContextSwitchTo(estate->tuple_store_cxt);
+		for (i = 0; i < SPI_processed; i++)
+		{
+			HeapTuple tuple = SPI_tuptable->vals[i];
+			tuplestore_puttuple(estate->tuple_store, tuple);
+		}
+		MemoryContextSwitchTo(old_cxt);
+
+		SPI_freetuptable(SPI_tuptable);
+	}
+
+	SPI_freetuptable(SPI_tuptable);
+	SPI_cursor_close(portal);
 
 	return PLPGSQL_RC_OK;
 }

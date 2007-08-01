@@ -9,7 +9,7 @@
  *
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/pl/plpgsql/src/gram.y,v 1.102 2007/04/29 01:21:09 neilc Exp $
+ *	  $PostgreSQL: pgsql/src/pl/plpgsql/src/gram.y,v 1.105 2007/07/25 04:19:08 neilc Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -32,6 +32,7 @@ static	PLpgSQL_stmt	*make_execsql_stmt(const char *sqlstart, int lineno);
 static	PLpgSQL_stmt_fetch *read_fetch_direction(void);
 static	PLpgSQL_stmt	*make_return_stmt(int lineno);
 static	PLpgSQL_stmt	*make_return_next_stmt(int lineno);
+static	PLpgSQL_stmt	*make_return_query_stmt(int lineno);
 static	void			 check_assignable(PLpgSQL_datum *datum);
 static	void			 read_into_target(PLpgSQL_rec **rec, PLpgSQL_row **row,
 										  bool *strict);
@@ -187,6 +188,7 @@ static	void			 check_labels(const char *start_label,
 %token	K_NULL
 %token	K_OPEN
 %token	K_OR
+%token	K_QUERY
 %token	K_PERFORM
 %token	K_ROW_COUNT
 %token	K_RAISE
@@ -366,7 +368,7 @@ decl_statement	: decl_varname decl_const decl_datatype decl_notnull decl_defval
 						plpgsql_ns_rename($2, $4);
 					}
 				| decl_varname opt_scrollable K_CURSOR
-					{ plpgsql_ns_push(NULL); }
+					{ plpgsql_ns_push($1.name); }
 				  decl_cursor_args decl_is_for decl_cursor_query
 					{
 						PLpgSQL_var *new;
@@ -876,7 +878,7 @@ stmt_for		: opt_block_label K_FOR for_control loop_body
 						}
 
 						check_labels($1, $4.end_label);
-						/* close namespace started in opt_label */
+						/* close namespace started in opt_block_label */
 						plpgsql_ns_pop();
 					}
 				;
@@ -968,39 +970,25 @@ for_control		:
 								PLpgSQL_stmt_fori	*new;
 								char				*varname;
 
-								/* First expression is well-formed */
+								/* Check first expression is well-formed */
 								check_sql_expr(expr1->query);
 
-
-								expr2 = read_sql_construct(K_BY,
-														   K_LOOP,
+								/* Read and check the second one */
+								expr2 = read_sql_construct(K_LOOP,
+														   K_BY,
 														   "LOOP",
 														   "SELECT ",
 														   true,
-														   false,
+														   true,
 														   &tok);
 
+								/* Get the BY clause if any */
 								if (tok == K_BY)
 									expr_by = plpgsql_read_expression(K_LOOP, "LOOP");
 								else
-								{
-									/*
-									 * If there is no BY clause we will assume 1
-									 */
-									char buf[1024];
-									PLpgSQL_dstring		ds;
+									expr_by = NULL;
 
-									plpgsql_dstring_init(&ds);
-
-									expr_by = palloc0(sizeof(PLpgSQL_expr));
-									expr_by->dtype      		= PLPGSQL_DTYPE_EXPR;
-									strcpy(buf, "SELECT 1");
-									plpgsql_dstring_append(&ds, buf);
-									expr_by->query			    = pstrdup(plpgsql_dstring_get(&ds));
-									expr_by->plan				= NULL;
-								}
-
-								/* should have had a single variable name */
+								/* Should have had a single variable name */
 								plpgsql_error_lineno = $2.lineno;
 								if ($2.scalar && $2.row)
 									ereport(ERROR,
@@ -1023,7 +1011,7 @@ for_control		:
 								new->reverse  = reverse;
 								new->lower	  = expr1;
 								new->upper	  = expr2;
-								new->by		  = expr_by;
+								new->step	  = expr_by;
 
 								$$ = (PLpgSQL_stmt *) new;
 							}
@@ -1184,6 +1172,10 @@ stmt_return		: K_RETURN lno
 						if (tok == K_NEXT)
 						{
 							$$ = make_return_next_stmt($2);
+						}
+						else if (tok == K_QUERY)
+						{
+							$$ = make_return_query_stmt($2);
 						}
 						else
 						{
@@ -2118,7 +2110,8 @@ make_return_stmt(int lineno)
 	if (plpgsql_curr_compile->fn_retset)
 	{
 		if (yylex() != ';')
-			yyerror("RETURN cannot have a parameter in function returning set; use RETURN NEXT");
+			yyerror("RETURN cannot have a parameter in function "
+					"returning set; use RETURN NEXT or RETURN QUERY");
 	}
 	else if (plpgsql_curr_compile->out_param_varno >= 0)
 	{
@@ -2209,6 +2202,23 @@ make_return_next_stmt(int lineno)
 	}
 	else
 		new->expr = plpgsql_read_expression(';', ";");
+
+	return (PLpgSQL_stmt *) new;
+}
+
+
+static PLpgSQL_stmt *
+make_return_query_stmt(int lineno)
+{
+	PLpgSQL_stmt_return_query *new;
+
+	if (!plpgsql_curr_compile->fn_retset)
+		yyerror("cannot use RETURN QUERY in a non-SETOF function");
+
+	new = palloc0(sizeof(PLpgSQL_stmt_return_query));
+	new->cmd_type = PLPGSQL_STMT_RETURN_QUERY;
+	new->lineno = lineno;
+	new->query = read_sql_construct(';', 0, ")", "", false, true, NULL);
 
 	return (PLpgSQL_stmt *) new;
 }

@@ -6,3 +6,4 @@
 /pgstat.c////*///
 /postmaster.c////*///
 /syslogger.c////*///
+/walwriter.c////*///

@@ -37,7 +37,7 @@
  *
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/backend/postmaster/postmaster.c,v 1.530 2007/07/01 18:28:41 tgl Exp $
+ *	  $PostgreSQL: pgsql/src/backend/postmaster/postmaster.c,v 1.535 2007/07/24 04:54:09 tgl Exp $
  *
  * NOTES
  *
@@ -136,7 +136,7 @@ typedef struct bkend
 {
 	pid_t		pid;			/* process id of backend */
 	long		cancel_key;		/* cancel key for cancels for this backend */
-	bool		is_autovacuum;	/* is it an autovacuum process */
+	bool		is_autovacuum;	/* is it an autovacuum process? */
 } Backend;
 
 static Dllist *BackendList;
@@ -144,9 +144,9 @@ static Dllist *BackendList;
 #ifdef EXEC_BACKEND
 /*
  * Number of entries in the backend table. Twice the number of backends,
- * plus four other subprocesses (stats, bgwriter, autovac, logger).
+ * plus five other subprocesses (stats, bgwriter, walwriter, autovac, logger).
  */
-#define NUM_BACKENDARRAY_ELEMS (2*MaxBackends + 4)
+#define NUM_BACKENDARRAY_ELEMS (2*MaxBackends + 5)
 static Backend *ShmemBackendArray;
 #endif
 
@@ -201,10 +201,11 @@ char	   *bonjour_name;
 /* PIDs of special child processes; 0 when not running */
 static pid_t StartupPID = 0,
 			BgWriterPID = 0,
+			WalWriterPID = 0,
 			AutoVacPID = 0,
 			PgArchPID = 0,
-			PgStatPID = 0;
-pid_t			SysLoggerPID = 0; /* Needs to be accessed from elog.c */
+        	PgStatPID = 0,
+    		SysLoggerPID = 0;
 
 /* Startup/shutdown state */
 #define			NoShutdown		0
@@ -218,8 +219,10 @@ static bool FatalError = false; /* T if recovering from backend crash */
 bool		ClientAuthInProgress = false;		/* T during new-client
 												 * authentication */
 
+bool redirection_done = false; 
+
 /* received START_AUTOVAC_LAUNCHER signal */
-static bool start_autovac_launcher = false;
+static volatile sig_atomic_t start_autovac_launcher = false;
 
 /*
  * State for assigning random salts and cancel keys.
@@ -332,6 +335,7 @@ typedef struct
 	InheritableSocket pgStatSock;
 	pid_t		PostmasterPid;
 	TimestampTz PgStartTime;
+	bool        redirection_done;
 #ifdef WIN32
 	HANDLE		PostmasterHandle;
 	HANDLE		initial_signal_pipe;
@@ -362,6 +366,7 @@ static void ShmemBackendArrayRemove(pid_t pid);
 
 #define StartupDataBase()		StartChildProcess(StartupProcess)
 #define StartBackgroundWriter() StartChildProcess(BgWriterProcess)
+#define StartWalWriter()		StartChildProcess(WalWriterProcess)
 
 /* Macros to check exit status of a child process */
 #define EXIT_STATUS_0(st)  ((st) == 0)
@@ -906,8 +911,9 @@ PostmasterMain(int argc, char *argv[])
 	 *
 	 * CAUTION: when changing this list, check for side-effects on the signal
 	 * handling setup of child processes.  See tcop/postgres.c,
-	 * bootstrap/bootstrap.c, postmaster/bgwriter.c, postmaster/autovacuum.c,
-	 * postmaster/pgarch.c, postmaster/pgstat.c, and postmaster/syslogger.c.
+	 * bootstrap/bootstrap.c, postmaster/bgwriter.c, postmaster/walwriter.c,
+	 * postmaster/autovacuum.c, postmaster/pgarch.c, postmaster/pgstat.c, and
+	 * postmaster/syslogger.c.
 	 */
 	pqinitmask();
 	PG_SETMASK(&BlockSig);
@@ -1241,6 +1247,15 @@ ServerLoop(void)
 				signal_child(BgWriterPID, SIGUSR2);
 		}
 
+		/*
+		 * Likewise, if we have lost the walwriter process, try to start a
+		 * new one.  We don't need walwriter to complete a shutdown, so
+		 * don't start it if shutdown already initiated.
+		 */
+		if (WalWriterPID == 0 &&
+			StartupPID == 0 && !FatalError && Shutdown == NoShutdown)
+			WalWriterPID = StartWalWriter();
+
 		/* If we have lost the autovacuum launcher, try to start a new one */
 		if (AutoVacPID == 0 &&
 			(AutoVacuumingActive() || start_autovac_launcher) &&
@@ -1248,7 +1263,7 @@ ServerLoop(void)
 		{
 			AutoVacPID = StartAutoVacLauncher();
 			if (AutoVacPID != 0)
-				start_autovac_launcher = false;	/* signal successfully processed */
+				start_autovac_launcher = false;	/* signal processed */
 		}
 
 		/* If we have lost the archiver, try to start a new one */
@@ -1727,6 +1742,22 @@ ConnCreate(int serverFd)
 		RandomSalt(port->cryptSalt, port->md5Salt);
 	}
 
+	/*
+     * Allocate GSSAPI specific state struct
+	 */
+#ifndef EXEC_BACKEND
+#if defined(ENABLE_GSS) || defined(ENABLE_SSPI) 
+	port->gss = (pg_gssinfo *)calloc(1, sizeof(pg_gssinfo));
+	if (!port->gss)
+	{
+		ereport(LOG,
+				(errcode(ERRCODE_OUT_OF_MEMORY),
+				 errmsg("out of memory")));
+		ExitPostmaster(1);
+	}
+#endif
+#endif
+
 	return port;
 }
 
@@ -1740,6 +1771,8 @@ ConnFree(Port *conn)
 #ifdef USE_SSL
 	secure_close(conn);
 #endif
+	if (conn->gss)
+		free(conn->gss);
 	free(conn);
 }
 
@@ -1821,6 +1854,8 @@ SIGHUP_handler(SIGNAL_ARGS)
 		SignalChildren(SIGHUP);
 		if (BgWriterPID != 0)
 			signal_child(BgWriterPID, SIGHUP);
+		if (WalWriterPID != 0)
+			signal_child(WalWriterPID, SIGHUP);
 		if (AutoVacPID != 0)
 			signal_child(AutoVacPID, SIGHUP);
 		if (PgArchPID != 0)
@@ -1880,8 +1915,11 @@ pmdie(SIGNAL_ARGS)
 			/* and the autovac launcher too */
 			if (AutoVacPID != 0)
 				signal_child(AutoVacPID, SIGTERM);
+			/* and the walwriter too */
+			if (WalWriterPID != 0)
+				signal_child(WalWriterPID, SIGTERM);
 
-			if (DLGetHead(BackendList) || AutoVacPID != 0)
+			if (DLGetHead(BackendList) || AutoVacPID != 0 || WalWriterPID != 0)
 				break;			/* let reaper() handle this */
 
 			/*
@@ -1917,7 +1955,7 @@ pmdie(SIGNAL_ARGS)
 			ereport(LOG,
 					(errmsg("received fast shutdown request")));
 
-			if (DLGetHead(BackendList) || AutoVacPID != 0)
+			if (DLGetHead(BackendList) || AutoVacPID != 0 || WalWriterPID != 0)
 			{
 				if (!FatalError)
 				{
@@ -1926,6 +1964,8 @@ pmdie(SIGNAL_ARGS)
 					SignalChildren(SIGTERM);
 					if (AutoVacPID != 0)
 						signal_child(AutoVacPID, SIGTERM);
+					if (WalWriterPID != 0)
+						signal_child(WalWriterPID, SIGTERM);
 					/* reaper() does the rest */
 				}
 				break;
@@ -1936,6 +1976,7 @@ pmdie(SIGNAL_ARGS)
 			 *
 			 * Note: if we previously got SIGTERM then we may send SIGUSR2 to
 			 * the bgwriter a second time here.  This should be harmless.
+			 * Ditto for the signals to the other special children.
 			 */
 			if (StartupPID != 0)
 			{
@@ -1972,6 +2013,8 @@ pmdie(SIGNAL_ARGS)
 				signal_child(StartupPID, SIGQUIT);
 			if (BgWriterPID != 0)
 				signal_child(BgWriterPID, SIGQUIT);
+			if (WalWriterPID != 0)
+				signal_child(WalWriterPID, SIGQUIT);
 			if (AutoVacPID != 0)
 				signal_child(AutoVacPID, SIGQUIT);
 			if (PgArchPID != 0)
@@ -2070,13 +2113,14 @@ reaper(SIGNAL_ARGS)
 
 			/*
 			 * Go to shutdown mode if a shutdown request was pending.
-			 * Otherwise, try to start the archiver, stats collector and
-			 * autovacuum launcher.
+			 * Otherwise, try to start the other special children.
 			 */
 			if (Shutdown > NoShutdown && BgWriterPID != 0)
 				signal_child(BgWriterPID, SIGUSR2);
 			else if (Shutdown == NoShutdown)
 			{
+				if (WalWriterPID == 0)
+					WalWriterPID = StartWalWriter();
 				if (XLogArchivingActive() && PgArchPID == 0)
 					PgArchPID = pgarch_start();
 				if (PgStatPID == 0)
@@ -2100,7 +2144,8 @@ reaper(SIGNAL_ARGS)
 			BgWriterPID = 0;
 			if (EXIT_STATUS_0(exitstatus) &&
 				Shutdown > NoShutdown && !FatalError &&
-				!DLGetHead(BackendList) && AutoVacPID == 0)
+				!DLGetHead(BackendList) &&
+				WalWriterPID == 0 && AutoVacPID == 0)
 			{
 				/*
 				 * Normal postmaster exit is here: we've seen normal exit of
@@ -2129,7 +2174,8 @@ reaper(SIGNAL_ARGS)
 			 * required will happen on next postmaster start.
 			 */
 			if (Shutdown > NoShutdown &&
-				!DLGetHead(BackendList) && AutoVacPID == 0)
+				!DLGetHead(BackendList) &&
+				WalWriterPID == 0 && AutoVacPID == 0)
 			{
 				ereport(LOG,
 						(errmsg("abnormal database system shutdown")));
@@ -2137,6 +2183,20 @@ reaper(SIGNAL_ARGS)
 			}
 
 			/* Else, proceed as in normal crash recovery */
+			continue;
+		}
+
+		/*
+		 * Was it the wal writer?  Normal exit can be ignored; we'll
+		 * start a new one at the next iteration of the postmaster's main loop,
+		 * if necessary.  Any other exit condition is treated as a crash.
+		 */
+		if (WalWriterPID != 0 && pid == WalWriterPID)
+		{
+			WalWriterPID = 0;
+			if (!EXIT_STATUS_0(exitstatus))
+				HandleChildCrash(pid, exitstatus,
+								 _("wal writer process"));
 			continue;
 		}
 
@@ -2212,7 +2272,8 @@ reaper(SIGNAL_ARGS)
 		 * StartupDataBase.  (We can ignore the archiver and stats processes
 		 * here since they are not connected to shmem.)
 		 */
-		if (DLGetHead(BackendList) || StartupPID != 0 || BgWriterPID != 0 ||
+		if (DLGetHead(BackendList) || StartupPID != 0 ||
+			BgWriterPID != 0 || WalWriterPID != 0 ||
 			AutoVacPID != 0)
 			goto reaper_done;
 		ereport(LOG,
@@ -2228,7 +2289,8 @@ reaper(SIGNAL_ARGS)
 
 	if (Shutdown > NoShutdown)
 	{
-		if (DLGetHead(BackendList) || StartupPID != 0 || AutoVacPID != 0)
+		if (DLGetHead(BackendList) || StartupPID != 0 || AutoVacPID != 0 ||
+			WalWriterPID != 0)
 			goto reaper_done;
 		/* Start the bgwriter if not running */
 		if (BgWriterPID == 0)
@@ -2294,7 +2356,8 @@ CleanupBackend(int pid,
 }
 
 /*
- * HandleChildCrash -- cleanup after failed backend, bgwriter, or autovacuum.
+ * HandleChildCrash -- cleanup after failed backend, bgwriter, walwriter,
+ * or autovacuum.
  *
  * The objectives here are to clean up our local state about the child
  * process, and to signal all other remaining children to quickdie.
@@ -2367,6 +2430,18 @@ HandleChildCrash(int pid, int exitstatus, const char *procname)
 								 (SendStop ? "SIGSTOP" : "SIGQUIT"),
 								 (int) BgWriterPID)));
 		signal_child(BgWriterPID, (SendStop ? SIGSTOP : SIGQUIT));
+	}
+
+	/* Take care of the walwriter too */
+	if (pid == WalWriterPID)
+		WalWriterPID = 0;
+	else if (WalWriterPID != 0 && !FatalError)
+	{
+		ereport(DEBUG2,
+				(errmsg_internal("sending %s to process %d",
+								 (SendStop ? "SIGSTOP" : "SIGQUIT"),
+								 (int) WalWriterPID)));
+		signal_child(WalWriterPID, (SendStop ? SIGSTOP : SIGQUIT));
 	}
 
 	/* Take care of the autovacuum launcher too */
@@ -3325,6 +3400,19 @@ SubPostmasterMain(int argc, char *argv[])
 	memset(&port, 0, sizeof(Port));
 	read_backend_variables(argv[2], &port);
 
+	/* 
+	 * Set up memory area for GSS information. Mirrors the code in
+	 * ConnCreate for the non-exec case.
+	 */
+#if defined(ENABLE_GSS) || defined(ENABLE_SSPI)
+	port.gss = (pg_gssinfo *)calloc(1, sizeof(pg_gssinfo));
+	if (!port.gss)
+		ereport(FATAL,
+				(errcode(ERRCODE_OUT_OF_MEMORY),
+				 errmsg("out of memory")));
+#endif
+
+
 	/* Check we got appropriate args */
 	if (argc < 3)
 		elog(FATAL, "invalid subpostmaster invocation");
@@ -3588,9 +3676,11 @@ sigusr1_handler(SIGNAL_ARGS)
 		start_autovac_launcher = true;
 	}
 
-	/* The autovacuum launcher wants us to start a worker process. */
 	if (CheckPostmasterSignal(PMSIGNAL_START_AUTOVAC_WORKER))
+	{
+		/* The autovacuum launcher wants us to start a worker process. */
 		StartAutovacuumWorker();
+	}
 
 	PG_SETMASK(&UnBlockSig);
 
@@ -3771,6 +3861,10 @@ StartChildProcess(AuxProcType type)
 				ereport(LOG,
 				   (errmsg("could not fork background writer process: %m")));
 				break;
+			case WalWriterProcess:
+				ereport(LOG,
+				   (errmsg("could not fork wal writer process: %m")));
+				break;
 			default:
 				ereport(LOG,
 						(errmsg("could not fork process: %m")));
@@ -3936,6 +4030,8 @@ save_backend_variables(BackendParameters * param, Port *port,
 
 	param->PostmasterPid = PostmasterPid;
 	param->PgStartTime = PgStartTime;
+
+	param->redirection_done = redirection_done;
 
 #ifdef WIN32
 	param->PostmasterHandle = PostmasterHandle;
@@ -4139,6 +4235,8 @@ restore_backend_variables(BackendParameters * param, Port *port)
 
 	PostmasterPid = param->PostmasterPid;
 	PgStartTime = param->PgStartTime;
+
+	redirection_done = param->redirection_done;
 
 #ifdef WIN32
 	PostmasterHandle = param->PostmasterHandle;

@@ -39,6 +39,9 @@
 /* Define to 1 to enable DTrace support. (--enable-dtrace) */
 #undef ENABLE_DTRACE
 
+/* Define to build with GSSAPI support. (--with-gssapi) */
+#undef ENABLE_GSS
+
 /* Define to 1 if you want National Language Support. (--enable-nls) */
 #undef ENABLE_NLS
 
@@ -169,6 +172,12 @@
 /* Define to 1 if you have the `getrusage' function. */
 #undef HAVE_GETRUSAGE
 
+/* Define to 1 if you have the <gssapi/gssapi.h> header file. */
+#undef HAVE_GSSAPI_GSSAPI_H
+
+/* Define to 1 if you have the <gssapi.h> header file. */
+#undef HAVE_GSSAPI_H
+
 /* Define to 1 if you have the <history.h> header file. */
 #undef HAVE_HISTORY_H
 
@@ -210,6 +219,9 @@
 
 /* Define to 1 if `text.data' is member of `krb5_error'. */
 #undef HAVE_KRB5_ERROR_TEXT_DATA
+
+/* Define to 1 if you have krb5_free_unparsed_name */
+#undef HAVE_KRB5_FREE_UNPARSED_NAME
 
 /* Define to 1 if `client' is member of `krb5_ticket'. */
 #undef HAVE_KRB5_TICKET_CLIENT

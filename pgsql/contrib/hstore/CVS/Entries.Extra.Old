@@ -9,3 +9,6 @@
 /hstore_io.c////*///
 /hstore_op.c////*///
 /uninstall_hstore.sql////*///
+D/data///////
+D/expected///////
+D/sql///////

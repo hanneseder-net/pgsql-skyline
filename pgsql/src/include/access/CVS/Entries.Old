@@ -29,7 +29,7 @@
 /twophase_rmgr.h/1.5/Wed May 30 13:52:57 2007//
 /valid.h/1.39/Fri Jan  5 22:19:51 2007//
 /xact.h/1.87/Mon Apr 30 21:01:53 2007//
-/xlog.h/1.78/Thu May 31 10:06:58 2007//
+/xlog.h/1.80/Mon Jul  9 10:06:07 2007//
 /xlog_internal.h/1.21/Mon May 21 06:28:46 2007//
 /xlogdefs.h/1.17/Wed Feb 14 05:00:40 2007//
 /xlogutils.h/1.22/Fri Jan  5 22:19:51 2007//

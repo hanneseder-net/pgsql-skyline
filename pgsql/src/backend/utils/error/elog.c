@@ -42,7 +42,7 @@
  *
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/backend/utils/error/elog.c,v 1.187 2007/06/14 01:48:51 adunstan Exp $
+ *	  $PostgreSQL: pgsql/src/backend/utils/error/elog.c,v 1.190 2007/07/21 22:12:04 tgl Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -76,7 +76,7 @@ ErrorContextCallback *error_context_stack = NULL;
 
 sigjmp_buf *PG_exception_stack = NULL;
 
-extern pid_t SysLoggerPID;
+extern bool redirection_done;
 
 /* GUC parameters */
 PGErrorVerbosity Log_error_verbosity = PGERROR_VERBOSE;
@@ -240,10 +240,15 @@ errstart(int elevel, const char *filename, int lineno,
 
 		/*
 		 * If we recurse more than once, the problem might be something broken
-		 * in a context traceback routine.	Abandon them too.
+		 * in a context traceback routine.  Abandon them too.  We also
+		 * abandon attempting to print the error statement (which, if long,
+		 * could itself be the source of the recursive failure).
 		 */
 		if (recursion_depth > 2)
+		{
 			error_context_stack = NULL;
+			debug_query_string = NULL;
+		}
 	}
 	if (++errordata_stack_depth >= ERRORDATA_STACK_SIZE)
 	{
@@ -1770,24 +1775,26 @@ send_message_to_server_log(ErrorData *edata)
 	/* Write to stderr, if enabled */
 	if ((Log_destination & LOG_DESTINATION_STDERR) || whereToSendOutput == DestDebug)
 	{
+		/*
+		 * Use the chunking protocol if we know the syslogger should
+		 * be catching stderr output, and we are not ourselves the
+		 * syslogger.  Otherwise, just do a vanilla write to stderr.
+		 */
+		if (redirection_done && !am_syslogger)
+			write_pipe_chunks(fileno(stderr), buf.data, buf.len);
 #ifdef WIN32
-
 		/*
 		 * In a win32 service environment, there is no usable stderr. Capture
 		 * anything going there and write it to the eventlog instead.
 		 *
-		 * If stderr redirection is active, it's ok to write to stderr because
-		 * that's really a pipe to the syslogger process. Unless we're in the
-		 * postmaster, and the syslogger process isn't started yet.
+		 * If stderr redirection is active, it was OK to write to stderr above
+		 * because that's really a pipe to the syslogger process.
 		 */
-		if ((!Redirect_stderr || am_syslogger || (!IsUnderPostmaster && SysLoggerPID==0)) && pgwin32_is_service())
+		else if (pgwin32_is_service())
 			write_eventlog(edata->elevel, buf.data);
-		else
 #endif
-			if (Redirect_stderr)
-				write_pipe_chunks(fileno(stderr), buf.data, buf.len);
-			else
-				write(fileno(stderr), buf.data, buf.len);
+		else
+			write(fileno(stderr), buf.data, buf.len);
 	}
 
 	/* If in the syslogger process, try to write messages direct to file */

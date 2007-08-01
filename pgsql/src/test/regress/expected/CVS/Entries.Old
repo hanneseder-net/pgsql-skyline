@@ -67,7 +67,7 @@
 /numerology.out/1.4/Wed Mar 15 23:31:06 2000//
 /oid.out/1.12/Thu Apr  7 01:51:40 2005//
 /oidjoins.out/1.20/Sat May 12 09:16:21 2007//
-/opr_sanity.out/1.75/Tue Feb  6 03:52:59 2007//
+/opr_sanity.out/1.76/Mon Jul  9 10:06:13 2007//
 /path.out/1.6/Thu Sep 25 06:58:06 2003//
 /plancache.out/1.4/Fri Mar 23 19:53:52 2007//
 /plpgsql.out/1.55/Mon Jun  4 08:43:44 2007//
@@ -84,9 +84,9 @@
 /reltime.out/1.9/Thu Apr  7 01:51:40 2005//
 /returning.out/1.4/Fri Oct  6 17:14:01 2006//
 /rowtypes.out/1.11/Fri Apr  6 04:21:44 2007//
-/rules.out/1.129/Sat Jun 23 07:56:23 2007//
+/rules.out/1.130/Mon Jul  9 10:06:13 2007//
 /sanity_check.out/1.35/Mon Apr  2 03:49:42 2007//
-/select.out/1.17/Wed Mar 21 22:18:12 2007//
+/select.out/1.18/Mon Jul  9 10:06:13 2007//
 /select_distinct.out/1.5/Sun Dec 11 10:54:28 2005//
 /select_distinct_on.out/1.4/Thu Jan 27 18:11:50 2000//
 /select_having.out/1.10/Thu Mar 10 23:21:25 2005//

@@ -10,6 +10,11 @@
 #include "utils/tuplewindow.h"
 #include "utils/lsyscache.h"
 
+#if 0
+#include <crtdbg.h>
+#define STOP _CrtDbgBreak()
+#endif
+
 enum SkylineStatus
 {
 	SS_INIT,
@@ -217,6 +222,18 @@ skyline_option_get_int(List *skyline_by_options, char *name, int *value)
 	return false;
 }
 
+static void
+ExecSkylineCacheCompareFunctionInfo(SkylineState *slstate, Skyline *node)
+{
+	int i;
+
+	slstate->compareOpFn = (FmgrInfo *) palloc(node->numCols * sizeof(FmgrInfo));
+	slstate->compareFlags = (int *) palloc(node->numCols  * sizeof(int));
+
+	for (i=0; i<node->numCols; ++i)
+		ExecSkylineGetOrderingOp(node, i, &(slstate->compareOpFn[i]), &slstate->compareFlags[i]);
+}
+
 SkylineState *
 ExecInitSkyline(Skyline *node, EState *estate, int eflags)
 {
@@ -293,16 +310,7 @@ ExecInitSkyline(Skyline *node, EState *estate, int eflags)
 	ExecSetSlotDescriptor(slstate->extraSlot, ExecGetResultType(outerPlanState(slstate)));
 	slstate->ss.ps.ps_ProjInfo = NULL;
 
-	/* cache compare function info */
-	{
-		int i;
-
-		slstate->compareOpFn = (FmgrInfo *) palloc(node->numCols * sizeof(FmgrInfo));
-		slstate->compareFlags = (int *) palloc(node->numCols  * sizeof(int));
-
-		for (i=0; i<node->numCols; ++i)
-			ExecSkylineGetOrderingOp(node, i, &(slstate->compareOpFn[i]), &slstate->compareFlags[i]);
-	}
+	ExecSkylineCacheCompareFunctionInfo(slstate, node);
 
 	return slstate;
 }
@@ -594,10 +602,14 @@ ExecSkyline_BlockNestedLoop(SkylineState *node, Skyline *sl)
 				if (cmp == SKYLINE_CMP_FIRST_DOMINATES)
 					break;
 				
-				if (cmp == SYKLINE_CMP_SECOND_DOMINATES)
+				if (cmp == SYKLINE_CMP_SECOND_DOMINATES) {
+					// in case were we remove a tuple from the window,
+					// the window cursor (current) is move the the next
 					tuplewindow_removecurrent(window);
-
-				tuplewindow_movenext(window);
+				}
+				else {
+					tuplewindow_movenext(window);
+				}
 			}
 
 			tuplewindow_rewind(window);

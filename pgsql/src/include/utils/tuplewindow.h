@@ -5,7 +5,7 @@
 
 typedef struct TupleWindowState TupleWindowState;
 
-extern TupleWindowState* tuplewindow_begin(int maxKBytes);
+extern TupleWindowState* tuplewindow_begin(int maxKBytes, int maxSlots);
 extern bool tuplewindow_has_freespace(TupleWindowState *state);
 extern void tuplewindow_puttupleslot(TupleWindowState *state, TupleTableSlot *slot, int64 timestamp);
 extern void tuplewindow_rewind(TupleWindowState *state);

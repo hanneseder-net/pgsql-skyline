@@ -2765,7 +2765,10 @@ make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause)
 				methode = SM_SIMPLENESTEDLOOP;
 			}
 			else if (strcmp(option->name, "window") == 0 ||
-					 strcmp(option->name, "windowsize") == 0)
+					 strcmp(option->name, "windowsize") == 0 ||
+					 strcmp(option->name, "slots") == 0 ||
+					 strcmp(option->name, "windowslots") == 0
+					 )
 			{
 				/* ignore them here, they are used in the executor */
 			}

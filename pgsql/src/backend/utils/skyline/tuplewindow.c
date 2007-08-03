@@ -16,19 +16,21 @@ typedef struct TupleWindowSlot {
 } TupleWindowSlot;
 
 struct TupleWindowState {
-	long		availMem;
+	long		availMem;		
+	long		availSlots;				// if -1 only restrict mem
 	TupleWindowSlot	*head;
 	TupleWindowSlot *current;
 };
 
 TupleWindowState *
-tuplewindow_begin(int maxKBytes)
+tuplewindow_begin(int maxKBytes, int maxSlots)
 {
 	TupleWindowState *state;
 
 	state = (TupleWindowState *) palloc0(sizeof(TupleWindowState));
 
 	state->availMem = maxKBytes * 1024L;
+	state->availSlots = maxSlots;
 
 	return state;
 }
@@ -36,9 +38,10 @@ tuplewindow_begin(int maxKBytes)
 bool
 tuplewindow_has_freespace(TupleWindowState *state)
 {
-	return !LACKMEM(state);
-	// for a one slot window
-	// return (state->head == NULL);
+	if (state->availSlots != -1)
+		return (state->availSlots > 0);
+	else 
+		return !LACKMEM(state);
 }
 
 void
@@ -57,6 +60,16 @@ tuplewindow_puttupleslot(TupleWindowState *state,
 
 	windowSlot = (TupleWindowSlot*)palloc(sizeof(TupleWindowSlot));
 	USEMEM(state, GetMemoryChunkSpace(windowSlot));
+
+	if (state->availSlots != -1)
+	{
+		/* if we are counting the slots, then at this point availSlots 
+		 * must be > 0
+		 */
+		AssertState(state->availSlots > 0);
+
+		state->availSlots--;
+	}
 
 	windowSlot->next = state->head;
 	windowSlot->prev = NULL;
@@ -103,6 +116,11 @@ tuplewindow_removeslot(TupleWindowState *state,
 
 	FREEMEM(state, GetMemoryChunkSpace(slot));
 	pfree(slot);
+
+	if (state->availSlots != -1) {
+		/* if we are restricting the slots, then one more becomes available here */
+		state->availSlots++;
+	}
 
 	if (state->current == slot)
 		state->current = next;

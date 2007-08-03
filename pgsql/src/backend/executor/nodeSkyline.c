@@ -621,12 +621,16 @@ ExecSkyline_BlockNestedLoop(SkylineState *node, Skyline *sl)
 	case SS_INIT:
 		{
 			int window_size = work_mem;
+			int window_slots = -1;
 
 			// can be overrided by an option, otherwise use entire work_mem
 			skyline_option_get_int(sl->skyline_by_options, "window", &window_size) ||
 				skyline_option_get_int(sl->skyline_by_options, "windowsize", &window_size);
 
-			node->window = tuplewindow_begin(window_size);
+			skyline_option_get_int(sl->skyline_by_options, "slots", &window_slots) ||
+				skyline_option_get_int(sl->skyline_by_options, "windowslots", &window_slots);
+
+			node->window = tuplewindow_begin(window_size, window_slots);
 			node->source = SS_OUTER;
 			node->tempIn = NULL;
 			/* NOTE: tempOut should go directly to the tempFile, therefore we set work_mem = 0 */

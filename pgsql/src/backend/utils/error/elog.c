@@ -42,7 +42,7 @@
  *
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/backend/utils/error/elog.c,v 1.190 2007/07/21 22:12:04 tgl Exp $
+ *	  $PostgreSQL: pgsql/src/backend/utils/error/elog.c,v 1.193 2007/08/04 19:29:25 tgl Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -1485,12 +1485,7 @@ log_line_prefix(StringInfo buf)
 				}
 				break;
 			case 'c':
-				if (MyProcPort)
-				{
-					appendStringInfo(buf, "%lx.%x",
-									 (long) (MyProcPort->session_start),
-									 MyProcPid);
-				}
+				appendStringInfo(buf, "%lx.%x", (long)(MyStartTime),MyProcPid);
 				break;
 			case 'p':
 				appendStringInfo(buf, "%d", MyProcPid);
@@ -1500,33 +1495,27 @@ log_line_prefix(StringInfo buf)
 				break;
 			case 'm':
 				{
-					/*
-					 * Note: for %m, %t, and %s we deliberately use the C
-					 * library's strftime/localtime, and not the equivalent
-					 * functions from src/timezone.  This ensures that all
-					 * backends will report log entries in the same timezone,
-					 * namely whatever C-library setting they inherit from the
-					 * postmaster.	If we used src/timezone then local
-					 * settings of the TimeZone GUC variable would confuse the
-					 * log.
-					 */
-					time_t		stamp_time;
+					struct timeval tv;
+					pg_time_t	stamp_time;
+					pg_tz	   *tz;
 					char		strfbuf[128],
 								msbuf[8];
-					struct timeval tv;
 
 					gettimeofday(&tv, NULL);
-					stamp_time = tv.tv_sec;
+					stamp_time = (pg_time_t) tv.tv_sec;
 
-					strftime(strfbuf, sizeof(strfbuf),
-					/* leave room for milliseconds... */
-					/* Win32 timezone names are too long so don't print them */
-#ifndef WIN32
-							 "%Y-%m-%d %H:%M:%S     %Z",
-#else
-							 "%Y-%m-%d %H:%M:%S     ",
-#endif
-							 localtime(&stamp_time));
+					/*
+					 * Normally we print log timestamps in log_timezone, but
+					 * during startup we could get here before that's set.
+					 * If so, fall back to gmt_timezone (which guc.c ensures
+					 * is set up before Log_line_prefix can become nonempty).
+					 */
+					tz = log_timezone ? log_timezone : gmt_timezone;
+
+					pg_strftime(strfbuf, sizeof(strfbuf),
+								/* leave room for milliseconds... */
+								"%Y-%m-%d %H:%M:%S     %Z",
+								pg_localtime(&stamp_time, tz));
 
 					/* 'paste' milliseconds into place... */
 					sprintf(msbuf, ".%03d", (int) (tv.tv_usec / 1000));
@@ -1537,33 +1526,29 @@ log_line_prefix(StringInfo buf)
 				break;
 			case 't':
 				{
-					time_t		stamp_time = time(NULL);
+					pg_time_t	stamp_time = (pg_time_t) time(NULL);
+					pg_tz	   *tz;
 					char		strfbuf[128];
 
-					strftime(strfbuf, sizeof(strfbuf),
-					/* Win32 timezone names are too long so don't print them */
-#ifndef WIN32
-							 "%Y-%m-%d %H:%M:%S %Z",
-#else
-							 "%Y-%m-%d %H:%M:%S",
-#endif
-							 localtime(&stamp_time));
+					tz = log_timezone ? log_timezone : gmt_timezone;
+
+					pg_strftime(strfbuf, sizeof(strfbuf),
+								"%Y-%m-%d %H:%M:%S %Z",
+								pg_localtime(&stamp_time, tz));
 					appendStringInfoString(buf, strfbuf);
 				}
 				break;
 			case 's':
-				if (MyProcPort)
 				{
+					pg_time_t	stamp_time = (pg_time_t) MyStartTime;
+					pg_tz	   *tz;
 					char		strfbuf[128];
 
-					strftime(strfbuf, sizeof(strfbuf),
-					/* Win32 timezone names are too long so don't print them */
-#ifndef WIN32
-							 "%Y-%m-%d %H:%M:%S %Z",
-#else
-							 "%Y-%m-%d %H:%M:%S",
-#endif
-							 localtime(&MyProcPort->session_start));
+					tz = log_timezone ? log_timezone : gmt_timezone;
+
+					pg_strftime(strfbuf, sizeof(strfbuf),
+								"%Y-%m-%d %H:%M:%S %Z",
+								pg_localtime(&stamp_time, tz));
 					appendStringInfoString(buf, strfbuf);
 				}
 				break;

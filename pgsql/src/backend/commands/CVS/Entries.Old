@@ -7,7 +7,7 @@
 /comment.c/1.96/Thu Feb  1 19:10:25 2007//
 /conversioncmds.c/1.31/Wed Feb 14 01:58:56 2007//
 /copy.c/1.285/Sat Jun 23 07:56:15 2007//
-/dbcommands.c/1.196/Mon Jul  9 10:05:59 2007//
+/dbcommands.c/1.197/Mon Aug  6 09:10:16 2007//
 /define.c/1.100/Fri Jan  5 22:19:26 2007//
 /discard.c/1.1/Thu Apr 26 16:13:10 2007//
 /explain.c/1.164/Wed May 30 13:52:55 2007//
@@ -22,12 +22,12 @@
 /schemacmds.c/1.46/Mon Jun 25 20:20:07 2007//
 /sequence.c/1.143/Thu Feb  1 19:10:26 2007//
 /tablecmds.c/1.230/Wed Aug  1 09:00:48 2007//
-/tablespace.c/1.48/Fri Jun  8 07:10:07 2007//
+/tablespace.c/1.49/Mon Aug  6 09:10:17 2007//
 /trigger.c/1.216/Wed Aug  1 09:00:48 2007//
 /typecmds.c/1.106/Sat Jun 23 07:56:15 2007//
 /user.c/1.176/Thu Feb  1 19:10:26 2007//
-/vacuum.c/1.353/Sat Jun 23 07:56:15 2007//
+/vacuum.c/1.354/Mon Aug  6 09:10:17 2007//
 /vacuumlazy.c/1.90/Thu May 31 10:06:52 2007//
-/variable.c/1.120/Fri Jan  5 22:19:27 2007//
+/variable.c/1.121/Mon Aug  6 09:10:17 2007//
 /view.c/1.101/Mon Jun 25 20:20:07 2007//
 D/_deadcode////

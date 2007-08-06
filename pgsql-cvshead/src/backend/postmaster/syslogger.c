@@ -18,7 +18,7 @@
  *
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/backend/postmaster/syslogger.c,v 1.33 2007/07/19 19:13:43 adunstan Exp $
+ *	  $PostgreSQL: pgsql/src/backend/postmaster/syslogger.c,v 1.36 2007/08/04 01:26:53 tgl Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -162,6 +162,8 @@ SysLoggerMain(int argc, char *argv[])
 
 	MyProcPid = getpid();		/* reset MyProcPid */
 
+	MyStartTime = time(NULL);   /* set our start time in case we call elog */
+
 #ifdef EXEC_BACKEND
 	syslogger_parseArgs(argc, argv);
 #endif   /* EXEC_BACKEND */
@@ -193,6 +195,15 @@ SysLoggerMain(int argc, char *argv[])
 		dup2(fd, fileno(stderr));
 		close(fd);
 	}
+
+	/* Syslogger's own stderr can't be the syslogPipe, so set it back to
+	 * text mode if we didn't just close it. 
+	 * (It was set to binary in SubPostmasterMain).
+	 */
+#ifdef WIN32
+	else
+		_setmode(_fileno(stderr),_O_TEXT);
+#endif
 
 	/*
 	 * Also close our copy of the write end of the pipe.  This is needed to
@@ -531,14 +542,20 @@ SysLogger_Start(void)
 #else
 				int			fd;
 
+				/*
+				 * open the pipe in binary mode and make sure
+				 * stderr is binary after it's been dup'ed into, to avoid
+				 * disturbing the pipe chunking protocol.
+				 */
 				fflush(stderr);
 				fd = _open_osfhandle((long) syslogPipe[1],
-									 _O_APPEND | _O_TEXT);
+									 _O_APPEND | _O_BINARY);
 				if (dup2(fd, _fileno(stderr)) < 0)
 					ereport(FATAL,
 							(errcode_for_file_access(),
 							 errmsg("could not redirect stderr: %m")));
 				close(fd);
+				_setmode(_fileno(stderr),_O_BINARY);
 				/* Now we are done with the write end of the pipe. */
 				CloseHandle(syslogPipe[1]);
 				syslogPipe[1] = 0;
@@ -626,7 +643,7 @@ syslogger_parseArgs(int argc, char *argv[])
 	fd = atoi(*argv++);
 	if (fd != 0)
 	{
-		fd = _open_osfhandle(fd, _O_APPEND);
+		fd = _open_osfhandle(fd, _O_APPEND | _O_TEXT);
 		if (fd > 0)
 		{
 			syslogFile = fdopen(fd, "a");
@@ -988,6 +1005,10 @@ logfile_rotate(bool time_based_rotation)
 
 	setvbuf(fh, NULL, LBF_MODE, 0);
 
+#ifdef WIN32
+	_setmode(_fileno(fh), _O_TEXT); /* use CRLF line endings on Windows */
+#endif
+
 	/* On Windows, need to interlock against data-transfer thread */
 #ifdef WIN32
 	EnterCriticalSection(&sysfileSection);
@@ -1017,7 +1038,6 @@ logfile_getname(pg_time_t timestamp)
 {
 	char	   *filename;
 	int			len;
-	struct pg_tm *tm;
 
 	filename = palloc(MAXPGPATH);
 
@@ -1028,8 +1048,8 @@ logfile_getname(pg_time_t timestamp)
 	if (strchr(Log_filename, '%'))
 	{
 		/* treat it as a strftime pattern */
-		tm = pg_localtime(&timestamp, global_timezone);
-		pg_strftime(filename + len, MAXPGPATH - len, Log_filename, tm);
+		pg_strftime(filename + len, MAXPGPATH - len, Log_filename,
+					pg_localtime(&timestamp, log_timezone));
 	}
 	else
 	{
@@ -1058,12 +1078,12 @@ set_next_rotation_time(void)
 	/*
 	 * The requirements here are to choose the next time > now that is a
 	 * "multiple" of the log rotation interval.  "Multiple" can be interpreted
-	 * fairly loosely.	In this version we align to local time rather than
+	 * fairly loosely.	In this version we align to log_timezone rather than
 	 * GMT.
 	 */
 	rotinterval = Log_RotationAge * SECS_PER_MINUTE;	/* convert to seconds */
-	now = time(NULL);
-	tm = pg_localtime(&now, global_timezone);
+	now = (pg_time_t) time(NULL);
+	tm = pg_localtime(&now, log_timezone);
 	now += tm->tm_gmtoff;
 	now -= now % rotinterval;
 	now += rotinterval;

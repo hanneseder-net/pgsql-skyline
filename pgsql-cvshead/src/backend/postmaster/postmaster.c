@@ -37,7 +37,7 @@
  *
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/backend/postmaster/postmaster.c,v 1.535 2007/07/24 04:54:09 tgl Exp $
+ *	  $PostgreSQL: pgsql/src/backend/postmaster/postmaster.c,v 1.539 2007/08/04 03:15:49 tgl Exp $
  *
  * NOTES
  *
@@ -130,7 +130,7 @@
  * children we have and send them appropriate signals when necessary.
  *
  * "Special" children such as the startup, bgwriter and autovacuum launcher
- * tasks are not in this list.  Autovacuum worker processes are on it.
+ * tasks are not in this list.  Autovacuum worker processes are in it.
  */
 typedef struct bkend
 {
@@ -230,6 +230,7 @@ static volatile sig_atomic_t start_autovac_launcher = false;
  * backend from the postmaster to that backend (via fork).
  */
 static unsigned int random_seed = 0;
+static struct timeval random_start_time;
 
 extern char *optarg;
 extern int	optind,
@@ -385,6 +386,8 @@ PostmasterMain(int argc, char *argv[])
 	int			i;
 
 	MyProcPid = PostmasterPid = getpid();
+
+	MyStartTime = time(NULL);
 
 	IsPostmasterEnvironment = true;
 
@@ -964,6 +967,8 @@ PostmasterMain(int argc, char *argv[])
 	 * Remember postmaster startup time
 	 */
 	PgStartTime = GetCurrentTimestamp();
+	/* PostmasterRandom wants its own copy */
+	gettimeofday(&random_start_time, NULL);
 
 	/*
 	 * We're ready to rock and roll...
@@ -1103,6 +1108,8 @@ pmdaemonize(void)
 
 	MyProcPid = PostmasterPid = getpid();		/* reset PID vars to child */
 
+	MyStartTime = time(NULL);
+
 /* GH: If there's no setsid(), we hopefully don't need silent mode.
  * Until there's a better solution.
  */
@@ -1136,10 +1143,7 @@ ServerLoop(void)
 	int			nSockets;
 	time_t		now,
 				last_touch_time;
-	struct timeval earlier,
-				later;
 
-	gettimeofday(&earlier, NULL);
 	last_touch_time = time(NULL);
 
 	nSockets = initMasks(&readmask);
@@ -1190,24 +1194,6 @@ ServerLoop(void)
 		 */
 		if (selres > 0)
 		{
-			/*
-			 * Select a random seed at the time of first receiving a request.
-			 */
-			while (random_seed == 0)
-			{
-				gettimeofday(&later, NULL);
-
-				/*
-				 * We are not sure how much precision is in tv_usec, so we
-				 * swap the high and low 16 bits of 'later' and XOR them with
-				 * 'earlier'. On the off chance that the result is 0, we loop
-				 * until it isn't.
-				 */
-				random_seed = earlier.tv_usec ^
-					((later.tv_usec << 16) |
-					 ((later.tv_usec >> 16) & 0xffff));
-			}
-
 			for (i = 0; i < MAXLISTEN; i++)
 			{
 				if (ListenSocket[i] == -1)
@@ -2661,6 +2647,8 @@ BackendStartup(Port *port)
 
 		MyProcPid = getpid();	/* reset MyProcPid */
 
+		MyStartTime = time(NULL);
+
 		/* We don't want the postmaster's proc_exit() handlers */
 		on_exit_reset();
 
@@ -2699,6 +2687,7 @@ BackendStartup(Port *port)
 	 */
 	bn->pid = pid;
 	bn->cancel_key = MyCancelKey;
+	bn->is_autovacuum = false;
 	DLAddHead(BackendList, DLNewElem(bn));
 #ifdef EXEC_BACKEND
 	ShmemBackendArrayAdd(bn);
@@ -2803,7 +2792,7 @@ BackendInitialize(Port *port)
 
 	/* save process start time */
 	port->SessionStartTime = GetCurrentTimestamp();
-	port->session_start = timestamptz_to_time_t(port->SessionStartTime);
+	MyStartTime = timestamptz_to_time_t(port->SessionStartTime);
 
 	/* set these to empty in case they are needed before we set them up */
 	port->remote_host = "";
@@ -2963,6 +2952,7 @@ BackendRun(Port *port)
 	 * a new random sequence in the random() library function.
 	 */
 	random_seed = 0;
+	random_start_time.tv_usec = 0;
 	/* slightly hacky way to get integer microseconds part of timestamptz */
 	TimestampDifference(0, port->SessionStartTime, &secs, &usecs);
 	srandom((unsigned int) (MyProcPid ^ usecs));
@@ -3385,6 +3375,17 @@ SubPostmasterMain(int argc, char *argv[])
 
 	MyProcPid = getpid();		/* reset MyProcPid */
 
+	MyStartTime = time(NULL);
+
+	/* make sure stderr is in binary mode before anything can
+	 * possibly be written to it, in case it's actually the syslogger pipe,
+	 * so the pipe chunking protocol isn't disturbed. Non-logpipe data
+	 * gets translated on redirection (e.g. via pg_ctl -l) anyway.
+	 */
+#ifdef WIN32
+	_setmode(fileno(stderr),_O_BINARY);
+#endif
+
 	/* Lose the postmaster's on-exit routines (really a no-op) */
 	on_exit_reset();
 
@@ -3760,13 +3761,29 @@ RandomSalt(char *cryptSalt, char *md5Salt)
 static long
 PostmasterRandom(void)
 {
-	static bool initialized = false;
-
-	if (!initialized)
+	/*
+	 * Select a random seed at the time of first receiving a request.
+	 */
+	if (random_seed == 0)
 	{
-		Assert(random_seed != 0);
+		do
+		{
+			struct timeval random_stop_time;
+
+			gettimeofday(&random_stop_time, NULL);
+			/*
+			 * We are not sure how much precision is in tv_usec, so we swap
+			 * the high and low 16 bits of 'random_stop_time' and XOR them
+			 * with 'random_start_time'. On the off chance that the result is
+			 * 0, we loop until it isn't.
+			 */
+			random_seed = random_start_time.tv_usec ^
+				((random_stop_time.tv_usec << 16) |
+				 ((random_stop_time.tv_usec >> 16) & 0xffff));
+		}
+		while (random_seed == 0);
+
 		srandom(random_seed);
-		initialized = true;
 	}
 
 	return random();
@@ -3908,15 +3925,22 @@ StartAutovacuumWorker(void)
 	if (StartupPID != 0 || FatalError || Shutdown != NoShutdown)
 		return;
 
+	/*
+	 * Compute the cancel key that will be assigned to this session.
+	 * We probably don't need cancel keys for autovac workers, but we'd
+	 * better have something random in the field to prevent unfriendly
+	 * people from sending cancels to them.
+	 */
+	MyCancelKey = PostmasterRandom();
+
 	bn = (Backend *) malloc(sizeof(Backend));
 	if (bn)
 	{
 		bn->pid = StartAutoVacWorker();
-		bn->is_autovacuum = true;
-		/* we don't need a cancel key */
-
 		if (bn->pid > 0)
 		{
+			bn->cancel_key = MyCancelKey;
+			bn->is_autovacuum = true;
 			DLAddHead(BackendList, DLNewElem(bn));
 #ifdef EXEC_BACKEND
 			ShmemBackendArrayAdd(bn);
@@ -3932,7 +3956,9 @@ StartAutovacuumWorker(void)
 		free(bn);
 	}
 	else
-		elog(LOG, "out of memory");
+		ereport(LOG,
+				(errcode(ERRCODE_OUT_OF_MEMORY),
+				 errmsg("out of memory")));
 
 	/* report the failure to the launcher */
 	AutoVacWorkerFailed();

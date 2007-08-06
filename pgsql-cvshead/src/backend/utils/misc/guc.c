@@ -10,7 +10,7 @@
  * Written by Peter Eisentraut <peter_e@gmx.net>.
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/backend/utils/misc/guc.c,v 1.407 2007/07/24 04:54:09 tgl Exp $
+ *	  $PostgreSQL: pgsql/src/backend/utils/misc/guc.c,v 1.410 2007/08/04 19:29:25 tgl Exp $
  *
  *--------------------------------------------------------------------
  */
@@ -255,6 +255,7 @@ static char *server_encoding_string;
 static char *server_version_string;
 static int	server_version_num;
 static char *timezone_string;
+static char *log_timezone_string;
 static char *timezone_abbreviations_string;
 static char *XactIsoLevel_string;
 static char *data_directory;
@@ -551,6 +552,14 @@ static struct config_bool ConfigureNamesBool[] =
 						 "an operating system or hardware crash.")
 		},
 		&enableFsync,
+		true, NULL, NULL
+	},
+	{
+		{"synchronous_commit", PGC_USERSET, WAL_SETTINGS,
+			gettext_noop("Sets immediate fsync at commit."),
+			NULL
+		},
+		&XactSyncCommit,
 		true, NULL, NULL
 	},
 	{
@@ -1521,7 +1530,7 @@ static struct config_int ConfigureNamesInt[] =
 	},
 
 	{
-		{"commit_delay", PGC_USERSET, WAL_CHECKPOINTS,
+		{"commit_delay", PGC_USERSET, WAL_SETTINGS,
 			gettext_noop("Sets the delay in microseconds between transaction commit and "
 						 "flushing WAL to disk."),
 			NULL
@@ -1531,7 +1540,7 @@ static struct config_int ConfigureNamesInt[] =
 	},
 
 	{
-		{"commit_siblings", PGC_USERSET, WAL_CHECKPOINTS,
+		{"commit_siblings", PGC_USERSET, WAL_SETTINGS,
 			gettext_noop("Sets the minimum concurrent open transactions before performing "
 						 "commit_delay."),
 			NULL
@@ -1976,6 +1985,14 @@ static struct config_string ConfigureNamesString[] =
 		"", NULL, NULL
 	},
 
+	{
+		{"log_timezone", PGC_SIGHUP, LOGGING_WHAT,
+			gettext_noop("Sets the time zone to use in log messages."),
+			NULL
+		},
+		&log_timezone_string,
+		"UNKNOWN", assign_log_timezone, show_log_timezone
+	},
 
 	{
 		{"DateStyle", PGC_USERSET, CLIENT_CONN_LOCALE,
@@ -2908,6 +2925,12 @@ InitializeGUCOptions(void)
 	int			i;
 	char	   *env;
 	long		stack_rlimit;
+
+	/*
+	 * Before log_line_prefix could possibly receive a nonempty setting,
+	 * make sure that timezone processing is minimally alive (see elog.c).
+	 */
+	pg_timezone_pre_initialize();
 
 	/*
 	 * Build sorted array of all GUC variables.

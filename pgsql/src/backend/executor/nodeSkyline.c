@@ -295,8 +295,12 @@ ExecInitSkyline(Skyline *node, EState *estate, int eflags)
 	 */
 	eflags &= ~(EXEC_FLAG_REWIND | EXEC_FLAG_BACKWARD | EXEC_FLAG_MARK);
 #endif
-	/* for testing we want the child node to support rewind and mark */
-	eflags |= EXEC_FLAG_REWIND | EXEC_FLAG_BACKWARD | EXEC_FLAG_MARK;
+	/* in case of the Simple Nested Loop, we need the outer plan to handle mark/rewind
+	 * which is achived by an extra materialize node
+	 */
+	if (node->skyline_methode == SM_SIMPLENESTEDLOOP) {
+		eflags |= EXEC_FLAG_REWIND | EXEC_FLAG_MARK;
+	}
 
 	outerPlanState(slstate) = ExecInitNode(outerPlan(node), estate, eflags);
 

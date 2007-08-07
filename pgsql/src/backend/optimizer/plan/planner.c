@@ -1130,10 +1130,33 @@ grouping_planner(PlannerInfo *root, double tuple_fraction)
 
 	if (parse->skylineClause)
 	{
-		result_plan = (Plan *) make_skyline(root,
-											result_plan,
-											parse->skylineClause);
+		Skyline *skyline_plan = make_skyline(root,
+											 result_plan,
+											 parse->skylineClause);
 
+		result_plan = (Plan *) skyline_plan;
+
+		Assert(skyline_plan != NULL);
+		switch (skyline_plan->skyline_methode) {
+			case SM_1DIM:
+			case SM_1DIM_DISTINCT:
+			case SM_SIMPLENESTEDLOOP:
+				/* this methodes preserve the reletive order of the tuples
+				 * so we can keep the current_pathkeys
+				 */
+				break;
+			case SM_BLOCKNESTEDLOOP:
+				/* block nested loop eventually changes the order of the tuples
+				 * so we drop the current_pathkeys
+				 */
+				current_pathkeys = NIL;
+				break;
+			default:
+				/* we drop it on default */
+				current_pathkeys = NIL;
+				elog(WARNING, "dropping current_pathkeys for SKYLINE BY methode `%d' for SKYLINE BY", skyline_plan->skyline_methode);
+				break;
+		}
 	}
 
 	/*

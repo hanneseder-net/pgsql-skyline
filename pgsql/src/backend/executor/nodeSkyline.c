@@ -465,6 +465,62 @@ ExecSkyline_1Dim(SkylineState *node, Skyline *sl)
 }
 
 static TupleTableSlot *
+ExecSkyline_2DimPreSort(SkylineState *node, Skyline *sl)
+{
+	TupleTableSlot *resultSlot = node->ss.ps.ps_ResultTupleSlot;
+	TupleTableSlot *slot;
+
+	switch (node->status)
+	{
+	case SS_INIT:
+		slot = ExecProcNode(outerPlanState(node));
+		if (!TupIsNull(slot))
+		{
+			ExecCopySlot(resultSlot, slot);
+			node->status = SS_PROCESS;
+		}
+		else
+		{
+			node->status = SS_DONE;
+		}
+		return slot;
+
+	case SS_PROCESS:
+		AssertState(!TupIsNull(resultSlot));
+		for (;;)
+		{
+			int cmp;
+			slot = ExecProcNode(outerPlanState(node));
+			if (TupIsNull(slot))
+			{
+				node->status = SS_DONE;
+				return NULL;
+			}
+
+			cmp = ExecSkylineIsDominating(node, slot, resultSlot);
+
+			// FIXME: what about distinct?
+
+			if (cmp == SKYLINE_CMP_INCOMPARABLE)
+			{
+				ExecCopySlot(resultSlot, slot);
+				return resultSlot;
+			}
+		}
+
+	case SS_DONE:
+		return NULL;
+
+	default:
+		Assert(0); // FIXME: elog?
+		return NULL;
+	}
+	
+
+	return NULL;
+}
+
+static TupleTableSlot *
 ExecSkyline_SimpleNestedLoop(SkylineState *node, Skyline *sl)
 {
 	/* nested loop using materialize as outer plan */
@@ -707,6 +763,8 @@ ExecSkyline(SkylineState *node)
 		return ExecSkyline_1Dim(node, sl);
 	case SM_1DIM_DISTINCT:
 		return ExecSkyline_1DimDistinct(node, sl);
+	case SM_2DIM_PRESORT:
+		return ExecSkyline_2DimPreSort(node, sl);
 	case SM_SIMPLENESTEDLOOP:
 		return ExecSkyline_SimpleNestedLoop(node, sl);
 	case SM_BLOCKNESTEDLOOP:

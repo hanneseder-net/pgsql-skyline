@@ -2727,7 +2727,6 @@ make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause)
 		node->skylineByDir[numskylinecols] = (int)skylinecl->skylineby_dir;
 
 		numskylinecols++;
-		
 	}
 	
 	node->numCols = numskylinecols;
@@ -2763,6 +2762,17 @@ make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause)
 					elog(WARNING, "previous skyline methode overwritten, now using `%s' for SKYLINE BY", option->name);
 
 				methode = SM_SIMPLENESTEDLOOP;
+			}
+			else if (strcmp(option->name, "ps") == 0 ||
+					 strcmp(option->name, "presort") == 0)
+			{
+				if (methode != SM_UNKNOWN)
+					elog(WARNING, "previous skyline methode overwritten, now using `%s' for SKYLINE BY", option->name);
+
+				if (node->numCols != 2)
+					elog(WARNING, "skyline methode `2d with presort' only works correkt for 2 skyline dimensions");
+
+				methode = SM_2DIM_PRESORT;
 			}
 			else if (strcmp(option->name, "window") == 0 ||
 					 strcmp(option->name, "windowsize") == 0 ||

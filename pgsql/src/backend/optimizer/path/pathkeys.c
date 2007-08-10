@@ -336,6 +336,34 @@ compare_pathkeys(List *keys1, List *keys2)
 	return PATHKEYS_BETTER2;	/* key2 is longer */
 }
 
+bool
+contains_skyline_pathkeys(List *keys1, List *keys2)
+{
+	ListCell   *key1,
+			   *key2;
+
+	foreach(key1, keys1)
+	{
+		bool contained = false;
+		PathKey	   *pathkey1 = (PathKey *) lfirst(key1);
+
+		foreach(key2, keys2)
+		{
+			PathKey	   *pathkey2 = (PathKey *) lfirst(key2);
+
+			if (pathkey1 == pathkey2)
+			{
+				contained = true;
+				break;
+			}
+		}
+		if (!contained)
+			return false;
+	}
+
+	return true;
+}
+
 /*
  * pathkeys_contained_in
  *	  Common special case of compare_pathkeys: we just want to know
@@ -790,6 +818,40 @@ make_pathkeys_for_sortclauses(PlannerInfo *root,
 											 sortkey,
 											 sortcl->sortop,
 											 sortcl->nulls_first,
+											 canonicalize);
+
+		/* Canonical form eliminates redundant ordering keys */
+		if (canonicalize)
+		{
+			if (!pathkey_is_redundant(pathkey, pathkeys))
+				pathkeys = lappend(pathkeys, pathkey);
+		}
+		else
+			pathkeys = lappend(pathkeys, pathkey);
+	}
+	return pathkeys;
+}
+
+List *
+make_pathkeys_for_skylineclause(PlannerInfo *root,
+								SkylineClause *skylineclause,
+								List *tlist,
+								bool canonicalize)
+{
+	List	   *pathkeys = NIL;
+	ListCell   *l;
+	
+	foreach(l, skylineclause->skyline_by_list)
+	{
+		SkylineBy  *skylineby = (SkylineBy *) lfirst(l);
+		Expr	   *sortkey;
+		PathKey	   *pathkey;
+
+		sortkey = (Expr *) get_sortgroupclause_expr((SortClause*)skylineby, tlist);
+		pathkey = make_pathkey_from_sortinfo(root,
+											 sortkey,
+											 skylineby->sortop,
+											 skylineby->nulls_first,
 											 canonicalize);
 
 		/* Canonical form eliminates redundant ordering keys */

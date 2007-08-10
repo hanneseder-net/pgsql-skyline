@@ -1130,16 +1130,97 @@ grouping_planner(PlannerInfo *root, double tuple_fraction)
 
 	if (parse->skylineClause)
 	{
-		Skyline *skyline_plan = make_skyline(root,
-											 result_plan,
-											 parse->skylineClause);
+		/* FIXME: refactor this, this methode needs to be known here!!!! */
+		SkylineClause	*skyline_clause = (SkylineClause*)parse->skylineClause;
+		Skyline *skyline_plan;
+		List	*skyline_pathkeys;
+		int		skyline_dim = list_length(skyline_clause->skyline_by_list);
+		SkylineMethode skyline_methode = SM_UNKNOWN;
+		if (skyline_dim == 1 && !skyline_clause->skyline_distinct)
+			skyline_methode = SM_1DIM;
+		else if (skyline_dim == 1 && skyline_clause->skyline_distinct)
+			skyline_methode = SM_1DIM_DISTINCT;
+		else {
+			ListCell	*l;
+			foreach(l, skyline_clause->skyline_by_options)
+			{
+				SkylineOption *option = (SkylineOption *) lfirst(l);
+
+				if (strcmp(option->name, "bnl") == 0 ||
+					strcmp(option->name, "blocknestedloop") == 0)
+				{
+					if (skyline_methode != SM_UNKNOWN)
+						elog(WARNING, "previous skyline methode overwritten, now using `%s' for SKYLINE BY", option->name);
+
+					skyline_methode = SM_BLOCKNESTEDLOOP;
+				}
+				else if (strcmp(option->name, "snl") == 0 ||
+						 strcmp(option->name, "simplenestedloop") == 0 ||
+						 strcmp(option->name, "nl") == 0 ||
+						 strcmp(option->name, "nestedloop") == 0)
+				{
+					if (skyline_methode != SM_UNKNOWN)
+						elog(WARNING, "previous skyline methode overwritten, now using `%s' for SKYLINE BY", option->name);
+
+					skyline_methode = SM_SIMPLENESTEDLOOP;
+				}
+				else if (strcmp(option->name, "ps") == 0 ||
+						 strcmp(option->name, "presort") == 0)
+				{
+					if (skyline_methode != SM_UNKNOWN)
+						elog(WARNING, "previous skyline methode overwritten, now using `%s' for SKYLINE BY", option->name);
+
+					if (skyline_dim != 2)
+						elog(WARNING, "skyline methode `2d with presort' only works correkt for 2 skyline dimensions");
+
+					skyline_methode = SM_2DIM_PRESORT;
+				}
+				else if (strcmp(option->name, "window") == 0 ||
+						 strcmp(option->name, "windowsize") == 0 ||
+						 strcmp(option->name, "slots") == 0 ||
+						 strcmp(option->name, "windowslots") == 0
+						 )
+				{
+					/* ignore them here, they are used in the executor */
+				}
+				else
+				{
+					elog(WARNING, "unknown option `%s' for SKYLINE BY", option->name);
+				}
+			}
+		}
+
+		/* default block nested loop */
+		if (skyline_methode == SM_UNKNOWN)
+			skyline_methode = SM_BLOCKNESTEDLOOP;
+
+
+		if (skyline_methode == SM_2DIM_PRESORT)
+		{
+			skyline_pathkeys = make_pathkeys_for_skylineclause(root,
+														(SkylineClause*)parse->skylineClause,
+														result_plan->targetlist,
+														true);
+
+			if (!contains_skyline_pathkeys(skyline_pathkeys, current_pathkeys))
+			{
+				result_plan = (Plan *) make_sort_from_pathkeys(root,
+															   result_plan,
+															   skyline_pathkeys,
+															   limit_tuples);
+				current_pathkeys = skyline_pathkeys;
+			}
+		}
+
+		skyline_plan = make_skyline(root, result_plan, parse->skylineClause);
 
 		result_plan = (Plan *) skyline_plan;
 
 		Assert(skyline_plan != NULL);
-		switch (skyline_plan->skyline_methode) {
+		switch (skyline_methode) {
 			case SM_1DIM:
 			case SM_1DIM_DISTINCT:
+			case SM_2DIM_PRESORT:
 			case SM_SIMPLENESTEDLOOP:
 				/* this methodes preserve the reletive order of the tuples
 				 * so we can keep the current_pathkeys

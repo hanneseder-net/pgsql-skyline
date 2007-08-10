@@ -1,9 +1,12 @@
-all: kossmann-main ksldg
+all: kossmann-main ksldg nd
 
 kossmann-main: kossmann-main.cpp
 	gcc -o $@ $< -lstdc++
 
 ksldg: ksldg.c
+	gcc -std=c99 -Wall -o $@ $<
+
+nd: nd.c
 	gcc -std=c99 -Wall -o $@ $<
 
 clean:

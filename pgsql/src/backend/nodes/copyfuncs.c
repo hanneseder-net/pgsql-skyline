@@ -575,7 +575,7 @@ _copySkyline(Skyline *from)
 	COPY_POINTER_FIELD(nullsFirst, from->numCols * sizeof(bool));
 	COPY_POINTER_FIELD(skylineByDir, from->numCols * sizeof(int));
 	COPY_NODE_FIELD(skyline_by_options);
-	COPY_SCALAR_FIELD(skyline_methode);
+	COPY_SCALAR_FIELD(skyline_method);
 
 	return newnode;
 }

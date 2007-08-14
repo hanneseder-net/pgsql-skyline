@@ -12,7 +12,7 @@ subdir = src/backend/utils/skyline
 top_builddir = ../../../..
 include $(top_builddir)/src/Makefile.global
 
-OBJS = tuplewindow.o
+OBJS = tuplewindow.o skyline.o
 
 all: SUBSYS.o
 

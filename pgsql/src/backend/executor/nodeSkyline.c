@@ -248,7 +248,7 @@ ExecInitSkyline(Skyline *node, EState *estate, int eflags)
 
 	slstate->status = SS_INIT;
 	slstate->source = SS_OUTER;
-	slstate->skyline_methode = node->skyline_methode;
+	slstate->skyline_method = node->skyline_method;
 
 	/*
 	 * Miscellaneous initialization
@@ -298,7 +298,7 @@ ExecInitSkyline(Skyline *node, EState *estate, int eflags)
 	/* in case of the Simple Nested Loop, we need the outer plan to handle mark/rewind
 	 * which is achived by an extra materialize node
 	 */
-	if (node->skyline_methode == SM_SIMPLENESTEDLOOP) {
+	if (node->skyline_method == SM_SIMPLENESTEDLOOP) {
 		eflags |= EXEC_FLAG_REWIND | EXEC_FLAG_MARK;
 	}
 
@@ -757,7 +757,7 @@ ExecSkyline(SkylineState *node)
 {
 	Skyline *sl = (Skyline*)node->ss.ps.plan;
 
-	switch (node->skyline_methode)
+	switch (node->skyline_method)
 	{
 	case SM_1DIM:
 		return ExecSkyline_1Dim(node, sl);

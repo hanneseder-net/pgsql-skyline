@@ -590,7 +590,7 @@ _outSkyline(StringInfo str, Skyline *node)
 		appendStringInfo(str, " %d", node->skylineByDir[i]);
 
 	WRITE_NODE_FIELD(skyline_by_options);
-	WRITE_INT_FIELD(skyline_methode);
+	WRITE_INT_FIELD(skyline_method);
 }
 
 static void

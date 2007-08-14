@@ -1337,7 +1337,7 @@ typedef struct SkylineState
 {
 	ScanState	ss;				/* its first field is NodeTag */
 	SkylineStatus	status;
-	SkylineMethode	skyline_methode;
+	SkylineMethod	skyline_method;
 
 	FmgrInfo   *compareOpFn;	/* compare funtions */
 	int		   *compareFlags;

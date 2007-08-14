@@ -455,7 +455,7 @@ typedef struct Sort
  * ----------------
  */
 
-typedef enum SkylineMethode
+typedef enum SkylineMethod
 {
 	SM_UNKNOWN,
 	SM_1DIM,
@@ -463,7 +463,7 @@ typedef enum SkylineMethode
 	SM_2DIM_PRESORT,
 	SM_SIMPLENESTEDLOOP,
 	SM_BLOCKNESTEDLOOP
-} SkylineMethode;
+} SkylineMethod;
 
 typedef struct Skyline
 {
@@ -475,7 +475,7 @@ typedef struct Skyline
 	bool	   *nullsFirst;
 	int		   *skylineByDir;
 	List	   *skyline_by_options;
-	SkylineMethode skyline_methode;
+	SkylineMethod skyline_method;
 } Skyline;
 
 /* ---------------

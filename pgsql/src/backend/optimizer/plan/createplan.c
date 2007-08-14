@@ -32,6 +32,7 @@
 #include "parser/parse_expr.h"
 #include "parser/parsetree.h"
 #include "utils/lsyscache.h"
+#include "utils/skyline.h"
 
 
 static Plan *create_scan_plan(PlannerInfo *root, Path *best_path);
@@ -2690,7 +2691,7 @@ add_sort_column(AttrNumber colIdx, Oid sortOp, bool nulls_first,
 
 
 Skyline *
-make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause)
+make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause, SkylineMethod skyline_method)
 {
 	Plan	   *outertree = lefttree;
 	List	   *sub_tlist = outertree->targetlist;
@@ -2734,71 +2735,13 @@ make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause)
 	node->skyline_distinct = sc->skyline_distinct;
 	node->skyline_by_options = sc->skyline_by_options;
 
-	if (node->numCols == 1 && !node->skyline_distinct)
-		node->skyline_methode = SM_1DIM;
-	else if (node->numCols == 1 && node->skyline_distinct)
-		node->skyline_methode = SM_1DIM_DISTINCT;
-	else {
-		SkylineMethode methode = SM_UNKNOWN;
-		ListCell	*l;
-		foreach(l, node->skyline_by_options)
-		{
-			SkylineOption *option = (SkylineOption *) lfirst(l);
-
-			if (strcmp(option->name, "bnl") == 0 ||
-				strcmp(option->name, "blocknestedloop") == 0)
-			{
-				if (methode != SM_UNKNOWN)
-					elog(WARNING, "previous skyline methode overwritten, now using `%s' for SKYLINE BY", option->name);
-
-				methode = SM_BLOCKNESTEDLOOP;
-			}
-			else if (strcmp(option->name, "snl") == 0 ||
-					 strcmp(option->name, "simplenestedloop") == 0 ||
-					 strcmp(option->name, "nl") == 0 ||
-					 strcmp(option->name, "nestedloop") == 0)
-			{
-				if (methode != SM_UNKNOWN)
-					elog(WARNING, "previous skyline methode overwritten, now using `%s' for SKYLINE BY", option->name);
-
-				methode = SM_SIMPLENESTEDLOOP;
-			}
-			else if (strcmp(option->name, "ps") == 0 ||
-					 strcmp(option->name, "presort") == 0)
-			{
-				if (methode != SM_UNKNOWN)
-					elog(WARNING, "previous skyline methode overwritten, now using `%s' for SKYLINE BY", option->name);
-
-				if (node->numCols != 2)
-					elog(WARNING, "skyline methode `2d with presort' only works correkt for 2 skyline dimensions");
-
-				methode = SM_2DIM_PRESORT;
-			}
-			else if (strcmp(option->name, "window") == 0 ||
-					 strcmp(option->name, "windowsize") == 0 ||
-					 strcmp(option->name, "slots") == 0 ||
-					 strcmp(option->name, "windowslots") == 0
-					 )
-			{
-				/* ignore them here, they are used in the executor */
-			}
-			else
-			{
-				elog(WARNING, "unknown option `%s' for SKYLINE BY", option->name);
-			}
-		}
-
-		/* default block nested loop */
-		if (methode == SM_UNKNOWN)
-			methode = SM_BLOCKNESTEDLOOP;
-
-		if (methode == SM_SIMPLENESTEDLOOP)
-		{
-			/* for the simple nested loop we need a materialize as outer plan */
-			plan->lefttree = (Plan *)make_material(plan->lefttree);
-		}
-		node->skyline_methode = methode;
+	if (skyline_method == SM_SIMPLENESTEDLOOP)
+	{
+		/* for the simple nested loop we need a materialize as outer plan */
+		plan->lefttree = (Plan *)make_material(plan->lefttree);
 	}
+
+	node->skyline_method = skyline_method;
 
 	return node; /* to disable use: (Skyline*) lefttree; */
 }

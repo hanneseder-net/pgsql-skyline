@@ -10,7 +10,7 @@
 /dbcommands.c/1.197/Mon Aug  6 09:10:16 2007//
 /define.c/1.100/Fri Jan  5 22:19:26 2007//
 /discard.c/1.1/Thu Apr 26 16:13:10 2007//
-/explain.c/1.164/Wed May 30 13:52:55 2007//
+/explain.c/1.165/Fri Aug 17 09:40:54 2007//
 /functioncmds.c/1.83/Mon Apr  2 03:49:37 2007//
 /indexcmds.c/1.161/Wed Aug  1 09:00:48 2007//
 /lockcmds.c/1.16/Fri Jan  5 22:19:26 2007//
@@ -23,10 +23,10 @@
 /sequence.c/1.143/Thu Feb  1 19:10:26 2007//
 /tablecmds.c/1.230/Wed Aug  1 09:00:48 2007//
 /tablespace.c/1.49/Mon Aug  6 09:10:17 2007//
-/trigger.c/1.216/Wed Aug  1 09:00:48 2007//
+/trigger.c/1.218/Fri Aug 17 09:40:54 2007//
 /typecmds.c/1.106/Sat Jun 23 07:56:15 2007//
 /user.c/1.176/Thu Feb  1 19:10:26 2007//
-/vacuum.c/1.354/Mon Aug  6 09:10:17 2007//
+/vacuum.c/1.355/Fri Aug 17 09:40:54 2007//
 /vacuumlazy.c/1.90/Thu May 31 10:06:52 2007//
 /variable.c/1.121/Mon Aug  6 09:10:17 2007//
 /view.c/1.101/Mon Jun 25 20:20:07 2007//

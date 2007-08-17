@@ -8,10 +8,10 @@
 /catalogs.sgml/2.155/Sat Jun 23 07:56:14 2007//
 /charset.sgml/2.83/Sun Apr 15 10:56:25 2007//
 /client-auth.sgml/1.100/Wed Aug  1 09:00:45 2007//
-/config.sgml/1.133/Wed Aug  1 09:00:45 2007//
+/config.sgml/1.136/Mon Aug  6 09:10:16 2007//
 /contacts.sgml/1.9/Fri Mar 10 19:10:47 2006//
-/cvs.sgml/1.46/Wed Aug  1 09:00:45 2007//
-/datatype.sgml/1.205/Wed Aug  1 09:00:45 2007//
+/cvs.sgml/1.47/Mon Aug  6 09:10:16 2007//
+/datatype.sgml/1.206/Mon Aug  6 09:10:16 2007//
 /datetime.sgml/2.56/Wed Jan 31 20:56:16 2007//
 /ddl.sgml/1.76/Sat Jun 23 07:56:15 2007//
 /dfunc.sgml/1.35/Thu Feb  1 00:28:16 2007//
@@ -35,7 +35,7 @@
 /indices.sgml/1.71/Fri Apr  6 22:33:41 2007//
 /info.sgml/1.25/Wed May 30 13:52:55 2007//
 /information_schema.sgml/1.33/Tue Feb 20 23:14:19 2007//
-/install-win32.sgml/1.40/Wed Apr 18 13:50:08 2007//
+/install-win32.sgml/1.41/Mon Aug  6 09:10:16 2007//
 /installation.sgml/1.290/Wed Aug  1 09:00:46 2007//
 /intro.sgml/1.32/Wed Jan 31 20:56:17 2007//
 /keywords.sgml/2.19/Sat Dec 30 21:21:52 2006//
@@ -84,7 +84,7 @@
 /trigger.sgml/1.50/Wed Feb 14 01:58:56 2007//
 /typeconv.sgml/1.52/Wed Jun  6 16:05:49 2007//
 /user-manag.sgml/1.39/Thu Feb  1 00:28:18 2007//
-/wal.sgml/1.44/Mon Jul  9 10:05:58 2007//
+/wal.sgml/1.45/Mon Aug  6 09:10:16 2007//
 /xaggr.sgml/1.35/Thu Feb  1 00:28:18 2007//
 /xfunc.sgml/1.129/Mon Jul  9 10:05:59 2007//
 /xindex.sgml/1.60/Wed Apr 25 19:48:27 2007//

@@ -1,15 +1,15 @@
 /.cvsignore/1.1/Sun Mar 21 02:43:58 1999//
-/Makefile/1.126/Sun Apr  1 08:56:58 2007//
+/Makefile/1.127/Fri Aug 17 09:41:05 2007//
 /c_keywords.c/1.20/Thu May 10 09:53:16 2007//
 /descriptor.c/1.25/Wed Feb  7 00:52:35 2007//
-/ecpg.c/1.99/Tue Jun 12 07:05:55 2007//
+/ecpg.c/1.100/Fri Aug 17 09:41:05 2007//
 /ecpg_keywords.c/1.35/Tue Jun 12 08:27:50 2007//
-/extern.h/1.66/Tue Jun 12 07:05:55 2007//
+/extern.h/1.68/Fri Aug 17 09:41:05 2007//
 /keywords.c/1.80/Tue Jun 12 08:27:50 2007//
-/output.c/1.19/Wed Oct  4 00:30:12 2006//
-/pgc.l/1.152/Sat Mar 17 19:25:23 2007//
-/preproc.y/1.348/Wed Aug  1 09:01:02 2007//
-/type.c/1.72/Sat Mar 17 19:25:23 2007//
-/type.h/1.45/Sat Oct 15 02:49:48 2005//
-/variable.c/1.41/Sun Jul 30 16:28:58 2006//
+/output.c/1.21/Fri Aug 17 09:41:05 2007//
+/pgc.l/1.153/Fri Aug 17 09:41:05 2007//
+/preproc.y/1.349/Fri Aug 17 09:41:06 2007//
+/type.c/1.73/Fri Aug 17 09:41:06 2007//
+/type.h/1.46/Fri Aug 17 09:41:06 2007//
+/variable.c/1.42/Fri Aug 17 09:41:06 2007//
 D/parser////

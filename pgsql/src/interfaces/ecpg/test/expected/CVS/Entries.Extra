@@ -51,6 +51,12 @@
 /pgtypeslib-num_test2.c////*///
 /pgtypeslib-num_test2.stderr////*///
 /pgtypeslib-num_test2.stdout////*///
+/preproc-array_of_struct.c////*///
+/preproc-array_of_struct.stderr////*///
+/preproc-array_of_struct.stdout////*///
+/preproc-autoprep.c////*///
+/preproc-autoprep.stderr////*///
+/preproc-autoprep.stdout////*///
 /preproc-comment.c////*///
 /preproc-comment.stderr////*///
 /preproc-comment.stdout////*///
@@ -111,6 +117,9 @@
 /sql-insupd.c////*///
 /sql-insupd.stderr////*///
 /sql-insupd.stdout////*///
+/sql-oldexec.c////*///
+/sql-oldexec.stderr////*///
+/sql-oldexec.stdout////*///
 /sql-parser.c////*///
 /sql-parser.stderr////*///
 /sql-parser.stdout////*///

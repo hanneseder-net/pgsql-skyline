@@ -13,6 +13,7 @@
 /func.pgc////*///
 /indicators.pgc////*///
 /insupd.pgc////*///
+/oldexec.pgc////*///
 /parser.pgc////*///
 /quote.pgc////*///
 /show.pgc////*///

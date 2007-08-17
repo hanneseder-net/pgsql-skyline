@@ -1,4 +1,4 @@
-/* $PostgreSQL: pgsql/src/interfaces/ecpg/ecpglib/extern.h,v 1.24 2007/04/27 07:55:14 meskes Exp $ */
+/* $PostgreSQL: pgsql/src/interfaces/ecpg/ecpglib/extern.h,v 1.26 2007/08/14 10:54:57 meskes Exp $ */
 
 #ifndef _ECPG_LIB_EXTERN_H
 #define _ECPG_LIB_EXTERN_H
@@ -7,6 +7,9 @@
 #include "libpq-fe.h"
 #include "sqlca.h"
 #include "ecpg_config.h"
+#ifndef CHAR_BIT
+#include <limits.h>
+#endif
 
 enum COMPAT_MODE
 {
@@ -70,9 +73,12 @@ struct statement
 {
 	int			lineno;
 	char	   *command;
+	char	   *name;
 	struct connection *connection;
 	enum COMPAT_MODE compat;
 	bool		force_indicator;
+	enum ECPG_statement_type statement_type;
+	bool	questionmarks;
 	struct variable *inlist;
 	struct variable *outlist;
 };
@@ -133,7 +139,12 @@ PGresult  **ECPGdescriptor_lvalue(int line, const char *descriptor);
 
 bool ECPGstore_result(const PGresult *results, int act_field,
 				 const struct statement * stmt, struct variable * var);
-bool		ECPGstore_input(const int, const bool, const struct variable *, const char **, bool *, bool);
+bool		ECPGstore_input(const int, const bool, const struct variable *, const char **, bool);
+
+bool ECPGcheck_PQresult(PGresult *, int, PGconn *, enum COMPAT_MODE);
+void ECPGraise(int line, int code, const char *sqlstate, const char *str);
+void ECPGraise_backend(int line, PGresult *result, PGconn *conn, int compat);
+char *ECPGprepared(const char *, int);
 
 /* SQLSTATE values generated or processed by ecpglib (intentionally
  * not exported -- users should refer to the codes directly) */

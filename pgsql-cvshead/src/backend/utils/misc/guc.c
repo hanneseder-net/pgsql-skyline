@@ -10,7 +10,7 @@
  * Written by Peter Eisentraut <peter_e@gmx.net>.
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/backend/utils/misc/guc.c,v 1.410 2007/08/04 19:29:25 tgl Exp $
+ *	  $PostgreSQL: pgsql/src/backend/utils/misc/guc.c,v 1.412 2007/08/13 19:27:11 tgl Exp $
  *
  *--------------------------------------------------------------------
  */
@@ -560,7 +560,8 @@ static struct config_bool ConfigureNamesBool[] =
 			NULL
 		},
 		&XactSyncCommit,
-		true, NULL, NULL
+		/* XXX TEMPORARY FOR TESTING: sync commit should default to TRUE! */
+		false, NULL, NULL
 	},
 	{
 		{"zero_damaged_pages", PGC_SUSET, DEVELOPER_OPTIONS,
@@ -6956,13 +6957,11 @@ show_tcp_keepalives_count(void)
 static bool
 assign_maxconnections(int newval, bool doit, GucSource source)
 {
-	if (doit)
-	{
-		if (newval + autovacuum_max_workers > INT_MAX / 4)
-			return false;
+	if (newval + autovacuum_max_workers > INT_MAX / 4)
+		return false;
 
+	if (doit)
 		MaxBackends = newval + autovacuum_max_workers;
-	}
 
 	return true;
 }
@@ -6970,13 +6969,11 @@ assign_maxconnections(int newval, bool doit, GucSource source)
 static bool
 assign_autovacuum_max_workers(int newval, bool doit, GucSource source)
 {
-	if (doit)
-	{
-		if (newval + MaxConnections > INT_MAX / 4)
-			return false;
+	if (newval + MaxConnections > INT_MAX / 4)
+		return false;
 
+	if (doit)
 		MaxBackends = newval + MaxConnections;
-	}
 
 	return true;
 }

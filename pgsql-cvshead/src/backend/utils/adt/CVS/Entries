@@ -42,9 +42,9 @@
 /pgstatfuncs.c/1.43/Mon Jul  9 10:06:03 2007//
 /pseudotypes.c/1.20/Thu Jun  7 10:42:36 2007//
 /quote.c/1.22/Tue Feb 27 23:48:08 2007//
-/regexp.c/1.71/Wed Mar 28 22:59:37 2007//
+/regexp.c/1.73/Fri Aug 17 09:40:56 2007//
 /regproc.c/1.102/Mon Jul  9 10:06:03 2007//
-/ri_triggers.c/1.95/Wed Jun  6 16:05:51 2007//
+/ri_triggers.c/1.96/Fri Aug 17 09:40:56 2007//
 /rowtypes.c/1.19/Sat Mar  3 19:32:55 2007//
 /ruleutils.c/1.263/Wed Aug  1 09:00:54 2007//
 /selfuncs.c/1.234/Sat May  5 17:05:48 2007//

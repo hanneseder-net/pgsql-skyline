@@ -9,6 +9,7 @@
 #include "utils/tuplestore.h"
 #include "utils/tuplewindow.h"
 #include "utils/lsyscache.h"
+#include "utils/skyline.h"
 
 #if 0
 #include <crtdbg.h>
@@ -466,9 +467,7 @@ ExecSkyline_2DimPreSort(SkylineState *node, Skyline *sl)
 
 			cmp = ExecSkylineIsDominating(node, slot, resultSlot);
 
-			// FIXME: what about distinct?
-
-			if (cmp == SKYLINE_CMP_INCOMPARABLE)
+			if (cmp == SKYLINE_CMP_INCOMPARABLE || cmp == SKYLINE_CMP_ALL_EQ && !sl->skyline_distinct)
 			{
 				ExecCopySlot(resultSlot, slot);
 				return resultSlot;

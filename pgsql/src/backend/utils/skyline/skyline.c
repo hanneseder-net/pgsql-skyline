@@ -49,6 +49,12 @@ skyline_lookup_option(const char * name)
 	return (SkylineAnOption*)bsearch(&key, skyline_options, lengthof(skyline_options), sizeof(skyline_options[0]), cmp_skyline_option);
 }
 
+/*
+ * skyline_option_get_int
+ *
+ *  Query the SKYLINE BY ... WITH param=xxx list for the param `name'
+ *  returns true if value is present
+ */
 bool
 skyline_option_get_int(List *skyline_by_options, char *name, int *value)
 {
@@ -56,6 +62,8 @@ skyline_option_get_int(List *skyline_by_options, char *name, int *value)
 
 	AssertArg(name != NULL);
 	AssertArg(value != NULL);
+
+	/* ensure we only lookup known options */
 	Assert(skyline_lookup_option(name) != NULL);
 
 	foreach(l, skyline_by_options)
@@ -75,6 +83,7 @@ skyline_option_get_int(List *skyline_by_options, char *name, int *value)
 					return true;
 
 				default:
+					elog(ERROR, "only integer for option `%s' allowed", name);
 					return false;
 			}
 		}
@@ -142,8 +151,8 @@ skyline_choose_method(SkylineClause * skyline_clause)
 	}
 
 	/* performe some sanity checks */
-	if (skyline_method == SM_2DIM_PRESORT && skyline_dim != 2)
-		elog(WARNING, "skyline method `2d with presort' only works correkt for 2 skyline dimensions");
+	if (skyline_method == SM_2DIM_PRESORT && skyline_dim > 2)
+		elog(ERROR, "skyline method `2d with presort' only works for <= 2 skyline dimensions");
 
 	if (skyline_dim == 1 && !skyline_clause->skyline_distinct && skyline_method != SM_1DIM)
 		elog(WARNING, "for 1d skyline the default method is superior");

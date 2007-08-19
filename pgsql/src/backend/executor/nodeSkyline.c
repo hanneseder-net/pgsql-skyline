@@ -312,6 +312,7 @@ ExecSkyline_1DimDistinct(SkylineState *node, Skyline *sl)
 
 			for (;;)
 			{
+				/* CHECK_FOR_INTERRUPTS(); is done in ExecProcNode */
 				TupleTableSlot *slot = ExecProcNode(outerPlanState(node));
 
 				if (TupIsNull(slot))
@@ -372,6 +373,7 @@ ExecSkyline_1Dim(SkylineState *node, Skyline *sl)
 				tuplestore_set_eflags(node->tuplestorestate, EXEC_FLAG_MARK);
 				for (;;)
 				{
+					/* CHECK_FOR_INTERRUPTS(); is done in ExecProcNode */
 					TupleTableSlot *slot = ExecProcNode(outerPlanState(node));
 
 					if (TupIsNull(slot))
@@ -458,6 +460,8 @@ ExecSkyline_2DimPreSort(SkylineState *node, Skyline *sl)
 		for (;;)
 		{
 			int cmp;
+
+			/* CHECK_FOR_INTERRUPTS(); is done in ExecProcNode */
 			slot = ExecProcNode(outerPlanState(node));
 			if (TupIsNull(slot))
 			{
@@ -518,6 +522,8 @@ ExecSkyline_SimpleNestedLoop(SkylineState *node, Skyline *sl)
 
 		for (;;) {
 			int cmp;
+			
+			/* CHECK_FOR_INTERRUPTS(); is done in ExecProcNode */
 			TupleTableSlot *inner_slot = ExecProcNode(outerPlanState(node));
 			sl_innerpos++;
 
@@ -546,7 +552,14 @@ ExecSkyline_SimpleNestedLoop(SkylineState *node, Skyline *sl)
 static TupleTableSlot *
 ExecSkyline_BlockNestedLoop(SkylineState *node, Skyline *sl)
 {
-	for (;;) { switch (node->status)
+	for (;;)
+	{ 
+		/* NOTE: we need to call CHECK_FOR_INTERRUPTS() here since if we
+		 * are processing only from temp files, ExecProcNode is not called
+		 */
+		CHECK_FOR_INTERRUPTS();
+
+		switch (node->status)
 	{
 	case SS_PROCESS:
 		{
@@ -670,7 +683,7 @@ ExecSkyline_BlockNestedLoop(SkylineState *node, Skyline *sl)
 		break;
 
 	case SS_PIPEOUT:
-		// not here, tuplewindow_rewind(node->window);
+		// NOTE: before switching to this state: tuplewindow_rewind(node->window);
 		for (;;) 
 		{
 			if (tuplewindow_ateof(node->window))

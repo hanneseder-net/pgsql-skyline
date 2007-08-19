@@ -49,6 +49,40 @@ skyline_lookup_option(const char * name)
 	return (SkylineAnOption*)bsearch(&key, skyline_options, lengthof(skyline_options), sizeof(skyline_options[0]), cmp_skyline_option);
 }
 
+bool
+skyline_option_get_int(List *skyline_by_options, char *name, int *value)
+{
+	ListCell	*l;
+
+	AssertArg(name != NULL);
+	AssertArg(value != NULL);
+	Assert(skyline_lookup_option(name) != NULL);
+
+	foreach(l, skyline_by_options)
+	{
+		SkylineOption *option = (SkylineOption *) lfirst(l);
+		if (strcmp(option->name, name) == 0)
+		{
+			A_Const    *arg = (A_Const *) option->value;
+
+			if (!IsA(arg, A_Const))
+				elog(ERROR, "unrecognized node type: %d", (int) nodeTag(arg));
+
+			switch (nodeTag(&arg->val))
+			{
+				case T_Integer:
+					*value = intVal(&arg->val);
+					return true;
+
+				default:
+					return false;
+			}
+		}
+	}
+
+	return false;
+}
+
 static SkylineMethod
 skyline_method_from_options(SkylineClause* skyline_clause)
 {
@@ -66,7 +100,7 @@ skyline_method_from_options(SkylineClause* skyline_clause)
 			{
 				if (skyline_method != SM_UNKNOWN)
 				{
-					if (skyline_methode == anoption->skyline_method)
+					if (skyline_method == anoption->skyline_method)
 						elog(WARNING, "skyline method specified more than once", option->name);
 					else
 						elog(WARNING, "previous skyline method overwritten, now using `%s' for SKYLINE BY", option->name);

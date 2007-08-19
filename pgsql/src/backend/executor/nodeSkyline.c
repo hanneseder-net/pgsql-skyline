@@ -189,39 +189,6 @@ ExecSkylineGetOrderingOp(Skyline *sl, int idx, FmgrInfo *compareOpFn, int *compa
 	}
 }
 
-static bool
-skyline_option_get_int(List *skyline_by_options, char *name, int *value)
-{
-	ListCell	*l;
-
-	AssertArg(name != NULL);
-	AssertArg(value != NULL);
-
-	foreach(l, skyline_by_options)
-	{
-		SkylineOption *option = (SkylineOption *) lfirst(l);
-		if (strcmp(option->name, name) == 0)
-		{
-			A_Const    *arg = (A_Const *) option->value;
-
-			if (!IsA(arg, A_Const))
-				elog(ERROR, "unrecognized node type: %d", (int) nodeTag(arg));
-
-			switch (nodeTag(&arg->val))
-			{
-				case T_Integer:
-					*value = intVal(&arg->val);
-					return true;
-
-				default:
-					return false;
-			}
-		}
-	}
-
-	return false;
-}
-
 static void
 ExecSkylineCacheCompareFunctionInfo(SkylineState *slstate, Skyline *node)
 {

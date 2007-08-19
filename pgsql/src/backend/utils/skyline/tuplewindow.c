@@ -179,6 +179,12 @@ tuplewindow_gettupleslot(TupleWindowState *state,
 	}
 }
 
+/*
+ * tuplewindow_removecurrent
+ *
+ *  Removes the current slot from the window and moves the
+ *  cursor (current) to the next slot
+ */
 void
 tuplewindow_removecurrent(TupleWindowState *state)
 {
@@ -191,9 +197,26 @@ tuplewindow_removecurrent(TupleWindowState *state)
 	state->current = next;
 }
 
+/*
+ * tuplewindow_end
+ *
+ *  Release resources and cleanup
+ */
 void
 tuplewindow_end(TupleWindowState *state)
 {
+	/*
+	 * NOTE: we could also use the external interface, if we want to be
+	 * more independend from the internal representation
+	 */
+	/*
+	tuplewindow_rewind(state);
+	while (!tuplewindow_ateof(state))
+	{
+		tuplewindow_removecurrent(state);
+	}
+	*/
+
 	TupleWindowSlot *head = state->head;
 
 	while (head != NULL) {
@@ -202,4 +225,6 @@ tuplewindow_end(TupleWindowState *state)
 		pfree(head);
 		head = next;
 	}
+
+	pfree(state);
 }

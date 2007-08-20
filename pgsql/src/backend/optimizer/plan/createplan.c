@@ -2703,6 +2703,10 @@ make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause, SkylineMet
 	List	   *skylinecls = sc->skyline_by_list;
 
 	copy_plan_costsize(plan, outertree); /* only care about copying size */
+
+	// FIXME: ticket:34
+	plan->plan_rows = plan->plan_rows / 10;
+
 	/* FIXME: add costs for skyline */
 	plan->targetlist = outertree->targetlist;
 	plan->qual = NIL;

@@ -18,10 +18,14 @@ typedef struct TupleWindowSlot {
 struct TupleWindowState {
 	long		availMem;		
 	long		availSlots;				// if -1 only restrict mem
-	TupleWindowSlot	*head;
+	TupleWindowSlot	*nil;
 	TupleWindowSlot *current;
 };
 
+
+/*
+ *  We are using a double linked list with a sentinel
+ */
 TupleWindowState *
 tuplewindow_begin(int maxKBytes, int maxSlots)
 {
@@ -31,6 +35,13 @@ tuplewindow_begin(int maxKBytes, int maxSlots)
 
 	state->availMem = maxKBytes * 1024L;
 	state->availSlots = maxSlots;
+
+	/* create sentinel, we don't count this memory usage */
+	state->nil = (TupleWindowSlot *) palloc(sizeof(TupleWindowSlot));
+	state->nil->next = state->nil;
+	state->nil->prev = state->nil;
+
+	state->current = state->nil;
 
 	return state;
 }
@@ -71,16 +82,16 @@ tuplewindow_puttupleslot(TupleWindowState *state,
 		state->availSlots--;
 	}
 
-	windowSlot->next = state->head;
-	windowSlot->prev = NULL;
 	windowSlot->tuple = tuple;
 	windowSlot->timestamp = timestamp;
 
-	if (state->head)
-		state->head->prev = windowSlot;
-
-	state->head = windowSlot;
-	state->current = windowSlot;
+	/* we insert at the end of the list, to preserve
+     * relative tuple order
+	 */
+	windowSlot->next = state->nil;
+	windowSlot->prev = state->nil->prev;
+	state->nil->prev = windowSlot;
+	windowSlot->prev->next = windowSlot;
 }
 
 static void
@@ -88,25 +99,21 @@ tuplewindow_removeslot(TupleWindowState *state,
 					   TupleWindowSlot *slot,
 					   bool freetuple)
 {
-	TupleWindowSlot *prev = slot->prev;
 	TupleWindowSlot *next = slot->next;
 
+	AssertArg(state != NULL);
+	AssertArg(slot != NULL);
+	Assert(slot != state->nil);
+
+	/* remove from linked list */
+	slot->prev->next = slot->next;
+	slot->next->prev = slot->prev;
+
+	/* invalidate slot, in production code this is not needed */
 	slot->prev = NULL;
 	slot->next = NULL;
 
-	if (slot == state->head) {
-		state->head = next;
-		if (next)
-			next->prev = NULL;
-	}
-	else {
-		Assert(prev != NULL);
-		prev->next = next;
-		if (next)
-			next->prev = prev;
-	}
-	
-	/* HACK: we re clame the space, because ExecStoreMinimalTuple called with
+	/* HACK: we reclame the space, because ExecStoreMinimalTuple called with
 	 * true, so it will free the tuple
 	 */
 	FREEMEM(state, GetMemoryChunkSpace(slot->tuple));
@@ -122,6 +129,9 @@ tuplewindow_removeslot(TupleWindowState *state,
 		state->availSlots++;
 	}
 
+	/* NOTE: if we are removing the current slot, reposition the cursor (current) to
+	 * the next slot
+	 */
 	if (state->current == slot)
 		state->current = next;
 }
@@ -129,26 +139,35 @@ tuplewindow_removeslot(TupleWindowState *state,
 void
 tuplewindow_rewind(TupleWindowState *state)
 {
-	state->current = state->head;
+	AssertArg(state != NULL);
+
+	state->current = state->nil->next;
 }
 
 bool
 tuplewindow_ateof(TupleWindowState *state)
 {
-	return (state->current == NULL);
+	AssertArg(state != NULL);
+
+	return (state->current == state->nil);
 }
 
 void
 tuplewindow_movenext(TupleWindowState *state)
 {
-	if (state->current)
+	AssertArg(state != NULL);
+
+	if (state->current != state->nil)
 		state->current = state->current->next;
 }
 
 int64
 tuplewindow_timestampcurrent(TupleWindowState *state)
 {
+	AssertArg(state != NULL);
 	Assert(state->current != NULL);
+	Assert(state->current != state->nil);
+
 	return state->current->timestamp;
 }
 
@@ -157,7 +176,11 @@ tuplewindow_gettupleslot(TupleWindowState *state,
 						 TupleTableSlot *slot,
 						 bool removeit)
 {
-	if (state->current != NULL)	{
+	AssertArg(state != NULL);
+	AssertArg(slot != NULL);
+
+	if (state->current != state->nil)
+	{
 		if (removeit)
 		{
 			/* remove the tuple from the tuple window, but don't free the
@@ -173,7 +196,8 @@ tuplewindow_gettupleslot(TupleWindowState *state,
 		}
 		return true;
 	}
-	else {
+	else
+	{
 		ExecClearTuple(slot);
 		return false;
 	}
@@ -188,13 +212,10 @@ tuplewindow_gettupleslot(TupleWindowState *state,
 void
 tuplewindow_removecurrent(TupleWindowState *state)
 {
-	TupleWindowSlot *next = NULL;
-
-	Assert(state->current);
-
-	next = state->current->next;
+	AssertArg(state != NULL);
+	Assert(state->current != NULL);
+	Assert(state->current != state->nil);
 	tuplewindow_removeslot(state, state->current, true);
-	state->current = next;
 }
 
 /*
@@ -217,14 +238,19 @@ tuplewindow_end(TupleWindowState *state)
 	}
 	*/
 
-	TupleWindowSlot *head = state->head;
+	/* free all slots */
+	TupleWindowSlot *slot = state->nil->next;
 
-	while (head != NULL) {
-		TupleWindowSlot *next = head->next;
-		pfree(head->tuple);
-		pfree(head);
-		head = next;
+	while (slot != state->nil) {
+		TupleWindowSlot *next = slot->next;
+		pfree(slot->tuple);
+		pfree(slot);
+		slot = next;
 	}
 
+	/* free the sentinel */
+	pfree(state->nil);
+
+	/* free the state buffer */
 	pfree(state);
 }

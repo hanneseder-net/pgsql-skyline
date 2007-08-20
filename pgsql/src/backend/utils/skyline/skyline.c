@@ -170,15 +170,23 @@ skyline_method_preserves_tuple_order(SkylineMethod skyline_method)
 	{
 		case SM_1DIM:
 		case SM_1DIM_DISTINCT:
-		case SM_2DIM_PRESORT:
 		case SM_SIMPLENESTEDLOOP:
 			/* these methods preserve the relative order of the tuples,
 			 * so e.g. we may keep the current_pathkeys in the grouping_planner
 			 */
 			return true;
+		case SM_2DIM_PRESORT:
+			/* 2d with presort may overall change the order of the tuples
+			 * but the filtering step of this methodes preserved them and we
+			 * are using an extra sort plan node, so this pathkey can be usind
+			 * by an eventually following sort plan node
+			 */
+			return true;
 		case SM_BLOCKNESTEDLOOP:
 			/* block nested loop eventually changes the order of the tuples
 			 * so we must drop the current_pathkeys
+			 * this is still true even if the relative order in the tuple window
+			 * is preserved
 			 */
 			return false;
 		default:

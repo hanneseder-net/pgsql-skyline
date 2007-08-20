@@ -25,6 +25,10 @@ struct TupleWindowState {
 
 /*
  *  We are using a double linked list with a sentinel
+ *
+ *  for double linked list with sentinel see: [COR2002, Ch. 10.2, p 204-209]
+ *  [COR2002] Cormen, Thomas H., Introduction to Algorithms, 
+ *  Second Edition, Third printing 2002, MIT Press, ISBN 0-262-03293-7
  */
 TupleWindowState *
 tuplewindow_begin(int maxKBytes, int maxSlots)

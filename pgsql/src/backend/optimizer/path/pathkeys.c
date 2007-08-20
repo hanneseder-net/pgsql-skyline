@@ -456,6 +456,32 @@ get_cheapest_fractional_path_for_pathkeys(List *paths,
 	return matched_path;
 }
 
+Path *
+get_cheapest_fractional_path_for_skyline_pathkeys(List *paths,
+												  List *pathkeys,
+												  double fraction)
+{
+	Path	   *matched_path = NULL;
+	ListCell   *l;
+
+	foreach(l, paths)
+	{
+		Path	   *path = (Path *) lfirst(l);
+
+		/*
+		 * Since cost comparison is a lot cheaper than pathkey comparison, do
+		 * that first.
+		 */
+		if (matched_path != NULL &&
+			compare_fractional_path_costs(matched_path, path, fraction) <= 0)
+			continue;
+
+		if (contains_skyline_pathkeys(pathkeys, path->pathkeys))
+			matched_path = path;
+	}
+	return matched_path;
+}
+
 /****************************************************************************
  *		NEW PATHKEY FORMATION
  ****************************************************************************/

@@ -810,6 +810,7 @@ grouping_planner(PlannerInfo *root, double tuple_fraction)
 		/* No set operations, do regular planning */
 		List	   *sub_tlist;
 		List	   *group_pathkeys;
+		List	   *skyline_pathkeys;
 		AttrNumber *groupColIdx = NULL;
 		Oid		   *groupOperators = NULL;
 		bool		need_tlist_eval = true;
@@ -844,6 +845,12 @@ grouping_planner(PlannerInfo *root, double tuple_fraction)
 										  parse->groupClause,
 										  tlist,
 										  false);
+
+		root->skyline_pathkeys = 
+				make_pathkeys_for_skylineclause(root,
+												(SkylineClause*)parse->skylineClause,
+												tlist,
+												false);
 		root->sort_pathkeys =
 			make_pathkeys_for_sortclauses(root,
 										  parse->sortClause,
@@ -879,6 +886,8 @@ grouping_planner(PlannerInfo *root, double tuple_fraction)
 		 */
 		if (parse->groupClause)
 			root->query_pathkeys = root->group_pathkeys;
+		else if (parse->skylineClause)
+			root->query_pathkeys = root->skyline_pathkeys;
 		else if (parse->sortClause)
 			root->query_pathkeys = root->sort_pathkeys;
 		else
@@ -894,6 +903,7 @@ grouping_planner(PlannerInfo *root, double tuple_fraction)
 					  &cheapest_path, &sorted_path, &dNumGroups);
 
 		group_pathkeys = root->group_pathkeys;
+		skyline_pathkeys = root->skyline_pathkeys;
 		sort_pathkeys = root->sort_pathkeys;
 
 		/*
@@ -1137,19 +1147,13 @@ grouping_planner(PlannerInfo *root, double tuple_fraction)
 
 		if (skyline_method == SM_2DIM_PRESORT)
 		{
-			List * skyline_pathkeys = 
-				make_pathkeys_for_skylineclause(root,
-												(SkylineClause*)parse->skylineClause,
-												result_plan->targetlist,
-												true);
-
-			if (!contains_skyline_pathkeys(skyline_pathkeys, current_pathkeys))
+			if (!contains_skyline_pathkeys(root->skyline_pathkeys, current_pathkeys))
 			{
 				result_plan = (Plan *) make_sort_from_pathkeys(root,
 															   result_plan,
-															   skyline_pathkeys,
+															   root->skyline_pathkeys,
 															   limit_tuples);
-				current_pathkeys = skyline_pathkeys;
+				current_pathkeys = root->skyline_pathkeys;
 			}
 		}
 

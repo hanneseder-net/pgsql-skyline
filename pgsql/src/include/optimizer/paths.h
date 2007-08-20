@@ -147,6 +147,9 @@ extern Path *get_cheapest_path_for_pathkeys(List *paths, List *pathkeys,
 extern Path *get_cheapest_fractional_path_for_pathkeys(List *paths,
 										  List *pathkeys,
 										  double fraction);
+extern Path *get_cheapest_fractional_path_for_skyline_pathkeys(List *paths,
+												  List *pathkeys,
+												  double fraction);
 extern List *build_index_pathkeys(PlannerInfo *root, IndexOptInfo *index,
 					 ScanDirection scandir);
 extern List *convert_subquery_pathkeys(PlannerInfo *root, RelOptInfo *rel,

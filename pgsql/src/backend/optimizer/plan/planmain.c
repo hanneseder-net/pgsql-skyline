@@ -119,6 +119,8 @@ query_planner(PlannerInfo *root, List *tlist,
 													 root->query_pathkeys);
 		root->group_pathkeys = canonicalize_pathkeys(root,
 													 root->group_pathkeys);
+		root->skyline_pathkeys = canonicalize_pathkeys(root, 
+													   root->skyline_pathkeys);
 		root->sort_pathkeys = canonicalize_pathkeys(root,
 													root->sort_pathkeys);
 		return;
@@ -232,6 +234,7 @@ query_planner(PlannerInfo *root, List *tlist,
 	 */
 	root->query_pathkeys = canonicalize_pathkeys(root, root->query_pathkeys);
 	root->group_pathkeys = canonicalize_pathkeys(root, root->group_pathkeys);
+	root->skyline_pathkeys = canonicalize_pathkeys(root, root->skyline_pathkeys);
 	root->sort_pathkeys = canonicalize_pathkeys(root, root->sort_pathkeys);
 
 	/*
@@ -341,10 +344,19 @@ query_planner(PlannerInfo *root, List *tlist,
 	 */
 	cheapestpath = final_rel->cheapest_total_path;
 
+	sortedpath = 
+		get_cheapest_fractional_path_for_skyline_pathkeys(final_rel->pathlist,
+														  root->query_pathkeys,
+														  tuple_fraction);
+
+	/* TODO: modify skyline_pathkeys if matching pathkey was found */
+//	if (sortedpath == NULL)
+//	{
 	sortedpath =
 		get_cheapest_fractional_path_for_pathkeys(final_rel->pathlist,
 												  root->query_pathkeys,
 												  tuple_fraction);
+//	}
 
 	/* Don't return same path in both guises; just wastes effort */
 	if (sortedpath == cheapestpath)

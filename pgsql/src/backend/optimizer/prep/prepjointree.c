@@ -646,6 +646,7 @@ is_simple_subquery(Query *subquery)
 	if (subquery->hasAggs ||
 		subquery->groupClause ||
 		subquery->havingQual ||
+		subquery->skylineClause ||
 		subquery->sortClause ||
 		subquery->distinctClause ||
 		subquery->limitOffset ||

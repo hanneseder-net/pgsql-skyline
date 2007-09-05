@@ -776,6 +776,7 @@ ORDER BY 1, 2, 3;
         405 |            1 | =
         405 |            1 | ~=~
         783 |            1 | <<
+        783 |            1 | @@
         783 |            2 | &<
         783 |            3 | &&
         783 |            4 | &>
@@ -790,10 +791,12 @@ ORDER BY 1, 2, 3;
         783 |           13 | ~
         783 |           14 | @
        2742 |            1 | &&
+       2742 |            1 | @@
        2742 |            2 | @>
+       2742 |            2 | @@@
        2742 |            3 | <@
        2742 |            4 | =
-(30 rows)
+(33 rows)
 
 -- Check that all operators linked to by opclass entries have selectivity
 -- estimators.  This is not absolutely required, but it seems a reasonable
@@ -935,6 +938,18 @@ WHERE p2.opfmethod = p1.oid AND p3.amprocfamily = p2.oid AND
                            p4.amprocrighttype = p3.amprocrighttype);
  amname | opfname | amproclefttype | amprocrighttype 
 --------+---------+----------------+-----------------
+(0 rows)
+
+-- Also, check if there are any pg_opclass entries that don't seem to have
+-- pg_amproc support.
+SELECT amname, opcname, count(*)
+FROM pg_am am JOIN pg_opclass op ON opcmethod = am.oid
+     LEFT JOIN pg_amproc p ON amprocfamily = opcfamily AND
+         amproclefttype = amprocrighttype AND amproclefttype = opcintype
+GROUP BY amname, amsupport, opcname, amprocfamily
+HAVING count(*) != amsupport OR amprocfamily IS NULL;
+ amname | opcname | count 
+--------+---------+-------
 (0 rows)
 
 -- Unfortunately, we can't check the amproc link very well because the

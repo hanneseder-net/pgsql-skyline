@@ -15,7 +15,7 @@
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/backend/nodes/copyfuncs.c,v 1.380 2007/07/17 05:02:01 neilc Exp $
+ *	  $PostgreSQL: pgsql/src/backend/nodes/copyfuncs.c,v 1.382 2007/09/03 18:46:30 tgl Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -1453,6 +1453,8 @@ _copyOuterJoinInfo(OuterJoinInfo *from)
 
 	COPY_BITMAPSET_FIELD(min_lefthand);
 	COPY_BITMAPSET_FIELD(min_righthand);
+	COPY_BITMAPSET_FIELD(syn_lefthand);
+	COPY_BITMAPSET_FIELD(syn_righthand);
 	COPY_SCALAR_FIELD(is_full_join);
 	COPY_SCALAR_FIELD(lhs_strict);
 	COPY_SCALAR_FIELD(delay_upper_joins);
@@ -2523,8 +2525,7 @@ _copyAlterDatabaseSetStmt(AlterDatabaseSetStmt *from)
 	AlterDatabaseSetStmt *newnode = makeNode(AlterDatabaseSetStmt);
 
 	COPY_STRING_FIELD(dbname);
-	COPY_STRING_FIELD(variable);
-	COPY_NODE_FIELD(value);
+	COPY_NODE_FIELD(setstmt);
 
 	return newnode;
 }
@@ -2595,6 +2596,7 @@ _copyVariableSetStmt(VariableSetStmt *from)
 {
 	VariableSetStmt *newnode = makeNode(VariableSetStmt);
 
+	COPY_SCALAR_FIELD(kind);
 	COPY_STRING_FIELD(name);
 	COPY_NODE_FIELD(args);
 	COPY_SCALAR_FIELD(is_local);
@@ -2606,16 +2608,6 @@ static VariableShowStmt *
 _copyVariableShowStmt(VariableShowStmt *from)
 {
 	VariableShowStmt *newnode = makeNode(VariableShowStmt);
-
-	COPY_STRING_FIELD(name);
-
-	return newnode;
-}
-
-static VariableResetStmt *
-_copyVariableResetStmt(VariableResetStmt *from)
-{
-	VariableResetStmt *newnode = makeNode(VariableResetStmt);
 
 	COPY_STRING_FIELD(name);
 
@@ -2744,8 +2736,7 @@ _copyAlterRoleSetStmt(AlterRoleSetStmt *from)
 	AlterRoleSetStmt *newnode = makeNode(AlterRoleSetStmt);
 
 	COPY_STRING_FIELD(role);
-	COPY_STRING_FIELD(variable);
-	COPY_NODE_FIELD(value);
+	COPY_NODE_FIELD(setstmt);
 
 	return newnode;
 }
@@ -3425,9 +3416,6 @@ copyObject(void *from)
 			break;
 		case T_VariableShowStmt:
 			retval = _copyVariableShowStmt(from);
-			break;
-		case T_VariableResetStmt:
-			retval = _copyVariableResetStmt(from);
 			break;
 		case T_DiscardStmt:
 			retval = _copyDiscardStmt(from);

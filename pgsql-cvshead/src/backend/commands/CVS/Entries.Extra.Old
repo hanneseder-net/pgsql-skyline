@@ -24,6 +24,7 @@
 /tablecmds.c////*///
 /tablespace.c////*///
 /trigger.c////*///
+/tsearchcmds.c////*///
 /typecmds.c////*///
 /user.c////*///
 /vacuum.c////*///

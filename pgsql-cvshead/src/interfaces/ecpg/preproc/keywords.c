@@ -8,7 +8,7 @@
  *
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/interfaces/ecpg/preproc/keywords.c,v 1.80 2007/06/12 07:55:56 meskes Exp $
+ *	  $PostgreSQL: pgsql/src/interfaces/ecpg/preproc/keywords.c,v 1.82 2007/09/04 10:02:29 meskes Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -19,6 +19,8 @@
 #include "extern.h"
 #include "preproc.h"
 
+/* compile both keyword lists in one file because they are always scanned together */
+#include "ecpg_keywords.c"
 
 /*
  * List of (keyword-name, keyword-token-value) pairs.
@@ -26,7 +28,7 @@
  * !!WARNING!!: This list must be sorted, because binary
  *		 search is used to locate entries.
  */
-static ScanKeyword ScanKeywords[] = {
+static const ScanKeyword ScanPGSQLKeywords[] = {
 	/* name, value */
 	{"abort", ABORT_P},
 	{"absolute", ABSOLUTE_P},
@@ -84,7 +86,7 @@ static ScanKeyword ScanKeywords[] = {
 	{"commit", COMMIT},
 	{"committed", COMMITTED},
 	{"concurrently", CONCURRENTLY},
-	{"concurrently", CONCURRENTLY},
+	{"configuration", CONFIGURATION},
 	{"connection", CONNECTION},
 	{"constraint", CONSTRAINT},
 	{"constraints", CONSTRAINTS},
@@ -121,6 +123,7 @@ static ScanKeyword ScanKeywords[] = {
 	{"delimiter", DELIMITER},
 	{"delimiters", DELIMITERS},
 	{"desc", DESC},
+	{"dictionary", DICTIONARY},
 	{"disable", DISABLE_P},
 	{"discard", DISCARD},
 	{"distinct", DISTINCT},
@@ -215,6 +218,7 @@ static ScanKeyword ScanKeywords[] = {
 	{"location", LOCATION},
 	{"lock", LOCK_P},
 	{"login", LOGIN_P},
+	{"mapping", MAPPING},
 	{"match", MATCH},
 	{"maxvalue", MAXVALUE},
 	{"minute", MINUTE_P},
@@ -263,6 +267,7 @@ static ScanKeyword ScanKeywords[] = {
 	{"overlaps", OVERLAPS},
 	{"owned", OWNED},
 	{"owner", OWNER},
+	{"parser", PARSER},
 	{"partial", PARTIAL},
 	{"password", PASSWORD},
 	{"placing", PLACING},
@@ -305,6 +310,7 @@ static ScanKeyword ScanKeywords[] = {
 	{"savepoint", SAVEPOINT},
 	{"schema", SCHEMA},
 	{"scroll", SCROLL},
+	{"search", SEARCH},
 	{"second", SECOND_P},
 	{"security", SECURITY},
 	{"select", SELECT},
@@ -340,6 +346,7 @@ static ScanKeyword ScanKeywords[] = {
 	{"temp", TEMP},
 	{"template", TEMPLATE},
 	{"temporary", TEMPORARY},
+	{"text", TEXT_P},
 	{"then", THEN},
 	{"time", TIME},
 	{"timestamp", TIMESTAMP},
@@ -395,6 +402,31 @@ static ScanKeyword ScanKeywords[] = {
 	{"zone", ZONE},
 };
 
+
+/*
+ * Now do a binary search using plain strcmp() comparison.
+ */
+const ScanKeyword *
+DoLookup(char *word, const ScanKeyword *low, const ScanKeyword *high)
+{
+	while (low <= high)
+	{
+		const ScanKeyword *middle;
+		int			difference;
+
+		middle = low + (high - low) / 2;
+		difference = strcmp(middle->name, word);
+		if (difference == 0)
+			return middle;
+		else if (difference < 0)
+			low = middle + 1;
+		else
+			high = middle - 1;
+	}
+
+	return NULL;
+}
+
 /*
  * ScanKeywordLookup - see if a given word is a keyword
  *
@@ -407,14 +439,13 @@ static ScanKeyword ScanKeywords[] = {
  * keywords are to be matched in this way even though non-keyword identifiers
  * receive a different case-normalization mapping.
  */
-ScanKeyword *
+const ScanKeyword *
 ScanKeywordLookup(char *text)
 {
 	int			len,
 				i;
 	char		word[NAMEDATALEN];
-	ScanKeyword *low;
-	ScanKeyword *high;
+	const ScanKeyword *res;
 
 	len = strlen(text);
 	/* We assume all keywords are shorter than NAMEDATALEN. */
@@ -438,22 +469,10 @@ ScanKeywordLookup(char *text)
 	/*
 	 * Now do a binary search using plain strcmp() comparison.
 	 */
-	low = &ScanKeywords[0];
-	high = endof(ScanKeywords) - 1;
-	while (low <= high)
-	{
-		ScanKeyword *middle;
-		int			difference;
+	res = DoLookup(word, &ScanPGSQLKeywords[0], endof(ScanPGSQLKeywords) - 1);
+	if (res)
+		return res;
 
-		middle = low + (high - low) / 2;
-		difference = strcmp(middle->name, word);
-		if (difference == 0)
-			return middle;
-		else if (difference < 0)
-			low = middle + 1;
-		else
-			high = middle - 1;
-	}
-
-	return NULL;
+	return DoLookup(word, &ScanECPGKeywords[0], endof(ScanECPGKeywords) - 1);
 }
+

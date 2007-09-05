@@ -5,7 +5,7 @@
  * Copyright (c) 2002-2007, PostgreSQL Global Development Group
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/backend/utils/adt/dbsize.c,v 1.12 2007/03/11 05:22:00 alvherre Exp $
+ *	  $PostgreSQL: pgsql/src/backend/utils/adt/dbsize.c,v 1.14 2007/08/29 17:24:29 tgl Exp $
  *
  */
 
@@ -22,6 +22,7 @@
 #include "commands/tablespace.h"
 #include "miscadmin.h"
 #include "storage/fd.h"
+#include "utils/acl.h"
 #include "utils/builtins.h"
 #include "utils/syscache.h"
 #include "utils/relcache.h"
@@ -78,6 +79,13 @@ calculate_database_size(Oid dbOid)
 	struct dirent *direntry;
 	char		dirpath[MAXPGPATH];
 	char		pathname[MAXPGPATH];
+	AclResult	aclresult;
+
+	/* User must have connect privilege for target database */
+	aclresult = pg_database_aclcheck(dbOid, GetUserId(), ACL_CONNECT);
+	if (aclresult != ACLCHECK_OK)
+		aclcheck_error(aclresult, ACL_KIND_DATABASE,
+					   get_database_name(dbOid));
 
 	/* Shared storage in pg_global is not counted */
 
@@ -151,6 +159,19 @@ calculate_tablespace_size(Oid tblspcOid)
 	int64		totalsize = 0;
 	DIR		   *dirdesc;
 	struct dirent *direntry;
+	AclResult	aclresult;
+
+	/*
+	 * User must have CREATE privilege for target tablespace, either explicitly
+	 * granted or implicitly because it is default for current database.
+	 */
+	if (tblspcOid != MyDatabaseTableSpace)
+	{
+		aclresult = pg_tablespace_aclcheck(tblspcOid, GetUserId(), ACL_CREATE);
+		if (aclresult != ACLCHECK_OK)
+			aclcheck_error(aclresult, ACL_KIND_TABLESPACE,
+						   get_tablespace_name(tblspcOid));
+	}
 
 	if (tblspcOid == DEFAULTTABLESPACE_OID)
 		snprintf(tblspcPath, MAXPGPATH, "base");

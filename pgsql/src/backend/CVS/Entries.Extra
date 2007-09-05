@@ -16,6 +16,8 @@ D/port///////
 D/postmaster///////
 D/regex///////
 D/rewrite///////
+D/snowball///////
 D/storage///////
 D/tcop///////
+D/tsearch///////
 D/utils///////

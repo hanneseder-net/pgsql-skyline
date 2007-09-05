@@ -18,7 +18,7 @@
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/backend/nodes/equalfuncs.c,v 1.311 2007/07/17 05:02:01 neilc Exp $
+ *	  $PostgreSQL: pgsql/src/backend/nodes/equalfuncs.c,v 1.313 2007/09/03 18:46:30 tgl Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -706,6 +706,8 @@ _equalOuterJoinInfo(OuterJoinInfo *a, OuterJoinInfo *b)
 {
 	COMPARE_BITMAPSET_FIELD(min_lefthand);
 	COMPARE_BITMAPSET_FIELD(min_righthand);
+	COMPARE_BITMAPSET_FIELD(syn_lefthand);
+	COMPARE_BITMAPSET_FIELD(syn_righthand);
 	COMPARE_SCALAR_FIELD(is_full_join);
 	COMPARE_SCALAR_FIELD(lhs_strict);
 	COMPARE_SCALAR_FIELD(delay_upper_joins);
@@ -1325,8 +1327,7 @@ static bool
 _equalAlterDatabaseSetStmt(AlterDatabaseSetStmt *a, AlterDatabaseSetStmt *b)
 {
 	COMPARE_STRING_FIELD(dbname);
-	COMPARE_STRING_FIELD(variable);
-	COMPARE_NODE_FIELD(value);
+	COMPARE_NODE_FIELD(setstmt);
 
 	return true;
 }
@@ -1385,6 +1386,7 @@ _equalAlterSeqStmt(AlterSeqStmt *a, AlterSeqStmt *b)
 static bool
 _equalVariableSetStmt(VariableSetStmt *a, VariableSetStmt *b)
 {
+	COMPARE_SCALAR_FIELD(kind);
 	COMPARE_STRING_FIELD(name);
 	COMPARE_NODE_FIELD(args);
 	COMPARE_SCALAR_FIELD(is_local);
@@ -1394,14 +1396,6 @@ _equalVariableSetStmt(VariableSetStmt *a, VariableSetStmt *b)
 
 static bool
 _equalVariableShowStmt(VariableShowStmt *a, VariableShowStmt *b)
-{
-	COMPARE_STRING_FIELD(name);
-
-	return true;
-}
-
-static bool
-_equalVariableResetStmt(VariableResetStmt *a, VariableResetStmt *b)
 {
 	COMPARE_STRING_FIELD(name);
 
@@ -1511,8 +1505,7 @@ static bool
 _equalAlterRoleSetStmt(AlterRoleSetStmt *a, AlterRoleSetStmt *b)
 {
 	COMPARE_STRING_FIELD(role);
-	COMPARE_STRING_FIELD(variable);
-	COMPARE_NODE_FIELD(value);
+	COMPARE_NODE_FIELD(setstmt);
 
 	return true;
 }
@@ -2395,9 +2388,6 @@ equal(void *a, void *b)
 			break;
 		case T_VariableShowStmt:
 			retval = _equalVariableShowStmt(a, b);
-			break;
-		case T_VariableResetStmt:
-			retval = _equalVariableResetStmt(a, b);
 			break;
 		case T_DiscardStmt:
 			retval = _equalDiscardStmt(a, b);

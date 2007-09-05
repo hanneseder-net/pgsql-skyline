@@ -113,6 +113,8 @@
 /transactions.out////*///
 /triggers.out////*///
 /truncate.out////*///
+/tsearch.out////*///
+/tstypes.out////*///
 /type_sanity.out////*///
 /union.out////*///
 /update.out////*///

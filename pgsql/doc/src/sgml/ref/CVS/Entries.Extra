@@ -17,6 +17,10 @@
 /alter_table.sgml////*///
 /alter_tablespace.sgml////*///
 /alter_trigger.sgml////*///
+/alter_tsconfig.sgml////*///
+/alter_tsdictionary.sgml////*///
+/alter_tsparser.sgml////*///
+/alter_tstemplate.sgml////*///
 /alter_type.sgml////*///
 /alter_user.sgml////*///
 /alter_view.sgml////*///
@@ -51,6 +55,10 @@
 /create_table_as.sgml////*///
 /create_tablespace.sgml////*///
 /create_trigger.sgml////*///
+/create_tsconfig.sgml////*///
+/create_tsdictionary.sgml////*///
+/create_tsparser.sgml////*///
+/create_tstemplate.sgml////*///
 /create_type.sgml////*///
 /create_user.sgml////*///
 /create_view.sgml////*///
@@ -81,6 +89,10 @@
 /drop_table.sgml////*///
 /drop_tablespace.sgml////*///
 /drop_trigger.sgml////*///
+/drop_tsconfig.sgml////*///
+/drop_tsdictionary.sgml////*///
+/drop_tsparser.sgml////*///
+/drop_tstemplate.sgml////*///
 /drop_type.sgml////*///
 /drop_user.sgml////*///
 /drop_view.sgml////*///

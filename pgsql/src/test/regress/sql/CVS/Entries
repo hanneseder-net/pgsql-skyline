@@ -9,7 +9,7 @@
 /case.sql/1.6/Wed Feb  2 21:49:09 2005//
 /char.sql/1.6/Thu Apr  7 01:51:41 2005//
 /circle.sql/1.6/Tue Jan  9 02:14:16 2007//
-/cluster.sql/1.11/Sun Apr  8 01:26:33 2007//
+/cluster.sql/1.12/Wed Sep  5 06:37:22 2007//
 /combocid.sql/1.1/Fri Feb  9 03:35:35 2007//
 /comments.sql/1.3/Fri Jul 14 15:43:57 2000//
 /conversion.sql/1.10/Sun Mar 25 11:56:04 2007//
@@ -19,7 +19,7 @@
 /create_index.sql/1.23/Fri Apr  6 22:33:43 2007//
 /create_misc.sql/1.14/Thu Apr  7 01:51:41 2005//
 /create_operator.sql/1.6/Mon Dec  1 21:52:38 2003//
-/create_table.sql/1.9/Tue May  2 11:28:56 2006//
+/create_table.sql/1.10/Wed Sep  5 06:37:22 2007//
 /create_type.sql/1.10/Sat Dec 30 21:21:56 2006//
 /create_view.sql/1.7/Thu Apr  7 01:51:41 2005//
 /date.sql/1.4/Fri Aug 20 03:45:14 2004//
@@ -38,7 +38,7 @@
 /float8.sql/1.15/Wed Jun  8 21:15:29 2005//
 /foreign_key.sql/1.21/Fri Aug 17 09:41:17 2007//
 /geometry.sql/1.11/Wed May 30 13:52:58 2007//
-/guc.sql/1.4/Thu Apr 26 16:13:15 2007//
+/guc.sql/1.5/Wed Sep  5 06:37:22 2007//
 /hash_index.sql/1.6/Thu Apr  7 01:51:41 2005//
 /horology.sql/1.34/Wed Aug  1 09:01:18 2007//
 /inet.sql/1.13/Sat Feb 11 20:39:59 2006//
@@ -48,7 +48,7 @@
 /int4.sql/1.9/Thu Apr  7 01:51:41 2005//
 /int8.sql/1.9/Mon Dec  5 04:13:38 2005//
 /interval.sql/1.12/Wed May 30 13:52:58 2007//
-/join.sql/1.22/Wed Aug  1 09:01:18 2007//
+/join.sql/1.23/Wed Sep  5 06:37:22 2007//
 /limit.sql/1.5/Sat May 19 08:06:22 2007//
 /lseg.sql/1.3/Wed Jan  5 06:07:57 2000//
 /mule_internal.sql/1.2/Tue Jun 16 07:29:54 1998//
@@ -58,8 +58,8 @@
 /numeric_big.sql/1.2/Thu Mar 30 07:13:19 2000//
 /numerology.sql/1.4/Wed Mar 15 23:31:05 2000//
 /oid.sql/1.8/Thu Apr  7 01:51:41 2005//
-/oidjoins.sql/1.20/Sat May 12 09:16:21 2007//
-/opr_sanity.sql/1.62/Mon Jul  9 10:06:13 2007//
+/oidjoins.sql/1.21/Wed Sep  5 06:37:22 2007//
+/opr_sanity.sql/1.63/Wed Sep  5 06:37:22 2007//
 /path.sql/1.3/Wed Jan  5 06:07:58 2000//
 /plancache.sql/1.4/Fri Mar 23 19:53:52 2007//
 /plpgsql.sql/1.49/Wed Aug  1 09:01:18 2007//
@@ -100,6 +100,8 @@
 /transactions.sql/1.14/Sat Jun  9 20:54:25 2007//
 /triggers.sql/1.13/Mon Jun 26 17:24:41 2006//
 /truncate.sql/1.5/Thu Jun 29 16:07:29 2006//
+/tsearch.sql/1.3/Sat Aug 25 01:06:25 2007//
+/tstypes.sql/1.2/Tue Aug 21 15:41:13 2007//
 /type_sanity.sql/1.31/Sat Jun 23 07:56:24 2007//
 /union.sql/1.6/Sun Nov  2 22:35:26 2003//
 /update.sql/1.5/Sun Sep  3 22:37:06 2006//

@@ -41,6 +41,11 @@
 /pg_statistic.h////*///
 /pg_tablespace.h////*///
 /pg_trigger.h////*///
+/pg_ts_config.h////*///
+/pg_ts_config_map.h////*///
+/pg_ts_dict.h////*///
+/pg_ts_parser.h////*///
+/pg_ts_template.h////*///
 /pg_type.h////*///
 /toasting.h////*///
 /unused_oids////*///

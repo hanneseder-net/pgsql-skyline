@@ -10,7 +10,7 @@
  * Written by Peter Eisentraut <peter_e@gmx.net>.
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/backend/utils/misc/guc.c,v 1.412 2007/08/13 19:27:11 tgl Exp $
+ *	  $PostgreSQL: pgsql/src/backend/utils/misc/guc.c,v 1.416 2007/09/03 18:46:30 tgl Exp $
  *
  *--------------------------------------------------------------------
  */
@@ -24,7 +24,6 @@
 #ifdef HAVE_SYSLOG
 #include <syslog.h>
 #endif
-
 
 #include "access/gin.h"
 #include "access/transam.h"
@@ -58,6 +57,7 @@
 #include "storage/fd.h"
 #include "storage/freespace.h"
 #include "tcop/tcopprot.h"
+#include "tsearch/ts_cache.h"
 #include "utils/builtins.h"
 #include "utils/guc_tables.h"
 #include "utils/memutils.h"
@@ -968,11 +968,11 @@ static struct config_bool ConfigureNamesBool[] =
 		false, NULL, NULL
 	},
 	{
-		{"redirect_stderr", PGC_POSTMASTER, LOGGING_WHERE,
-			gettext_noop("Start a subprocess to capture stderr output into log files."),
+		{"logging_collector", PGC_POSTMASTER, LOGGING_WHERE,
+			gettext_noop("Start a subprocess to capture stderr output and/or csvlogs into log files."),
 			NULL
 		},
-		&Redirect_stderr,
+		&Logging_collector,
 		false, NULL, NULL
 	},
 	{
@@ -2240,8 +2240,9 @@ static struct config_string ConfigureNamesString[] =
 	{
 		{"log_destination", PGC_SIGHUP, LOGGING_WHERE,
 			gettext_noop("Sets the destination for server log output."),
-			gettext_noop("Valid values are combinations of \"stderr\", \"syslog\", "
-						 "and \"eventlog\", depending on the platform."),
+			gettext_noop("Valid values are combinations of \"stderr\", "
+						 "\"syslog\", \"csvlog\", and \"eventlog\", "
+						 "depending on the platform."),
 			GUC_LIST_INPUT
 		},
 		&log_destination_string,
@@ -2434,6 +2435,15 @@ static struct config_string ConfigureNamesString[] =
 		"content", assign_xmloption, NULL
 	},
 
+	{
+		{"default_text_search_config", PGC_USERSET, CLIENT_CONN_LOCALE,
+			gettext_noop("Sets default text search configuration."),
+			NULL
+		},
+		&TSCurrentConfig,
+		"pg_catalog.simple", assignTSCurrentConfig, NULL
+	},
+
 #ifdef USE_SSL
 	{
 		{"ssl_ciphers", PGC_POSTMASTER, CONN_AUTH_SECURITY,
@@ -2484,6 +2494,8 @@ static int	size_guc_variables;
 static bool guc_dirty;			/* TRUE if need to do commit/abort work */
 
 static bool reporting_enabled;	/* TRUE to enable GUC_REPORT */
+
+static int	GUCNestLevel = 0;	/* 1 when in main transaction */
 
 
 static int	guc_var_compare(const void *a, const void *b);
@@ -3378,17 +3390,16 @@ ResetAllOptions(void)
 static void
 push_old_value(struct config_generic * gconf)
 {
-	int			my_level = GetCurrentTransactionNestLevel();
 	GucStack   *stack;
 
 	/* If we're not inside a transaction, do nothing */
-	if (my_level == 0)
+	if (GUCNestLevel == 0)
 		return;
 
 	for (;;)
 	{
 		/* Done if we already pushed it at this nesting depth */
-		if (gconf->stack && gconf->stack->nest_level >= my_level)
+		if (gconf->stack && gconf->stack->nest_level >= GUCNestLevel)
 			return;
 
 		/*
@@ -3447,20 +3458,53 @@ push_old_value(struct config_generic * gconf)
 }
 
 /*
- * Do GUC processing at transaction or subtransaction commit or abort.
+ * Do GUC processing at main transaction start.
  */
 void
-AtEOXact_GUC(bool isCommit, bool isSubXact)
+AtStart_GUC(void)
 {
-	int			my_level;
+	/*
+	 * The nest level should be 0 between transactions; if it isn't,
+	 * somebody didn't call AtEOXact_GUC, or called it with the wrong
+	 * nestLevel.  We throw a warning but make no other effort to clean up.
+	 */
+	if (GUCNestLevel != 0)
+		elog(WARNING, "GUC nest level = %d at transaction start",
+			 GUCNestLevel);
+	GUCNestLevel = 1;
+}
+
+/*
+ * Enter a new nesting level for GUC values.  This is called at subtransaction
+ * start and when entering a function that has proconfig settings.  NOTE that
+ * we must not risk error here, else subtransaction start will be unhappy.
+ */
+int
+NewGUCNestLevel(void)
+{
+	return ++GUCNestLevel;
+}
+
+/*
+ * Do GUC processing at transaction or subtransaction commit or abort, or
+ * when exiting a function that has proconfig settings.  (The name is thus
+ * a bit of a misnomer; perhaps it should be ExitGUCNestLevel or some such.)
+ * During abort, we discard all GUC settings that were applied at nesting
+ * levels >= nestLevel.  nestLevel == 1 corresponds to the main transaction.
+ */
+void
+AtEOXact_GUC(bool isCommit, int nestLevel)
+{
 	int			i;
+
+	Assert(nestLevel > 0 && nestLevel <= GUCNestLevel);
 
 	/* Quick exit if nothing's changed in this transaction */
 	if (!guc_dirty)
+	{
+		GUCNestLevel = nestLevel - 1;
 		return;
-
-	my_level = GetCurrentTransactionNestLevel();
-	Assert(isSubXact ? (my_level > 1) : (my_level == 1));
+	}
 
 	for (i = 0; i < num_guc_variables; i++)
 	{
@@ -3481,9 +3525,9 @@ AtEOXact_GUC(bool isCommit, bool isSubXact)
 		/* Assert that we stacked old value before changing it */
 		Assert(stack != NULL && (my_status & GUC_HAVE_STACK));
 		/* However, the last change may have been at an outer xact level */
-		if (stack->nest_level < my_level)
+		if (stack->nest_level < nestLevel)
 			continue;
-		Assert(stack->nest_level == my_level);
+		Assert(stack->nest_level == nestLevel);
 
 		/*
 		 * We will pop the stack entry.  Start by restoring outer xact status
@@ -3667,7 +3711,7 @@ AtEOXact_GUC(bool isCommit, bool isSubXact)
 					set_string_field(conf, &stack->tentative_val.stringval,
 									 NULL);
 					/* Don't store tentative value separately after commit */
-					if (!isSubXact)
+					if (nestLevel == 1)
 						set_string_field(conf, &conf->tentative_val, NULL);
 					break;
 				}
@@ -3681,7 +3725,7 @@ AtEOXact_GUC(bool isCommit, bool isSubXact)
 		 * If we're now out of all xact levels, forget TENTATIVE status bit;
 		 * there's nothing tentative about the value anymore.
 		 */
-		if (!isSubXact)
+		if (nestLevel == 1)
 		{
 			Assert(gconf->stack == NULL);
 			gconf->status = 0;
@@ -3698,8 +3742,11 @@ AtEOXact_GUC(bool isCommit, bool isSubXact)
 	 * that all outer transaction levels will have stacked values to deal
 	 * with.)
 	 */
-	if (!isSubXact)
+	if (nestLevel == 1)
 		guc_dirty = false;
+
+	/* Update nesting level */
+	GUCNestLevel = nestLevel - 1;
 }
 
 
@@ -4823,10 +4870,10 @@ IsSuperuserConfigOption(const char *name)
  * We need to be told the name of the variable the args are for, because
  * the flattening rules vary (ugh).
  *
- * The result is NULL if input is NIL (ie, SET ... TO DEFAULT), otherwise
+ * The result is NULL if args is NIL (ie, SET ... TO DEFAULT), otherwise
  * a palloc'd string.
  */
-char *
+static char *
 flatten_set_variable_args(const char *name, List *args)
 {
 	struct config_generic *record;
@@ -4834,10 +4881,7 @@ flatten_set_variable_args(const char *name, List *args)
 	StringInfoData buf;
 	ListCell   *l;
 
-	/*
-	 * Fast path if just DEFAULT.  We do not check the variable name in this
-	 * case --- necessary for RESET ALL to work correctly.
-	 */
+	/* Fast path if just DEFAULT */
 	if (args == NIL)
 		return NULL;
 
@@ -4932,6 +4976,108 @@ flatten_set_variable_args(const char *name, List *args)
  * SET command
  */
 void
+ExecSetVariableStmt(VariableSetStmt *stmt)
+{
+	switch (stmt->kind)
+	{
+		case VAR_SET_VALUE:
+		case VAR_SET_CURRENT:
+			set_config_option(stmt->name,
+							  ExtractSetVariableArgs(stmt),
+							  (superuser() ? PGC_SUSET : PGC_USERSET),
+							  PGC_S_SESSION,
+							  stmt->is_local,
+							  true);
+			break;
+		case VAR_SET_MULTI:
+			/*
+			 * Special case for special SQL syntax that effectively sets
+			 * more than one variable per statement.
+			 */
+			if (strcmp(stmt->name, "TRANSACTION") == 0)
+			{
+				ListCell   *head;
+
+				foreach(head, stmt->args)
+				{
+					DefElem    *item = (DefElem *) lfirst(head);
+
+					if (strcmp(item->defname, "transaction_isolation") == 0)
+						SetPGVariable("transaction_isolation",
+									  list_make1(item->arg), stmt->is_local);
+					else if (strcmp(item->defname, "transaction_read_only") == 0)
+						SetPGVariable("transaction_read_only",
+									  list_make1(item->arg), stmt->is_local);
+					else
+						elog(ERROR, "unexpected SET TRANSACTION element: %s",
+							 item->defname);
+				}
+			}
+			else if (strcmp(stmt->name, "SESSION CHARACTERISTICS") == 0)
+			{
+				ListCell   *head;
+
+				foreach(head, stmt->args)
+				{
+					DefElem    *item = (DefElem *) lfirst(head);
+
+					if (strcmp(item->defname, "transaction_isolation") == 0)
+						SetPGVariable("default_transaction_isolation",
+									  list_make1(item->arg), stmt->is_local);
+					else if (strcmp(item->defname, "transaction_read_only") == 0)
+						SetPGVariable("default_transaction_read_only",
+									  list_make1(item->arg), stmt->is_local);
+					else
+						elog(ERROR, "unexpected SET SESSION element: %s",
+							 item->defname);
+				}
+			}
+			else
+				elog(ERROR, "unexpected SET MULTI element: %s",
+					 stmt->name);
+			break;
+		case VAR_SET_DEFAULT:
+		case VAR_RESET:
+			set_config_option(stmt->name,
+							  NULL,
+							  (superuser() ? PGC_SUSET : PGC_USERSET),
+							  PGC_S_SESSION,
+							  stmt->is_local,
+							  true);
+			break;
+		case VAR_RESET_ALL:
+			ResetAllOptions();
+			break;
+	}
+}
+
+/*
+ * Get the value to assign for a VariableSetStmt, or NULL if it's RESET.
+ * The result is palloc'd.
+ *
+ * This is exported for use by actions such as ALTER ROLE SET.
+ */
+char *
+ExtractSetVariableArgs(VariableSetStmt *stmt)
+{
+	switch (stmt->kind)
+	{
+		case VAR_SET_VALUE:
+			return flatten_set_variable_args(stmt->name, stmt->args);
+		case VAR_SET_CURRENT:
+			return GetConfigOptionByName(stmt->name, NULL);
+		default:
+			return NULL;
+	}
+}
+
+/*
+ * SetPGVariable - SET command exported as an easily-C-callable function.
+ *
+ * This provides access to SET TO value, as well as SET TO DEFAULT (expressed
+ * by passing args == NIL), but not SET FROM CURRENT functionality.
+ */
+void
 SetPGVariable(const char *name, List *args, bool is_local)
 {
 	char	   *argstring = flatten_set_variable_args(name, args);
@@ -4997,6 +5143,7 @@ set_config_by_name(PG_FUNCTION_ARGS)
 	/* return it */
 	PG_RETURN_TEXT_P(result_text);
 }
+
 
 static void
 define_custom_variable(struct config_generic * variable)
@@ -5234,23 +5381,6 @@ GetPGVariableResultDesc(const char *name)
 						   TEXTOID, -1, 0);
 	}
 	return tupdesc;
-}
-
-/*
- * RESET command
- */
-void
-ResetPGVariable(const char *name, bool isTopLevel)
-{
-	if (pg_strcasecmp(name, "all") == 0)
-		ResetAllOptions();
-	else
-		set_config_option(name,
-						  NULL,
-						  (superuser() ? PGC_SUSET : PGC_USERSET),
-						  PGC_S_SESSION,
-						  false,
-						  true);
 }
 
 
@@ -6068,11 +6198,14 @@ ParseLongOption(const char *string, char **name, char **value)
 
 
 /*
- * Handle options fetched from pg_database.datconfig or pg_authid.rolconfig.
+ * Handle options fetched from pg_database.datconfig, pg_authid.rolconfig,
+ * pg_proc.proconfig, etc.  Caller must specify proper context/source/local.
+ *
  * The array parameter must be an array of TEXT (it must not be NULL).
  */
 void
-ProcessGUCArray(ArrayType *array, GucSource source)
+ProcessGUCArray(ArrayType *array,
+				GucContext context, GucSource source, bool isLocal)
 {
 	int			i;
 
@@ -6080,7 +6213,6 @@ ProcessGUCArray(ArrayType *array, GucSource source)
 	Assert(ARR_ELEMTYPE(array) == TEXTOID);
 	Assert(ARR_NDIM(array) == 1);
 	Assert(ARR_LBOUND(array)[0] == 1);
-	Assert(source == PGC_S_DATABASE || source == PGC_S_USER);
 
 	for (i = 1; i <= ARR_DIMS(array)[0]; i++)
 	{
@@ -6107,17 +6239,13 @@ ProcessGUCArray(ArrayType *array, GucSource source)
 		{
 			ereport(WARNING,
 					(errcode(ERRCODE_SYNTAX_ERROR),
-			  errmsg("could not parse setting for parameter \"%s\"", name)));
+					 errmsg("could not parse setting for parameter \"%s\"",
+							name)));
 			free(name);
 			continue;
 		}
 
-		/*
-		 * We process all these options at SUSET level.  We assume that the
-		 * right to insert an option into pg_database or pg_authid was checked
-		 * when it was inserted.
-		 */
-		SetConfigOption(name, value, PGC_SUSET, source);
+		(void) set_config_option(name, value, context, source, isLocal, true);
 
 		free(name);
 		if (value)
@@ -6313,6 +6441,8 @@ assign_log_destination(const char *value, bool doit, GucSource source)
 
 		if (pg_strcasecmp(tok, "stderr") == 0)
 			newlogdest |= LOG_DESTINATION_STDERR;
+		else if (pg_strcasecmp(tok, "csvlog") == 0)
+           newlogdest |= LOG_DESTINATION_CSVLOG;
 #ifdef HAVE_SYSLOG
 		else if (pg_strcasecmp(tok, "syslog") == 0)
 			newlogdest |= LOG_DESTINATION_SYSLOG;

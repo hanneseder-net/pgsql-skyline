@@ -7,7 +7,7 @@
  * Portions Copyright (c) 1996-2007, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
- * $PostgreSQL: pgsql/src/include/nodes/parsenodes.h,v 1.350 2007/07/17 05:02:02 neilc Exp $
+ * $PostgreSQL: pgsql/src/include/nodes/parsenodes.h,v 1.353 2007/09/03 18:46:30 tgl Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -913,6 +913,10 @@ typedef enum ObjectType
 	OBJECT_TABLE,
 	OBJECT_TABLESPACE,
 	OBJECT_TRIGGER,
+	OBJECT_TSCONFIGURATION,
+	OBJECT_TSDICTIONARY,
+	OBJECT_TSPARSER,
+	OBJECT_TSTEMPLATE,
 	OBJECT_TYPE,
 	OBJECT_VIEW
 } ObjectType;
@@ -1122,6 +1126,42 @@ typedef struct CopyStmt
 	char	   *filename;		/* filename, or NULL for STDIN/STDOUT */
 	List	   *options;		/* List of DefElem nodes */
 } CopyStmt;
+
+/* ----------------------
+ * SET Statement (includes RESET)
+ *
+ * "SET var TO DEFAULT" and "RESET var" are semantically equivalent, but we
+ * preserve the distinction in VariableSetKind for CreateCommandTag().
+ * ----------------------
+ */
+typedef enum
+{
+	VAR_SET_VALUE,				/* SET var = value */
+	VAR_SET_DEFAULT,			/* SET var TO DEFAULT */
+	VAR_SET_CURRENT,			/* SET var FROM CURRENT */
+	VAR_SET_MULTI,				/* special case for SET TRANSACTION ... */
+	VAR_RESET,					/* RESET var */
+	VAR_RESET_ALL				/* RESET ALL */
+} VariableSetKind;
+
+typedef struct VariableSetStmt
+{
+	NodeTag		type;
+	VariableSetKind kind;
+	char	   *name;			/* variable to be set */
+	List	   *args;			/* List of A_Const nodes */
+	bool		is_local;		/* SET LOCAL? */
+} VariableSetStmt;
+
+/* ----------------------
+ * Show Statement
+ * ----------------------
+ */
+typedef struct VariableShowStmt
+{
+	NodeTag		type;
+	char	   *name;
+} VariableShowStmt;
 
 /* ----------------------
  *		Create Table Statement
@@ -1337,8 +1377,7 @@ typedef struct AlterRoleSetStmt
 {
 	NodeTag		type;
 	char	   *role;			/* role name */
-	char	   *variable;		/* GUC variable name */
-	List	   *value;			/* value for variable, or NIL for Reset */
+	VariableSetStmt *setstmt;	/* SET or RESET subcommand */
 } AlterRoleSetStmt;
 
 typedef struct DropRoleStmt
@@ -1854,9 +1893,8 @@ typedef struct AlterDatabaseStmt
 typedef struct AlterDatabaseSetStmt
 {
 	NodeTag		type;
-	char	   *dbname;
-	char	   *variable;
-	List	   *value;
+	char	   *dbname;			/* database name */
+	VariableSetStmt *setstmt;	/* SET or RESET subcommand */
 } AlterDatabaseSetStmt;
 
 /* ----------------------
@@ -1920,41 +1958,6 @@ typedef struct CheckPointStmt
 {
 	NodeTag		type;
 } CheckPointStmt;
-
-/* ----------------------
- * Set Statement
- * ----------------------
- */
-
-typedef struct VariableSetStmt
-{
-	NodeTag		type;
-	char	   *name;
-	List	   *args;
-	bool		is_local;		/* SET LOCAL */
-} VariableSetStmt;
-
-/* ----------------------
- * Show Statement
- * ----------------------
- */
-
-typedef struct VariableShowStmt
-{
-	NodeTag		type;
-	char	   *name;
-} VariableShowStmt;
-
-/* ----------------------
- * Reset Statement
- * ----------------------
- */
-
-typedef struct VariableResetStmt
-{
-	NodeTag		type;
-	char	   *name;
-} VariableResetStmt;
 
 /* ----------------------
  * Discard Statement
@@ -2109,5 +2112,34 @@ typedef struct ReassignOwnedStmt
 	List	   *roles;
 	char	   *newrole;
 } ReassignOwnedStmt;
+
+/*
+ * TS Dictionary stmts: DefineStmt, RenameStmt and DropStmt are default
+ */
+typedef struct AlterTSDictionaryStmt
+{
+	NodeTag		type;
+	List	   *dictname;		/* qualified name (list of Value strings) */
+	List	   *options;		/* List of DefElem nodes */
+} AlterTSDictionaryStmt;
+
+/*
+ * TS Configuration stmts: DefineStmt, RenameStmt and DropStmt are default
+ */
+typedef struct AlterTSConfigurationStmt
+{
+	NodeTag		type;
+	List	   *cfgname;		/* qualified name (list of Value strings) */
+
+	/*
+	 * dicts will be non-NIL if ADD/ALTER MAPPING was specified.
+	 * If dicts is NIL, but tokentype isn't, DROP MAPPING was specified.
+	 */
+	List		*tokentype;		/* list of Value strings */
+	List		*dicts;			/* list of list of Value strings */
+	bool		 override;		/* if true - remove old variant */
+	bool		 replace;		/* if true - replace dictionary by another */
+	bool		 missing_ok;	/* for DROP - skip error if missing? */
+} AlterTSConfigurationStmt;
 
 #endif   /* PARSENODES_H */

@@ -6423,7 +6423,7 @@ having_clause:
 		;
 
 skyline_clause:
-			SKYLINE	BY skyline_by_list opt_skyline_options
+			SKYLINE	skyline_prep skyline_by_list opt_skyline_options
 				{
 					SkylineByClause *n = makeNode(SkylineByClause);
 					n->skyline_by_list = $3; 
@@ -6431,7 +6431,7 @@ skyline_clause:
 					n->skyline_by_options = $4;
 					$$ = (Node *)n;
 				}
-			| SKYLINE BY DISTINCT skyline_by_list opt_skyline_options
+			| SKYLINE skyline_prep DISTINCT skyline_by_list opt_skyline_options
 				{
 					SkylineByClause *n = makeNode(SkylineByClause);
 					n->skyline_by_list = $4;
@@ -6440,6 +6440,12 @@ skyline_clause:
 					$$ = (Node *)n;
 				}
 			| /*EMPTY*/								{ $$ = NULL; }
+		;
+
+skyline_prep:
+			BY
+			| ON
+			| OF
 		;
 		
 skyline_by_list:

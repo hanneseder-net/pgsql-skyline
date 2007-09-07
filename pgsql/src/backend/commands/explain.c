@@ -716,6 +716,10 @@ explain_outNode(StringInfo str,
 								 quote_identifier(valsname));
 			}
 			break;
+		case T_Skyline:
+			appendStringInfo(str, " using method %s", 
+							 skyline_method_name(((Skyline *) plan)->skyline_method));
+			break;
 		default:
 			break;
 	}

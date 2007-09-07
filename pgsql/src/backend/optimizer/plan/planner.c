@@ -816,6 +816,7 @@ grouping_planner(PlannerInfo *root, double tuple_fraction)
 		bool		need_tlist_eval = true;
 		QualCost	tlist_cost;
 		Path	   *cheapest_path;
+		Path	   *skyline_path;
 		Path	   *sorted_path;
 		Path	   *best_path;
 		long		numGroups = 0;
@@ -900,7 +901,7 @@ grouping_planner(PlannerInfo *root, double tuple_fraction)
 		 * the pathkeys.
 		 */
 		query_planner(root, sub_tlist, tuple_fraction, limit_tuples,
-					  &cheapest_path, &sorted_path, &dNumGroups);
+					  &cheapest_path, &sorted_path, &skyline_path, &dNumGroups);
 
 		group_pathkeys = root->group_pathkeys;
 		skyline_pathkeys = root->skyline_pathkeys;
@@ -928,8 +929,23 @@ grouping_planner(PlannerInfo *root, double tuple_fraction)
 		 * always read all the input tuples, so use the cheapest-total path.
 		 * Otherwise, trust query_planner's decision about which to use.
 		 */
-		if (use_hashed_grouping || !sorted_path)
+		if (use_hashed_grouping || !sorted_path || !skyline_path)
 			best_path = cheapest_path;
+		else if (parse->skylineClause && skyline_path)
+		{
+			SkylineMethod skyline_method = skyline_method_from_options((SkylineClause*)parse->skylineClause);
+			int skyline_dim = skyline_get_dim((SkylineClause*)parse->skylineClause);
+
+			if (skyline_dim == 2 && (skyline_method == SM_UNKNOWN || skyline_method == SM_2DIM_PRESORT))
+				best_path = skyline_path;
+			else
+			{
+				if (sorted_path)
+					best_path = sorted_path;
+				else
+					best_path = cheapest_path;
+			}
+		}
 		else
 			best_path = sorted_path;
 
@@ -1142,12 +1158,13 @@ grouping_planner(PlannerInfo *root, double tuple_fraction)
 	if (parse->skylineClause)
 	{
 		/* FIXME: refactor this, the method needs to be known here, maybe store it in the analyzed clause */
-		SkylineMethod skyline_method = skyline_choose_method((SkylineClause*)parse->skylineClause);
+		bool has_matching_path = contains_skyline_pathkeys(root->skyline_pathkeys, current_pathkeys);
+		SkylineMethod skyline_method = skyline_choose_method((SkylineClause*)parse->skylineClause, has_matching_path);
 		Assert(skyline_method != SM_UNKNOWN);
 
 		if (skyline_method == SM_2DIM_PRESORT)
 		{
-			if (!contains_skyline_pathkeys(root->skyline_pathkeys, current_pathkeys))
+			if (!has_matching_path)
 			{
 				result_plan = (Plan *) make_sort_from_pathkeys(root,
 															   result_plan,

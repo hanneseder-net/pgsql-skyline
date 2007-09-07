@@ -83,13 +83,14 @@
 void
 query_planner(PlannerInfo *root, List *tlist,
 			  double tuple_fraction, double limit_tuples,
-			  Path **cheapest_path, Path **sorted_path,
+			  Path **cheapest_path, Path **sorted_path, Path **skyline_path,
 			  double *num_groups)
 {
 	Query	   *parse = root->parse;
 	List	   *joinlist;
 	RelOptInfo *final_rel;
 	Path	   *cheapestpath;
+	Path	   *skylinepath;
 	Path	   *sortedpath;
 	Index		rti;
 	ListCell   *lc;
@@ -110,6 +111,7 @@ query_planner(PlannerInfo *root, List *tlist,
 		*cheapest_path = (Path *)
 			create_result_path((List *) parse->jointree->quals);
 		*sorted_path = NULL;
+		*skyline_path = NULL;
 		/*
 		 * We still are required to canonicalize any pathkeys, in case
 		 * it's something like "SELECT 2+2 ORDER BY 1".
@@ -344,23 +346,22 @@ query_planner(PlannerInfo *root, List *tlist,
 	 */
 	cheapestpath = final_rel->cheapest_total_path;
 
-	sortedpath = 
+	skylinepath = 
 		get_cheapest_fractional_path_for_skyline_pathkeys(final_rel->pathlist,
 														  root->query_pathkeys,
 														  tuple_fraction);
 
-	/* TODO: modify skyline_pathkeys if matching pathkey was found */
-//	if (sortedpath == NULL)
-//	{
 	sortedpath =
 		get_cheapest_fractional_path_for_pathkeys(final_rel->pathlist,
 												  root->query_pathkeys,
 												  tuple_fraction);
-//	}
 
 	/* Don't return same path in both guises; just wastes effort */
 	if (sortedpath == cheapestpath)
 		sortedpath = NULL;
+
+	if (skylinepath == cheapestpath)
+		skylinepath = NULL;
 
 	/*
 	 * Forget about the presorted path if it would be cheaper to sort the
@@ -398,4 +399,5 @@ query_planner(PlannerInfo *root, List *tlist,
 
 	*cheapest_path = cheapestpath;
 	*sorted_path = sortedpath;
+	*skyline_path = skylinepath;
 }

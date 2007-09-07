@@ -22,7 +22,7 @@
  */
 extern void query_planner(PlannerInfo *root, List *tlist,
 			  double tuple_fraction, double limit_tuples,
-			  Path **cheapest_path, Path **sorted_path,
+			  Path **cheapest_path, Path **sorted_path, Path **skyline_path,
 			  double *num_groups);
 
 /*

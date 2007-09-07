@@ -92,7 +92,7 @@ skyline_option_get_int(List *skyline_by_options, char *name, int *value)
 	return false;
 }
 
-static SkylineMethod
+SkylineMethod
 skyline_method_from_options(SkylineClause* skyline_clause)
 {
 	SkylineMethod skyline_method = SM_UNKNOWN;
@@ -131,11 +131,20 @@ skyline_method_from_options(SkylineClause* skyline_clause)
 	return skyline_method;
 }
 
+int
+skyline_get_dim(SkylineClause * skyline_clause)
+{
+	if (skyline_clause == NULL)
+		return 0;
+	else
+		return list_length(skyline_clause->skyline_by_list);
+}
+
 SkylineMethod
-skyline_choose_method(SkylineClause * skyline_clause)
+skyline_choose_method(SkylineClause * skyline_clause, bool has_matching_path)
 {
 	SkylineMethod	skyline_method = SM_UNKNOWN;
-	int				skyline_dim = list_length(skyline_clause->skyline_by_list);
+	int				skyline_dim = skyline_get_dim(skyline_clause);
 
 	skyline_method = skyline_method_from_options(skyline_clause);
 
@@ -146,6 +155,8 @@ skyline_choose_method(SkylineClause * skyline_clause)
 			skyline_method = SM_1DIM;
 		else if (skyline_dim == 1 && skyline_clause->skyline_distinct)
 			skyline_method = SM_1DIM_DISTINCT;
+		else if (skyline_dim == 2 && has_matching_path)
+			skyline_method = SM_2DIM_PRESORT;
 		else
 			skyline_method = SM_BLOCKNESTEDLOOP;
 	}
@@ -193,5 +204,28 @@ skyline_method_preserves_tuple_order(SkylineMethod skyline_method)
 			/* this we drop it on default */
 			elog(WARNING, "FIXME: method `%d' unknown in skyline_method_preserves_tuple_order, assuming false", skyline_method);
 			return false;
+	}
+}
+
+
+const char *
+skyline_method_name(SkylineMethod skyline_method)
+{
+	switch (skyline_method)
+	{
+	case SM_UNKNOWN:
+		return "unknown";
+	case SM_1DIM:
+		return "1dim";
+	case SM_1DIM_DISTINCT:
+		return "1dim distinct";
+	case SM_2DIM_PRESORT:
+		return "2dim presort";
+	case SM_SIMPLENESTEDLOOP:
+		return "snl";
+	case SM_BLOCKNESTEDLOOP:
+		return "bnl";
+	default:
+		return "?";
 	}
 }

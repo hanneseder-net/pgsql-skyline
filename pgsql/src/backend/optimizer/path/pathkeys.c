@@ -867,27 +867,30 @@ make_pathkeys_for_skylineclause(PlannerInfo *root,
 	List	   *pathkeys = NIL;
 	ListCell   *l;
 	
-	foreach(l, skylineclause->skyline_by_list)
+	if (skylineclause != NULL)
 	{
-		SkylineBy  *skylineby = (SkylineBy *) lfirst(l);
-		Expr	   *sortkey;
-		PathKey	   *pathkey;
-
-		sortkey = (Expr *) get_sortgroupclause_expr((SortClause*)skylineby, tlist);
-		pathkey = make_pathkey_from_sortinfo(root,
-											 sortkey,
-											 skylineby->sortop,
-											 skylineby->nulls_first,
-											 canonicalize);
-
-		/* Canonical form eliminates redundant ordering keys */
-		if (canonicalize)
+		foreach(l, skylineclause->skyline_by_list)
 		{
-			if (!pathkey_is_redundant(pathkey, pathkeys))
+			SkylineBy  *skylineby = (SkylineBy *) lfirst(l);
+			Expr	   *sortkey;
+			PathKey	   *pathkey;
+
+			sortkey = (Expr *) get_sortgroupclause_expr((SortClause*)skylineby, tlist);
+			pathkey = make_pathkey_from_sortinfo(root,
+												 sortkey,
+												 skylineby->sortop,
+												 skylineby->nulls_first,
+												 canonicalize);
+
+			/* Canonical form eliminates redundant ordering keys */
+			if (canonicalize)
+			{
+				if (!pathkey_is_redundant(pathkey, pathkeys))
+					pathkeys = lappend(pathkeys, pathkey);
+			}
+			else
 				pathkeys = lappend(pathkeys, pathkey);
 		}
-		else
-			pathkeys = lappend(pathkeys, pathkey);
 	}
 	return pathkeys;
 }

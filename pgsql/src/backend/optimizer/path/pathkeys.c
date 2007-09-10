@@ -337,31 +337,42 @@ compare_pathkeys(List *keys1, List *keys2)
 }
 
 bool
-contains_skyline_pathkeys(List *keys1, List *keys2)
+skyline_pathkeys_contained_in(List *keys1, List *keys2, int *nuseful)
 {
 	ListCell   *key1,
 			   *key2;
+	int			maxidx = 0;
+	bool		contained = true; /* It's contained if it's empty but that will never happen */
 
 	foreach(key1, keys1)
 	{
-		bool contained = false;
+		int	 idx = 0;
 		PathKey	   *pathkey1 = (PathKey *) lfirst(key1);
+
+		contained = false;
 
 		foreach(key2, keys2)
 		{
 			PathKey	   *pathkey2 = (PathKey *) lfirst(key2);
+			++idx;
 
 			if (pathkey1 == pathkey2)
 			{
+				if (maxidx < idx)
+					maxidx = idx;
+
 				contained = true;
 				break;
 			}
 		}
 		if (!contained)
-			return false;
+			break;
 	}
 
-	return true;
+	if (nuseful)
+		*nuseful = maxidx;
+
+	return contained;
 }
 
 /*
@@ -476,7 +487,7 @@ get_cheapest_fractional_path_for_skyline_pathkeys(List *paths,
 			compare_fractional_path_costs(matched_path, path, fraction) <= 0)
 			continue;
 
-		if (contains_skyline_pathkeys(pathkeys, path->pathkeys))
+		if (skyline_pathkeys_contained_in(pathkeys, path->pathkeys, NULL))
 			matched_path = path;
 	}
 	return matched_path;
@@ -1404,6 +1415,8 @@ pathkeys_useful_for_merging(PlannerInfo *root, RelOptInfo *rel, List *pathkeys)
 int
 pathkeys_useful_for_ordering(PlannerInfo *root, List *pathkeys)
 {
+	int nuseful;
+
 	if (root->query_pathkeys == NIL)
 		return 0;				/* no special ordering requested */
 
@@ -1414,6 +1427,12 @@ pathkeys_useful_for_ordering(PlannerInfo *root, List *pathkeys)
 	{
 		/* It's useful ... or at least the first N keys are */
 		return list_length(root->query_pathkeys);
+	}
+
+	if (skyline_pathkeys_contained_in(root->skyline_pathkeys, pathkeys, &nuseful))
+	{
+		/* It's useful ... or at least the first nuseful keys are */
+		return nuseful;
 	}
 
 	return 0;					/* path ordering not useful */

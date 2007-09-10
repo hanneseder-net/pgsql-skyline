@@ -93,7 +93,7 @@ skyline_option_get_int(List *skyline_by_options, char *name, int *value)
 }
 
 SkylineMethod
-skyline_method_from_options(SkylineClause* skyline_clause)
+skyline_method_forced_by_options(SkylineClause* skyline_clause)
 {
 	SkylineMethod skyline_method = SM_UNKNOWN;
 
@@ -146,7 +146,7 @@ skyline_choose_method(SkylineClause * skyline_clause, bool has_matching_path)
 	SkylineMethod	skyline_method = SM_UNKNOWN;
 	int				skyline_dim = skyline_get_dim(skyline_clause);
 
-	skyline_method = skyline_method_from_options(skyline_clause);
+	skyline_method = skyline_method_forced_by_options(skyline_clause);
 
 	if (skyline_method == SM_UNKNOWN)
 	{

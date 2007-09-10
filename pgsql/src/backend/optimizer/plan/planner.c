@@ -925,15 +925,14 @@ grouping_planner(PlannerInfo *root, double tuple_fraction)
 		}
 
 		/*
-		 * Select the best path.  If we are doing hashed grouping, we will
 		 * always read all the input tuples, so use the cheapest-total path.
 		 * Otherwise, trust query_planner's decision about which to use.
 		 */
-		if (use_hashed_grouping || !sorted_path || !skyline_path)
+		if (use_hashed_grouping || (!sorted_path && !skyline_path))
 			best_path = cheapest_path;
 		else if (parse->skylineClause && skyline_path)
 		{
-			SkylineMethod skyline_method = skyline_method_from_options((SkylineClause*)parse->skylineClause);
+			SkylineMethod skyline_method = skyline_method_forced_by_options((SkylineClause*)parse->skylineClause);
 			int skyline_dim = skyline_get_dim((SkylineClause*)parse->skylineClause);
 
 			if (skyline_dim == 2 && (skyline_method == SM_UNKNOWN || skyline_method == SM_2DIM_PRESORT))
@@ -1158,7 +1157,7 @@ grouping_planner(PlannerInfo *root, double tuple_fraction)
 	if (parse->skylineClause)
 	{
 		/* FIXME: refactor this, the method needs to be known here, maybe store it in the analyzed clause */
-		bool has_matching_path = contains_skyline_pathkeys(root->skyline_pathkeys, current_pathkeys);
+		bool has_matching_path = skyline_pathkeys_contained_in(root->skyline_pathkeys, current_pathkeys, NULL);
 		SkylineMethod skyline_method = skyline_choose_method((SkylineClause*)parse->skylineClause, has_matching_path);
 		Assert(skyline_method != SM_UNKNOWN);
 

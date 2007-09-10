@@ -360,6 +360,9 @@ query_planner(PlannerInfo *root, List *tlist,
 	if (sortedpath == cheapestpath)
 		sortedpath = NULL;
 
+	if (sortedpath == skylinepath)
+		sortedpath = NULL;
+
 	if (skylinepath == cheapestpath)
 		skylinepath = NULL;
 

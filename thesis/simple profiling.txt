@@ -1,0 +1,54 @@
+explain analyze select * from a2d100 skyline by (d1), (d2);
+explain analyze select * from a2d1000 skyline by (d1), (d2);
+explain analyze select * from a2d10000 skyline by (d1), (d2);
+explain analyze select * from a2d100000 skyline by (d1), (d2);
+explain analyze select * from a2d1000000 skyline by (d1), (d2);
+
+explain analyze select * from a3d100 skyline by (d1), (d2), (d3);
+explain analyze select * from a3d1000 skyline by (d1), (d2), (d3);
+explain analyze select * from a3d10000 skyline by (d1), (d2), (d3);
+explain analyze select * from a3d100000 skyline by (d1), (d2), (d3);
+explain analyze select * from a3d1000000 skyline by (d1), (d2), (d3);
+
+explain analyze select * from a4d100 skyline by (d1), (d2), (d3), (d4);
+explain analyze select * from a4d1000 skyline by (d1), (d2), (d3), (d4);
+explain analyze select * from a4d10000 skyline by (d1), (d2), (d3), (d4);
+explain analyze select * from a4d100000 skyline by (d1), (d2), (d3), (d4);
+explain analyze select * from a4d1000000 skyline by (d1), (d2), (d3), (d4);
+
+explain analyze select * from c2d100 skyline by (d1), (d2);
+explain analyze select * from c2d1000 skyline by (d1), (d2);
+explain analyze select * from c2d10000 skyline by (d1), (d2);
+explain analyze select * from c2d100000 skyline by (d1), (d2);
+explain analyze select * from c2d1000000 skyline by (d1), (d2);
+
+explain analyze select * from c3d100 skyline by (d1), (d2), (d3);
+explain analyze select * from c3d1000 skyline by (d1), (d2), (d3);
+explain analyze select * from c3d10000 skyline by (d1), (d2), (d3);
+explain analyze select * from c3d100000 skyline by (d1), (d2), (d3);
+explain analyze select * from c3d1000000 skyline by (d1), (d2), (d3);
+
+explain analyze select * from c4d100 skyline by (d1), (d2), (d3), (d4);
+explain analyze select * from c4d1000 skyline by (d1), (d2), (d3), (d4);
+explain analyze select * from c4d10000 skyline by (d1), (d2), (d3), (d4);
+explain analyze select * from c4d100000 skyline by (d1), (d2), (d3), (d4);
+explain analyze select * from c4d1000000 skyline by (d1), (d2), (d3), (d4);
+
+explain analyze select * from e2d100 skyline by (d1), (d2);
+explain analyze select * from e2d1000 skyline by (d1), (d2);
+explain analyze select * from e2d10000 skyline by (d1), (d2);
+explain analyze select * from e2d100000 skyline by (d1), (d2);
+explain analyze select * from e2d1000000 skyline by (d1), (d2);
+
+explain analyze select * from e3d100 skyline by (d1), (d2), (d3);
+explain analyze select * from e3d1000 skyline by (d1), (d2), (d3);
+explain analyze select * from e3d10000 skyline by (d1), (d2), (d3);
+explain analyze select * from e3d100000 skyline by (d1), (d2), (d3);
+explain analyze select * from e3d1000000 skyline by (d1), (d2), (d3);
+
+explain analyze select * from e4d100 skyline by (d1), (d2), (d3), (d4);
+explain analyze select * from e4d1000 skyline by (d1), (d2), (d3), (d4);
+explain analyze select * from e4d10000 skyline by (d1), (d2), (d3), (d4);
+explain analyze select * from e4d100000 skyline by (d1), (d2), (d3), (d4);
+explain analyze select * from e4d1000000 skyline by (d1), (d2), (d3), (d4);
+

@@ -17,6 +17,7 @@
 #include "postgres.h"
 
 #include <limits.h>
+#include <math.h>
 
 #include "access/skey.h"
 #include "nodes/makefuncs.h"
@@ -2689,6 +2690,33 @@ add_sort_column(AttrNumber colIdx, Oid sortOp, bool nulls_first,
 	return numCols + 1;
 }
 
+static double
+factorial(int d)
+{
+	// FIXME: take care for over runs
+	double res = 1.0;
+	for ( ; d > 1 ; d--)
+		res *= d;
+
+	return res;
+}
+// FIXME: ticket:34
+static double
+estimate_skyline_cardinality(double n, int d)
+{
+	double res;
+
+	if (n <= 1.0)
+		return 1.0;
+
+	res = pow(log(n+1.0), d-1) / factorial(d-1);
+
+	/* to avoid patological cases when n is small */
+	if (res > n)
+		res = n;
+
+	return res;
+}
 
 Skyline *
 make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause, SkylineMethod skyline_method)
@@ -2701,11 +2729,6 @@ make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause, SkylineMet
 	int			numskylinecols;
 	SkylineClause   *sc = (SkylineClause*)skyline_clause;
 	List	   *skylinecls = sc->skyline_by_list;
-
-	copy_plan_costsize(plan, outertree); /* only care about copying size */
-
-	// FIXME: ticket:34
-	plan->plan_rows = plan->plan_rows / 10;
 
 	/* FIXME: add costs for skyline */
 	plan->targetlist = outertree->targetlist;
@@ -2735,6 +2758,10 @@ make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause, SkylineMet
 	}
 	
 	node->numCols = numskylinecols;
+
+	copy_plan_costsize(plan, outertree); /* only care about copying size */
+
+	plan->plan_rows = estimate_skyline_cardinality(plan->plan_rows, numskylinecols);
 
 	node->skyline_distinct = sc->skyline_distinct;
 	node->skyline_by_options = sc->skyline_by_options;

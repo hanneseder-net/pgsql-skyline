@@ -462,7 +462,8 @@ typedef enum SkylineMethod
 	SM_1DIM_DISTINCT,
 	SM_2DIM_PRESORT,
 	SM_SIMPLENESTEDLOOP,
-	SM_BLOCKNESTEDLOOP
+	SM_BLOCKNESTEDLOOP,
+	SM_SFS
 } SkylineMethod;
 
 typedef struct Skyline

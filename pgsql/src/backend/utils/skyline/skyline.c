@@ -23,6 +23,7 @@ skyline_options[] = {
 	{ "nl"				, SOT_METHOD, SM_SIMPLENESTEDLOOP },
 	{ "presort"			, SOT_METHOD, SM_2DIM_PRESORT },
 	{ "ps"				, SOT_METHOD, SM_2DIM_PRESORT },
+	{ "sfs"				, SOT_METHOD, SM_SFS },
 	{ "simplenestedloop", SOT_METHOD, SM_SIMPLENESTEDLOOP },
 	{ "slots"			, SOT_PARAM	, SM_UNKNOWN },
 	{ "snl"				, SOT_METHOD, SM_SIMPLENESTEDLOOP },
@@ -157,6 +158,8 @@ skyline_choose_method(SkylineClause * skyline_clause, bool has_matching_path)
 			skyline_method = SM_1DIM_DISTINCT;
 		else if (skyline_dim == 2 && has_matching_path)
 			skyline_method = SM_2DIM_PRESORT;
+		else if (skyline_dim >= 2 && has_matching_path)
+			skyline_method = SM_SFS;
 		else
 			skyline_method = SM_BLOCKNESTEDLOOP;
 	}
@@ -174,6 +177,9 @@ skyline_choose_method(SkylineClause * skyline_clause, bool has_matching_path)
 	return skyline_method;
 }
 
+/*
+ * This function is used to decide in the planner of the current_paths can be kept
+ */
 bool
 skyline_method_preserves_tuple_order(SkylineMethod skyline_method)
 {
@@ -200,6 +206,11 @@ skyline_method_preserves_tuple_order(SkylineMethod skyline_method)
 			 * is preserved
 			 */
 			return false;
+		case SM_SFS:
+			/* the order of the tuples is not changed by the Sort Filter Skyline
+			 * method, so the current_pathkeys can be kept
+			 */
+			return true;
 		default:
 			/* this we drop it on default */
 			elog(WARNING, "FIXME: method `%d' unknown in skyline_method_preserves_tuple_order, assuming false", skyline_method);
@@ -225,6 +236,8 @@ skyline_method_name(SkylineMethod skyline_method)
 		return "snl";
 	case SM_BLOCKNESTEDLOOP:
 		return "bnl";
+	case SM_SFS:
+		return "sfs";
 	default:
 		return "?";
 	}

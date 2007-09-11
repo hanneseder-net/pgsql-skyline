@@ -937,6 +937,8 @@ grouping_planner(PlannerInfo *root, double tuple_fraction)
 
 			if (skyline_dim == 2 && (skyline_method == SM_UNKNOWN || skyline_method == SM_2DIM_PRESORT))
 				best_path = skyline_path;
+			else if (skyline_dim >= 2 && (skyline_method == SM_UNKNOWN || skyline_method == SM_SFS))
+				best_path = skyline_path;
 			else
 			{
 				if (sorted_path)
@@ -1161,7 +1163,7 @@ grouping_planner(PlannerInfo *root, double tuple_fraction)
 		SkylineMethod skyline_method = skyline_choose_method((SkylineClause*)parse->skylineClause, has_matching_path);
 		Assert(skyline_method != SM_UNKNOWN);
 
-		if (skyline_method == SM_2DIM_PRESORT)
+		if (skyline_method == SM_2DIM_PRESORT || skyline_method == SM_SFS)
 		{
 			if (!has_matching_path)
 			{

@@ -914,6 +914,13 @@ cost_valuesscan(Path *path, PlannerInfo *root, RelOptInfo *baserel)
 	path->total_cost = startup_cost + run_cost;
 }
 
+void
+cost_skyline(Path *path, PlannerInfo *root,  Cost input_cost, double input_tuples, double output_tuples, int skyline_dim, SkylineMethod skyline_method)
+{
+	Cost	startup_cost = 0;
+	// TODO
+}
+
 /*
  * cost_sort
  *	  Determines and returns the cost of sorting a relation, including

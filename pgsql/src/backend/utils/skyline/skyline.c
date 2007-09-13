@@ -17,19 +17,20 @@ typedef struct {
 /* NOTE: keep this list sorted, we are using bsearch */
 static SkylineAnOption
 skyline_options[] = {
-	{ "blocknestedloop"	, SOT_METHOD, SM_BLOCKNESTEDLOOP },
-	{ "bnl"				, SOT_METHOD, SM_BLOCKNESTEDLOOP } ,
-	{ "nestedloop"		, SOT_METHOD, SM_SIMPLENESTEDLOOP },
-	{ "nl"				, SOT_METHOD, SM_SIMPLENESTEDLOOP },
-	{ "presort"			, SOT_METHOD, SM_2DIM_PRESORT },
-	{ "ps"				, SOT_METHOD, SM_2DIM_PRESORT },
-	{ "sfs"				, SOT_METHOD, SM_SFS },
-	{ "simplenestedloop", SOT_METHOD, SM_SIMPLENESTEDLOOP },
-	{ "slots"			, SOT_PARAM	, SM_UNKNOWN },
-	{ "snl"				, SOT_METHOD, SM_SIMPLENESTEDLOOP },
-	{ "window"			, SOT_PARAM	, SM_UNKNOWN },
-	{ "windowsize"		, SOT_PARAM	, SM_UNKNOWN },
-	{ "windowslots"		, SOT_PARAM	, SM_UNKNOWN },
+	{ "blocknestedloop"			, SOT_METHOD, SM_BLOCKNESTEDLOOP },
+	{ "bnl"						, SOT_METHOD, SM_BLOCKNESTEDLOOP } ,
+	{ "materializednestedloop"	, SOT_METHOD, SM_MATERIALIZEDNESTEDLOOP },
+	{ "mnl"						, SOT_METHOD, SM_MATERIALIZEDNESTEDLOOP },
+	{ "nestedloop"				, SOT_METHOD, SM_SIMPLENESTEDLOOP },
+	{ "nl"						, SOT_METHOD, SM_SIMPLENESTEDLOOP },
+	{ "presort"					, SOT_METHOD, SM_2DIM_PRESORT },
+	{ "ps"						, SOT_METHOD, SM_2DIM_PRESORT },
+	{ "sfs"						, SOT_METHOD, SM_SFS },
+	{ "slots"					, SOT_PARAM	, SM_UNKNOWN },
+	{ "snl"						, SOT_METHOD, SM_SIMPLENESTEDLOOP },
+	{ "window"					, SOT_PARAM	, SM_UNKNOWN },
+	{ "windowsize"				, SOT_PARAM	, SM_UNKNOWN },
+	{ "windowslots"				, SOT_PARAM	, SM_UNKNOWN },
 };
 
 static int
@@ -188,6 +189,7 @@ skyline_method_preserves_tuple_order(SkylineMethod skyline_method)
 		case SM_1DIM:
 		case SM_1DIM_DISTINCT:
 		case SM_SIMPLENESTEDLOOP:
+		case SM_MATERIALIZEDNESTEDLOOP:
 			/* these methods preserve the relative order of the tuples,
 			 * so e.g. we may keep the current_pathkeys in the grouping_planner
 			 */
@@ -231,9 +233,11 @@ skyline_method_name(SkylineMethod skyline_method)
 	case SM_1DIM_DISTINCT:
 		return "1dim distinct";
 	case SM_2DIM_PRESORT:
-		return "2dim presort";
+		return "presort";
 	case SM_SIMPLENESTEDLOOP:
 		return "snl";
+	case SM_MATERIALIZEDNESTEDLOOP:
+		return "mnl";
 	case SM_BLOCKNESTEDLOOP:
 		return "bnl";
 	case SM_SFS:

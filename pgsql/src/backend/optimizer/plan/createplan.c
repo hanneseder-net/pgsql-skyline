@@ -2733,7 +2733,13 @@ make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause, SkylineMet
 	plan->targetlist = outertree->targetlist;
 	plan->qual = NIL;
 	plan->lefttree = outertree;
-	plan->righttree = NULL;
+
+	if (skyline_method == SM_SIMPLENESTEDLOOP)
+		// FIXME: this does not realy work, the references in a SeqScan could be cyclic and
+		// result a MemoryLeak or/and BufferPinCount error.
+		plan->righttree = (Plan *)copyObject(outertree);
+	else
+		plan->righttree = NULL;
 
 	numskylinecols = list_length(skylinecls);
 	
@@ -2758,9 +2764,16 @@ make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause, SkylineMet
 	
 	node->numCols = numskylinecols;
 
-	/* FIXME: add costs for skyline */
 	copy_plan_costsize(plan, outertree); /* only care about copying size */
-	plan->plan_rows = estimate_skyline_cardinality(plan->plan_rows, numskylinecols);
+	plan->plan_rows = estimate_skyline_cardinality(outertree->plan_rows, numskylinecols);
+	{
+		Path	path; /* just a dummy */
+
+		cost_skyline(&path, root, outertree->plan_rows, 0 /* FIXME: input_cost */, plan->plan_rows, numskylinecols, skyline_method);
+
+		plan->startup_cost += path.startup_cost;
+		plan->total_cost += path.total_cost;
+	}
 
 	node->skyline_distinct = sc->skyline_distinct;
 	node->skyline_by_options = sc->skyline_by_options;

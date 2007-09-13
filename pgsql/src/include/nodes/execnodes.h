@@ -1345,7 +1345,7 @@ typedef struct SkylineState
 	FmgrInfo   *compareOpFn;	/* compare funtions */
 	int		   *compareFlags;
 
-	int64		sl_pos;			/* used for simple nested loop */
+	int64		sl_pos;			/* used for materialized nested loop */
 
 	Tuplestorestate	*tuplestorestate; /* used for 1d distinct */
 

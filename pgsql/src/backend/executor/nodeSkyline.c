@@ -1,3 +1,20 @@
+/*-------------------------------------------------------------------------
+ *
+ * nodeSkyline.c
+ *	  Routines to handle skyline nodes (used for queries with SKYLINE BY clause).
+ *
+ * Portions Copyright (c) 2007, PostgreSQL Global Development Group
+ *
+ *
+ * DESCRIPTION
+ *    FIXME
+ *
+ * IDENTIFICATION
+ *	  $PostgreSQL: $
+ *
+ *-------------------------------------------------------------------------
+ */
+
 #include "postgres.h"
 
 #include "access/nbtree.h"
@@ -226,12 +243,11 @@ ExecInitSkyline(Skyline *node, EState *estate, int eflags)
 	 */
 
 #define SKYLINE_NSLOTS 3
-#if 0
+
 	/*
 	 * create expression context
 	 */
 	ExecAssignExprContext(estate, &slstate->ss.ps);
-#endif
 
 	/*
 	 * tuple table initialization
@@ -280,7 +296,7 @@ ExecInitSkyline(Skyline *node, EState *estate, int eflags)
 	ExecAssignScanTypeFromOuterPlan(&slstate->ss);
 	/* for extra slot */
 	ExecSetSlotDescriptor(slstate->extraSlot, ExecGetResultType(outerPlanState(slstate)));
-	slstate->ss.ps.ps_ProjInfo = NULL;
+	ExecAssignProjectionInfo(&slstate->ss.ps, NULL);
 
 	ExecSkylineCacheCompareFunctionInfo(slstate, node);
 
@@ -800,7 +816,10 @@ ExecSkyline_SortFilterSkyline(SkylineState *node, Skyline *sl)
 						// slot is not dominated, by one in the window
 						// put it in the window or write it to temp
 						if (tuplewindow_has_freespace(window)) {
-							tuplewindow_puttupleslot(window, slot, node->timestampOut);
+							tuplewindow_puttupleslot(window, slot, 0);
+
+							/* we can pipe out the tuple here */
+							return slot;
 						}
 						else {
 							tuplestore_puttupleslot(node->tempOut, slot);
@@ -853,24 +872,21 @@ ExecSkyline_SortFilterSkyline(SkylineState *node, Skyline *sl)
 
 		case SS_PIPEOUT:
 		case SS_FINALPIPEOUT:
-			if (tuplewindow_ateof(node->window))
+			/* we just clean the window here, the tuple can be piped out in the process state */
+			while (!tuplewindow_ateof(node->window))
 			{
-				if (node->status == SS_PIPEOUT)
-				{
-					node->status = SS_PROCESS;
-				}
-				else
-				{
-					tuplewindow_end(node->window);
-					node->status = SS_DONE;
-					return NULL;
-				}
+				tuplewindow_removecurrent(node->window);
+			}
+
+			if (node->status == SS_PIPEOUT)
+			{
+				node->status = SS_PROCESS;
 			}
 			else
 			{
-				TupleTableSlot *resultSlot = node->ss.ps.ps_ResultTupleSlot;
-				tuplewindow_gettupleslot(node->window, resultSlot, true);
-				return resultSlot;
+				tuplewindow_end(node->window);
+				node->status = SS_DONE;
+				return NULL;
 			}
 			break;
 

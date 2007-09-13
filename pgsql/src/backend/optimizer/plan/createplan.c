@@ -2730,7 +2730,6 @@ make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause, SkylineMet
 	SkylineClause   *sc = (SkylineClause*)skyline_clause;
 	List	   *skylinecls = sc->skyline_by_list;
 
-	/* FIXME: add costs for skyline */
 	plan->targetlist = outertree->targetlist;
 	plan->qual = NIL;
 	plan->lefttree = outertree;
@@ -2759,19 +2758,12 @@ make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause, SkylineMet
 	
 	node->numCols = numskylinecols;
 
+	/* FIXME: add costs for skyline */
 	copy_plan_costsize(plan, outertree); /* only care about copying size */
-
 	plan->plan_rows = estimate_skyline_cardinality(plan->plan_rows, numskylinecols);
 
 	node->skyline_distinct = sc->skyline_distinct;
 	node->skyline_by_options = sc->skyline_by_options;
-
-	if (skyline_method == SM_SIMPLENESTEDLOOP)
-	{
-		/* for the simple nested loop we need a materialize as outer plan */
-		plan->lefttree = (Plan *)make_material(plan->lefttree);
-	}
-
 	node->skyline_method = skyline_method;
 
 	return node; /* to disable use: (Skyline*) lefttree; */

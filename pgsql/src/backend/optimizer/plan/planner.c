@@ -1174,7 +1174,11 @@ grouping_planner(PlannerInfo *root, double tuple_fraction)
 				current_pathkeys = root->skyline_pathkeys;
 			}
 		}
-
+		else if (skyline_method == SM_SIMPLENESTEDLOOP)
+		{
+			/* for the simple nested loop we need a materialize as outer plan */
+			result_plan = (Plan *)make_material(result_plan);
+		}
 		result_plan = (Plan *) make_skyline(root, result_plan, parse->skylineClause, skyline_method);
 
 		if (!skyline_method_preserves_tuple_order(skyline_method))

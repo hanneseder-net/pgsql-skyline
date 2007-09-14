@@ -1,0 +1,170 @@
+*** ../pgsql-cvshead/src/tools/msvc/Install.pm	Fri Sep 14 20:56:16 2007
+--- src/tools/msvc/Install.pm	Fri Sep 14 21:30:09 2007
+***************
+*** 10,15 ****
+--- 10,18 ----
+  use Carp;
+  use File::Basename;
+  use File::Copy;
++ use File::Find;
++ use File::Glob;
++ use File::Spec;
+  
+  use Exporter;
+  our (@ISA,@EXPORT_OK);
+***************
+*** 103,108 ****
+--- 106,146 ----
+      print "\n";
+  }
+  
++ sub FindFiles
++ {
++     my $spec = shift;
++     my $nonrecursive = shift;
++     my $pat = basename($spec);
++     my $dir = dirname($spec);
++ 
++     if ($dir eq '') { $dir = '.'; }
++ 
++     -d $dir || croak "Could not list directory $dir: $!\n";
++ 
++     if ($nonrecursive)
++     {
++         return glob($spec);
++     }
++ 
++     # borrowed from File::DosGlob
++     # escape regex metachars but not glob chars
++     $pat =~ s:([].+^\-\${}[|]):\\$1:g;
++     # and convert DOS-style wildcards to regex
++     $pat =~ s/\*/.*/g;
++     $pat =~ s/\?/.?/g;
++ 
++     $pat = '^' . $pat . '\z';
++ 
++     my @res;
++     find(
++         {
++             wanted => sub { /$pat/s && push (@res, File::Spec->canonpath($File::Find::name)); }
++         },
++         $dir
++     );
++     return @res;
++ }
++ 
+  sub CopySetOfFiles
+  {
+      my $what = shift;
+***************
+*** 110,131 ****
+      my $target = shift;
+      my $silent = shift;
+      my $norecurse = shift;
+-     my $D;
+  
+-     my $subdirs = $norecurse?'':'/s';
+      print "Copying $what" unless ($silent);
+!     open($D, "dir /b $subdirs $spec |") || croak "Could not list $spec\n";
+!     while (<$D>)
+      {
+-         chomp;
+          next if /regress/; # Skip temporary install in regression subdir
+          next if /ecpg.test/; # Skip temporary install in regression subdir
+!         my $tgt = $target . basename($_);
+          print ".";
+!         my $src = $norecurse?(dirname($spec) . '/' . $_):$_;
+!         copy($src, $tgt) || croak "Could not copy $src: $!\n";
+      }
+!     close($D);
+      print "\n";
+  }
+  
+--- 148,166 ----
+      my $target = shift;
+      my $silent = shift;
+      my $norecurse = shift;
+  
+      print "Copying $what" unless ($silent);
+! 
+!     foreach (FindFiles($spec, $norecurse))
+      {
+          next if /regress/; # Skip temporary install in regression subdir
+          next if /ecpg.test/; # Skip temporary install in regression subdir
+!         my $src = $_;
+!         my $tgt = $target . basename($src);
+          print ".";
+!         copy($src, $tgt) || croak "Could not copy $src to $tgt: $!\n";
+      }
+! 
+      print "\n";
+  }
+  
+***************
+*** 415,439 ****
+  {
+      my $target = shift;
+      my $nlspath = shift;
+-     my $D;
+  
+      print "Installing NLS files...";
+      EnsureDirectories($target, "share/locale");
+!     open($D,"dir /b /s nls.mk|") || croak "Could not list nls.mk\n";
+!     while (<$D>)
+      {
+-         chomp;
+          s/nls.mk/po/;
+          my $dir = $_;
+          next unless ($dir =~ /([^\\]+)\\po$/);
+          my $prgm = $1;
+          $prgm = 'postgres' if ($prgm eq 'backend');
+-         my $E;
+-         open($E,"dir /b $dir\\*.po|") || croak "Could not list contents of $_\n";
+  
+!         while (<$E>)
+          {
+-             chomp;
+              my $lang;
+              next unless /^(.*)\.po/;
+              $lang = $1;
+--- 450,469 ----
+  {
+      my $target = shift;
+      my $nlspath = shift;
+  
+      print "Installing NLS files...";
+      EnsureDirectories($target, "share/locale");
+! 
+!     foreach (FindFiles("nls.mk"))
+      {
+          s/nls.mk/po/;
+          my $dir = $_;
+          next unless ($dir =~ /([^\\]+)\\po$/);
+          my $prgm = $1;
+          $prgm = 'postgres' if ($prgm eq 'backend');
+  
+!         foreach (FindFiles("$dir\\*.po", 1))
+          {
+              my $lang;
+              next unless /^(.*)\.po/;
+              $lang = $1;
+***************
+*** 445,453 ****
+                && croak("Could not run msgfmt on $dir\\$_");
+              print ".";
+          }
+-         close($E);
+      }
+!     close($D);
+      print "\n";
+  }
+  
+--- 475,482 ----
+                && croak("Could not run msgfmt on $dir\\$_");
+              print ".";
+          }
+      }
+! 
+      print "\n";
+  }
+  

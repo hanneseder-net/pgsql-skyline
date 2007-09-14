@@ -1,0 +1,10 @@
+from http://www.postgresql.org/docs/faqs.FAQ_DEV.html
+
+1.5)
+
+3. The patch should be generated in contextual diff format (diff -c
+   and should be applicable from the root directory. If you are
+   unfamiliar with this, you might find the script
+   src/tools/make_diff/difforig useful. (Unified diffs are only
+   preferable if the file changes are single-line changes and do not rely
+   on surrounding lines.)

@@ -848,8 +848,8 @@ ExecSkyline_SortFilterSkyline(SkylineState *node, Skyline *sl)
 					if (node->timestampOut == 0)
 					{
 						/* we haven't written any tuples to the temp, so we are done */
-						tuplewindow_rewind(window);
-						node->status = SS_FINALPIPEOUT;
+						node->status = SS_DONE;
+						return NULL;
 					}
 					else
 					{
@@ -860,9 +860,11 @@ ExecSkyline_SortFilterSkyline(SkylineState *node, Skyline *sl)
 						node->tempOut = tuplestore_begin_heap(false, false, 0);
 
 						node->timestampOut = 0;
-
+						
+						/* we just clean the window here, the tuple can be piped out in the process state */
 						tuplewindow_rewind(window);
-						node->status = SS_PIPEOUT;
+						while (!tuplewindow_ateof(node->window))
+							tuplewindow_removecurrent(node->window);
 					}
 					break;
 				}
@@ -926,26 +928,6 @@ ExecSkyline_SortFilterSkyline(SkylineState *node, Skyline *sl)
 				node->timestampOut = 0;
 
 				node->status = SS_PROCESS;
-			}
-			break;
-
-		case SS_PIPEOUT:
-		case SS_FINALPIPEOUT:
-			/* we just clean the window here, the tuple can be piped out in the process state */
-			while (!tuplewindow_ateof(node->window))
-			{
-				tuplewindow_removecurrent(node->window);
-			}
-
-			if (node->status == SS_PIPEOUT)
-			{
-				node->status = SS_PROCESS;
-			}
-			else
-			{
-				tuplewindow_end(node->window);
-				node->status = SS_DONE;
-				return NULL;
 			}
 			break;
 

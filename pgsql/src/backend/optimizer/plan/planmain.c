@@ -371,6 +371,35 @@ query_planner(PlannerInfo *root, List *tlist,
 	 * cheapest-total path.  Here we need consider only the behavior at the
 	 * tuple fraction point.
 	 */
+	if (skylinepath)
+	{
+		Path		path; /* dummy for result of cost_sort */
+
+		if (root->query_pathkeys == NIL ||
+			skyline_pathkeys_contained_in(root->query_pathkeys,
+										  cheapestpath->pathkeys, NULL))
+		{
+			/* No sort needed for cheapest path */
+			path.startup_cost = cheapestpath->startup_cost;
+			path.total_cost = cheapestpath->total_cost;
+		}
+		else
+		{
+			/* Figure cost for sorting */
+			cost_sort(&path, root, root->query_pathkeys,
+					  cheapestpath->total_cost,
+					  final_rel->rows, final_rel->width,
+					  limit_tuples);
+		}
+
+		if (compare_fractional_path_costs(skylinepath, &path,
+										  tuple_fraction) > 0)
+		{
+			/* Presorted path is a loser */
+			skylinepath = NULL;
+		}
+	}
+
 	if (sortedpath)
 	{
 		Path		sort_path;	/* dummy for result of cost_sort */

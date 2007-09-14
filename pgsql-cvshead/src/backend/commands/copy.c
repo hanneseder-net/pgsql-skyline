@@ -8,7 +8,7 @@
  *
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/backend/commands/copy.c,v 1.285 2007/06/20 02:02:49 neilc Exp $
+ *	  $PostgreSQL: pgsql/src/backend/commands/copy.c,v 1.287 2007/09/12 20:49:27 adunstan Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -1678,13 +1678,6 @@ CopyFrom(CopyState cstate)
 	 * rd_newRelfilenodeSubid can be cleared before the end of the transaction.
 	 * However this is OK since at worst we will fail to make the optimization.
 	 *
-	 * When skipping WAL it's entirely possible that COPY itself will write no
-	 * WAL records at all.  This is of concern because RecordTransactionCommit
-	 * might decide it doesn't need to log our eventual commit, which we
-	 * certainly need it to do.  However, we need no special action here for
-	 * that, because if we have a new table or new relfilenode then there
-	 * must have been a WAL-logged pg_class update earlier in the transaction.
-	 *
 	 * Also, if the target file is new-in-transaction, we assume that checking
 	 * FSM for free space is a waste of time, even if we must use WAL because
 	 * of archiving.  This could possibly be wrong, but it's unlikely.
@@ -2692,6 +2685,7 @@ CopyReadAttributesText(CopyState cstate, int maxfields, char **fieldvals)
 		char	   *start_ptr;
 		char	   *end_ptr;
 		int			input_len;
+		bool        saw_high_bit = false;
 
 		/* Make sure space remains in fieldvals[] */
 		if (fieldno >= maxfields)
@@ -2756,6 +2750,8 @@ CopyReadAttributesText(CopyState cstate, int maxfields, char **fieldvals)
 								}
 							}
 							c = val & 0377;
+							if (IS_HIGHBIT_SET(c))
+								saw_high_bit = true;
 						}
 						break;
 					case 'x':
@@ -2779,6 +2775,8 @@ CopyReadAttributesText(CopyState cstate, int maxfields, char **fieldvals)
 									}
 								}
 								c = val & 0xff;
+								if (IS_HIGHBIT_SET(c))
+									saw_high_bit = true;							
 							}
 						}
 						break;
@@ -2806,7 +2804,7 @@ CopyReadAttributesText(CopyState cstate, int maxfields, char **fieldvals)
 						 * literally
 						 */
 				}
-			}
+			}			
 
 			/* Add c to output string */
 			*output_ptr++ = c;
@@ -2814,6 +2812,16 @@ CopyReadAttributesText(CopyState cstate, int maxfields, char **fieldvals)
 
 		/* Terminate attribute value in output area */
 		*output_ptr++ = '\0';
+
+		/* If we de-escaped a char with the high bit set, make sure
+		 * we still have valid data for the db encoding. Avoid calling strlen 
+		 * here for the sake of efficiency.
+		 */
+		if (saw_high_bit)
+		{
+			char *fld = fieldvals[fieldno];
+			pg_verifymbstr(fld, output_ptr - (fld + 1), false);
+		}
 
 		/* Check whether raw input matched null marker */
 		input_len = end_ptr - start_ptr;

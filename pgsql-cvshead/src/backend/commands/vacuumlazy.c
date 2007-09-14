@@ -36,7 +36,7 @@
  *
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/backend/commands/vacuumlazy.c,v 1.90 2007/05/30 20:11:57 tgl Exp $
+ *	  $PostgreSQL: pgsql/src/backend/commands/vacuumlazy.c,v 1.95 2007/09/12 22:10:26 tgl Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -642,7 +642,7 @@ lazy_vacuum_page(Relation onerel, BlockNumber blkno, Buffer buffer,
 			break;				/* past end of tuples for this block */
 		toff = ItemPointerGetOffsetNumber(&vacrelstats->dead_tuples[tupindex]);
 		itemid = PageGetItemId(page, toff);
-		itemid->lp_flags &= ~LP_USED;
+		ItemIdSetUnused(itemid);
 	}
 
 	uncnt = PageRepairFragmentation(page, unused);
@@ -657,11 +657,6 @@ lazy_vacuum_page(Relation onerel, BlockNumber blkno, Buffer buffer,
 		recptr = log_heap_clean(onerel, buffer, unused, uncnt);
 		PageSetLSN(page, recptr);
 		PageSetTLI(page, ThisTimeLineID);
-	}
-	else
-	{
-		/* No XLOG record, but still need to flag that XID exists on disk */
-		MyXactMadeTempRelUpdate = true;
 	}
 
 	END_CRIT_SECTION();
@@ -807,6 +802,9 @@ lazy_truncate_heap(Relation onerel, LVRelStats *vacrelstats)
 	 */
 	RelationTruncate(onerel, new_rel_pages);
 
+	/* Now we're OK to release the lock. */
+	UnlockRelation(onerel, AccessExclusiveLock);
+
 	/*
 	 * Drop free-space info for removed blocks; these must not get entered
 	 * into the FSM!
@@ -839,10 +837,6 @@ lazy_truncate_heap(Relation onerel, LVRelStats *vacrelstats)
 	vacrelstats->rel_pages = new_rel_pages;
 	vacrelstats->pages_removed = old_rel_pages - new_rel_pages;
 
-	/*
-	 * We keep the exclusive lock until commit (perhaps not necessary)?
-	 */
-
 	ereport(elevel,
 			(errmsg("\"%s\": truncated %u to %u pages",
 					RelationGetRelationName(onerel),
@@ -873,7 +867,13 @@ count_nondeletable_pages(Relation onerel, LVRelStats *vacrelstats)
 		bool		tupgone,
 					hastup;
 
-		vacuum_delay_point();
+		/*
+		 * We don't insert a vacuum delay point here, because we have an
+		 * exclusive lock on the table which we want to hold for as short
+		 * a time as possible.  We still need to check for interrupts
+		 * however.
+		 */
+		CHECK_FOR_INTERRUPTS();
 
 		blkno--;
 

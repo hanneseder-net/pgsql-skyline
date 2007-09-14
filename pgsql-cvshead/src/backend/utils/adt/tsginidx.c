@@ -7,7 +7,7 @@
  *
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/backend/utils/adt/tsginidx.c,v 1.1 2007/08/21 01:11:19 tgl Exp $
+ *	  $PostgreSQL: pgsql/src/backend/utils/adt/tsginidx.c,v 1.4 2007/09/11 08:46:29 teodor Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -22,16 +22,15 @@ Datum
 gin_extract_tsvector(PG_FUNCTION_ARGS)
 {
 	TSVector	vector = PG_GETARG_TSVECTOR(0);
-	uint32	   *nentries = (uint32 *) PG_GETARG_POINTER(1);
+	int32	   *nentries = (int32 *) PG_GETARG_POINTER(1);
 	Datum	   *entries = NULL;
 
-	*nentries = 0;
+	*nentries = vector->size;
 	if (vector->size > 0)
 	{
 		int			i;
 		WordEntry  *we = ARRPTR(vector);
 
-		*nentries = (uint32) vector->size;
 		entries = (Datum *) palloc(sizeof(Datum) * vector->size);
 
 		for (i = 0; i < vector->size; i++)
@@ -55,7 +54,7 @@ Datum
 gin_extract_query(PG_FUNCTION_ARGS)
 {
 	TSQuery		query = PG_GETARG_TSQUERY(0);
-	uint32	   *nentries = (uint32 *) PG_GETARG_POINTER(1);
+	int32	   *nentries = (int32 *) PG_GETARG_POINTER(1);
 	StrategyNumber strategy = PG_GETARG_UINT16(2);
 	Datum	   *entries = NULL;
 
@@ -77,24 +76,25 @@ gin_extract_query(PG_FUNCTION_ARGS)
 		item = GETQUERY(query);
 
 		for (i = 0; i < query->size; i++)
-			if (item[i].type == VAL)
+			if (item[i].type == QI_VAL)
 				(*nentries)++;
 
 		entries = (Datum *) palloc(sizeof(Datum) * (*nentries));
 
 		for (i = 0; i < query->size; i++)
-			if (item[i].type == VAL)
+			if (item[i].type == QI_VAL)
 			{
 				text	   *txt;
+				QueryOperand *val = &item[i].operand;
 
-				txt = (text *) palloc(VARHDRSZ + item[i].length);
+				txt = (text *) palloc(VARHDRSZ + val->length);
 
-				SET_VARSIZE(txt, VARHDRSZ + item[i].length);
-				memcpy(VARDATA(txt), GETOPERAND(query) + item[i].distance, item[i].length);
+				SET_VARSIZE(txt, VARHDRSZ + val->length);
+				memcpy(VARDATA(txt), GETOPERAND(query) + val->distance, val->length);
 
 				entries[j++] = PointerGetDatum(txt);
 
-				if (strategy != TSearchWithClassStrategyNumber && item[i].weight != 0)
+				if (strategy != TSearchWithClassStrategyNumber && val->weight != 0)
 					ereport(ERROR,
 							(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
 							 errmsg("@@ operator does not support lexeme class restrictions"),
@@ -116,11 +116,11 @@ typedef struct
 } GinChkVal;
 
 static bool
-checkcondition_gin(void *checkval, QueryItem * val)
+checkcondition_gin(void *checkval, QueryOperand * val)
 {
 	GinChkVal  *gcv = (GinChkVal *) checkval;
 
-	return gcv->mapped_check[val - gcv->frst];
+	return gcv->mapped_check[((QueryItem *) val) - gcv->frst];
 }
 
 Datum
@@ -133,16 +133,24 @@ gin_ts_consistent(PG_FUNCTION_ARGS)
 
 	if (query->size > 0)
 	{
-		int4		i,
+		int			i,
 					j = 0;
 		QueryItem  *item;
 		GinChkVal	gcv;
+
+		/*
+		 * check-parameter array has one entry for each value (operand) in the
+		 * query. We expand that array into mapped_check, so that there's one
+		 * entry in mapped_check for every node in the query, including 
+		 * operators, to allow quick lookups in checkcondition_gin. Only the 
+		 * entries corresponding operands are actually used.
+		 */
 
 		gcv.frst = item = GETQUERY(query);
 		gcv.mapped_check = (bool *) palloc(sizeof(bool) * query->size);
 
 		for (i = 0; i < query->size; i++)
-			if (item[i].type == VAL)
+			if (item[i].type == QI_VAL)
 				gcv.mapped_check[i] = check[j++];
 
 		res = TS_execute(

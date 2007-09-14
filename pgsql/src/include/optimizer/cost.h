@@ -72,7 +72,7 @@ extern void cost_functionscan(Path *path, PlannerInfo *root,
 				  RelOptInfo *baserel);
 extern void cost_valuesscan(Path *path, PlannerInfo *root,
 				RelOptInfo *baserel);
-extern void cost_skyline(Path *path, PlannerInfo *root, Cost input_cost, double input_tuples, double output_tuples, int skyline_dim, SkylineMethod skyline_method);
+extern void cost_skyline(Path *path, PlannerInfo *root, Cost input_cost, double input_tuples, int width, double output_tuples, int skyline_dim, SkylineMethod skyline_method, int limit_tuples);
 extern void cost_sort(Path *path, PlannerInfo *root,
 		  List *pathkeys, Cost input_cost, double tuples, int width,
 		  double limit_tuples);

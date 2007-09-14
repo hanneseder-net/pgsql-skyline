@@ -2711,15 +2711,18 @@ estimate_skyline_cardinality(double n, int d)
 
 	res = pow(log(n+1.0), d-1) / factorial(d-1);
 
-	/* to avoid patological cases when n is small */
+	/* avoid patological cases */
 	if (res > n)
 		res = n;
+
+	if (res < 1.0)
+		res = 1.0;
 
 	return res;
 }
 
 Skyline *
-make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause, SkylineMethod skyline_method)
+make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause, SkylineMethod skyline_method, int limit_tuples)
 {
 	Plan	   *outertree = lefttree;
 	List	   *sub_tlist = outertree->targetlist;
@@ -2769,10 +2772,10 @@ make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause, SkylineMet
 	{
 		Path	path; /* just a dummy */
 
-		cost_skyline(&path, root, outertree->plan_rows, 0 /* FIXME: input_cost */, plan->plan_rows, numskylinecols, skyline_method);
+		cost_skyline(&path, root, outertree->plan_rows, outertree->startup_cost, plan->plan_rows, outertree->plan_width, numskylinecols, skyline_method, limit_tuples);
 
-		plan->startup_cost += path.startup_cost;
-		plan->total_cost += path.total_cost;
+		plan->startup_cost = path.startup_cost;
+		plan->total_cost = path.total_cost;
 	}
 
 	node->skyline_distinct = sc->skyline_distinct;

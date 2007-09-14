@@ -215,7 +215,7 @@ skyline_method_preserves_tuple_order(SkylineMethod skyline_method)
 			return true;
 		default:
 			/* this we drop it on default */
-			elog(WARNING, "FIXME: method `%d' unknown in skyline_method_preserves_tuple_order, assuming false", skyline_method);
+			elog(WARNING, "FIXME: skyline method `%d' unknown in %", skyline_method, __FUNCTION__);
 			return false;
 	}
 }
@@ -244,5 +244,46 @@ skyline_method_name(SkylineMethod skyline_method)
 		return "sfs";
 	default:
 		return "?";
+	}
+}
+
+/*
+ * skyline_methode_can_use_limit
+ *   Do we have to process all outer at least once tuples befor we
+ *   can return some?
+ */
+bool
+skyline_methode_can_use_limit(SkylineMethod skyline_method)
+{
+	switch (skyline_method)
+	{
+	case SM_UNKNOWN:
+	case SM_1DIM:
+	case SM_1DIM_DISTINCT:
+		/* we have to read them all */
+	case SM_BLOCKNESTEDLOOP:
+		/* we have to read theam all at least once befor we can 
+		 * be sure that the first tuple survived 
+		 */
+		return false;
+	
+	case SM_SIMPLENESTEDLOOP:
+	case SM_MATERIALIZEDNESTEDLOOP:
+		/* we are cheating here, since the for every tuple the entire
+		 * outerplan is read, but once it survived this we can return
+		 * it
+		 */
+	case SM_2DIM_PRESORT:
+		/* if it's not dominated by the current we can return it
+		 * and make it the new current
+		 */
+	case SM_SFS:
+		/* we can return a tuple if it is not dominated by one in the
+		 * tuple window
+		 */
+		return true;
+	default:
+		elog(WARNING, "FIXME: skyline method `%d' unknown in %", skyline_method, __FUNCTION__);
+		return false;
 	}
 }

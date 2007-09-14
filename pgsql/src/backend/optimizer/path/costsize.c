@@ -73,6 +73,7 @@
 #include "parser/parse_expr.h"
 #include "utils/lsyscache.h"
 #include "utils/selfuncs.h"
+#include "utils/skyline.h"
 #include "utils/tuplesort.h"
 
 
@@ -915,10 +916,112 @@ cost_valuesscan(Path *path, PlannerInfo *root, RelOptInfo *baserel)
 }
 
 void
-cost_skyline(Path *path, PlannerInfo *root,  Cost input_cost, double input_tuples, double output_tuples, int skyline_dim, SkylineMethod skyline_method)
+cost_skyline(Path *path, PlannerInfo *root,  Cost input_cost, double input_tuples, int width, double output_tuples, int skyline_dim, SkylineMethod skyline_method, int limit_tuples)
 {
-	Cost	startup_cost = 0;
-	// TODO
+	Cost		startup_cost = input_cost;
+	Cost		run_cost = 0;
+	double		input_bytes = relation_byte_size(input_tuples, width);
+	double		output_bytes;
+	long		work_mem_bytes = work_mem * 1024L;
+	/* the number of compare operator call for comparing two tuples 
+	 * for the moment we assume have to compare all dims in any case
+	 * FIXME: see ticket:39 and [165]
+	 */
+	double		cmps =  1.0 * skyline_dim;
+
+	/* Do we have useful LIMIT? */
+	bool		limit_is_useful = 
+		limit_tuples > 0
+		&& limit_tuples < input_tuples 
+		&& limit_tuples < output_tuples
+		&& skyline_methode_can_use_limit(skyline_method);
+
+	output_bytes = relation_byte_size((limit_is_useful ? limit_tuples : output_tuples), width);
+
+	/* let's assume a sane default if unknown */
+	if (skyline_method == SM_UNKNOWN)
+		skyline_method = SM_BLOCKNESTEDLOOP;
+
+	/* Note that we do not take into account here that the user might
+  	 * has overwritten window size in terms of memory or slot count
+	 */
+	if (output_bytes > work_mem_bytes)
+	{
+		/*
+		 * The tuple window is not large enough to hold all output tuples
+		 */
+		/* FIXME */
+
+		startup_cost += 0;
+	}
+	else
+	{
+		switch (skyline_method)
+		{
+		case SM_1DIM:
+			/* we cheat a bit here, we assume that in general there are no
+			 * duplicates or at least very little compared to the input_tuples
+			 */
+			startup_cost += cmps * cpu_operator_cost * input_tuples;
+			break;
+		case SM_1DIM_DISTINCT:
+			/* we have to compare all input_tuples to the current dominating */
+			startup_cost += cmps * cpu_operator_cost * input_tuples;
+			break;
+		case SM_2DIM_PRESORT:
+			/* we just have to compare all input_tuples to the current dominating
+			 * we don't take into account that we could stop earlier because of
+			 * reaching LIMIT
+			 */
+			startup_cost += cmps * cpu_operator_cost * input_tuples;
+			break;
+		case SM_SIMPLENESTEDLOOP:
+			/* FIXME: we don't treat it special, because it might dissapeare anyway */
+		case SM_MATERIALIZEDNESTEDLOOP:
+			/* if no LIMIT is given we compare every tuples against every tuples.
+			 * if we do have a useful LIMIT we assume that the skyline tuples
+			 * are evenly distributed
+			 */
+			if (limit_is_useful)
+				startup_cost += cmps * cpu_operator_cost * input_tuples * (input_tuples * limit_tuples / output_tuples);
+			else
+				startup_cost += cmps * cpu_operator_cost * input_tuples * input_tuples;
+			break;
+
+		case SM_BLOCKNESTEDLOOP:
+			/* FIXME: ASSUMATION: on average we have to compare the input_tuples to the half
+			 * of the tuples in the window (output_tuples)
+			 *
+			 * FIXME: we don't gain anything by LIMIT, because tuples could be kicked out of the 
+			 * tuplewindow, for instance there could be a single best tuple at the very end
+			 */
+			startup_cost += cmps * cpu_operator_cost * input_tuples * 0.5 * output_tuples;
+			break;
+		case SM_SFS:
+			/* FIXME: ASSUMATION: on average we have to compare the input_tuples to the half
+			 * of the tuples in the window (output_tuples)
+			 * In case of SFS the output_tuples might have been reduced by LIMIT.
+			 */
+			startup_cost += cmps * cpu_operator_cost * input_tuples * 0.5 * (limit_is_useful ? limit_tuples : output_tuples);
+			break;
+		default:
+			elog(WARNING, "FIXME: skyline method `%d' unknown in %", skyline_method, __FUNCTION__);
+			break;
+		}
+	}
+
+	/* FIXME: needs more toughts */
+	/*
+	 * Also charge a small amount (arbitrarily set equal to operator cost) per
+	 * extracted tuple.  Note it's correct to use tuples not output_tuples
+	 * here --- the upper LIMIT will pro-rate the run cost so we'd be double
+	 * counting the LIMIT otherwise.
+	 */
+	run_cost += cpu_operator_cost * input_tuples;
+	run_cost += cpu_operator_cost * (limit_is_useful ? limit_tuples : output_tuples);
+
+	path->startup_cost = startup_cost;
+	path->total_cost = startup_cost + run_cost;
 }
 
 /*

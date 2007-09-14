@@ -1180,7 +1180,7 @@ grouping_planner(PlannerInfo *root, double tuple_fraction)
 			result_plan = materialize_finished_plan(result_plan);
 		}
 
-		result_plan = (Plan *) make_skyline(root, result_plan, parse->skylineClause, skyline_method);
+		result_plan = (Plan *) make_skyline(root, result_plan, parse->skylineClause, skyline_method, limit_tuples);
 
 		if (!skyline_method_preserves_tuple_order(skyline_method))
 		{

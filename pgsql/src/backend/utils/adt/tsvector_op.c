@@ -7,7 +7,7 @@
  *
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/backend/utils/adt/tsvector_op.c,v 1.2 2007/08/31 02:26:29 tgl Exp $
+ *	  $PostgreSQL: pgsql/src/backend/utils/adt/tsvector_op.c,v 1.5 2007/09/11 08:46:29 teodor Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -66,6 +66,9 @@ typedef struct
 static Datum tsvector_update_trigger(PG_FUNCTION_ARGS, bool config_column);
 
 
+/*
+ * Order: haspos, len, word, for all positions (pos, weight)
+ */
 static int
 silly_cmp_tsvector(const TSVector a, const TSVector b)
 {
@@ -162,7 +165,7 @@ tsvector_strip(PG_FUNCTION_ARGS)
 	char	   *cur;
 
 	for (i = 0; i < in->size; i++)
-		len += SHORTALIGN(arrin[i].len);
+		len += arrin[i].len;
 
 	len = CALCDATASIZE(in->size, len);
 	out = (TSVector) palloc0(len);
@@ -176,7 +179,7 @@ tsvector_strip(PG_FUNCTION_ARGS)
 		arrout[i].haspos = 0;
 		arrout[i].len = arrin[i].len;
 		arrout[i].pos = cur - STRPTR(out);
-		cur += SHORTALIGN(arrout[i].len);
+		cur += arrout[i].len;
 	}
 
 	PG_FREE_IF_COPY(in, 0);
@@ -266,7 +269,7 @@ compareEntry(char *ptra, WordEntry * a, char *ptrb, WordEntry * b)
 static int4
 add_pos(TSVector src, WordEntry * srcptr, TSVector dest, WordEntry * destptr, int4 maxpos)
 {
-	uint16	   *clen = (uint16 *) _POSDATAPTR(dest, destptr);
+	uint16	   *clen = &_POSVECPTR(dest, destptr)->npos;
 	int			i;
 	uint16		slen = POSDATALEN(src, srcptr),
 				startlen;
@@ -348,12 +351,15 @@ tsvector_concat(PG_FUNCTION_ARGS)
 			ptr->len = ptr1->len;
 			memcpy(cur, data1 + ptr1->pos, ptr1->len);
 			ptr->pos = cur - data;
-			cur += SHORTALIGN(ptr1->len);
 			if (ptr->haspos)
 			{
-				memcpy(cur, _POSDATAPTR(in1, ptr1), POSDATALEN(in1, ptr1) * sizeof(WordEntryPos) + sizeof(uint16));
+				cur += SHORTALIGN(ptr1->len);
+				memcpy(cur, _POSVECPTR(in1, ptr1), POSDATALEN(in1, ptr1) * sizeof(WordEntryPos) + sizeof(uint16));
 				cur += POSDATALEN(in1, ptr1) * sizeof(WordEntryPos) + sizeof(uint16);
 			}
+			else
+				cur += ptr1->len;
+				
 			ptr++;
 			ptr1++;
 			i1--;
@@ -364,16 +370,20 @@ tsvector_concat(PG_FUNCTION_ARGS)
 			ptr->len = ptr2->len;
 			memcpy(cur, data2 + ptr2->pos, ptr2->len);
 			ptr->pos = cur - data;
-			cur += SHORTALIGN(ptr2->len);
 			if (ptr->haspos)
 			{
 				int			addlen = add_pos(in2, ptr2, out, ptr, maxpos);
+
+				cur += SHORTALIGN(ptr2->len);
 
 				if (addlen == 0)
 					ptr->haspos = 0;
 				else
 					cur += addlen * sizeof(WordEntryPos) + sizeof(uint16);
 			}
+			else
+				cur += ptr2->len;
+
 			ptr++;
 			ptr2++;
 			i2--;
@@ -384,12 +394,12 @@ tsvector_concat(PG_FUNCTION_ARGS)
 			ptr->len = ptr1->len;
 			memcpy(cur, data1 + ptr1->pos, ptr1->len);
 			ptr->pos = cur - data;
-			cur += SHORTALIGN(ptr1->len);
 			if (ptr->haspos)
 			{
+				cur += SHORTALIGN(ptr1->len);
 				if (ptr1->haspos)
 				{
-					memcpy(cur, _POSDATAPTR(in1, ptr1), POSDATALEN(in1, ptr1) * sizeof(WordEntryPos) + sizeof(uint16));
+					memcpy(cur, _POSVECPTR(in1, ptr1), POSDATALEN(in1, ptr1) * sizeof(WordEntryPos) + sizeof(uint16));
 					cur += POSDATALEN(in1, ptr1) * sizeof(WordEntryPos) + sizeof(uint16);
 					if (ptr2->haspos)
 						cur += add_pos(in2, ptr2, out, ptr, maxpos) * sizeof(WordEntryPos);
@@ -404,6 +414,9 @@ tsvector_concat(PG_FUNCTION_ARGS)
 						cur += addlen * sizeof(WordEntryPos) + sizeof(uint16);
 				}
 			}
+			else
+				cur += ptr1->len;
+
 			ptr++;
 			ptr1++;
 			ptr2++;
@@ -418,12 +431,15 @@ tsvector_concat(PG_FUNCTION_ARGS)
 		ptr->len = ptr1->len;
 		memcpy(cur, data1 + ptr1->pos, ptr1->len);
 		ptr->pos = cur - data;
-		cur += SHORTALIGN(ptr1->len);
 		if (ptr->haspos)
 		{
-			memcpy(cur, _POSDATAPTR(in1, ptr1), POSDATALEN(in1, ptr1) * sizeof(WordEntryPos) + sizeof(uint16));
+			cur += SHORTALIGN(ptr1->len);
+			memcpy(cur, _POSVECPTR(in1, ptr1), POSDATALEN(in1, ptr1) * sizeof(WordEntryPos) + sizeof(uint16));
 			cur += POSDATALEN(in1, ptr1) * sizeof(WordEntryPos) + sizeof(uint16);
 		}
+		else
+			cur += ptr1->len;
+
 		ptr++;
 		ptr1++;
 		i1--;
@@ -435,16 +451,20 @@ tsvector_concat(PG_FUNCTION_ARGS)
 		ptr->len = ptr2->len;
 		memcpy(cur, data2 + ptr2->pos, ptr2->len);
 		ptr->pos = cur - data;
-		cur += SHORTALIGN(ptr2->len);
 		if (ptr->haspos)
 		{
 			int			addlen = add_pos(in2, ptr2, out, ptr, maxpos);
+
+			cur += SHORTALIGN(ptr2->len);
 
 			if (addlen == 0)
 				ptr->haspos = 0;
 			else
 				cur += addlen * sizeof(WordEntryPos) + sizeof(uint16);
 		}
+		else
+			cur += ptr2->len;
+
 		ptr++;
 		ptr2++;
 		i2--;
@@ -464,7 +484,7 @@ tsvector_concat(PG_FUNCTION_ARGS)
  * compare 2 string values
  */
 static int4
-ValCompare(CHKVAL * chkval, WordEntry * ptr, QueryItem * item)
+ValCompare(CHKVAL * chkval, WordEntry * ptr, QueryOperand * item)
 {
 	if (ptr->len == item->length)
 		return strncmp(
@@ -479,10 +499,17 @@ ValCompare(CHKVAL * chkval, WordEntry * ptr, QueryItem * item)
  * check weight info
  */
 static bool
-checkclass_str(CHKVAL * chkval, WordEntry * val, QueryItem * item)
+checkclass_str(CHKVAL *chkval, WordEntry *val, QueryOperand *item)
 {
-	WordEntryPos *ptr = (WordEntryPos *) (chkval->values + val->pos + SHORTALIGN(val->len) + sizeof(uint16));
-	uint16		len = *((uint16 *) (chkval->values + val->pos + SHORTALIGN(val->len)));
+	WordEntryPosVector *posvec;
+	WordEntryPos *ptr;
+	uint16		len;
+
+	posvec = (WordEntryPosVector *) 
+		(chkval->values + SHORTALIGN(val->pos + val->len));
+
+	len = posvec->npos;
+	ptr = posvec->pos;
 
 	while (len--)
 	{
@@ -497,10 +524,11 @@ checkclass_str(CHKVAL * chkval, WordEntry * val, QueryItem * item)
  * is there value 'val' in array or not ?
  */
 static bool
-checkcondition_str(void *checkval, QueryItem * val)
+checkcondition_str(void *checkval, QueryOperand * val)
 {
-	WordEntry  *StopLow = ((CHKVAL *) checkval)->arrb;
-	WordEntry  *StopHigh = ((CHKVAL *) checkval)->arre;
+	CHKVAL *chkval = (CHKVAL *) checkval;
+	WordEntry  *StopLow = chkval->arrb;
+	WordEntry  *StopHigh = chkval->arre;
 	WordEntry  *StopMiddle;
 	int			difference;
 
@@ -509,10 +537,10 @@ checkcondition_str(void *checkval, QueryItem * val)
 	while (StopLow < StopHigh)
 	{
 		StopMiddle = StopLow + (StopHigh - StopLow) / 2;
-		difference = ValCompare((CHKVAL *) checkval, StopMiddle, val);
+		difference = ValCompare(chkval, StopMiddle, val);
 		if (difference == 0)
 			return (val->weight && StopMiddle->haspos) ?
-				checkclass_str((CHKVAL *) checkval, StopMiddle, val) : true;
+				checkclass_str(chkval, StopMiddle, val) : true;
 		else if (difference < 0)
 			StopLow = StopMiddle + 1;
 		else
@@ -523,37 +551,48 @@ checkcondition_str(void *checkval, QueryItem * val)
 }
 
 /*
- * check for boolean condition
+ * check for boolean condition.
+ *
+ * if calcnot is false, NOT expressions are always evaluated to be true. This is used in ranking.
+ * checkval can be used to pass information to the callback. TS_execute doesn't
+ * do anything with it.
+ * chkcond is a callback function used to evaluate each VAL node in the query.
+ *
  */
 bool
 TS_execute(QueryItem * curitem, void *checkval, bool calcnot,
-		   bool (*chkcond) (void *checkval, QueryItem * val))
+		   bool (*chkcond) (void *checkval, QueryOperand * val))
 {
 	/* since this function recurses, it could be driven to stack overflow */
 	check_stack_depth();
 
-	if (curitem->type == VAL)
-		return chkcond(checkval, curitem);
-	else if (curitem->val == (int4) '!')
+	if (curitem->type == QI_VAL)
+		return chkcond(checkval, (QueryOperand *) curitem);
+
+	switch(curitem->operator.oper)
 	{
-		return (calcnot) ?
-			!TS_execute(curitem + 1, checkval, calcnot, chkcond)
-			: true;
+		case OP_NOT:
+			if (calcnot)
+				return !TS_execute(curitem + 1, checkval, calcnot, chkcond);
+			else
+				return true;
+		case OP_AND:
+			if (TS_execute(curitem + curitem->operator.left, checkval, calcnot, chkcond))
+				return TS_execute(curitem + 1, checkval, calcnot, chkcond);
+			else
+				return false;
+
+		case OP_OR:
+			if (TS_execute(curitem + curitem->operator.left, checkval, calcnot, chkcond))
+				return true;
+			else
+				return TS_execute(curitem + 1, checkval, calcnot, chkcond);
+
+		default:
+			elog(ERROR, "unknown operator %d", curitem->operator.oper);
 	}
-	else if (curitem->val == (int4) '&')
-	{
-		if (TS_execute(curitem + curitem->left, checkval, calcnot, chkcond))
-			return TS_execute(curitem + 1, checkval, calcnot, chkcond);
-		else
-			return false;
-	}
-	else
-	{							/* |-operator */
-		if (TS_execute(curitem + curitem->left, checkval, calcnot, chkcond))
-			return true;
-		else
-			return TS_execute(curitem + 1, checkval, calcnot, chkcond);
-	}
+
+	/* not reachable, but keep compiler quiet */
 	return false;
 }
 
@@ -642,7 +681,13 @@ ts_match_tq(PG_FUNCTION_ARGS)
 }
 
 /*
- * Statistics of tsvector
+ * ts_stat statistic function support
+ */
+
+
+/*
+ * Returns the number of positions in value 'wptr' within tsvector 'txt',
+ * that have a weight equal to one of the weights in 'weight' bitmask.
  */
 static int
 check_weight(TSVector txt, WordEntry * wptr, int8 weight)
@@ -791,6 +836,18 @@ formstat(tsstat * stat, TSVector txt, WordEntry ** entry, uint32 len)
 
 	return newstat;
 }
+
+/*
+ * This is written like a custom aggregate function, because the
+ * original plan was to do just that. Unfortunately, an aggregate function
+ * can't return a set, so that plan was abandoned. If that limitation is
+ * lifted in the future, ts_stat could be a real aggregate function so that 
+ * you could use it like this:
+ *
+ *   SELECT ts_stat(vector_column) FROM vector_table;
+ *
+ *  where vector_column is a tsvector-type column in vector_table.
+ */
 
 static tsstat *
 ts_accum(tsstat * stat, Datum data)

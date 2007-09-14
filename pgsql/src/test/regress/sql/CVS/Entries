@@ -38,7 +38,7 @@
 /float8.sql/1.15/Wed Jun  8 21:15:29 2005//
 /foreign_key.sql/1.21/Fri Aug 17 09:41:17 2007//
 /geometry.sql/1.11/Wed May 30 13:52:58 2007//
-/guc.sql/1.5/Wed Sep  5 06:37:22 2007//
+/guc.sql/1.6/Fri Sep 14 18:56:15 2007//
 /hash_index.sql/1.6/Thu Apr  7 01:51:41 2005//
 /horology.sql/1.34/Wed Aug  1 09:01:18 2007//
 /inet.sql/1.13/Sat Feb 11 20:39:59 2006//
@@ -100,6 +100,7 @@
 /transactions.sql/1.14/Sat Jun  9 20:54:25 2007//
 /triggers.sql/1.13/Mon Jun 26 17:24:41 2006//
 /truncate.sql/1.5/Thu Jun 29 16:07:29 2006//
+/tsdicts.sql/1.1/Tue Sep 11 11:54:42 2007//
 /tsearch.sql/1.3/Sat Aug 25 01:06:25 2007//
 /tstypes.sql/1.2/Tue Aug 21 15:41:13 2007//
 /type_sanity.sql/1.31/Sat Jun 23 07:56:24 2007//

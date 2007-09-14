@@ -7,7 +7,7 @@
  *
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/backend/utils/adt/tsgistidx.c,v 1.2 2007/08/21 06:34:42 tgl Exp $
+ *	  $PostgreSQL: pgsql/src/backend/utils/adt/tsgistidx.c,v 1.4 2007/09/11 08:46:29 teodor Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -133,20 +133,27 @@ gtsvectorout(PG_FUNCTION_ARGS)
 }
 
 static int
-compareint(const void *a, const void *b)
+compareint(const void *va, const void *vb)
 {
-	if (*((int4 *) a) == *((int4 *) b))
+	int4 a = *((int4 *) va);
+	int4 b = *((int4 *) vb);
+
+	if (a == b)
 		return 0;
-	return (*((int4 *) a) > *((int4 *) b)) ? 1 : -1;
+	return (a > b) ? 1 : -1;
 }
 
+/*
+ * Removes duplicates from an array of int4. 'l' is
+ * size of the input array. Returns the new size of the array.
+ */
 static int
 uniqueint(int4 *a, int4 l)
 {
 	int4	   *ptr,
 			   *res;
 
-	if (l == 1)
+	if (l <= 1)
 		return l;
 
 	ptr = res = a;
@@ -293,7 +300,7 @@ typedef struct
  * is there value 'val' in array or not ?
  */
 static bool
-checkcondition_arr(void *checkval, QueryItem * val)
+checkcondition_arr(void *checkval, QueryOperand * val)
 {
 	int4	   *StopLow = ((CHKVAL *) checkval)->arrb;
 	int4	   *StopHigh = ((CHKVAL *) checkval)->arre;
@@ -304,9 +311,9 @@ checkcondition_arr(void *checkval, QueryItem * val)
 	while (StopLow < StopHigh)
 	{
 		StopMiddle = StopLow + (StopHigh - StopLow) / 2;
-		if (*StopMiddle == val->val)
+		if (*StopMiddle == val->valcrc)
 			return (true);
-		else if (*StopMiddle < val->val)
+		else if (*StopMiddle < val->valcrc)
 			StopLow = StopMiddle + 1;
 		else
 			StopHigh = StopMiddle;
@@ -316,9 +323,9 @@ checkcondition_arr(void *checkval, QueryItem * val)
 }
 
 static bool
-checkcondition_bit(void *checkval, QueryItem * val)
+checkcondition_bit(void *checkval, QueryOperand * val)
 {
-	return GETBIT(checkval, HASHVAL(val->val));
+	return GETBIT(checkval, HASHVAL(val->valcrc));
 }
 
 Datum
@@ -570,12 +577,15 @@ typedef struct
 } SPLITCOST;
 
 static int
-comparecost(const void *a, const void *b)
+comparecost(const void *va, const void *vb)
 {
-	if (((SPLITCOST *) a)->cost == ((SPLITCOST *) b)->cost)
+	SPLITCOST *a = (SPLITCOST *) va;
+	SPLITCOST *b = (SPLITCOST *) vb;
+
+	if (a->cost == b->cost)
 		return 0;
 	else
-		return (((SPLITCOST *) a)->cost > ((SPLITCOST *) b)->cost) ? 1 : -1;
+		return (a->cost > b->cost) ? 1 : -1;
 }
 
 

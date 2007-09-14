@@ -4,10 +4,13 @@
 /dict_simple.c////*///
 /dict_synonym.c////*///
 /dict_thesaurus.c////*///
+/hunspell_sample.affix////*///
+/ispell_sample.affix////*///
+/ispell_sample.dict////*///
 /regis.c////*///
 /spell.c////*///
-/synonym.syn.sample////*///
-/thesaurus.ths.sample////*///
+/synonym_sample.syn////*///
+/thesaurus_sample.ths////*///
 /to_tsany.c////*///
 /ts_locale.c////*///
 /ts_parse.c////*///

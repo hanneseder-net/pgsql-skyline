@@ -7,7 +7,7 @@
  *
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/backend/tsearch/spell.c,v 1.2 2007/08/25 00:03:59 tgl Exp $
+ *	  $PostgreSQL: pgsql/src/backend/tsearch/spell.c,v 1.5 2007/09/11 12:57:05 teodor Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -647,12 +647,10 @@ NIImportOOAffixes(IspellDict * Conf, const char *filename)
 				goto nextline;
 			flag = *sflag;
 			isSuffix = (STRNCMP(ptype, "sfx") == 0) ? true : false;
-			pfind = lowerstr_ctx(find);
-			if (t_iseq(find, 'y'))
+			if (t_iseq(find, 'y') || t_iseq(find, 'Y'))
 				flagflags = FF_CROSSPRODUCT;
 			else
 				flagflags = 0;
-			pfree(pfind);
 		}
 		else
 		{
@@ -666,7 +664,7 @@ NIImportOOAffixes(IspellDict * Conf, const char *filename)
 			if ((ptr = strchr(prepl, '/')) != NULL)
 			{
 				*ptr = '\0';
-				ptr++;
+				ptr = repl + (ptr-prepl) + 1;
 				while (*ptr)
 				{
 					aflg |= Conf->flagval[(unsigned int) *ptr];
@@ -704,8 +702,7 @@ NIImportOOAffixes(IspellDict * Conf, const char *filename)
 void
 NIImportAffixes(IspellDict * Conf, const char *filename)
 {
-	char		str[BUFSIZ],
-			   *pstr = NULL;
+	char	   *pstr = NULL;
 	char		mask[BUFSIZ];
 	char		find[BUFSIZ];
 	char		repl[BUFSIZ];
@@ -733,7 +730,6 @@ NIImportAffixes(IspellDict * Conf, const char *filename)
 	while ((recoded = t_readline(affix)) != NULL)
 	{
 		pstr = lowerstr(recoded);
-		pfree(recoded);
 
 		lineno++;
 
@@ -743,13 +739,15 @@ NIImportAffixes(IspellDict * Conf, const char *filename)
 
 		if (STRNCMP(pstr, "compoundwords") == 0)
 		{
-			s = findchar(str, 'l');
+			s = findchar(pstr, 'l');
 			if (s)
 			{
+				s = recoded + ( s-pstr ); /* we need non-lowercased string */
 				while (*s && !t_isspace(s))
 					s++;
 				while (*s && t_isspace(s))
 					s++;
+
 				if (*s && pg_mblen(s) == 1)
 				{
 					Conf->flagval[(unsigned int) *s] = FF_COMPOUNDFLAG;
@@ -775,7 +773,7 @@ NIImportAffixes(IspellDict * Conf, const char *filename)
 		}
 		if (STRNCMP(pstr, "flag") == 0)
 		{
-			s = str + 4;
+			s = recoded + 4; /* we need non-lowercased string */
 			flagflags = 0;
 
 			while (*s && t_isspace(s))
@@ -813,8 +811,8 @@ NIImportAffixes(IspellDict * Conf, const char *filename)
 			flag = (unsigned char) *s;
 			goto nextline;
 		}
-		if (STRNCMP(str, "COMPOUNDFLAG") == 0 || STRNCMP(str, "COMPOUNDMIN") == 0 ||
-			STRNCMP(str, "PFX") == 0 || STRNCMP(str, "SFX") == 0)
+		if (STRNCMP(recoded, "COMPOUNDFLAG") == 0 || STRNCMP(recoded, "COMPOUNDMIN") == 0 ||
+			STRNCMP(recoded, "PFX") == 0 || STRNCMP(recoded, "SFX") == 0)
 		{
 			if (oldformat)
 				ereport(ERROR,
@@ -834,6 +832,7 @@ NIImportAffixes(IspellDict * Conf, const char *filename)
 		NIAddAffix(Conf, flag, flagflags, mask, find, repl, suffixes ? FF_SUFFIX : FF_PREFIX);
 
 	nextline:
+		pfree(recoded);
 		pfree(pstr);
 	}
 	FreeFile(affix);
@@ -897,7 +896,7 @@ mkSPNode(IspellDict * Conf, int low, int high, int level)
 	if (!nchar)
 		return NULL;
 
-	rs = (SPNode *) palloc0(SPNHRDSZ + nchar * sizeof(SPNodeData));
+	rs = (SPNode *) palloc0(SPNHDRSZ + nchar * sizeof(SPNodeData));
 	rs->length = nchar;
 	data = rs->data;
 
@@ -1333,7 +1332,7 @@ addToResult(char **forms, char **cur, char *word)
 }
 
 static char **
-NormalizeSubWord(IspellDict * Conf, char *word, char flag)
+NormalizeSubWord(IspellDict * Conf, char *word, int flag)
 {
 	AffixNodeData *suffix = NULL,
 			   *prefix = NULL;

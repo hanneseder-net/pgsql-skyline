@@ -60,6 +60,7 @@
 /tsrank.c////*///
 /tsvector.c////*///
 /tsvector_op.c////*///
+/tsvector_parser.c////*///
 /uuid.c////*///
 /varbit.c////*///
 /varchar.c////*///

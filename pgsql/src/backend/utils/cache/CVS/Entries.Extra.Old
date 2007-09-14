@@ -5,4 +5,5 @@
 /plancache.c////*///
 /relcache.c////*///
 /syscache.c////*///
+/ts_cache.c////*///
 /typcache.c////*///

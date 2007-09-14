@@ -113,6 +113,7 @@
 /transactions.out////*///
 /triggers.out////*///
 /truncate.out////*///
+/tsdicts.out////*///
 /tsearch.out////*///
 /tstypes.out////*///
 /type_sanity.out////*///

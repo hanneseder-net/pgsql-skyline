@@ -956,40 +956,55 @@ cost_skyline(Path *path, PlannerInfo *root, Cost input_cost, double input_tuples
 	switch (skyline_method)
 	{
 		case SM_1DIM:
-
 			/*
 			 * We cheat a bit here, we assume that in general there are no
 			 * duplicates or at least very little compared to the
 			 * input_tuples. Since we only keep the current dominating tuple
 			 * in a slot we are not constraint by enough_memory.
+			 * LIMIT is not useful here, since we only know after scanning
+			 * all input_tuples how many tuples we wrote to the tuplestore
+			 * and will finally be piped out.
 			 */
 			startup_cost += cmps * cpu_operator_cost * input_tuples;
 			break;
+
 		case SM_1DIM_DISTINCT:
-			/* we have to compare all input_tuples to the current dominating */
-			startup_cost += cmps * cpu_operator_cost * input_tuples;
-			break;
-		case SM_2DIM_PRESORT:
-
 			/*
-			 * we just have to compare all input_tuples to the current
-			 * dominating we don't take into account that we could stop
-			 * earlier because of reaching LIMIT
+			 * We have to compare all input_tuples to the current
+			 * dominating, so extra memory needed.
+			 * LIMIT is not useful here, since at most one tuple will be
+			 * piped out.
 			 */
 			startup_cost += cmps * cpu_operator_cost * input_tuples;
 			break;
-		case SM_SIMPLENESTEDLOOP:
 
+		case SM_2DIM_PRESORT:
+			/*
+			 * We just have to compare all input_tuples to the current
+			 * dominating, so no extra memory needed.
+			 *
+			 * If LIMIT is useful we assume the skyline tuples are 
+			 * equally distributed over the input_tuples.
+			 */
+			if (limit_is_useful)
+				startup_cost += cmps * cpu_operator_cost * input_tuples * (limit_tuples / output_tuples);
+			else
+				startup_cost += cmps * cpu_operator_cost * input_tuples;
+			break;
+
+		case SM_SIMPLENESTEDLOOP:
 			/*
 			 * FIXME: we don't treat it special, because it might dissapeare
 			 * anyway
 			 */
-		case SM_MATERIALIZEDNESTEDLOOP:
 
+		case SM_MATERIALIZEDNESTEDLOOP:
 			/*
-			 * if no LIMIT is given we compare every tuples against every
-			 * tuples. if we do have a useful LIMIT we assume that the skyline
-			 * tuples are evenly distributed
+			 * If no LIMIT is given we compare every tuples against every
+			 * tuples.
+			 *
+			 * If LIMIT is useful we assume the skyline tuples are 
+			 * equally distributed over the input_tuples.
 			 */
 			if (limit_is_useful)
 				startup_cost += cmps * cpu_operator_cost * input_tuples * (input_tuples * limit_tuples / output_tuples);
@@ -998,7 +1013,6 @@ cost_skyline(Path *path, PlannerInfo *root, Cost input_cost, double input_tuples
 			break;
 
 		case SM_BLOCKNESTEDLOOP:
-
 			/*
 			 * FIXME: ASSUMATION: on average we have to compare the
 			 * input_tuples to the half of the tuples in the window
@@ -1010,8 +1024,8 @@ cost_skyline(Path *path, PlannerInfo *root, Cost input_cost, double input_tuples
 			 */
 			startup_cost += cmps * cpu_operator_cost * input_tuples * 0.5 * output_tuples;
 			break;
-		case SM_SFS:
 
+		case SM_SFS:
 			/*
 			 * FIXME: ASSUMATION: on average we have to compare the
 			 * input_tuples to the half of the tuples in the window
@@ -1020,12 +1034,11 @@ cost_skyline(Path *path, PlannerInfo *root, Cost input_cost, double input_tuples
 			 */
 			startup_cost += cmps * cpu_operator_cost * input_tuples * 0.5 * (limit_is_useful ? limit_tuples : output_tuples);
 			break;
+
 		default:
 			elog(WARNING, "FIXME: skyline method `%d' unknown at %s:%d", skyline_method, __FILE__, __LINE__);
 			break;
 	}
-
-	/* FIXME: needs more toughts */
 
 	/*
 	 * Also charge a small amount (arbitrarily set equal to operator cost) per
@@ -1034,7 +1047,6 @@ cost_skyline(Path *path, PlannerInfo *root, Cost input_cost, double input_tuples
 	 * counting the LIMIT otherwise.
 	 */
 	run_cost += cpu_operator_cost * input_tuples;
-	run_cost += cpu_operator_cost * (limit_is_useful ? limit_tuples : output_tuples);
 
 	path->startup_cost = startup_cost;
 	path->total_cost = startup_cost + run_cost;

@@ -381,9 +381,9 @@ ExecSkyline_1DimDistinct(SkylineState *node, Skyline *sl)
 			return NULL;
 
 		default:
-			Assert(0);
-	//FIXME:elog ?
-				return NULL;
+			/* Invalid State */
+			AssertState(0);
+			return NULL;
 	}
 }
 
@@ -475,9 +475,9 @@ ExecSkyline_1Dim(SkylineState *node, Skyline *sl)
 				return NULL;
 
 			default:
-				Assert(0);
-		//FIXME:elog ?
-					return NULL;
+				/* Invalid State */
+				AssertState(0);
+				return NULL;
 		}
 	}
 }
@@ -530,9 +530,9 @@ ExecSkyline_2DimPreSort(SkylineState *node, Skyline *sl)
 			return NULL;
 
 		default:
-			Assert(0);
-	//FIXME:elog ?
-				return NULL;
+			/* Invalid State */
+			AssertState(0);
+ 			return NULL;
 	}
 
 
@@ -870,9 +870,9 @@ ExecSkyline_BlockNestedLoop(SkylineState *node, Skyline *sl)
 				return NULL;
 
 			default:
-				Assert(0);
-		//FIXME:elog ?
-					return NULL;
+				/* Invalid State */
+				AssertState(0);
+				return NULL;
 		}
 	}
 }
@@ -1032,9 +1032,9 @@ ExecSkyline_SortFilterSkyline(SkylineState *node, Skyline *sl)
 				return NULL;
 
 			default:
-				Assert(0);
-		//FIXME:elog ?
-					return NULL;
+				/* Invalid State */
+				AssertState(0);
+				return NULL;
 		}						/* switch */
 	}							/* for */
 }
@@ -1061,9 +1061,9 @@ ExecSkyline(SkylineState *node)
 		case SM_SFS:
 			return ExecSkyline_SortFilterSkyline(node, sl);
 		default:
-			Assert(0);
-	//FIXME:elog ?
-				return NULL;
+			/* Invalid Skyline Method */
+			AssertState(0);
+			return NULL;
 	}
 }
 

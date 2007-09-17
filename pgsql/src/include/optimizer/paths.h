@@ -148,8 +148,8 @@ extern Path *get_cheapest_fractional_path_for_pathkeys(List *paths,
 										  List *pathkeys,
 										  double fraction);
 extern Path *get_cheapest_fractional_path_for_skyline_pathkeys(List *paths,
-												  List *pathkeys,
-												  double fraction);
+										  List *pathkeys,
+										  double fraction);
 extern List *build_index_pathkeys(PlannerInfo *root, IndexOptInfo *index,
 					 ScanDirection scandir);
 extern List *convert_subquery_pathkeys(PlannerInfo *root, RelOptInfo *rel,
@@ -163,9 +163,9 @@ extern List *make_pathkeys_for_sortclauses(PlannerInfo *root,
 							  List *tlist,
 							  bool canonicalize);
 extern List *make_pathkeys_for_skylineclause(PlannerInfo *root,
-							  SkylineClause *skylineclause,
-							  List *tlist,
-							  bool canonicalize);
+											 SkylineClause *skylineclause,
+											 List *tlist,
+											 bool canonicalize);
 extern void cache_mergeclause_eclasses(PlannerInfo *root,
 						   RestrictInfo *restrictinfo);
 extern List *find_mergeclauses_for_pathkeys(PlannerInfo *root,

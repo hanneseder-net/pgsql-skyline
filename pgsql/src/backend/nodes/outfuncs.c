@@ -1020,7 +1020,7 @@ static void
 _outXmlExpr(StringInfo str, XmlExpr *node)
 {
 	WRITE_NODE_TYPE("XMLEXPR");
-	
+
 	WRITE_ENUM_FIELD(op, XmlExprOp);
 	WRITE_STRING_FIELD(name);
 	WRITE_NODE_FIELD(named_args);

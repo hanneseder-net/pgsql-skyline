@@ -70,7 +70,7 @@
 static PlannedStmt *
 _copyPlannedStmt(PlannedStmt *from)
 {
-	PlannedStmt	   *newnode = makeNode(PlannedStmt);
+	PlannedStmt *newnode = makeNode(PlannedStmt);
 
 	COPY_SCALAR_FIELD(commandType);
 	COPY_SCALAR_FIELD(canSetTag);
@@ -561,7 +561,7 @@ _copySort(Sort *from)
 static Skyline *
 _copySkyline(Skyline *from)
 {
-	Skyline	   *newnode = makeNode(Skyline);
+	Skyline    *newnode = makeNode(Skyline);
 
 	/*
 	 * copy node superclass fields
@@ -752,7 +752,7 @@ _copyRangeVar(RangeVar *from)
 static IntoClause *
 _copyIntoClause(IntoClause *from)
 {
-	IntoClause   *newnode = makeNode(IntoClause);
+	IntoClause *newnode = makeNode(IntoClause);
 
 	COPY_NODE_FIELD(rel);
 	COPY_NODE_FIELD(colNames);
@@ -1051,7 +1051,7 @@ _copyRelabelType(RelabelType *from)
 static CoerceViaIO *
 _copyCoerceViaIO(CoerceViaIO *from)
 {
-	CoerceViaIO   *newnode = makeNode(CoerceViaIO);
+	CoerceViaIO *newnode = makeNode(CoerceViaIO);
 
 	COPY_NODE_FIELD(arg);
 	COPY_SCALAR_FIELD(resulttype);
@@ -1066,7 +1066,7 @@ _copyCoerceViaIO(CoerceViaIO *from)
 static ArrayCoerceExpr *
 _copyArrayCoerceExpr(ArrayCoerceExpr *from)
 {
-	ArrayCoerceExpr   *newnode = makeNode(ArrayCoerceExpr);
+	ArrayCoerceExpr *newnode = makeNode(ArrayCoerceExpr);
 
 	COPY_NODE_FIELD(arg);
 	COPY_SCALAR_FIELD(elemfuncid);
@@ -1220,7 +1220,7 @@ _copyMinMaxExpr(MinMaxExpr *from)
 static XmlExpr *
 _copyXmlExpr(XmlExpr *from)
 {
-	XmlExpr *newnode = makeNode(XmlExpr);
+	XmlExpr    *newnode = makeNode(XmlExpr);
 
 	COPY_SCALAR_FIELD(op);
 	COPY_STRING_FIELD(name);
@@ -1418,7 +1418,7 @@ _copyFromExpr(FromExpr *from)
 static PathKey *
 _copyPathKey(PathKey *from)
 {
-	PathKey *newnode = makeNode(PathKey);
+	PathKey    *newnode = makeNode(PathKey);
 
 	/* EquivalenceClasses are never moved, so just shallow-copy the pointer */
 	COPY_SCALAR_FIELD(pk_eclass);
@@ -1608,7 +1608,7 @@ _copySkylineClause(SkylineClause *from)
 static SkylineBy *
 _copySkylineBy(SkylineBy *from)
 {
-	SkylineBy *newnode = makeNode(SkylineBy);
+	SkylineBy  *newnode = makeNode(SkylineBy);
 
 	COPY_SCALAR_FIELD(tleSkylineRef);
 	COPY_SCALAR_FIELD(sortop);
@@ -1790,7 +1790,7 @@ _copySortBy(SortBy *from)
 static SkylineByClause *
 _copySkylineByClause(SkylineByClause *from)
 {
-	SkylineByClause	*newnode = makeNode(SkylineByClause);
+	SkylineByClause *newnode = makeNode(SkylineByClause);
 
 	COPY_SCALAR_FIELD(skyline_distinct);
 	COPY_NODE_FIELD(skyline_by_list);
@@ -1800,9 +1800,9 @@ _copySkylineByClause(SkylineByClause *from)
 }
 
 static SkylineByExpr *
-_copySkylineByExpr(SkylineByExpr * from)
+_copySkylineByExpr(SkylineByExpr *from)
 {
-	SkylineByExpr   *newnode = makeNode(SkylineByExpr);
+	SkylineByExpr *newnode = makeNode(SkylineByExpr);
 
 	COPY_SCALAR_FIELD(skylineby_dir);
 	COPY_SCALAR_FIELD(skylineby_nulls);

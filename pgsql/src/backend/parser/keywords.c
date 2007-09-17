@@ -389,6 +389,7 @@ static const ScanKeyword ScanKeywords[] = {
 	{"when", WHEN, RESERVED_KEYWORD},
 	{"where", WHERE, RESERVED_KEYWORD},
 	{"whitespace", WHITESPACE_P, UNRESERVED_KEYWORD},
+
 	/*
 	 * XXX we mark WITH as reserved to force it to be quoted in dumps, even
 	 * though it is currently unreserved according to gram.y.  This is because

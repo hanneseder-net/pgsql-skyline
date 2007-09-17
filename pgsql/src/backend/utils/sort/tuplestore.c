@@ -720,7 +720,7 @@ tuplestore_catchup(Tuplestorestate *state)
 {
 	Assert(state->eflags & EXEC_FLAG_MARK);
 
-	switch(state->status)
+	switch (state->status)
 	{
 		case TSS_INMEM:
 			state->eof_reached = false;
@@ -760,6 +760,7 @@ tuplestore_markpos(Tuplestorestate *state)
 	{
 		case TSS_INMEM:
 			state->markpos_current = state->current;
+
 			/*
 			 * We can truncate the tuplestore if neither backward scan nor
 			 * rewind capability are required by the caller.  There will

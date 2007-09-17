@@ -43,7 +43,11 @@ typedef enum SortByNulls
 	SORTBY_NULLS_LAST
 } SortByNulls;
 
-/* Skyline direction options */
+/*
+ * Skyline direction options 
+ *
+ * FIXME
+ */
 typedef enum SkylineByDir
 {
 	SKYLINEBY_DEFAULT,
@@ -53,6 +57,9 @@ typedef enum SkylineByDir
 	SKYLINEBY_USING
 } SkylineByDir;
 
+/*
+ * FIXME
+ */
 typedef enum SkylineByNulls
 {
 	SKYLINEBY_NULLS_DEFAULT	= SORTBY_NULLS_DEFAULT,
@@ -363,25 +370,29 @@ typedef struct SortBy
 
 /*
  * SkylineByExpr - for SKYLINE BY clause
+ *
+ * FIXME
  */
 typedef struct SkylineByExpr
 {
-	NodeTag		type;
-	SkylineByDir skylineby_dir;	/* MIN/MAX/DIFF/USING */
-	SkylineByNulls skylineby_nulls; /* NULLS FIRST/LAST */
-	List	   *useOp;			/* name of op to use, of SKYLINEBY_USING */
-	Node	   *node;			/* the expression to skyline by */
+	NodeTag			type;
+	SkylineByDir	skylineby_dir;		/* MIN/MAX/DIFF/USING */
+	SkylineByNulls	skylineby_nulls;	/* NULLS FIRST/LAST */
+	List		   *useOp;				/* name of op to use, if SKYLINEBY_USING */
+	Node		   *node;				/* the expression to skyline by */
 } SkylineByExpr;
 
 /*
  * SkylineByClause - returned by the Parser for SKYLINE BY clause
+ *
+ * FIXME
  */
 typedef struct SkylineByClause
 {
 	NodeTag		type;
-	bool		skyline_distinct;	/* SKYLINE BY _DISTINCT_ */
-	List	   *skyline_by_list;	/* a list of SkylineByExpr */
-	List	   *skyline_by_options;	/* a list of SkylineOption */
+	bool		skyline_distinct;		/* SKYLINE BY _DISTINCT_ */
+	List	   *skyline_by_list;		/* a list of SkylineByExpr */
+	List	   *skyline_by_options;		/* a list of SkylineOption */
 } SkylineByClause;
 
 /*
@@ -685,6 +696,8 @@ typedef SortClause GroupClause;
 
 /*
  * SkylineOption
+ *
+ * FIXME
  */
 typedef struct SkylineOption
 {
@@ -698,25 +711,30 @@ typedef struct SkylineOption
  *
  * The analyzer transforms a SkylineByClause into SkylineClause.
  * While the skyline_by_list is transformed from SkylineByExpr into SkylineBy
+ *
+ * FIXME
  */
 typedef struct SkylineClause
 {
 	NodeTag		type;
 	bool		skyline_distinct;
-	List	   *skyline_by_list; /* list of SkylineBy's */
+	List	   *skyline_by_list;	/* list of SkylineBy's */
 	List	   *skyline_by_options;
 } SkylineClause;
 
-
+/*
+ * SkylineBy
+ *
+ * FIXME
+ */
 typedef struct SkylineBy
 {
-	NodeTag		type;
-	Index		tleSkylineRef;		/* reference into targetlist */
-	Oid			sortop;				/* the ordering operator ('<' op) */
-	bool		nulls_first;		/* do NULLs come before normal values? */
+	NodeTag			type;
+	Index			tleSkylineRef;	/* reference into targetlist */
+	Oid				sortop;			/* the ordering operator ('<' op) */
+	bool			nulls_first;	/* do NULLs come before normal values? */
 	SkylineByDir	skylineby_dir;
 } SkylineBy;
-
 
 /*
  * RowMarkClause -
@@ -816,7 +834,7 @@ typedef struct SelectStmt
 	Node	   *whereClause;	/* WHERE qualification */
 	List	   *groupClause;	/* GROUP BY clauses */
 	Node	   *havingClause;	/* HAVING conditional-expression */
-	Node	   *skylineByClause;/* SKYLINE BY clause */
+	Node	   *skylineByClause;	/* SKYLINE BY clause */
 
 	/*
 	 * In a "leaf" node representing a VALUES list, the above fields are all

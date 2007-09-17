@@ -112,17 +112,18 @@ query_planner(PlannerInfo *root, List *tlist,
 			create_result_path((List *) parse->jointree->quals);
 		*sorted_path = NULL;
 		*skyline_path = NULL;
+
 		/*
 		 * We still are required to canonicalize any pathkeys, in case
-		 * it's something like "SELECT 2+2 ORDER BY 1".
+		 * something like "SELECT 2+2 ORDER BY 1".
 		 */
 		root->canon_pathkeys = NIL;
 		root->query_pathkeys = canonicalize_pathkeys(root,
 													 root->query_pathkeys);
 		root->group_pathkeys = canonicalize_pathkeys(root,
 													 root->group_pathkeys);
-		root->skyline_pathkeys = canonicalize_pathkeys(root, 
-													   root->skyline_pathkeys);
+		root->skyline_pathkeys = canonicalize_pathkeys(root,
+													 root->skyline_pathkeys);
 		root->sort_pathkeys = canonicalize_pathkeys(root,
 													root->sort_pathkeys);
 		return;
@@ -346,7 +347,7 @@ query_planner(PlannerInfo *root, List *tlist,
 	 */
 	cheapestpath = final_rel->cheapest_total_path;
 
-	skylinepath = 
+	skylinepath =
 		get_cheapest_fractional_path_for_skyline_pathkeys(final_rel->pathlist,
 														  root->query_pathkeys,
 														  tuple_fraction);
@@ -373,7 +374,7 @@ query_planner(PlannerInfo *root, List *tlist,
 	 */
 	if (skylinepath)
 	{
-		Path		path; /* dummy for result of cost_sort */
+		Path		path;		/* dummy for result of cost_sort */
 
 		if (root->query_pathkeys == NIL ||
 			skyline_pathkeys_contained_in(root->query_pathkeys,

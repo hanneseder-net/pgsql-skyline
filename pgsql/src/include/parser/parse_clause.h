@@ -18,35 +18,35 @@
 
 extern void transformFromClause(ParseState *pstate, List *frmList);
 extern int setTargetTable(ParseState *pstate, RangeVar *relation,
-			   bool inh, bool alsoSource, AclMode requiredPerms);
+					bool inh, bool alsoSource, AclMode requiredPerms);
 extern bool interpretInhOption(InhOption inhOpt);
 extern bool interpretOidsOption(List *defList);
 
 extern Node *transformWhereClause(ParseState *pstate, Node *clause,
-					 const char *constructName);
+					const char *constructName);
 extern Node *transformLimitClause(ParseState *pstate, Node *clause,
-					 const char *constructName);
+					const char *constructName);
 extern List *transformGroupClause(ParseState *pstate, List *grouplist,
-					 List **targetlist, List *sortClause);
-extern List *transformSortClause(ParseState *pstate, List *orderlist,
-					List **targetlist, bool resolveUnknown);
+					List **targetlist, List *sortClause);
 extern Node *transformSkylineClause(ParseState *pstate, Node *skylineByClause,
 					List **targetlist, bool resolveUnknown);
+extern List *transformSortClause(ParseState *pstate, List *orderlist,
+					List **targetlist, bool resolveUnknown);
 extern List *transformDistinctClause(ParseState *pstate, List *distinctlist,
-						List **targetlist, List **sortClause);
+					List **targetlist, List **sortClause);
 
 extern List *addAllTargetsToSortList(ParseState *pstate,
-						List *sortlist, List *targetlist,
-						bool resolveUnknown);
+					List *sortlist, List *targetlist,
+					bool resolveUnknown);
+extern List *addTargetToSkylineList(ParseState *pstate, TargetEntry *tle,
+					List *skylinelist, List *targetlist,
+					SkylineByDir skylineby_dir, SkylineByNulls skylineby_nulls,
+					List *skylineby_opname, bool resolveUnknown);
 extern List *addTargetToSortList(ParseState *pstate, TargetEntry *tle,
 					List *sortlist, List *targetlist,
 					SortByDir sortby_dir, SortByNulls sortby_nulls,
 					List *sortby_opname, bool resolveUnknown);
 extern Index assignSortGroupRef(TargetEntry *tle, List *tlist);
 extern bool targetIsInSortList(TargetEntry *tle, Oid sortop, List *sortList);
-extern List *addTargetToSkylineList(ParseState *pstate, TargetEntry *tle,
-					List *skylinelist, List *targetlist,
-					SkylineByDir skylineby_dir, SkylineByNulls skylineby_nulls,
-					List *skylineby_opname, bool resolveUnknown);
 
 #endif   /* PARSE_CLAUSE_H */

@@ -1187,7 +1187,10 @@ findTargetlistEntry(ParseState *pstate, Node *node, List **tlist, int clause)
 		char	   *name = strVal(linitial(((ColumnRef *) node)->fields));
 		int			location = ((ColumnRef *) node)->location;
 
-		/* FIXME: should SKYLINE be treated like GROUP?  || clause == SKYLINE_CLAUSE*/
+		/*
+		 * FIXME: should SKYLINE be treated like GROUP?  || clause ==
+		 * SKYLINE_CLAUSE
+		 */
 		if (clause == GROUP_CLAUSE)
 		{
 			/*
@@ -1293,21 +1296,6 @@ findTargetlistEntry(ParseState *pstate, Node *node, List **tlist, int clause)
 	 * end of the target list.	This target is given resjunk = TRUE so that it
 	 * will not be projected into the final tuple.
 	 */
-	//if (clause == SKYLINE_CLAUSE) {
-	//	if (IsA(node, ColumnRef) &&	list_length(((ColumnRef *) node)->fields) == 1)
-	//	{
-	//		char	   *name = strVal(linitial(((ColumnRef *) node)->fields));
-	//		int			location = ((ColumnRef *) node)->location;
-
-	//		if (colNameToVar(pstate, name, true, location) != NULL)
-	//			target_result = transformTargetEntry(pstate, node, expr, name, false);
-	//		else
-	//			target_result = transformTargetEntry(pstate, node, expr, NULL, false);
-	//	}
-	//	else
-	//		target_result = transformTargetEntry(pstate, node, expr, NULL, false);
-	//}
-	//else
 	target_result = transformTargetEntry(pstate, node, expr, NULL, true);
 
 	*tlist = lappend(*tlist, target_result);
@@ -1451,33 +1439,33 @@ transformSkylineClause(ParseState *pstate,
 		return NULL;
 
 	{
-		SkylineByClause	*sbc = (SkylineByClause*)skylineByClause;
+		SkylineByClause *sbc = (SkylineByClause *) skylineByClause;
 		List	   *resultlist = NIL;
 		ListCell   *slitem;
 		List	   *skylinelist = sbc->skyline_by_list;
-		SkylineClause  *node = makeNode(SkylineClause);
+		SkylineClause *node = makeNode(SkylineClause);
 
 		foreach(slitem, skylinelist)
 		{
-			SkylineByExpr	*skylineby = lfirst(slitem);
+			SkylineByExpr *skylineby = lfirst(slitem);
 			TargetEntry *tle;
 
 			tle = findTargetlistEntry(pstate, skylineby->node,
 									  targetlist, SKYLINE_CLAUSE);
 
 			resultlist = addTargetToSkylineList(pstate, tle,
-								   resultlist, *targetlist,
-								   skylineby->skylineby_dir,
-								   skylineby->skylineby_nulls,
-								   skylineby->useOp,
-								   resolveUnknown);
+												resultlist, *targetlist,
+												skylineby->skylineby_dir,
+												skylineby->skylineby_nulls,
+												skylineby->useOp,
+												resolveUnknown);
 		}
 
 		node->skyline_distinct = sbc->skyline_distinct;
 		node->skyline_by_list = resultlist;
 		node->skyline_by_options = sbc->skyline_by_options;
 
-		return (Node*)node;
+		return (Node *) node;
 	}
 }
 
@@ -1723,21 +1711,22 @@ addTargetToSortList(ParseState *pstate, TargetEntry *tle,
 										  restype,
 										  restype,
 										  false);
+
 			/*
-			 * Verify it's a valid ordering operator, and determine
-			 * whether to consider it like ASC or DESC.
+			 * Verify it's a valid ordering operator, and determine whether to
+			 * consider it like ASC or DESC.
 			 */
 			if (!get_compare_function_for_ordering_op(sortop,
 													  &cmpfunc, &reverse))
 				ereport(ERROR,
 						(errcode(ERRCODE_WRONG_OBJECT_TYPE),
-						 errmsg("operator %s is not a valid ordering operator",
-								strVal(llast(sortby_opname))),
+					   errmsg("operator %s is not a valid ordering operator",
+							  strVal(llast(sortby_opname))),
 						 errhint("Ordering operators must be \"<\" or \">\" members of btree operator families.")));
 			break;
 		default:
 			elog(ERROR, "unrecognized sortby_dir: %d", sortby_dir);
-			sortop = InvalidOid; /* keep compiler quiet */
+			sortop = InvalidOid;	/* keep compiler quiet */
 			reverse = false;
 			break;
 	}
@@ -1776,9 +1765,9 @@ addTargetToSortList(ParseState *pstate, TargetEntry *tle,
 
 List *
 addTargetToSkylineList(ParseState *pstate, TargetEntry *tle,
-					List *skylinelist, List *targetlist,
-					SkylineByDir skylineby_dir, SkylineByNulls skylineby_nulls,
-					List *skylineby_opname, bool resolveUnknown)
+					   List *skylinelist, List *targetlist,
+					   SkylineByDir skylineby_dir, SkylineByNulls skylineby_nulls,
+					   List *skylineby_opname, bool resolveUnknown)
 {
 	Oid			restype = exprType((Node *) tle->expr);
 	Oid			skylineop;
@@ -1812,26 +1801,27 @@ addTargetToSkylineList(ParseState *pstate, TargetEntry *tle,
 		case SKYLINEBY_USING:
 			Assert(skylineby_opname != NIL);
 			skylineop = compatible_oper_opid(skylineby_opname,
-										  restype,
-										  restype,
-										  false);
+											 restype,
+											 restype,
+											 false);
+
 			/*
-			 * Verify it's a valid ordering operator, and determine
-			 * whether to consider it like ASC or DESC.
+			 * Verify it's a valid ordering operator, and determine whether to
+			 * consider it like ASC or DESC.
 			 */
-			// FIXME: fix wording for error message
+			/* FIXME: fix wording for error message */
 			if (!get_compare_function_for_ordering_op(skylineop,
 													  &cmpfunc, &reverse))
 				ereport(ERROR,
 						(errcode(ERRCODE_WRONG_OBJECT_TYPE),
-						 errmsg("operator %s is not a valid ordering operator",
-								strVal(llast(skylineby_opname))),
+					   errmsg("operator %s is not a valid ordering operator",
+							  strVal(llast(skylineby_opname))),
 						 errhint("Ordering operators must be \"<\" or \">\" members of btree operator families.")));
 
 			break;
 		default:
 			elog(ERROR, "unrecognized skylineby_dir: %d", skylineby_dir);
-			skylineop = InvalidOid; /* keep compiler quiet */
+			skylineop = InvalidOid;		/* keep compiler quiet */
 			reverse = false;
 			break;
 	}
@@ -1839,7 +1829,7 @@ addTargetToSkylineList(ParseState *pstate, TargetEntry *tle,
 	/* avoid making duplicate sortlist entries */
 	if (!targetIsInSortList(tle, skylineop, skylinelist))
 	{
-		SkylineBy *skylinecl = makeNode(SkylineBy);
+		SkylineBy  *skylinecl = makeNode(SkylineBy);
 
 		/* FIXME: what is it good for? */
 		/* NOTE: I think this is just for GROUP/SORT */

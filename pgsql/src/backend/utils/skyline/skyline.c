@@ -2,13 +2,15 @@
 
 #include "utils/skyline.h"
 
-typedef enum {
+typedef enum
+{
 	SOT_UNKNOWN,
 	SOT_METHOD,
 	SOT_PARAM
 } SkylineOptionType;
 
-typedef struct {
+typedef struct
+{
 	char			   *name;
 	SkylineOptionType	option_type;
 	SkylineMethod		skyline_method;
@@ -36,11 +38,11 @@ skyline_options[] = {
 static int
 cmp_skyline_option(const void *m1, const void *m2)
 {
-	return strcmp(((SkylineAnOption*)m1)->name, ((SkylineAnOption*)m2)->name);
+	return strcmp(((SkylineAnOption *) m1)->name, ((SkylineAnOption *) m2)->name);
 }
 
 static SkylineAnOption *
-skyline_lookup_option(const char * name)
+skyline_lookup_option(const char *name)
 {
 	SkylineAnOption key;
 
@@ -48,19 +50,19 @@ skyline_lookup_option(const char * name)
 	Assert(strlen(name) > 0);
 
 	key.name = name;
-	return (SkylineAnOption*)bsearch(&key, skyline_options, lengthof(skyline_options), sizeof(skyline_options[0]), cmp_skyline_option);
+	return (SkylineAnOption *) bsearch(&key, skyline_options, lengthof(skyline_options), sizeof(skyline_options[0]), cmp_skyline_option);
 }
 
 /*
  * skyline_option_get_int
  *
- *  Query the SKYLINE BY ... WITH param=xxx list for the param `name'
- *  returns true if value is present
+ *	Query the SKYLINE BY ... WITH param=xxx list for the param `name'
+ *	returns true if value is present.
  */
 bool
 skyline_option_get_int(List *skyline_by_options, char *name, int *value)
 {
-	ListCell	*l;
+	ListCell   *l;
 
 	AssertArg(name != NULL);
 	AssertArg(value != NULL);
@@ -71,6 +73,7 @@ skyline_option_get_int(List *skyline_by_options, char *name, int *value)
 	foreach(l, skyline_by_options)
 	{
 		SkylineOption *option = (SkylineOption *) lfirst(l);
+
 		if (strcmp(option->name, name) == 0)
 		{
 			A_Const    *arg = (A_Const *) option->value;
@@ -95,11 +98,12 @@ skyline_option_get_int(List *skyline_by_options, char *name, int *value)
 }
 
 SkylineMethod
-skyline_method_forced_by_options(SkylineClause* skyline_clause)
+skyline_method_forced_by_options(SkylineClause *skyline_clause)
 {
 	SkylineMethod skyline_method = SM_UNKNOWN;
 
-	ListCell	*l;
+	ListCell   *l;
+
 	foreach(l, skyline_clause->skyline_by_options)
 	{
 		SkylineOption *option = (SkylineOption *) lfirst(l);
@@ -134,7 +138,7 @@ skyline_method_forced_by_options(SkylineClause* skyline_clause)
 }
 
 int
-skyline_get_dim(SkylineClause * skyline_clause)
+skyline_get_dim(SkylineClause *skyline_clause)
 {
 	if (skyline_clause == NULL)
 		return 0;
@@ -143,10 +147,10 @@ skyline_get_dim(SkylineClause * skyline_clause)
 }
 
 SkylineMethod
-skyline_choose_method(SkylineClause * skyline_clause, bool has_matching_path)
+skyline_choose_method(SkylineClause *skyline_clause, bool has_matching_path)
 {
-	SkylineMethod	skyline_method = SM_UNKNOWN;
-	int				skyline_dim = skyline_get_dim(skyline_clause);
+	SkylineMethod skyline_method = SM_UNKNOWN;
+	int			skyline_dim = skyline_get_dim(skyline_clause);
 
 	skyline_method = skyline_method_forced_by_options(skyline_clause);
 
@@ -190,32 +194,37 @@ skyline_method_preserves_tuple_order(SkylineMethod skyline_method)
 		case SM_1DIM_DISTINCT:
 		case SM_SIMPLENESTEDLOOP:
 		case SM_MATERIALIZEDNESTEDLOOP:
-			/* these methods preserve the relative order of the tuples,
-			 * so e.g. we may keep the current_pathkeys in the grouping_planner
+			/*
+			 * These methods preserve the relative order of the tuples, so
+			 * e.g. we may keep the current_pathkeys in the grouping_planner.
 			 */
 			return true;
 		case SM_2DIM_PRESORT:
-			/* 2d with presort may overall change the order of the tuples
-			 * but the filtering step of this methodes preserved them and we
-			 * are using an extra sort plan node, so this pathkey can be usind
-			 * by an eventually following sort plan node
+			/*
+			 * 2d with presort may overall change the order of the tuples but
+			 * the filtering step of this methodes preserved them and we are
+			 * using an extra sort plan node, so this pathkey can be usind by
+			 * an eventually following sort plan node
 			 */
 			return true;
 		case SM_BLOCKNESTEDLOOP:
-			/* block nested loop eventually changes the order of the tuples
-			 * so we must drop the current_pathkeys
-			 * this is still true even if the relative order in the tuple window
-			 * is preserved
+			/*
+			 * Block nested loop eventually changes the order of the tuples so
+			 * we must drop the current_pathkeys this is still true even if
+			 * the relative order in the tuple window is preserved.
 			 */
 			return false;
 		case SM_SFS:
-			/* the order of the tuples is not changed by the Sort Filter Skyline
-			 * method, so the current_pathkeys can be kept
+			/*
+			 * The order of the tuples is not changed by the Sort Filter
+			 * Skyline method, so the current_pathkeys can be kept.
 			 */
 			return true;
 		default:
-			/* this we drop it on default */
-			elog(WARNING, "FIXME: skyline method `%d' unknown in %", skyline_method, __FUNCTION__);
+			/* 
+			 * We drop it on default.
+			 */
+			elog(WARNING, "FIXME: skyline method `%d' unknown at %s:%d", skyline_method, __FILE__, __LINE__);
 			return false;
 	}
 }
@@ -226,64 +235,67 @@ skyline_method_name(SkylineMethod skyline_method)
 {
 	switch (skyline_method)
 	{
-	case SM_UNKNOWN:
-		return "unknown";
-	case SM_1DIM:
-		return "1dim";
-	case SM_1DIM_DISTINCT:
-		return "1dim distinct";
-	case SM_2DIM_PRESORT:
-		return "presort";
-	case SM_SIMPLENESTEDLOOP:
-		return "snl";
-	case SM_MATERIALIZEDNESTEDLOOP:
-		return "mnl";
-	case SM_BLOCKNESTEDLOOP:
-		return "bnl";
-	case SM_SFS:
-		return "sfs";
-	default:
-		return "?";
+		case SM_UNKNOWN:
+			return "unknown";
+		case SM_1DIM:
+			return "1dim";
+		case SM_1DIM_DISTINCT:
+			return "1dim distinct";
+		case SM_2DIM_PRESORT:
+			return "presort";
+		case SM_SIMPLENESTEDLOOP:
+			return "snl";
+		case SM_MATERIALIZEDNESTEDLOOP:
+			return "mnl";
+		case SM_BLOCKNESTEDLOOP:
+			return "bnl";
+		case SM_SFS:
+			return "sfs";
+		default:
+			return "?";
 	}
 }
 
 /*
  * skyline_methode_can_use_limit
- *   Do we have to process all outer at least once tuples befor we
- *   can return some?
+ *	 Do we have to process all outer at least once tuples befor we
+ *	 can return some?
  */
 bool
 skyline_methode_can_use_limit(SkylineMethod skyline_method)
 {
 	switch (skyline_method)
 	{
-	case SM_UNKNOWN:
-	case SM_1DIM:
-	case SM_1DIM_DISTINCT:
-		/* we have to read them all */
-	case SM_BLOCKNESTEDLOOP:
-		/* we have to read theam all at least once befor we can 
-		 * be sure that the first tuple survived 
-		 */
-		return false;
-	
-	case SM_SIMPLENESTEDLOOP:
-	case SM_MATERIALIZEDNESTEDLOOP:
-		/* we are cheating here, since the for every tuple the entire
-		 * outerplan is read, but once it survived this we can return
-		 * it
-		 */
-	case SM_2DIM_PRESORT:
-		/* if it's not dominated by the current we can return it
-		 * and make it the new current
-		 */
-	case SM_SFS:
-		/* we can return a tuple if it is not dominated by one in the
-		 * tuple window
-		 */
-		return true;
-	default:
-		elog(WARNING, "FIXME: skyline method `%d' unknown in %", skyline_method, __FUNCTION__);
-		return false;
+		case SM_UNKNOWN:
+		case SM_1DIM:
+		case SM_1DIM_DISTINCT:
+			/* We have to read them all. */
+		case SM_BLOCKNESTEDLOOP:
+			/*
+			 * We have to read them all at least once befor we can be sure
+			 * that the first tuple survived.
+			 */
+			return false;
+
+		case SM_SIMPLENESTEDLOOP:
+		case SM_MATERIALIZEDNESTEDLOOP:
+			/*
+			 * We are cheating here, since the for every tuple the entire
+			 * outerplan is read, but once it survived this we can return it.
+			 */
+		case SM_2DIM_PRESORT:
+			/*
+			 * If it's not dominated by the current we can return it and make
+			 * it the new current.
+			 */
+		case SM_SFS:
+			/*
+			 * We can return a tuple if it is not dominated by one in the
+			 * tuple window.
+			 */
+			return true;
+		default:
+			elog(WARNING, "FIXME: skyline method `%d' unknown at %s:%d", skyline_method, __FILE__, __LINE__);
+			return false;
 	}
 }

@@ -36,6 +36,7 @@
 
 /* Hook for plugins to get control in ExplainOneQuery() */
 ExplainOneQuery_hook_type ExplainOneQuery_hook = NULL;
+
 /* Hook for plugins to get control in explain_get_index_name() */
 explain_get_index_name_hook_type explain_get_index_name_hook = NULL;
 
@@ -718,8 +719,8 @@ explain_outNode(StringInfo str,
 			}
 			break;
 		case T_Skyline:
-			appendStringInfo(str, " using method %s", 
-							 skyline_method_name(((Skyline *) plan)->skyline_method));
+			appendStringInfo(str, " using method %s",
+					skyline_method_name(((Skyline *) plan)->skyline_method));
 			break;
 		default:
 			break;

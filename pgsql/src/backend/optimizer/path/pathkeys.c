@@ -342,18 +342,20 @@ skyline_pathkeys_contained_in(List *keys1, List *keys2, int *nuseful)
 	ListCell   *key1,
 			   *key2;
 	int			maxidx = 0;
-	bool		contained = true; /* It's contained if it's empty but that will never happen */
+	bool		contained = true;		/* It's contained if it's empty but
+										 * that will never happen */
 
 	foreach(key1, keys1)
 	{
-		int	 idx = 0;
-		PathKey	   *pathkey1 = (PathKey *) lfirst(key1);
+		int			idx = 0;
+		PathKey    *pathkey1 = (PathKey *) lfirst(key1);
 
 		contained = false;
 
 		foreach(key2, keys2)
 		{
-			PathKey	   *pathkey2 = (PathKey *) lfirst(key2);
+			PathKey    *pathkey2 = (PathKey *) lfirst(key2);
+
 			++idx;
 
 			if (pathkey1 == pathkey2)
@@ -877,16 +879,16 @@ make_pathkeys_for_skylineclause(PlannerInfo *root,
 {
 	List	   *pathkeys = NIL;
 	ListCell   *l;
-	
+
 	if (skylineclause != NULL)
 	{
 		foreach(l, skylineclause->skyline_by_list)
 		{
 			SkylineBy  *skylineby = (SkylineBy *) lfirst(l);
 			Expr	   *sortkey;
-			PathKey	   *pathkey;
+			PathKey    *pathkey;
 
-			sortkey = (Expr *) get_sortgroupclause_expr((SortClause*)skylineby, tlist);
+			sortkey = (Expr *) get_sortgroupclause_expr((SortClause *) skylineby, tlist);
 			pathkey = make_pathkey_from_sortinfo(root,
 												 sortkey,
 												 skylineby->sortop,
@@ -1148,7 +1150,6 @@ select_outer_pathkeys_for_merge(PlannerInfo *root,
 	 * Find out if we have all the ECs mentioned in query_pathkeys; if so
 	 * we can generate a sort order that's also useful for final output.
 	 * There is no percentage in a partial match, though, so we have to
-	 * have 'em all.
 	 */
 	if (root->query_pathkeys)
 	{

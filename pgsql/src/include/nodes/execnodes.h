@@ -1338,24 +1338,20 @@ typedef enum SkylineSource SkylineSource;
 
 typedef struct SkylineState
 {
-	ScanState	ss;				/* its first field is NodeTag */
-	SkylineStatus	status;
-	SkylineMethod	skyline_method;
-
-	FmgrInfo   *compareOpFn;	/* compare funtions */
-	int		   *compareFlags;
-
-	int64		sl_pos;			/* used for materialized nested loop */
-
-	Tuplestorestate	*tuplestorestate; /* used for 1d distinct */
-
-	TupleWindowState *window;	/* used for Block Nested Loop (BNL) */
-	int64		timestampIn;
-	int64		timestampOut;
-	SkylineSource	source;
-	Tuplestorestate *tempIn;
-	Tuplestorestate *tempOut;
-	TupleTableSlot	*extraSlot;
+	ScanState			ss;					/* its first field is NodeTag */
+	SkylineStatus		status;
+	SkylineMethod		skyline_method;
+	FmgrInfo		   *compareOpFn;		/* compare funtions */
+	int				   *compareFlags;
+	int64				sl_pos;				/* for MNL */
+	Tuplestorestate	   *tuplestorestate;	/* used for 1d distinct */
+	TupleWindowState   *window;				/* for BNL and SFS */
+	int64				timestampIn;
+	int64				timestampOut;
+	SkylineSource		source;
+	Tuplestorestate	   *tempIn;
+	Tuplestorestate	   *tempOut;
+	TupleTableSlot	   *extraSlot;
 } SkylineState;
 
 /* ---------------------

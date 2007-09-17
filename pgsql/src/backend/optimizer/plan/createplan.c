@@ -2693,23 +2693,25 @@ add_sort_column(AttrNumber colIdx, Oid sortOp, bool nulls_first,
 static double
 factorial(int d)
 {
-	// FIXME: take care for over runs
-	double res = 1.0;
-	for ( ; d > 1 ; d--)
+	/* FIXME: take care for over runs */
+	double		res = 1.0;
+
+	for (; d > 1; d--)
 		res *= d;
 
 	return res;
 }
-// FIXME: ticket:34
+
+/*	FIXME: ticket:34 */
 static double
 estimate_skyline_cardinality(double n, int d)
 {
-	double res;
+	double		res;
 
 	if (n <= 1.0)
 		return 1.0;
 
-	res = pow(log(n+1.0), d-1) / factorial(d-1);
+	res = pow(log(n + 1.0), d - 1) / factorial(d - 1);
 
 	/* avoid patological cases */
 	if (res > n)
@@ -2727,10 +2729,10 @@ make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause, SkylineMet
 	Plan	   *outertree = lefttree;
 	List	   *sub_tlist = outertree->targetlist;
 	ListCell   *l;
-	Skyline	   *node = makeNode(Skyline);
+	Skyline    *node = makeNode(Skyline);
 	Plan	   *plan = &node->plan;
 	int			numskylinecols;
-	SkylineClause   *sc = (SkylineClause*)skyline_clause;
+	SkylineClause *sc = (SkylineClause *) skyline_clause;
 	List	   *skylinecls = sc->skyline_by_list;
 
 	plan->targetlist = outertree->targetlist;
@@ -2738,39 +2740,43 @@ make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause, SkylineMet
 	plan->lefttree = outertree;
 
 	if (skyline_method == SM_SIMPLENESTEDLOOP)
-		// FIXME: this does not realy work, the references in a SeqScan could be cyclic and
-		// result a MemoryLeak or/and BufferPinCount error.
-		plan->righttree = (Plan *)copyObject(outertree);
+		/*
+		 * FIXME: this does not realy work, the references in a SeqScan could
+		 * be cyclic and result in a memory leak or/and BufferPinCount error.
+		 */
+		plan->righttree = (Plan *) copyObject(outertree);
 	else
 		plan->righttree = NULL;
 
 	numskylinecols = list_length(skylinecls);
-	
+
 	node->skylineColIdx = (AttrNumber *) palloc(numskylinecols * sizeof(AttrNumber));
 	node->skylinebyOperators = (Oid *) palloc(numskylinecols * sizeof(Oid));
 	node->nullsFirst = (bool *) palloc(numskylinecols * sizeof(bool));
 	node->skylineByDir = (int *) palloc(numskylinecols * sizeof(int));
 
-	numskylinecols=0;
+	numskylinecols = 0;
 	foreach(l, skylinecls)
 	{
-		SkylineBy *skylinecl = (SkylineBy *) lfirst(l);
+		SkylineBy  *skylinecl = (SkylineBy *) lfirst(l);
 		TargetEntry *tle = get_skylineclause_tle(skylinecl, sub_tlist);
 
 		node->skylineColIdx[numskylinecols] = tle->resno;
 		node->skylinebyOperators[numskylinecols] = skylinecl->sortop;
 		node->nullsFirst[numskylinecols] = skylinecl->nulls_first;
-		node->skylineByDir[numskylinecols] = (int)skylinecl->skylineby_dir;
+		node->skylineByDir[numskylinecols] = (int) skylinecl->skylineby_dir;
 
 		numskylinecols++;
 	}
-	
+
 	node->numCols = numskylinecols;
 
-	copy_plan_costsize(plan, outertree); /* only care about copying size */
+	/* only care about copying size */
+	copy_plan_costsize(plan, outertree);
+
 	plan->plan_rows = estimate_skyline_cardinality(outertree->plan_rows, numskylinecols);
 	{
-		Path	path; /* just a dummy */
+		Path		path;		/* just a dummy */
 
 		cost_skyline(&path, root, outertree->plan_rows, outertree->startup_cost, plan->plan_rows, outertree->plan_width, numskylinecols, skyline_method, limit_tuples);
 
@@ -2782,7 +2788,8 @@ make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause, SkylineMet
 	node->skyline_by_options = sc->skyline_by_options;
 	node->skyline_method = skyline_method;
 
-	return node; /* to disable use: (Skyline*) lefttree; */
+	/* To disable use: return (Skyline *) lefttree; */
+	return node;
 }
 
 /*

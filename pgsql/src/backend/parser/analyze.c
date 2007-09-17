@@ -731,10 +731,6 @@ transformSelectStmt(ParseState *pstate, SelectStmt *stmt)
 												&qry->targetList,
 												true /* fix unknowns */ );
 
-	/* for debugging use, make it a guc?
-	 * nodeDisplay(qry->skylineClause);
-	 */
-
 	qry->limitOffset = transformLimitClause(pstate, stmt->limitOffset,
 											"OFFSET");
 	qry->limitCount = transformLimitClause(pstate, stmt->limitCount,

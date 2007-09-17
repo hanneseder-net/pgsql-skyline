@@ -158,9 +158,9 @@ typedef struct PlannerInfo
 	List	   *query_pathkeys; /* desired pathkeys for query_planner(), and
 								 * actual pathkeys afterwards */
 
-	List	   *group_pathkeys; /* groupClause pathkeys, if any */
-	List	   *skyline_pathkeys;	/* skylineClause pathkeys, if any */
-	List	   *sort_pathkeys;	/* sortClause pathkeys, if any */
+	List	   *group_pathkeys;			/* groupClause pathkeys, if any */
+	List	   *skyline_pathkeys;		/* skylineClause pathkeys, if any */
+	List	   *sort_pathkeys;			/* sortClause pathkeys, if any */
 
 	MemoryContext planner_cxt;	/* context holding PlannerInfo */
 

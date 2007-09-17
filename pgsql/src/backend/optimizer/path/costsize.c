@@ -644,6 +644,7 @@ cost_bitmap_tree_node(Path *path, Cost *cost, Selectivity *selec)
 	{
 		*cost = ((IndexPath *) path)->indextotalcost;
 		*selec = ((IndexPath *) path)->indexselectivity;
+
 		/*
 		 * Charge a small amount per retrieved tuple to reflect the costs of
 		 * manipulating the bitmap.  This is mostly to make sure that a bitmap
@@ -916,25 +917,29 @@ cost_valuesscan(Path *path, PlannerInfo *root, RelOptInfo *baserel)
 }
 
 void
-cost_skyline(Path *path, PlannerInfo *root,  Cost input_cost, double input_tuples, int width, double output_tuples, int skyline_dim, SkylineMethod skyline_method, int limit_tuples)
+cost_skyline(Path *path, PlannerInfo *root, Cost input_cost, double input_tuples, int width, double output_tuples, int skyline_dim, SkylineMethod skyline_method, int limit_tuples)
 {
 	Cost		startup_cost = input_cost;
 	Cost		run_cost = 0;
 	double		input_bytes = relation_byte_size(input_tuples, width);
 	double		output_bytes;
 	long		work_mem_bytes = work_mem * 1024L;
-	/* the number of compare operator call for comparing two tuples 
-	 * for the moment we assume have to compare all dims in any case
+	bool		enough_memory;
+
+	/*
+	 * The number of compare operator call for comparing two tuples. For the
+	 * moment we assume have to compare all dims in any case.
+	 *
 	 * FIXME: see ticket:39 and [165]
 	 */
-	double		cmps =  1.0 * skyline_dim;
+	double		cmps = 1.0 * skyline_dim;
 
 	/* Do we have useful LIMIT? */
-	bool		limit_is_useful = 
-		limit_tuples > 0
-		&& limit_tuples < input_tuples 
-		&& limit_tuples < output_tuples
-		&& skyline_methode_can_use_limit(skyline_method);
+	bool		limit_is_useful =
+	limit_tuples > 0
+	&& limit_tuples < input_tuples
+	&& limit_tuples < output_tuples
+	&& skyline_methode_can_use_limit(skyline_method);
 
 	output_bytes = relation_byte_size((limit_is_useful ? limit_tuples : output_tuples), width);
 
@@ -942,25 +947,21 @@ cost_skyline(Path *path, PlannerInfo *root,  Cost input_cost, double input_tuple
 	if (skyline_method == SM_UNKNOWN)
 		skyline_method = SM_BLOCKNESTEDLOOP;
 
-	/* Note that we do not take into account here that the user might
-  	 * has overwritten window size in terms of memory or slot count
+	/*
+	 * Note that we do not take into account here that the user might has
+	 * overwritten window size in terms of memory or slot count
 	 */
-	if (output_bytes > work_mem_bytes)
-	{
-		/*
-		 * The tuple window is not large enough to hold all output tuples
-		 */
-		/* FIXME */
+	enough_memory = output_bytes < work_mem_bytes;
 
-		startup_cost += 0;
-	}
-	else
+	switch (skyline_method)
 	{
-		switch (skyline_method)
-		{
 		case SM_1DIM:
-			/* we cheat a bit here, we assume that in general there are no
-			 * duplicates or at least very little compared to the input_tuples
+
+			/*
+			 * We cheat a bit here, we assume that in general there are no
+			 * duplicates or at least very little compared to the
+			 * input_tuples. Since we only keep the current dominating tuple
+			 * in a slot we are not constraint by enough_memory.
 			 */
 			startup_cost += cmps * cpu_operator_cost * input_tuples;
 			break;
@@ -969,18 +970,26 @@ cost_skyline(Path *path, PlannerInfo *root,  Cost input_cost, double input_tuple
 			startup_cost += cmps * cpu_operator_cost * input_tuples;
 			break;
 		case SM_2DIM_PRESORT:
-			/* we just have to compare all input_tuples to the current dominating
-			 * we don't take into account that we could stop earlier because of
-			 * reaching LIMIT
+
+			/*
+			 * we just have to compare all input_tuples to the current
+			 * dominating we don't take into account that we could stop
+			 * earlier because of reaching LIMIT
 			 */
 			startup_cost += cmps * cpu_operator_cost * input_tuples;
 			break;
 		case SM_SIMPLENESTEDLOOP:
-			/* FIXME: we don't treat it special, because it might dissapeare anyway */
+
+			/*
+			 * FIXME: we don't treat it special, because it might dissapeare
+			 * anyway
+			 */
 		case SM_MATERIALIZEDNESTEDLOOP:
-			/* if no LIMIT is given we compare every tuples against every tuples.
-			 * if we do have a useful LIMIT we assume that the skyline tuples
-			 * are evenly distributed
+
+			/*
+			 * if no LIMIT is given we compare every tuples against every
+			 * tuples. if we do have a useful LIMIT we assume that the skyline
+			 * tuples are evenly distributed
 			 */
 			if (limit_is_useful)
 				startup_cost += cmps * cpu_operator_cost * input_tuples * (input_tuples * limit_tuples / output_tuples);
@@ -989,28 +998,35 @@ cost_skyline(Path *path, PlannerInfo *root,  Cost input_cost, double input_tuple
 			break;
 
 		case SM_BLOCKNESTEDLOOP:
-			/* FIXME: ASSUMATION: on average we have to compare the input_tuples to the half
-			 * of the tuples in the window (output_tuples)
+
+			/*
+			 * FIXME: ASSUMATION: on average we have to compare the
+			 * input_tuples to the half of the tuples in the window
+			 * (output_tuples)
 			 *
-			 * FIXME: we don't gain anything by LIMIT, because tuples could be kicked out of the 
-			 * tuplewindow, for instance there could be a single best tuple at the very end
+			 * FIXME: we don't gain anything by LIMIT, because tuples could be
+			 * kicked out of the tuplewindow, for instance there could be a
+			 * single best tuple at the very end
 			 */
 			startup_cost += cmps * cpu_operator_cost * input_tuples * 0.5 * output_tuples;
 			break;
 		case SM_SFS:
-			/* FIXME: ASSUMATION: on average we have to compare the input_tuples to the half
-			 * of the tuples in the window (output_tuples)
-			 * In case of SFS the output_tuples might have been reduced by LIMIT.
+
+			/*
+			 * FIXME: ASSUMATION: on average we have to compare the
+			 * input_tuples to the half of the tuples in the window
+			 * (output_tuples) In case of SFS the output_tuples might have
+			 * been reduced by LIMIT.
 			 */
 			startup_cost += cmps * cpu_operator_cost * input_tuples * 0.5 * (limit_is_useful ? limit_tuples : output_tuples);
 			break;
 		default:
-			elog(WARNING, "FIXME: skyline method `%d' unknown in %", skyline_method, __FUNCTION__);
+			elog(WARNING, "FIXME: skyline method `%d' unknown at %s:%d", skyline_method, __FILE__, __LINE__);
 			break;
-		}
 	}
 
 	/* FIXME: needs more toughts */
+
 	/*
 	 * Also charge a small amount (arbitrarily set equal to operator cost) per
 	 * extracted tuple.  Note it's correct to use tuples not output_tuples
@@ -2003,14 +2019,16 @@ cost_qual_eval_walker(Node *node, cost_qual_eval_context *context)
 			locContext.root = context->root;
 			locContext.total.startup = 0;
 			locContext.total.per_tuple = 0;
+
 			/*
-			 * For an OR clause, recurse into the marked-up tree so that
+			 * For an OR clause, recurse into the marked-up tree so that we
 			 * we set the eval_cost for contained RestrictInfos too.
 			 */
 			if (rinfo->orclause)
 				cost_qual_eval_walker((Node *) rinfo->orclause, &locContext);
 			else
 				cost_qual_eval_walker((Node *) rinfo->clause, &locContext);
+
 			/*
 			 * If the RestrictInfo is marked pseudoconstant, it will be tested
 			 * only once, so treat its cost as all startup cost.

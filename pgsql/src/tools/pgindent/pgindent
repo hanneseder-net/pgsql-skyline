@@ -190,6 +190,7 @@ do
 -TAlterDomainStmt \
 -TAlterFunctionStmt \
 -TAlterObjectSchemaStmt \
+-TAlterOpFamilyStmt \
 -TAlterOwnerStmt \
 -TAlterRoleSetStmt \
 -TAlterRoleStmt \
@@ -211,6 +212,7 @@ do
 -TArchiveMode \
 -TArchiverStage \
 -TArrayBuildState \
+-TArrayCoerceExpr \
 -TArrayConstIterState \
 -TArrayExpr \
 -TArrayExprIterState \
@@ -354,6 +356,7 @@ do
 -TCoerceToDomain \
 -TCoerceToDomainState \
 -TCoerceToDomainValue \
+-TCoerceViaIO \
 -TCoercionCodes \
 -TCoercionContext \
 -TCoercionForm \
@@ -388,9 +391,11 @@ do
 -TCreateCastStmt \
 -TCreateConversionStmt \
 -TCreateDomainStmt \
+-TCreateEnumStmt \
 -TCreateFunctionStmt \
 -TCreateOpClassItem \
 -TCreateOpClassStmt \
+-TCreateOpFamilyStmt \
 -TCreatePLangStmt \
 -TCreateRoleStmt \
 -TCreateSchemaStmt \
@@ -404,6 +409,7 @@ do
 -TCreatedbStmt \
 -TCred \
 -TCtlCommand \
+-TCurrentOfExpr \
 -TCustomOutPtr \
 -TDBState \
 -TDCHCacheEntry \
@@ -433,6 +439,7 @@ do
 -TDeleteStmt \
 -TDependencyType \
 -TDestReceiver \
+-TDiscardStmt \
 -TDistinctExpr \
 -TDl_info \
 -TDlelem \
@@ -492,6 +499,7 @@ do
 -TExprDoneCond \
 -TExprState \
 -TExprStateEvalFunc \
+-TEquivalenceClass \
 -TFF \
 -TFILE \
 -TFSMHeader \
@@ -746,6 +754,7 @@ do
 -TIntArray \
 -TInternalGrant \
 -TInterval \
+-TIntoClause \
 -TInvalidationChunk \
 -TInvalidationListHeader \
 -TIpcMemoryId \
@@ -1035,6 +1044,7 @@ do
 -TParamRef \
 -TParseState \
 -TPath \
+-TPathKey \
 -TPathKeyItem \
 -TPathKeysComparison \
 -TPattern_Prefix_Status \
@@ -1063,6 +1073,7 @@ do
 -TPg_magic_struct \
 -TPlan \
 -TPlanState \
+-TPlannedStmt \
 -TPlannerInfo \
 -TPlannerParamItem \
 -TPoint \
@@ -1142,6 +1153,7 @@ do
 -TRelids \
 -TRemoveFuncStmt \
 -TRemoveOpClassStmt \
+-TRemoveOpFamilyStmt \
 -TRenameStmt \
 -TResTarget \
 -TResolveNew_context \
@@ -1236,6 +1248,20 @@ do
 -TSighandler_t \
 -TSigsave_t \
 -TSize \
+-TSkyline \
+-TSkylineAnOption \
+-TSkylineBy \
+-TSkylineByClause \
+-TSkylineByDir \
+-TSkylineByExpr \
+-TSkylineByNulls \
+-TSkylineClause \
+-TSkylineMethod \
+-TSkylineOption \
+-TSkylineOptionType \
+-TSkylineSource \
+-TSkylineState \
+-TSkylineStatus \
 -TSlruCtl \
 -TSlruCtlData \
 -TSlruErrorCause \
@@ -1424,6 +1450,8 @@ do
 -TTupleTable \
 -TTupleTableData \
 -TTupleTableSlot \
+-TTupleWindowSlot \
+-TTupleWindowState \
 -TTuplesortstate \
 -TTuplestorestate \
 -TTwoPhaseCallback \
@@ -1549,6 +1577,8 @@ do
 -TXactCallbackItem \
 -TXactEvent \
 -TXidStatus \
+-TXmlExpr \
+-TXmlSerialize \
 -TYYSTYPE \
 -TYY_BUFFER_STATE \
 -TYY_CHAR \

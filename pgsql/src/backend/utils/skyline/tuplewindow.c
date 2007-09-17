@@ -3,32 +3,33 @@
 #include "utils/tuplewindow.h"
 #include "utils/memutils.h"
 
-/* this is from tuplestore.c and could be factored out */
+/* TODO: This is from tuplestore.c and could be factored out. */
 #define LACKMEM(state)		((state)->availMem < 0)
 #define USEMEM(state,amt)	((state)->availMem -= (amt))
 #define FREEMEM(state,amt)	((state)->availMem += (amt))
 
-typedef struct TupleWindowSlot {
-	void   *tuple;
-	int64	timestamp;
-	struct TupleWindowSlot	*next;
-	struct TupleWindowSlot	*prev;
+typedef struct TupleWindowSlot
+{
+	void	   *tuple;
+	int64		timestamp;
+	struct TupleWindowSlot *next;
+	struct TupleWindowSlot *prev;
 } TupleWindowSlot;
 
-struct TupleWindowState {
-	long		availMem;		
-	long		availSlots;				// if -1 only restrict mem
-	TupleWindowSlot	*nil;
+struct TupleWindowState
+{
+	long		availMem;
+	long		availSlots;		/* if -1 only restrict mem */
+	TupleWindowSlot *nil;
 	TupleWindowSlot *current;
 };
 
-
 /*
- *  We are using a double linked list with a sentinel
+ * We are using a double linked list with a sentinel.
  *
- *  for double linked list with sentinel see: [COR2002, Ch. 10.2, p 204-209]
- *  [COR2002] Cormen, Thomas H., Introduction to Algorithms, 
- *  Second Edition, Third printing 2002, MIT Press, ISBN 0-262-03293-7
+ * For double linked list with sentinel see: [COR2002, Ch. 10.2, p 204-209]
+ * [COR2002] Cormen, Thomas H., Introduction to Algorithms,
+ * Second Edition, Third printing 2002, MIT Press, ISBN 0-262-03293-7
  */
 TupleWindowState *
 tuplewindow_begin(int maxKBytes, int maxSlots)
@@ -55,12 +56,12 @@ tuplewindow_has_freespace(TupleWindowState *state)
 {
 	if (state->availSlots != -1)
 		return (state->availSlots > 0);
-	else 
+	else
 		return !LACKMEM(state);
 }
 
 void
-tuplewindow_puttupleslot(TupleWindowState *state, 
+tuplewindow_puttupleslot(TupleWindowState *state,
 						 TupleTableSlot *slot,
 						 int64 timestamp)
 {
@@ -68,18 +69,19 @@ tuplewindow_puttupleslot(TupleWindowState *state,
 	TupleWindowSlot *windowSlot;
 
 	/*
-	 * Form a MinimalTuple in working memory
+	 * Form a MinimalTuple in working memory.
 	 */
 	tuple = ExecCopySlotMinimalTuple(slot);
 	USEMEM(state, GetMemoryChunkSpace(tuple));
 
-	windowSlot = (TupleWindowSlot*)palloc(sizeof(TupleWindowSlot));
+	windowSlot = (TupleWindowSlot *) palloc(sizeof(TupleWindowSlot));
 	USEMEM(state, GetMemoryChunkSpace(windowSlot));
 
 	if (state->availSlots != -1)
 	{
-		/* if we are counting the slots, then at this point availSlots 
-		 * must be > 0
+		/*
+		 * If we are counting the slots, then at this point availSlots must be
+		 * > 0.
 		 */
 		AssertState(state->availSlots > 0);
 
@@ -89,8 +91,9 @@ tuplewindow_puttupleslot(TupleWindowState *state,
 	windowSlot->tuple = tuple;
 	windowSlot->timestamp = timestamp;
 
-	/* we insert at the end of the list, to preserve
-     * relative tuple order
+	/*
+	 * We insert at the end of the list, to preserve relative tuple order in
+	 * the tuple window.
 	 */
 	windowSlot->next = state->nil;
 	windowSlot->prev = state->nil->prev;
@@ -117,24 +120,32 @@ tuplewindow_removeslot(TupleWindowState *state,
 	slot->prev = NULL;
 	slot->next = NULL;
 
-	/* HACK: we reclame the space, because ExecStoreMinimalTuple called with
-	 * true, so it will free the tuple
+	/*
+	 * HACK: We reclame the space here, because ExecStoreMinimalTuple called
+	 * with true, so it will free the tuple later.
 	 */
 	FREEMEM(state, GetMemoryChunkSpace(slot->tuple));
-	if (freetuple) {
+	if (freetuple)
+	{
 		pfree(slot->tuple);
 	}
 
 	FREEMEM(state, GetMemoryChunkSpace(slot));
 	pfree(slot);
 
-	if (state->availSlots != -1) {
-		/* if we are restricting the slots, then one more becomes available here */
+	if (state->availSlots != -1)
+	{
+		/*
+		 * If we are restricting the slots, then one more becomes available
+		 * here.
+		 */
 		state->availSlots++;
 	}
 
-	/* NOTE: if we are removing the current slot, reposition the cursor (current) to
-	 * the next slot
+	/*
+	 * NOTE: If we are removing the current slot, reposition the cursor
+	 * (current) to the next slot. So don't call tuplewindow_movenext in that
+	 * case.
 	 */
 	if (state->current == slot)
 		state->current = next;
@@ -187,15 +198,16 @@ tuplewindow_gettupleslot(TupleWindowState *state,
 	{
 		if (removeit)
 		{
-			/* remove the tuple from the tuple window, but don't free the
-			 * the tuple, let the ExecStoreMinimalTuple pfree it, HM? FIXME
+			/*
+			 * Remove the tuple from the tuple window, but don't free the the
+			 * tuple, let the ExecStoreMinimalTuple pfree it.
 			 */
 			ExecStoreMinimalTuple(state->current->tuple, slot, true);
 			tuplewindow_removeslot(state, state->current, false);
 		}
 		else
 		{
-			/* leave the tuple in the window */
+			/* Leave the tuple in the window. */
 			ExecStoreMinimalTuple(state->current->tuple, slot, false);
 		}
 		return true;
@@ -210,8 +222,9 @@ tuplewindow_gettupleslot(TupleWindowState *state,
 /*
  * tuplewindow_removecurrent
  *
- *  Removes the current slot from the window and moves the
- *  cursor (current) to the next slot
+ *	Removes the current slot from the window and moves the
+ *	cursor (current) to the next slot. No extra call to tuplewindow_movenext
+ *	needed in that case.
  */
 void
 tuplewindow_removecurrent(TupleWindowState *state)
@@ -225,28 +238,27 @@ tuplewindow_removecurrent(TupleWindowState *state)
 /*
  * tuplewindow_end
  *
- *  Release resources and cleanup
+ *	Release resources and cleanup.
  */
 void
 tuplewindow_end(TupleWindowState *state)
 {
 	/*
-	 * NOTE: we could also use the external interface, if we want to be
-	 * more independend from the internal representation
+	 * NOTE: we could also use the external interface, if we want to be more
+	 * independend from the internal representation.
+	 *
+	 *	tuplewindow_rewind(state); 
+	 *	while (!tuplewindow_ateof(state))
+	 *		tuplewindow_removecurrent(state);
 	 */
-	/*
-	tuplewindow_rewind(state);
-	while (!tuplewindow_ateof(state))
-	{
-		tuplewindow_removecurrent(state);
-	}
-	*/
 
 	/* free all slots */
 	TupleWindowSlot *slot = state->nil->next;
 
-	while (slot != state->nil) {
+	while (slot != state->nil)
+	{
 		TupleWindowSlot *next = slot->next;
+
 		pfree(slot->tuple);
 		pfree(slot);
 		slot = next;

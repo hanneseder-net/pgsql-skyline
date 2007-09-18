@@ -13,8 +13,8 @@ for dist in a c e; do
     done
 done
 
-$dist=e
-$dim=1
+dist=e
+dim=1
 
 for n in 100 1000 10000 100000 1000000; do
     pg_sldg -$dist -d $dim -n $n -r -i | $BINDIR/psql

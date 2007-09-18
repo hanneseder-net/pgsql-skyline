@@ -84,7 +84,6 @@ if ($opt{s} ne "") {
   $seed = "-s $opt{s}";
 }
 
-print "SEED: $seed\n";
 $ksldg_args = join(" ", "-$dist", "-d $dim", "-n $n", $seed, @ARGV);
 
 die "$0: error: you must spec. the number of dimensions, stopped at" if ($dim < 1);

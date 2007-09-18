@@ -18,6 +18,7 @@ FILE *flog = NULL;
 
 extern char * __progname;
 
+#define warning(FMT, ...) fprintf(stderr, "%s: warning: " FMT "\n", __progname, ##__VA_ARGS__)
 #define invalidargs(FMT, ...) fprintf(stderr, "%s: error: " FMT "\n", __progname, ##__VA_ARGS__), usage(), exit(1)
 #define fatal(FMT, ...) fprintf(stderr, "%s: error: " FMT "\n", __progname, ##__VA_ARGS__), exit(1)
 
@@ -56,7 +57,7 @@ main(int argc, char **argv)
   int stats = 0;
   char * filename = "-";
 
-  while ((c = getopt(argc, argv, "specad:n:o:h?")) != -1) {
+  while ((c = getopt(argc, argv, "tpecad:n:o:s:h?")) != -1) {
     switch (c) {
     case 'e':
     case 'c':
@@ -78,12 +79,16 @@ main(int argc, char **argv)
       header = 1;
       break;
 
-    case 's':
+    case 't':
       stats = 1;
       break;
 
     case 'o':
       filename = optarg;
+      break;
+
+    case 's':
+      srand(atoi(optarg));
       break;
 
     case 'h':
@@ -100,8 +105,13 @@ main(int argc, char **argv)
   if (dist == 0)
     invalidargs("no distribution selected");
 
-  if (dim < 2)
-    invalidargs("dimension less than 2");
+  if (dim < 1)
+    invalidargs("dimension less than 1");
+
+  if (dim < 2 && dist != 'e') {
+    dist = 'e';
+    warning("for 1 dimensional data, equal distribution is used");
+  }
 
   if (count <= 0)
     invalidargs("invalid number of vectors");
@@ -334,24 +344,26 @@ GenerateDataAnticorrelated(int Count, int Dimensions)
 static void
 usage()
 {
-  printf(
+  fprintf(stderr, 
 "\
 Test data generator for Skyline Operator\n\
 usage: %s [OPTIONS] [FILE]\n\
 \n\
 Options:\n\
-       -e       equally distributed\n\
-       -c       correlated\n\
-       -a       anti-correlated\n\
+       -e       equally distributed (dim >= 1)\n\
+       -c       correlated (dim >= 2)\n\
+       -a       anti-correlated (dim >= 2)\n\
 \n\
-       -d DIM   dimensions >=2\n\
+       -d DIM   dimensions >=1\n\
 \n\
        -n COUNT number of vectors\n\
+\n\
+       -s SEED  set random generator seed to SEED\n\
 \n\
        -p       print dimension and number of vectors\n\
        -o FILE  output filename, use `-' for stdout\n\
 \n\
-       -s       output stats to stderr\n\
+       -t       output stats to stderr\n\
 \n\
 Examples:\n\
        %s -e -d 3 -n 10\n\

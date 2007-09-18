@@ -1,3 +1,10 @@
+#
+# -*- Makefile -*-
+#
+#
+
+BINDIR = ~/bin
+
 all: kossmann-main ksldg nd
 
 kossmann-main: kossmann-main.cpp
@@ -11,3 +18,9 @@ nd: nd.c
 
 clean:
 	rm -rf kossmann-main ksldg kossmann-main.exe ksldg.exe
+
+install:
+	make clean
+	make
+	install ksldg $(BINDIR)
+	install pg_sldg.pl $(BINDIR)

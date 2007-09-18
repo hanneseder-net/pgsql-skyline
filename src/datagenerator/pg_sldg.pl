@@ -13,7 +13,9 @@ my $ksldg = "ksldg";
 sub init()
 {
     use Getopt::Std;
-    my $opt_string = 'hecad:n:p:rt:i';
+    $Getopt::Std::STANDARD_HELP_VERSION = true;
+    usage() if $#ARGV == -1;
+    my $opt_string = 'hecad:n:p:rt:is:';
     getopts( "$opt_string", \%opt ) or usage();
     usage() if $opt{h};
 }
@@ -23,21 +25,23 @@ sub init()
 #
 sub usage()
 {
-  print STDERR << "EOF";
+  print << "EOF";
 
 Data Generator for Skyline for feeding PostgreSQL psql
 
 usage: $0 [-hecadnrti] -- [OPTIONS FOR $ksldg]
 
- -h        : this (help) message
+ -h,  --help    print this help and exit.
+ --version      display the version of $0 and exit.
 
- -e|-c|-a  : distribution
- -d DIM    : dimensions
- -n NUMBER : number of vectors
- -p PAD    : add PAD long varchar for padding
- -r        : (re)create table
- -t TABLE  : override default table name [eca]$DIMd$NUMBER
- -i        : unique id for every vector
+ -e|-c|-a       distribution
+ -d DIM         dimensions
+ -n NUMBER      number of vectors
+ -s SEED        seed random generator to SEED
+ -p PAD         add PAD long varchar for padding
+ -r             (re)create table
+ -t TABLE       override default table name [eca]$DIMd$NUMBER
+ -i             unique id for every vector
 
 Options for $ksldg: see $ksldg -h
 
@@ -47,9 +51,24 @@ EOF
     exit;
 }
 
+
+sub HELP_MESSAGE()
+{
+  usage();
+}
+
+sub VERSION_MESSAGE()
+{
+  print << "EOF";
+$0 version 1.0
+EOF
+  exit();
+}
+
 init();
 
 die "$0: error: you must spec. exactly one distribution, stopped at" if ($opt{e} + $opt{c} + $opt{a} != 1);
+die "$0: error: you must spec. the number of vectors, stopped at" if ($opt{n} eq "");
 
 $header=1;
 $id = 1;
@@ -59,7 +78,16 @@ $dist = $opt{e} ? "e" : $opt{c} ? "c" : $opt{a} ? "a" : "?";
 $dim = $opt{d};
 $n = $opt{n};
 $pad = $opt{p};
-$ksldg_args = join(" ", "-$dist", "-d $dim", "-n $n", @ARGV);
+
+if ($opt{s} ne "") {
+  $seed = "-s $opt{s}";
+}
+
+print "SEED: $seed\n";
+$ksldg_args = join(" ", "-$dist", "-d $dim", "-n $n", $seed, @ARGV);
+
+die "$0: error: you must spec. the number of dimensions, stopped at" if ($dim < 1);
+
 
 $table = "$dist${dim}d$n";
 

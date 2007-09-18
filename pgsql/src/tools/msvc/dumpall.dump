@@ -1,0 +1,143 @@
+--
+-- PostgreSQL database cluster dump
+--
+
+\connect postgres
+
+SET client_encoding = 'SQL_ASCII';
+SET standard_conforming_strings = off;
+SET escape_string_warning = 'off';
+
+--
+-- Roles
+--
+
+CREATE ROLE "Hannes";
+ALTER ROLE "Hannes" WITH SUPERUSER INHERIT CREATEROLE CREATEDB LOGIN;
+
+
+
+
+
+
+--
+-- Database creation
+--
+
+CREATE DATABASE "Hannes" WITH TEMPLATE = template0 OWNER = "Hannes" ENCODING = 'SQL_ASCII';
+REVOKE ALL ON DATABASE template1 FROM PUBLIC;
+REVOKE ALL ON DATABASE template1 FROM "Hannes";
+GRANT ALL ON DATABASE template1 TO "Hannes";
+GRANT CONNECT ON DATABASE template1 TO PUBLIC;
+
+
+\connect "Hannes"
+
+--
+-- PostgreSQL database dump
+--
+
+SET client_encoding = 'SQL_ASCII';
+SET standard_conforming_strings = off;
+SET check_function_bodies = false;
+SET client_min_messages = warning;
+SET escape_string_warning = off;
+
+--
+-- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: Hannes
+--
+
+COMMENT ON SCHEMA public IS 'standard public schema';
+
+
+--
+-- Name: public; Type: ACL; Schema: -; Owner: Hannes
+--
+
+REVOKE ALL ON SCHEMA public FROM PUBLIC;
+REVOKE ALL ON SCHEMA public FROM "Hannes";
+GRANT ALL ON SCHEMA public TO "Hannes";
+GRANT ALL ON SCHEMA public TO PUBLIC;
+
+
+--
+-- PostgreSQL database dump complete
+--
+
+\connect postgres
+
+--
+-- PostgreSQL database dump
+--
+
+SET client_encoding = 'SQL_ASCII';
+SET standard_conforming_strings = off;
+SET check_function_bodies = false;
+SET client_min_messages = warning;
+SET escape_string_warning = off;
+
+--
+-- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: Hannes
+--
+
+COMMENT ON SCHEMA public IS 'standard public schema';
+
+
+--
+-- Name: public; Type: ACL; Schema: -; Owner: Hannes
+--
+
+REVOKE ALL ON SCHEMA public FROM PUBLIC;
+REVOKE ALL ON SCHEMA public FROM "Hannes";
+GRANT ALL ON SCHEMA public TO "Hannes";
+GRANT ALL ON SCHEMA public TO PUBLIC;
+
+
+--
+-- PostgreSQL database dump complete
+--
+
+\connect template1
+
+--
+-- PostgreSQL database dump
+--
+
+SET client_encoding = 'SQL_ASCII';
+SET standard_conforming_strings = off;
+SET check_function_bodies = false;
+SET client_min_messages = warning;
+SET escape_string_warning = off;
+
+--
+-- Name: template1; Type: COMMENT; Schema: -; Owner: Hannes
+--
+
+COMMENT ON DATABASE template1 IS 'default template database';
+
+
+--
+-- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: Hannes
+--
+
+COMMENT ON SCHEMA public IS 'standard public schema';
+
+
+--
+-- Name: public; Type: ACL; Schema: -; Owner: Hannes
+--
+
+REVOKE ALL ON SCHEMA public FROM PUBLIC;
+REVOKE ALL ON SCHEMA public FROM "Hannes";
+GRANT ALL ON SCHEMA public TO "Hannes";
+GRANT ALL ON SCHEMA public TO PUBLIC;
+
+
+--
+-- PostgreSQL database dump complete
+--
+
+--
+-- PostgreSQL database cluster dump complete
+--
+

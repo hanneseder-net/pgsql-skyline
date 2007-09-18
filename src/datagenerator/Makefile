@@ -23,4 +23,4 @@ install:
 	make clean
 	make
 	install ksldg $(BINDIR)
-	install pg_sldg.pl $(BINDIR)
+	install pg_sldg $(BINDIR)

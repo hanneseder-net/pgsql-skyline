@@ -23,13 +23,10 @@ skyline_options[] = {
 	{ "bnl"						, SOT_METHOD, SM_BLOCKNESTEDLOOP } ,
 	{ "materializednestedloop"	, SOT_METHOD, SM_MATERIALIZEDNESTEDLOOP },
 	{ "mnl"						, SOT_METHOD, SM_MATERIALIZEDNESTEDLOOP },
-	{ "nestedloop"				, SOT_METHOD, SM_SIMPLENESTEDLOOP },
-	{ "nl"						, SOT_METHOD, SM_SIMPLENESTEDLOOP },
 	{ "presort"					, SOT_METHOD, SM_2DIM_PRESORT },
 	{ "ps"						, SOT_METHOD, SM_2DIM_PRESORT },
 	{ "sfs"						, SOT_METHOD, SM_SFS },
 	{ "slots"					, SOT_PARAM	, SM_UNKNOWN },
-	{ "snl"						, SOT_METHOD, SM_SIMPLENESTEDLOOP },
 	{ "window"					, SOT_PARAM	, SM_UNKNOWN },
 	{ "windowsize"				, SOT_PARAM	, SM_UNKNOWN },
 	{ "windowslots"				, SOT_PARAM	, SM_UNKNOWN },
@@ -192,7 +189,6 @@ skyline_method_preserves_tuple_order(SkylineMethod skyline_method)
 	{
 		case SM_1DIM:
 		case SM_1DIM_DISTINCT:
-		case SM_SIMPLENESTEDLOOP:
 		case SM_MATERIALIZEDNESTEDLOOP:
 			/*
 			 * These methods preserve the relative order of the tuples, so
@@ -243,8 +239,6 @@ skyline_method_name(SkylineMethod skyline_method)
 			return "1dim distinct";
 		case SM_2DIM_PRESORT:
 			return "presort";
-		case SM_SIMPLENESTEDLOOP:
-			return "snl";
 		case SM_MATERIALIZEDNESTEDLOOP:
 			return "mnl";
 		case SM_BLOCKNESTEDLOOP:
@@ -277,7 +271,6 @@ skyline_methode_can_use_limit(SkylineMethod skyline_method)
 			 */
 			return false;
 
-		case SM_SIMPLENESTEDLOOP:
 		case SM_MATERIALIZEDNESTEDLOOP:
 			/*
 			 * We are cheating here, since the for every tuple the entire
@@ -294,6 +287,7 @@ skyline_methode_can_use_limit(SkylineMethod skyline_method)
 			 * tuple window.
 			 */
 			return true;
+
 		default:
 			elog(WARNING, "FIXME: skyline method `%d' unknown at %s:%d", skyline_method, __FILE__, __LINE__);
 			return false;

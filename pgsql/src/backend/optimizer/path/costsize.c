@@ -992,12 +992,6 @@ cost_skyline(Path *path, PlannerInfo *root, Cost input_cost, double input_tuples
 				startup_cost += cmps * cpu_operator_cost * input_tuples;
 			break;
 
-		case SM_SIMPLENESTEDLOOP:
-			/*
-			 * FIXME: we don't treat it special, because it might dissapeare
-			 * anyway
-			 */
-
 		case SM_MATERIALIZEDNESTEDLOOP:
 			/*
 			 * If no LIMIT is given we compare every tuples against every

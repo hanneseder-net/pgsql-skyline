@@ -2738,15 +2738,7 @@ make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause, SkylineMet
 	plan->targetlist = outertree->targetlist;
 	plan->qual = NIL;
 	plan->lefttree = outertree;
-
-	if (skyline_method == SM_SIMPLENESTEDLOOP)
-		/*
-		 * FIXME: this does not realy work, the references in a SeqScan could
-		 * be cyclic and result in a memory leak or/and BufferPinCount error.
-		 */
-		plan->righttree = (Plan *) copyObject(outertree);
-	else
-		plan->righttree = NULL;
+	plan->righttree = NULL;
 
 	numskylinecols = list_length(skylinecls);
 

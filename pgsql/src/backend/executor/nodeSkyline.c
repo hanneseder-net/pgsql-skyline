@@ -229,11 +229,25 @@ ExecSkylineCacheCompareFunctionInfo(SkylineState *slstate, Skyline *node)
 		ExecSkylineGetOrderingOp(node, i, &(slstate->compareOpFn[i]), &slstate->compareFlags[i]);
 }
 
+static bool
+ExecSkylineNeedExtraSlot(Skyline *node)
+{
+	switch (node->skyline_method)
+	{
+		case SM_BLOCKNESTEDLOOP:
+		case SM_SFS:
+			return true;
+
+		default:
+			return false;
+	}
+}
+
 SkylineState *
 ExecInitSkyline(Skyline *node, EState *estate, int eflags)
 {
-	SkylineState *slstate;
-	bool		need_extra_slot = (node->skyline_method == SM_SFS || node->skyline_method == SM_BLOCKNESTEDLOOP);
+	SkylineState   *slstate;
+	bool			need_extra_slot = ExecSkylineNeedExtraSlot(node);
 
 	/* check for unsupported flags */
 	Assert(!(eflags & (EXEC_FLAG_BACKWARD | EXEC_FLAG_MARK)));
@@ -253,7 +267,11 @@ ExecInitSkyline(Skyline *node, EState *estate, int eflags)
 	 * call ExecQual or ExecProject.
 	 */
 
-#define SKYLINE_NSLOTS 3
+	/*
+	 * If ExecSkylineNeedExtraSlot(node) returns true, allocate one slot 
+	 * more, see: ExecCountSlotsSkyline
+	 */
+#define SKYLINE_NSLOTS 2
 
 	/*
 	 * create expression context
@@ -290,18 +308,10 @@ ExecInitSkyline(Skyline *node, EState *estate, int eflags)
 	 * in case of the materialized nested loop, we need the outer plan to
 	 * handle mark/rewind which is achived by an extra materialize node
 	 */
-	if (node->skyline_method == SM_SIMPLENESTEDLOOP)
-		eflags |= EXEC_FLAG_REWIND;
-	else if (node->skyline_method == SM_MATERIALIZEDNESTEDLOOP)
+	if (node->skyline_method == SM_MATERIALIZEDNESTEDLOOP)
 		eflags |= EXEC_FLAG_REWIND | EXEC_FLAG_MARK;
 
 	outerPlanState(slstate) = ExecInitNode(outerPlan(node), estate, eflags);
-
-	if (node->skyline_method == SM_SIMPLENESTEDLOOP)
-	{
-		/* currently this is just needed for simple nested loop */
-		innerPlanState(slstate) = ExecInitNode(innerPlan(node), estate, eflags);
-	}
 
 	/*
 	 * initialize tuple type.  no need to initialize projection info because
@@ -325,7 +335,7 @@ ExecInitSkyline(Skyline *node, EState *estate, int eflags)
 int
 ExecCountSlotsSkyline(Skyline *node)
 {
-	return ExecCountSlotsNode(outerPlan(node)) + SKYLINE_NSLOTS;
+	return ExecCountSlotsNode(outerPlan(node)) + SKYLINE_NSLOTS + (ExecSkylineNeedExtraSlot(node) ? 1 : 0);
 }
 
 static TupleTableSlot *
@@ -537,59 +547,6 @@ ExecSkyline_2DimPreSort(SkylineState *node, Skyline *sl)
 
 
 	return NULL;
-}
-
-static TupleTableSlot *
-ExecSkyline_SimpleNestedLoop(SkylineState *node, Skyline *sl)
-{
-	/* nested loop using duplicated subplan */
-	for (;;)
-	{
-		TupleTableSlot *slot;
-		int64		sl_innerpos = 0;
-
-		slot = ExecProcNode(outerPlanState(node));
-		node->sl_pos++;
-
-		if (TupIsNull(slot))
-			return NULL;
-
-		ExecReScan(innerPlanState(node), NULL);
-
-		for (;;)
-		{
-			int			cmp;
-
-			TupleTableSlot *inner_slot = ExecProcNode(innerPlanState(node));
-
-			sl_innerpos++;
-
-			if (TupIsNull(inner_slot))
-			{
-				/* the tuple in the resultSlot is not dominated, return it */
-				return slot;
-			}
-
-			/* is inner_slot dominating resultSlot? */
-			cmp = ExecSkylineIsDominating(node, inner_slot, slot);
-
-			if (sl->skyline_distinct)
-			{
-				if (cmp == SKYLINE_CMP_ALL_EQ)
-				{
-					/*
-					 * the inner tuple is before the result tuple, so don't
-					 * output the result tuple
-					 */
-					if (sl_innerpos < node->sl_pos)
-						break;
-				}
-			}
-
-			if (cmp == SKYLINE_CMP_FIRST_DOMINATES)
-				break;
-		}
-	}
 }
 
 static TupleTableSlot *
@@ -1052,8 +1009,6 @@ ExecSkyline(SkylineState *node)
 			return ExecSkyline_1DimDistinct(node, sl);
 		case SM_2DIM_PRESORT:
 			return ExecSkyline_2DimPreSort(node, sl);
-		case SM_SIMPLENESTEDLOOP:
-			return ExecSkyline_SimpleNestedLoop(node, sl);
 		case SM_MATERIALIZEDNESTEDLOOP:
 			return ExecSkyline_MaterializedNestedLoop(node, sl);
 		case SM_BLOCKNESTEDLOOP:

@@ -2770,7 +2770,7 @@ make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause, SkylineMet
 	{
 		Path		path;		/* just a dummy */
 
-		cost_skyline(&path, root, outertree->plan_rows, outertree->startup_cost, plan->plan_rows, outertree->plan_width, numskylinecols, skyline_method, limit_tuples);
+		cost_skyline(&path, root, outertree->startup_cost, outertree->plan_rows, outertree->plan_width, plan->plan_rows, numskylinecols, skyline_method, limit_tuples);
 
 		plan->startup_cost = path.startup_cost;
 		plan->total_cost = path.total_cost;

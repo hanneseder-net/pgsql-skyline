@@ -950,6 +950,8 @@ cost_skyline(Path *path, PlannerInfo *root, Cost input_cost, double input_tuples
 	/*
 	 * Note that we do not take into account here that the user might has
 	 * overwritten window size in terms of memory or slot count
+	 *
+	 * FIXME: should we take it into account?
 	 */
 	enough_memory = output_bytes < work_mem_bytes;
 
@@ -1008,23 +1010,34 @@ cost_skyline(Path *path, PlannerInfo *root, Cost input_cost, double input_tuples
 
 		case SM_BLOCKNESTEDLOOP:
 			/*
-			 * FIXME: ASSUMATION: on average we have to compare the
+			 * We assume that on average we have to compare the
 			 * input_tuples to the half of the tuples in the window
-			 * (output_tuples)
+			 * (output_tuples). FIXME: this is the ERWARTUNGSWERT?
 			 *
-			 * FIXME: we don't gain anything by LIMIT, because tuples could be
+			 * We don't gain anything by LIMIT, because tuples could be
 			 * kicked out of the tuplewindow, for instance there could be a
-			 * single best tuple at the very end
+			 * single best tuple at the very end.
+			 *
+			 * We further assume that if the output_tuples fit into the
+			 * window (enough_memory), that at no stage during the processing
+			 * the window would hold more than this tuples.
 			 */
-			startup_cost += cmps * cpu_operator_cost * input_tuples * 0.5 * output_tuples;
+			if (enough_memory)
+				startup_cost += cmps * cpu_operator_cost * input_tuples * 0.5 * output_tuples;
+			else
+			{
+				/* FIXME */
+				startup_cost += cmps * cpu_operator_cost * input_tuples * 0.5 * output_tuples;
+			}
 			break;
 
 		case SM_SFS:
 			/*
-			 * FIXME: ASSUMATION: on average we have to compare the
+			 * We assume that on average we have to compare the
 			 * input_tuples to the half of the tuples in the window
-			 * (output_tuples) In case of SFS the output_tuples might have
-			 * been reduced by LIMIT.
+			 * (output_tuples).
+			 * 
+			 * In case of SFS we can make use of LIMIT an break earlier.
 			 */
 			startup_cost += cmps * cpu_operator_cost * input_tuples * 0.5 * (limit_is_useful ? limit_tuples : output_tuples);
 			break;

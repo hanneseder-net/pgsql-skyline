@@ -1429,6 +1429,11 @@ transformGroupClause(ParseState *pstate, List *grouplist,
 	return result;
 }
 
+/*
+ * transformSkylineClause
+ *
+ * FIXME
+ */
 Node *
 transformSkylineClause(ParseState *pstate,
 					   Node *skylineByClause,
@@ -1763,6 +1768,11 @@ addTargetToSortList(ParseState *pstate, TargetEntry *tle,
 	return sortlist;
 }
 
+/*
+ * addTargetToSkylineList
+ *
+ * FIXME
+ */
 List *
 addTargetToSkylineList(ParseState *pstate, TargetEntry *tle,
 					   List *skylinelist, List *targetlist,
@@ -1809,7 +1819,6 @@ addTargetToSkylineList(ParseState *pstate, TargetEntry *tle,
 			 * Verify it's a valid ordering operator, and determine whether to
 			 * consider it like ASC or DESC.
 			 */
-			/* FIXME: fix wording for error message */
 			if (!get_compare_function_for_ordering_op(skylineop,
 													  &cmpfunc, &reverse))
 				ereport(ERROR,
@@ -1826,15 +1835,12 @@ addTargetToSkylineList(ParseState *pstate, TargetEntry *tle,
 			break;
 	}
 
-	/* avoid making duplicate sortlist entries */
+	/* avoid making duplicate skyline list entries */
 	if (!targetIsInSortList(tle, skylineop, skylinelist))
 	{
 		SkylineBy  *skylinecl = makeNode(SkylineBy);
 
-		/* FIXME: what is it good for? */
-		/* NOTE: I think this is just for GROUP/SORT */
 		skylinecl->tleSkylineRef = assignSortGroupRef(tle, targetlist);
-
 		skylinecl->sortop = skylineop;
 		skylinecl->skylineby_dir = skylineby_dir;
 

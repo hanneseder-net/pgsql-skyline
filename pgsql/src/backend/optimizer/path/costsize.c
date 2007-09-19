@@ -916,8 +916,15 @@ cost_valuesscan(Path *path, PlannerInfo *root, RelOptInfo *baserel)
 	path->total_cost = startup_cost + run_cost;
 }
 
+/*
+ * cost_skyline
+ *
+ * FIXME
+ */
 void
-cost_skyline(Path *path, PlannerInfo *root, Cost input_cost, double input_tuples, int width, double output_tuples, int skyline_dim, SkylineMethod skyline_method, int limit_tuples)
+cost_skyline(Path *path, PlannerInfo *root, Cost input_cost,
+			 double input_tuples, int width, double output_tuples,
+			 int skyline_dim, SkylineMethod skyline_method, int limit_tuples)
 {
 	Cost		startup_cost = input_cost;
 	Cost		run_cost = 0;
@@ -935,11 +942,10 @@ cost_skyline(Path *path, PlannerInfo *root, Cost input_cost, double input_tuples
 	double		cmps = 1.0 * skyline_dim;
 
 	/* Do we have useful LIMIT? */
-	bool		limit_is_useful =
-	limit_tuples > 0
-	&& limit_tuples < input_tuples
-	&& limit_tuples < output_tuples
-	&& skyline_methode_can_use_limit(skyline_method);
+	bool		limit_is_useful = limit_tuples > 0 && 
+		limit_tuples < input_tuples	&& 
+		limit_tuples < output_tuples && 
+		skyline_methode_can_use_limit(skyline_method);
 
 	output_bytes = relation_byte_size((limit_is_useful ? limit_tuples : output_tuples), width);
 

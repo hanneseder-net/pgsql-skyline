@@ -1,0 +1,7 @@
+the assumtion that at no time more than output_tuples will be in the window can not be hold.
+
+
+larger window and and less passes do not always mean better runtime
+
+infact there is a break even point
+

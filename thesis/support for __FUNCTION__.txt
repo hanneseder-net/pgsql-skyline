@@ -1,0 +1,8 @@
+
+
+msvc supports __FUNCTION__
+
+#undef HAVE_FUNCNAME__FUNCTION
+
+
+compile time warning in oracle_compat.c

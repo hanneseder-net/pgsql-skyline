@@ -16,8 +16,8 @@
 /fmgrtab.h/1.27/Fri Jan  5 22:19:59 2007//
 /formatting.h/1.17/Fri Jan  5 22:19:59 2007//
 /geo_decls.h/1.53/Tue Feb 27 23:48:10 2007//
-/guc.h/1.85/Wed Sep  5 06:37:16 2007//
-/guc_tables.h/1.33/Sat Apr 21 20:02:41 2007//
+/guc.h/1.86/Fri Sep 14 18:56:10 2007//
+/guc_tables.h/1.35/Fri Sep 14 18:56:10 2007//
 /help_config.h/1.9/Fri Jan  5 22:19:59 2007//
 /hsearch.h/1.47/Thu Apr 26 23:24:46 2007//
 /inet.h/1.26/Fri Apr  6 04:21:44 2007//

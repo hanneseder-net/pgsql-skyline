@@ -11,7 +11,7 @@
 /namespace.c/1.99/Wed Sep  5 06:36:57 2007//
 /pg_aggregate.c/1.87/Wed Sep  5 06:36:57 2007//
 /pg_constraint.c/1.35/Wed Feb 14 01:58:56 2007//
-/pg_conversion.c/1.36/Tue Feb 27 23:48:07 2007//
+/pg_conversion.c/1.37/Wed Sep 19 17:57:16 2007//
 /pg_depend.c/1.24/Fri Jan  5 22:19:25 2007//
 /pg_enum.c/1.2/Mon Apr  2 22:14:17 2007//
 /pg_largeobject.c/1.27/Fri Jan  5 22:19:25 2007//

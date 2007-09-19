@@ -1,10 +1,10 @@
 /Makefile/1.23/Wed Aug  1 09:00:53 2007//
-/autovacuum.c/1.56/Mon Aug  6 09:10:19 2007//
-/bgwriter.c/1.41/Mon Jul  9 10:06:03 2007//
+/autovacuum.c/1.58/Fri Sep 14 18:55:59 2007//
+/bgwriter.c/1.42/Fri Sep 14 18:55:59 2007//
 /fork_process.c/1.7/Fri Jan  5 22:19:36 2007//
 /pgarch.c/1.30/Mon Aug  6 09:10:19 2007//
-/pgstat.c/1.162/Mon Aug  6 09:10:19 2007//
+/pgstat.c/1.163/Fri Sep 14 18:55:59 2007//
 /postmaster.c/1.541/Wed Sep  5 06:37:01 2007//
 /syslogger.c/1.38/Wed Sep  5 06:37:01 2007//
-/walwriter.c/1.1/Tue Jul 24 04:54:09 2007//
+/walwriter.c/1.2/Fri Sep 14 18:55:59 2007//
 D

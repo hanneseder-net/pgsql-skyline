@@ -298,7 +298,7 @@ static Node *makeXmlExpr(XmlExprOp op, char *name, List *named_args, List *args)
 
 %type <vsetstmt> set_rest SetResetClause
 
-%type <slopt> skyline_option
+%type <slopt>	skyline_option
 %type <list>	skyline_options opt_skyline_options
 
 %type <node>	TableElement ConstraintElem TableFuncElement
@@ -316,7 +316,7 @@ static Node *makeXmlExpr(XmlExprOp op, char *name, List *named_args, List *args)
 %type <value>	NumericOnly FloatOnly IntegerOnly
 %type <alias>	alias_clause
 %type <sortby>	sortby
-%type <skyline_by_expr> skyline_by_expr
+%type <skyline_by_expr>	skyline_by_expr
 %type <ielem>	index_elem
 %type <node>	table_ref
 %type <jexpr>	joined_table

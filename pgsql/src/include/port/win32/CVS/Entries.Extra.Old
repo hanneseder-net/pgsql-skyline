@@ -2,3 +2,6 @@
 /grp.h////*///
 /netdb.h////*///
 /pwd.h////*///
+D/arpa///////
+D/netinet///////
+D/sys///////

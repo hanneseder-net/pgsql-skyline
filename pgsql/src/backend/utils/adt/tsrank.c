@@ -21,7 +21,7 @@
 #include "miscadmin.h"
 
 
-static float weights[] = {0.1f, 0.2f, 0.4f, 1.0f};
+static float weights[] = {0.1, 0.2, 0.4, 1.0};
 
 #define wpos(wep)	( w[ WEP_GETWEIGHT(wep) ] )
 
@@ -43,7 +43,7 @@ static float4
 word_distance(int4 w)
 {
 	if (w > 100)
-		return 1e-30f;
+		return 1e-30;
 
 	return 1.0 / (1.005 + 0.05 * exp(((float4) w) / 1.5 - 2));
 }
@@ -57,7 +57,7 @@ cnt_length(TSVector t)
 
 	while (ptr < end)
 	{
-		int			clen = POSDATALEN(t, ptr);
+		int clen = POSDATALEN(t, ptr);
 
 		if (clen == 0)
 			len += 1;
@@ -71,7 +71,7 @@ cnt_length(TSVector t)
 }
 
 static int
-WordECompareQueryItem(char *eval, char *qval, WordEntry * ptr, QueryOperand * item)
+WordECompareQueryItem(char *eval, char *qval, WordEntry *ptr, QueryOperand *item)
 {
 	if (ptr->len == item->length)
 		return strncmp(
@@ -87,7 +87,7 @@ WordECompareQueryItem(char *eval, char *qval, WordEntry * ptr, QueryOperand * it
  * is the TSQuery containing 'item'. Returns NULL if not found.
  */
 static WordEntry *
-find_wordentry(TSVector t, TSQuery q, QueryOperand * item)
+find_wordentry(TSVector t, TSQuery q, QueryOperand *item)
 {
 	WordEntry  *StopLow = ARRPTR(t);
 	WordEntry  *StopHigh = (WordEntry *) STRPTR(t);
@@ -140,8 +140,8 @@ compareQueryOperand(const void *a, const void *b, void *arg)
 static QueryOperand **
 SortAndUniqItems(TSQuery q, int *size)
 {
-	char	   *operand = GETOPERAND(q);
-	QueryItem  *item = GETQUERY(q);
+	char *operand = GETOPERAND(q);
+	QueryItem * item = GETQUERY(q);
 	QueryOperand **res,
 			  **ptr,
 			  **prevptr;
@@ -185,14 +185,14 @@ SortAndUniqItems(TSQuery q, int *size)
 
 /* A dummy WordEntryPos array to use when haspos is false */
 static WordEntryPosVector POSNULL = {
-	1,							/* Number of elements that follow */
-	{0}
+	1, /* Number of elements that follow */
+	{ 0 }
 };
 
 static float
 calc_rank_and(float *w, TSVector t, TSQuery q)
 {
-	WordEntryPosVector **pos;
+	WordEntryPosVector	 **pos;
 	int			i,
 				k,
 				l,
@@ -336,7 +336,7 @@ calc_rank(float *w, TSVector t, TSQuery q, int4 method)
 		calc_rank_and(w, t, q) : calc_rank_or(w, t, q);
 
 	if (res < 0)
-		res = 1e-20f;
+		res = 1e-20;
 
 	if ((method & RANK_NORM_LOGLENGTH) && t->size > 0)
 		res /= log((double) (cnt_length(t) + 1)) / log(2.0);
@@ -463,7 +463,7 @@ typedef struct
 	int16		nitem;
 	uint8		wclass;
 	int32		pos;
-}	DocRepresentation;
+} DocRepresentation;
 
 static int
 compareDocR(const void *va, const void *vb)
@@ -476,20 +476,19 @@ compareDocR(const void *va, const void *vb)
 	return (a->pos > b->pos) ? 1 : -1;
 }
 
-typedef struct
+typedef struct 
 {
 	TSQuery		query;
 	bool	   *operandexist;
-}	QueryRepresentation;
+} QueryRepresentation;
 
-#define QR_GET_OPERAND_EXISTS(q, v)		( (q)->operandexist[ ((QueryItem*)(v)) - GETQUERY((q)->query) ] )
-#define QR_SET_OPERAND_EXISTS(q, v)  QR_GET_OPERAND_EXISTS(q,v) = true
+#define	QR_GET_OPERAND_EXISTS(q, v)     ( (q)->operandexist[ ((QueryItem*)(v)) - GETQUERY((q)->query) ] )
+#define QR_SET_OPERAND_EXISTS(q, v)	 QR_GET_OPERAND_EXISTS(q,v) = true
 
 static bool
-checkcondition_QueryOperand(void *checkval, QueryOperand * val)
+checkcondition_QueryOperand(void *checkval, QueryOperand *val)
 {
-	QueryRepresentation *qr = (QueryRepresentation *) checkval;
-
+	QueryRepresentation *qr = (QueryRepresentation*)checkval;
 	return QR_GET_OPERAND_EXISTS(qr, val);
 }
 
@@ -500,24 +499,22 @@ typedef struct
 	int			q;
 	DocRepresentation *begin;
 	DocRepresentation *end;
-}	Extention;
+} Extention;
 
 
 static bool
-Cover(DocRepresentation * doc, int len, QueryRepresentation * qr, Extention * ext)
+Cover(DocRepresentation *doc, int len, QueryRepresentation  *qr, Extention *ext)
 {
 	DocRepresentation *ptr;
 	int			lastpos = ext->pos;
 	int			i;
 	bool		found = false;
 
-	/*
-	 * since this function recurses, it could be driven to stack overflow.
-	 * (though any decent compiler will optimize away the tail-recursion.
-	 */
+	/* since this function recurses, it could be driven to stack overflow.
+	 * (though any decent compiler will optimize away the tail-recursion.   */
 	check_stack_depth();
 
-	memset(qr->operandexist, 0, sizeof(bool) * qr->query->size);
+	memset( qr->operandexist, 0, sizeof(bool)*qr->query->size );
 
 	ext->p = 0x7fffffff;
 	ext->q = 0;
@@ -528,10 +525,10 @@ Cover(DocRepresentation * doc, int len, QueryRepresentation * qr, Extention * ex
 	{
 		for (i = 0; i < ptr->nitem; i++)
 		{
-			if (ptr->item[i]->type == QI_VAL)
+			if(ptr->item[i]->type == QI_VAL)
 				QR_SET_OPERAND_EXISTS(qr, ptr->item[i]);
 		}
-		if (TS_execute(GETQUERY(qr->query), (void *) qr, false, checkcondition_QueryOperand))
+		if (TS_execute(GETQUERY(qr->query), (void*)qr, false, checkcondition_QueryOperand))
 		{
 			if (ptr->pos > ext->q)
 			{
@@ -548,7 +545,7 @@ Cover(DocRepresentation * doc, int len, QueryRepresentation * qr, Extention * ex
 	if (!found)
 		return false;
 
-	memset(qr->operandexist, 0, sizeof(bool) * qr->query->size);
+	memset( qr->operandexist, 0, sizeof(bool)*qr->query->size );
 
 	ptr = doc + lastpos;
 
@@ -556,9 +553,9 @@ Cover(DocRepresentation * doc, int len, QueryRepresentation * qr, Extention * ex
 	while (ptr >= doc + ext->pos)
 	{
 		for (i = 0; i < ptr->nitem; i++)
-			if (ptr->item[i]->type == QI_VAL)
+			if(ptr->item[i]->type  == QI_VAL)
 				QR_SET_OPERAND_EXISTS(qr, ptr->item[i]);
-		if (TS_execute(GETQUERY(qr->query), (void *) qr, true, checkcondition_QueryOperand))
+		if (TS_execute(GETQUERY(qr->query), (void*)qr, true, checkcondition_QueryOperand))
 		{
 			if (ptr->pos < ext->p)
 			{
@@ -585,7 +582,7 @@ Cover(DocRepresentation * doc, int len, QueryRepresentation * qr, Extention * ex
 }
 
 static DocRepresentation *
-get_docrep(TSVector txt, QueryRepresentation * qr, int *doclen)
+get_docrep(TSVector txt, QueryRepresentation *qr, int *doclen)
 {
 	QueryItem  *item = GETQUERY(qr->query);
 	WordEntry  *entry;
@@ -607,10 +604,10 @@ get_docrep(TSVector txt, QueryRepresentation * qr, int *doclen)
 
 		if (item[i].type != QI_VAL)
 			continue;
-
+		
 		curoperand = &item[i].operand;
-
-		if (QR_GET_OPERAND_EXISTS(qr, &item[i]))
+		
+		if(QR_GET_OPERAND_EXISTS(qr, &item[i]))
 			continue;
 
 		entry = find_wordentry(txt, qr->query, curoperand);
@@ -652,13 +649,10 @@ get_docrep(TSVector txt, QueryRepresentation * qr, int *doclen)
 						(item[k].type == QI_VAL &&
 						 compareQueryOperand(&kptr, &iptr, operand) == 0))
 					{
-						/*
-						 * if k == i, we've already checked above that it's
-						 * type == Q_VAL
-						 */
+						/* if k == i, we've already checked above that it's type == Q_VAL */
 						doc[cur].item[doc[cur].nitem] = item + k;
 						doc[cur].nitem++;
-						QR_SET_OPERAND_EXISTS(qr, item + k);
+						QR_SET_OPERAND_EXISTS( qr, item+k );
 					}
 				}
 			}
@@ -699,7 +693,7 @@ calc_rank_cd(float4 *arrdata, TSVector txt, TSQuery query, int method)
 				PrevExtPos = 0.0,
 				CurExtPos = 0.0;
 	int			NExtent = 0;
-	QueryRepresentation qr;
+	QueryRepresentation	qr;
 
 
 	for (i = 0; i < lengthof(weights); i++)
@@ -713,12 +707,12 @@ calc_rank_cd(float4 *arrdata, TSVector txt, TSQuery query, int method)
 	}
 
 	qr.query = query;
-	qr.operandexist = (bool *) palloc0(sizeof(bool) * query->size);
+	qr.operandexist = (bool*)palloc0(sizeof(bool) * query->size);
 
 	doc = get_docrep(txt, &qr, &doclen);
 	if (!doc)
 	{
-		pfree(qr.operandexist);
+		pfree( qr.operandexist );
 		return 0.0;
 	}
 
@@ -779,7 +773,7 @@ calc_rank_cd(float4 *arrdata, TSVector txt, TSQuery query, int method)
 
 	pfree(doc);
 
-	pfree(qr.operandexist);
+	pfree( qr.operandexist );
 
 	return (float4) Wdoc;
 }

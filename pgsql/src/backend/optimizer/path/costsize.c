@@ -2046,7 +2046,7 @@ cost_qual_eval_walker(Node *node, cost_qual_eval_context *context)
 			locContext.total.per_tuple = 0;
 
 			/*
-			 * For an OR clause, recurse into the marked-up tree so that we
+			 * For an OR clause, recurse into the marked-up tree so that
 			 * we set the eval_cost for contained RestrictInfos too.
 			 */
 			if (rinfo->orclause)

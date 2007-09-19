@@ -41,7 +41,7 @@ usage: $0 [-hecadnrti] -- [OPTIONS FOR $ksldg]
  -s SEED        seed random generator to SEED
  -p PAD         add PAD long varchar for padding
  -r             (re)create table
- -t TABLE       override default table name [eca]$DIMd$NUMBER
+ -t TABLE       override default table name (e|c|a)DIMdNUMBER[sSEED][pPAD]
  -i             unique id for every vector
 
 Options for $ksldg: see $ksldg -h
@@ -90,6 +90,10 @@ die "$0: error: you must spec. the number of dimensions, stopped at" if ($dim < 
 
 
 $table = "$dist${dim}d$n";
+
+if ($opt{s} ne "") {
+  $table = $table . "s$opt{s}";
+}
 
 if ($pad) {
   $table = $table . "p${pad}";

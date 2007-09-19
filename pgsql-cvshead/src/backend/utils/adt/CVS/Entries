@@ -35,7 +35,7 @@
 /numeric.c/1.106/Wed Aug  1 09:00:54 2007//
 /numutils.c/1.75/Fri Jan  5 22:19:41 2007//
 /oid.c/1.72/Wed Jun  6 16:05:51 2007//
-/oracle_compat.c/1.70/Tue Feb 27 23:48:08 2007//
+/oracle_compat.c/1.71/Wed Sep 19 17:57:19 2007//
 /pg_locale.c/1.39/Fri Jan  5 22:19:41 2007//
 /pg_lzcompress.c/1.27/Mon Aug  6 09:10:19 2007//
 /pgstatfuncs.c/1.44/Fri Sep 14 18:56:01 2007//
@@ -48,7 +48,7 @@
 /ruleutils.c/1.263/Wed Aug  1 09:00:54 2007//
 /selfuncs.c/1.236/Wed Sep  5 06:37:07 2007//
 /tid.c/1.58/Wed Sep  5 06:37:07 2007//
-/timestamp.c/1.181/Mon Aug  6 09:10:20 2007//
+/timestamp.c/1.182/Wed Sep 19 17:57:19 2007//
 /tsginidx.c/1.4/Fri Sep 14 18:56:02 2007//
 /tsgistidx.c/1.4/Fri Sep 14 18:56:02 2007//
 /tsquery.c/1.7/Fri Sep 14 18:56:02 2007//

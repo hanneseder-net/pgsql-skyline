@@ -1,2 +1,9 @@
 /Makefile/1.13/Fri Feb  9 15:55:58 2007//
-D
+D/buffer////
+D/file////
+D/freespace////
+D/ipc////
+D/large_object////
+D/lmgr////
+D/page////
+D/smgr////

@@ -1,0 +1,3 @@
+c:\hannes\skyline\pgsql\src\interfaces\ecpg\ecpglib\execute.c(1495): warning C4700: uninitialized local variable 'prepname' used
+
+

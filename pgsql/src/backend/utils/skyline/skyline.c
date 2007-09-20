@@ -235,8 +235,11 @@ skyline_method_name(SkylineMethod skyline_method)
 			return "unknown";
 		case SM_1DIM:
 			return "1dim";
-		case SM_1DIM_DISTINCT:
-			return "1dim distinct";
+			/*
+			 * The term "distinct" should be added by the caller, since 
+			 * other all methods can handle distinct as well.
+			 */
+			return "1dim";		
 		case SM_2DIM_PRESORT:
 			return "presort";
 		case SM_MATERIALIZEDNESTEDLOOP:

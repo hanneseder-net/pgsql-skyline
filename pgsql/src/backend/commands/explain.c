@@ -69,6 +69,10 @@ static void show_upper_qual(List *qual, const char *qlabel, Plan *plan,
 static void show_sort_keys(Plan *sortplan, int nkeys, AttrNumber *keycols,
 			   const char *qlabel,
 			   StringInfo str, int indent, ExplainState *es);
+static void show_skyline_details(Skyline *skyline,
+			   StringInfo str, int indent, ExplainState *es);
+static void show_skyline_info(SkylineState *skylinestate,
+			   StringInfo str, int indent, ExplainState *es);
 static void show_sort_info(SortState *sortstate,
 			   StringInfo str, int indent, ExplainState *es);
 static const char *explain_get_index_name(Oid indexId);
@@ -718,10 +722,6 @@ explain_outNode(StringInfo str,
 								 quote_identifier(valsname));
 			}
 			break;
-		case T_Skyline:
-			appendStringInfo(str, " using method %s",
-					skyline_method_name(((Skyline *) plan)->skyline_method));
-			break;
 		default:
 			break;
 	}
@@ -855,6 +855,17 @@ explain_outNode(StringInfo str,
 			show_upper_qual(plan->qual,
 							"Filter", plan,
 							str, indent, es);
+			break;
+		case T_Skyline:
+			show_sort_keys(plan,
+						   ((Skyline *) plan)->numCols,
+						   ((Skyline *) plan)->skylineColIdx,
+						   "Skyline Attr",
+						   str, indent, es);
+			show_skyline_details((Skyline *) plan,
+								 str, indent, es);
+			show_skyline_info((SkylineState *) planstate,
+							  str, indent, es);
 			break;
 		case T_Sort:
 			show_sort_keys(plan,
@@ -1168,6 +1179,52 @@ show_sort_keys(Plan *sortplan, int nkeys, AttrNumber *keycols,
 	}
 
 	appendStringInfo(str, "\n");
+}
+
+/*
+ * FIXME
+ */
+static void
+show_skyline_details(Skyline *skyline,
+					 StringInfo str, int indent, ExplainState *es)
+{
+	int			i;
+
+	for (i = 0; i < indent; i++)
+		appendStringInfo(str, "  ");
+
+	appendStringInfo(str, "  Skyline Method: %s%s %d dim\n",
+		skyline_method_name(skyline->skyline_method), 
+		skyline->skyline_distinct ? " distinct" : "",
+		skyline->numCols);
+}
+
+/*
+ * If it's EXPLAIN ANALYZE, show skyline explain info for the skyline node
+ */
+static void
+show_skyline_info(SkylineState *skylinestate,
+				  StringInfo str, int indent, ExplainState *es)
+{
+	Assert(IsA(skylinestate, SkylineState));
+	if (es->printAnalyze /* && skylinestate->status == SS_DONE FIXME */)
+	{
+		int			i;
+		
+		if (skylinestate->skyline_method == SM_BLOCKNESTEDLOOP ||
+			skylinestate->skyline_method == SM_SFS)
+		{
+			for (i = 0; i < indent; i++)
+				appendStringInfo(str, "  ");
+			
+			appendStringInfo(str, "  Skyline Stats: passes=%d", skylinestate->pass);
+			if (skylinestate->windowsize != -1)
+				appendStringInfo(str, " window=%dk", skylinestate->windowsize);
+			if (skylinestate->windowslots != -1)
+				appendStringInfo(str, " slots=%d", skylinestate->windowslots);
+			appendStringInfo(str, "\n");
+		}
+	}
 }
 
 /*

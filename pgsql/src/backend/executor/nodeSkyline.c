@@ -243,6 +243,51 @@ ExecSkylineNeedExtraSlot(Skyline *node)
 	}
 }
 
+static void
+ExecSkylineInitTupleWindow(SkylineState *node, Skyline *sl)
+{
+	int			window_size = work_mem;
+	int			window_slots = -1;
+
+	Assert(node != NULL);
+
+	if (node->skyline_method == SM_BLOCKNESTEDLOOP ||
+		node->skyline_method == SM_SFS)
+	{
+		if (node->window != NULL)
+			elog(ERROR, "ExecSkylineInitTupleWindow called twice");
+
+		/*
+		 * Can be overrided by an option, otherwise use entire
+		 * work_mem.
+		 */
+		skyline_option_get_int(sl->skyline_by_options, "window", &window_size) ||
+			skyline_option_get_int(sl->skyline_by_options, "windowsize", &window_size);
+
+		skyline_option_get_int(sl->skyline_by_options, "slots", &window_slots) ||
+			skyline_option_get_int(sl->skyline_by_options, "windowslots", &window_slots);
+
+		if (window_slots == 0)
+		{
+			/*
+			 * If window_slots == -1, then we constrain the tuple window in
+			 * terms of memory.
+			 */
+			elog(ERROR, "tuple window must have at least one slot");
+		}
+
+		node->window = tuplewindow_begin(window_size, window_slots);
+
+		node->windowsize = window_size;
+		node->windowslots = window_slots;
+	}
+	else
+	{
+		node->windowsize = -1;
+		node->windowslots = -1;
+	}
+}
+
 SkylineState *
 ExecInitSkyline(Skyline *node, EState *estate, int eflags)
 {
@@ -259,6 +304,9 @@ ExecInitSkyline(Skyline *node, EState *estate, int eflags)
 	slstate->status = SS_INIT;
 	slstate->source = SS_OUTER;
 	slstate->skyline_method = node->skyline_method;
+	slstate->pass = 1;
+
+	ExecSkylineInitTupleWindow(slstate, node);
 
 	/*
 	 * Miscellaneous initialization
@@ -563,94 +611,81 @@ ExecSkyline_MaterializedNestedLoop(SkylineState *node, Skyline *sl)
 	/* nested loop using materialize as outer plan */
 	TupleTableSlot *resultSlot = node->ss.ps.ps_ResultTupleSlot;
 
-	if (node->status == SS_INIT)
+	switch (node->status)
 	{
-		ExecMarkPos(outerPlanState(node));
-		node->sl_pos = 0;
-		node->status = SS_PIPEOUT;
-	}
+		case SS_INIT:
+			ExecMarkPos(outerPlanState(node));
+			node->sl_pos = 0;
+			node->status = SS_PROCESS;
+			
+			/* fall trough */
 
-	for (;;)
-	{
-		TupleTableSlot *slot;
-		int64		sl_innerpos = 0;
-
-		ExecRestrPos(outerPlanState(node));
-		slot = ExecProcNode(outerPlanState(node));
-		node->sl_pos++;
-		ExecMarkPos(outerPlanState(node));
-
-		if (TupIsNull(slot))
-			return NULL;
-
-		ExecCopySlot(resultSlot, slot);
-
-		ExecReScan(outerPlanState(node), NULL);
-
-		for (;;)
-		{
-			int			cmp;
-
-			TupleTableSlot *inner_slot = ExecProcNode(outerPlanState(node));
-
-			sl_innerpos++;
-
-			if (TupIsNull(inner_slot))
+		case SS_PROCESS:
+			for (;;)
 			{
-				/* the tuple in the resultSlot is not dominated, return it */
-				return resultSlot;
-			}
+				TupleTableSlot *slot;
+				int64		sl_innerpos = 0;
 
-			/* is inner_slot dominating resultSlot? */
-			cmp = ExecSkylineIsDominating(node, inner_slot, resultSlot);
+				ExecRestrPos(outerPlanState(node));
+				slot = ExecProcNode(outerPlanState(node));
+				node->sl_pos++;
+				ExecMarkPos(outerPlanState(node));
 
-			if (sl->skyline_distinct)
-			{
-				if (cmp == SKYLINE_CMP_ALL_EQ)
+				if (TupIsNull(slot))
 				{
-					/*
-					 * the inner tuple is before the result tuple, so don't
-					 * output the result tuple
-					 */
-					if (sl_innerpos < node->sl_pos)
+					node->status = SS_DONE;
+					return NULL;
+				}
+
+				ExecCopySlot(resultSlot, slot);
+
+				ExecReScan(outerPlanState(node), NULL);
+
+				for (;;)
+				{
+					int			cmp;
+
+					TupleTableSlot *inner_slot = ExecProcNode(outerPlanState(node));
+
+					sl_innerpos++;
+
+					if (TupIsNull(inner_slot))
+					{
+						/* the tuple in the resultSlot is not dominated, return it */
+						return resultSlot;
+					}
+
+					/* is inner_slot dominating resultSlot? */
+					cmp = ExecSkylineIsDominating(node, inner_slot, resultSlot);
+
+					if (sl->skyline_distinct)
+					{
+						if (cmp == SKYLINE_CMP_ALL_EQ)
+						{
+							/*
+							 * the inner tuple is before the result tuple, so don't
+							 * output the result tuple
+							 */
+							if (sl_innerpos < node->sl_pos)
+								break;
+						}
+					}
+
+					if (cmp == SKYLINE_CMP_FIRST_DOMINATES)
 						break;
 				}
 			}
 
-			if (cmp == SKYLINE_CMP_FIRST_DOMINATES)
-				break;
-		}
+			break;	/* never reached */
+
+		case SS_DONE:
+			return NULL;
+
+		default:
+			/* Invalid State */
+			AssertState(0);
+			return NULL;
 	}
-}
-
-static void
-ExecSkylineInitTupleWindow(SkylineState *node, Skyline *sl)
-{
-	int			window_size = work_mem;
-	int			window_slots = -1;
-
-	Assert(node != NULL);
-
-	/*
-	 * Can be overrided by an option, otherwise use entire
-	 * work_mem.
-	 */
-	skyline_option_get_int(sl->skyline_by_options, "window", &window_size) ||
-		skyline_option_get_int(sl->skyline_by_options, "windowsize", &window_size);
-
-	skyline_option_get_int(sl->skyline_by_options, "slots", &window_slots) ||
-		skyline_option_get_int(sl->skyline_by_options, "windowslots", &window_slots);
-
-	if (window_slots == 0)
-	{
-		/*
-		 * If window_slots == -1, then we constrain the tuple window in
-		 * terms of memory.
-		 */
-		elog(ERROR, "tuple window must have at least one slot");
-	}
-
-	node->window = tuplewindow_begin(window_size, window_slots);
 }
 
 static TupleTableSlot *
@@ -660,6 +695,24 @@ ExecSkyline_BlockNestedLoop(SkylineState *node, Skyline *sl)
 	{
 		switch (node->status)
 		{
+			case SS_INIT:
+				{
+					node->source = SS_OUTER;
+					node->tempIn = NULL;
+
+					/*
+					 * tempOut should go directly to a temporary file,
+					 * therefore we set work_mem = 0.
+					 */
+					node->tempOut = tuplestore_begin_heap(false, false, 0);
+
+					node->timestampIn = 0;
+					node->timestampOut = 0;
+
+					node->status = SS_PROCESS;
+				}
+				break;
+
 			case SS_PROCESS:
 				{
 					TupleWindowState *window = node->window;
@@ -788,28 +841,6 @@ ExecSkyline_BlockNestedLoop(SkylineState *node, Skyline *sl)
 
 				break;
 
-			case SS_INIT:
-				{
-					ExecSkylineInitTupleWindow(node, sl);
-
-					node->source = SS_OUTER;
-					node->tempIn = NULL;
-
-					/*
-					 * tempOut should go directly to a temporary file,
-					 * therefore we set work_mem = 0.
-					 */
-					node->tempOut = tuplestore_begin_heap(false, false, 0);
-
-					node->timestampIn = 0;
-					node->timestampOut = 0;
-
-					node->pass = 0;
-
-					node->status = SS_PROCESS;
-				}
-				break;
-
 			case SS_PIPEOUT:
 
 				/*
@@ -874,6 +905,23 @@ ExecSkyline_SortFilterSkyline(SkylineState *node, Skyline *sl)
 	{
 		switch (node->status)
 		{
+			case SS_INIT:
+				{
+					node->source = SS_OUTER;
+					node->tempIn = NULL;
+
+					/*
+					 * tempOut should go directly to a temporary file,
+					 * therefore we set work_mem = 0.
+					 */
+					node->tempOut = tuplestore_begin_heap(false, false, 0);
+
+					node->timestampOut = 0;
+
+					node->status = SS_PROCESS;
+				}
+				break;
+
 			case SS_PROCESS:
 				{
 					TupleWindowState *window = node->window;
@@ -997,27 +1045,6 @@ ExecSkyline_SortFilterSkyline(SkylineState *node, Skyline *sl)
 					}
 				}
 
-				break;
-
-			case SS_INIT:
-				{
-					ExecSkylineInitTupleWindow(node, sl);
-
-					node->source = SS_OUTER;
-					node->tempIn = NULL;
-
-					/*
-					 * tempOut should go directly to a temporary file,
-					 * therefore we set work_mem = 0.
-					 */
-					node->tempOut = tuplestore_begin_heap(false, false, 0);
-
-					node->timestampOut = 0;
-
-					node->pass = 0;
-
-					node->status = SS_PROCESS;
-				}
 				break;
 
 			case SS_DONE:

@@ -1348,11 +1348,14 @@ typedef struct SkylineState
 	TupleWindowState   *window;				/* for BNL and SFS */
 	int64				timestampIn;
 	int64				timestampOut;
-	int64				pass;
 	SkylineSource		source;
 	Tuplestorestate	   *tempIn;
 	Tuplestorestate	   *tempOut;
 	TupleTableSlot	   *extraSlot;
+
+	int64				pass;
+	int					windowsize;
+	int					windowslots;
 } SkylineState;
 
 /* ---------------------

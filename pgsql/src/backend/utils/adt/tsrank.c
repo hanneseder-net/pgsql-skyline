@@ -7,7 +7,7 @@
  *
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/backend/utils/adt/tsrank.c,v 1.7 2007/09/13 06:54:35 teodor Exp $
+ *	  $PostgreSQL: pgsql/src/backend/utils/adt/tsrank.c,v 1.8 2007/09/20 18:10:57 teodor Exp $
  *
  *-------------------------------------------------------------------------
  */

@@ -44,7 +44,7 @@
 /geometry.out/1.26/Wed May 30 13:52:58 2007//
 /geometry_1.out/1.11/Wed May 30 13:52:58 2007//
 /geometry_2.out/1.8/Wed May 30 13:52:58 2007//
-/guc.out/1.5/Wed Sep  5 06:37:21 2007//
+/guc.out/1.6/Fri Sep 14 18:56:15 2007//
 /hash_index.out/1.6/Thu Apr  7 01:51:40 2005//
 /horology.out/1.66/Wed Aug  1 09:01:17 2007//
 /inet.out/1.23/Tue Jan  2 23:38:42 2007//
@@ -84,7 +84,7 @@
 /reltime.out/1.9/Thu Apr  7 01:51:40 2005//
 /returning.out/1.4/Fri Oct  6 17:14:01 2006//
 /rowtypes.out/1.11/Fri Apr  6 04:21:44 2007//
-/rules.out/1.131/Wed Aug  1 09:01:17 2007//
+/rules.out/1.133/Fri Sep 14 18:56:15 2007//
 /sanity_check.out/1.36/Wed Sep  5 06:37:21 2007//
 /select.out/1.18/Mon Jul  9 10:06:13 2007//
 /select_distinct.out/1.5/Sun Dec 11 10:54:28 2005//
@@ -113,6 +113,7 @@
 /transactions.out/1.17/Sat Jun  9 20:54:25 2007//
 /triggers.out/1.24/Thu Feb  1 19:10:30 2007//
 /truncate.out/1.12/Thu Jun 29 16:07:29 2006//
+/tsdicts.out/1.1/Tue Sep 11 11:54:42 2007//
 /tsearch.out/1.3/Sat Aug 25 01:06:25 2007//
 /tstypes.out/1.2/Tue Aug 21 15:41:13 2007//
 /type_sanity.out/1.31/Sat Jun 23 07:56:23 2007//

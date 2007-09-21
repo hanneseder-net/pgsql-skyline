@@ -14,7 +14,7 @@
 /domains.c/1.5/Fri Jan  5 22:19:40 2007//
 /encode.c/1.19/Tue Feb 27 23:48:08 2007//
 /enum.c/1.4/Wed Sep  5 06:37:06 2007//
-/float.c/1.150/Wed Jun  6 16:05:51 2007//
+/float.c/1.151/Fri Sep 21 18:07:28 2007//
 /format_type.c/1.47/Mon Apr  2 03:49:39 2007//
 /formatting.c/1.131/Mon Aug  6 09:10:19 2007//
 /genfile.c/1.16/Tue Feb 27 23:48:08 2007//
@@ -38,7 +38,7 @@
 /oracle_compat.c/1.71/Wed Sep 19 17:57:19 2007//
 /pg_locale.c/1.39/Fri Jan  5 22:19:41 2007//
 /pg_lzcompress.c/1.27/Mon Aug  6 09:10:19 2007//
-/pgstatfuncs.c/1.44/Fri Sep 14 18:56:01 2007//
+/pgstatfuncs.c/1.45/Fri Sep 21 18:07:28 2007//
 /pseudotypes.c/1.20/Thu Jun  7 10:42:36 2007//
 /quote.c/1.22/Tue Feb 27 23:48:08 2007//
 /regexp.c/1.73/Fri Aug 17 09:40:56 2007//
@@ -52,12 +52,12 @@
 /tsginidx.c/1.4/Fri Sep 14 18:56:02 2007//
 /tsgistidx.c/1.4/Fri Sep 14 18:56:02 2007//
 /tsquery.c/1.7/Fri Sep 14 18:56:02 2007//
-/tsquery_cleanup.c/1.4/Fri Sep 14 18:56:02 2007//
+/tsquery_cleanup.c/1.5/Fri Sep 21 18:07:28 2007//
 /tsquery_gist.c/1.1/Tue Aug 21 01:11:19 2007//
 /tsquery_op.c/1.2/Fri Sep 14 18:56:02 2007//
 /tsquery_rewrite.c/1.4/Fri Sep 14 18:56:02 2007//
 /tsquery_util.c/1.4/Fri Sep 14 18:56:02 2007//
-/tsrank.c/1.7/Fri Sep 14 18:56:02 2007//
+/tsrank.c/1.8/Fri Sep 21 18:07:28 2007//
 /tsvector.c/1.4/Fri Sep 14 18:56:02 2007//
 /tsvector_op.c/1.5/Fri Sep 14 18:56:02 2007//
 /tsvector_parser.c/1.1/Fri Sep  7 15:09:56 2007//

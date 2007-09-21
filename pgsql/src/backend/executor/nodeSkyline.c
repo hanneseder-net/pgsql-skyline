@@ -124,7 +124,7 @@ inlineApplyCompareFunction(FmgrInfo *compFunction, int sk_flags,
 /* TODO: make use of distinct so we can break out earlier */
 /* TODO: if it doesn't have SKYLINEBY_DIFF can we break out earlier in cmp_lt and cmp_gt case */
 /* TODO: heuristics: check SKYLINEBY_DIFF first? */
-int
+static int
 ExecSkylineIsDominating(SkylineState *node, TupleTableSlot *inner_slot, TupleTableSlot *slot)
 {
 	Skyline    *sl = (Skyline *) node->ss.ps.plan;
@@ -132,7 +132,6 @@ ExecSkylineIsDominating(SkylineState *node, TupleTableSlot *inner_slot, TupleTab
 	bool		cmp_all_eq = true;
 	bool		cmp_lt = false;
 	bool		cmp_gt = false;
-	bool		cmp_diff_eq = true;
 
 	for (i = 0; i < sl->numCols; ++i)
 	{
@@ -157,19 +156,22 @@ ExecSkylineIsDominating(SkylineState *node, TupleTableSlot *inner_slot, TupleTab
 			case SKYLINEBY_MAX:
 			case SKYLINEBY_USING:
 				if (cmp < 0)
+				{
 					cmp_lt = true;
+					if (cmp_gt)
+						return SKYLINE_CMP_INCOMPARABLE;
+				}
 				else if (cmp > 0)
+				{
 					cmp_gt = true;
-
-				/*
-				 * FIXME: if there is not SKYLINEBY_DIFF we can return
-				 * INCOMPAREABLE here out if cmp_lt and cmp_gt turn to true
-				 */
+					if (cmp_lt)
+						return SKYLINE_CMP_INCOMPARABLE;
+				}
 
 				break;
 			case SKYLINEBY_DIFF:
-				cmp_diff_eq = cmp_diff_eq && (cmp == 0);
-				/* FIXME: if this turns to false -> return INCOMPAREABLE? */
+				if (cmp != 0)
+					return SKYLINE_CMP_INCOMPARABLE;
 				break;
 			default:
 				elog(ERROR, "unrecognized skylineby_dir: %d", sl->skylineByDir[i]);
@@ -180,10 +182,10 @@ ExecSkylineIsDominating(SkylineState *node, TupleTableSlot *inner_slot, TupleTab
 	if (cmp_all_eq)
 		return SKYLINE_CMP_ALL_EQ;
 
-	if (cmp_lt && !cmp_gt && cmp_diff_eq)
+	if (cmp_lt)
 		return SKYLINE_CMP_FIRST_DOMINATES;
 
-	if (!cmp_lt && cmp_gt && cmp_diff_eq)
+	if (cmp_gt)
 		return SYKLINE_CMP_SECOND_DOMINATES;
 
 	return SKYLINE_CMP_INCOMPARABLE;

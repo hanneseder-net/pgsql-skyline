@@ -12,7 +12,7 @@
 /discard.c/1.1/Thu Apr 26 16:13:10 2007//
 /explain.c/1.165/Fri Aug 17 09:40:54 2007//
 /functioncmds.c/1.85/Wed Sep  5 06:36:57 2007//
-/indexcmds.c/1.165/Fri Sep 14 18:55:55 2007//
+/indexcmds.c/1.166/Fri Sep 21 18:07:24 2007//
 /lockcmds.c/1.16/Fri Jan  5 22:19:26 2007//
 /opclasscmds.c/1.54/Thu Feb  1 19:10:26 2007//
 /operatorcmds.c/1.36/Sun Jun  3 10:06:17 2007//
@@ -20,15 +20,15 @@
 /prepare.c/1.77/Mon Jun 25 20:20:07 2007//
 /proclang.c/1.73/Wed Sep  5 06:36:57 2007//
 /schemacmds.c/1.46/Mon Jun 25 20:20:07 2007//
-/sequence.c/1.145/Fri Sep 14 18:55:55 2007//
+/sequence.c/1.146/Fri Sep 21 18:07:24 2007//
 /tablecmds.c/1.232/Fri Sep 14 18:55:56 2007//
 /tablespace.c/1.49/Mon Aug  6 09:10:17 2007//
 /trigger.c/1.219/Fri Sep 14 18:55:56 2007//
 /tsearchcmds.c/1.5/Wed Aug 22 22:30:20 2007//
 /typecmds.c/1.107/Wed Sep  5 06:36:58 2007//
 /user.c/1.177/Wed Sep  5 06:36:58 2007//
-/vacuum.c/1.358/Fri Sep 14 18:55:56 2007//
-/vacuumlazy.c/1.96/Wed Sep 19 17:57:16 2007//
+/vacuum.c/1.359/Fri Sep 21 18:07:24 2007//
+/vacuumlazy.c/1.98/Fri Sep 21 18:07:24 2007//
 /variable.c/1.121/Mon Aug  6 09:10:17 2007//
 /view.c/1.102/Wed Sep  5 06:36:58 2007//
 D/_deadcode////

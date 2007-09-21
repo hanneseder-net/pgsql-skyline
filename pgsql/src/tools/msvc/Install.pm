@@ -69,7 +69,7 @@ sub Install
     GenerateTimezoneFiles($target,$conf);
     GenerateTsearchFiles($target);
     CopySetOfFiles('Stopword files', "src\\backend\\snowball\\stopwords\\*.stop", $target . '/share/tsearch_data/');
-    CopySetOfFiles('Dictionaries sample files', "src\\backend\\tsearch\\\*_sample.*", $target . '/share/tsearch_data/');
+    CopySetOfFiles('Dictionaries sample files', "src\\backend\\tsearch\\*_sample.*", $target . '/share/tsearch_data/', 0, 1);
     CopyContribFiles($config,$target);
     CopyIncludeFiles($target);
 

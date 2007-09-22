@@ -23,6 +23,7 @@
 #include "executor/nodeSkyline.h"
 #include "miscadmin.h"
 #include "utils/datum.h"
+#include "utils/tuplesort.h"
 #include "utils/tuplestore.h"
 #include "utils/tuplewindow.h"
 #include "utils/lsyscache.h"
@@ -121,9 +122,11 @@ inlineApplyCompareFunction(FmgrInfo *compFunction, int sk_flags,
 #define SYKLINE_CMP_SECOND_DOMINATES 3
 #define SKYLINE_CMP_INCOMPARABLE 4
 
-/* TODO: make use of distinct so we can break out earlier */
-/* TODO: if it doesn't have SKYLINEBY_DIFF can we break out earlier in cmp_lt and cmp_gt case */
-/* TODO: heuristics: check SKYLINEBY_DIFF first? */
+/*
+ * ExecSkylineIsDominating
+ *
+ *	FIXME
+ */
 static int
 ExecSkylineIsDominating(SkylineState *node, TupleTableSlot *inner_slot, TupleTableSlot *slot)
 {
@@ -191,34 +194,11 @@ ExecSkylineIsDominating(SkylineState *node, TupleTableSlot *inner_slot, TupleTab
 	return SKYLINE_CMP_INCOMPARABLE;
 }
 
-static void
-ExecSkylineGetOrderingOp(Skyline *sl, int idx, FmgrInfo *compareOpFn, int *compareFlags)
-{
-	/* some sanity checks */
-	AssertArg(sl != NULL);
-	AssertArg(0 <= idx && idx < sl->numCols);
-	AssertArg(compareOpFn != NULL);
-	AssertArg(compareFlags != NULL);
-
-	{
-		Oid			compareOperator = sl->skylinebyOperators[idx];
-		Oid			compareFunction;
-		bool		reverse;
-
-		/* lookup the ordering function */
-		/* FIXME: fix wording for error message */
-		if (!get_compare_function_for_ordering_op(compareOperator, &compareFunction, &reverse))
-			elog(ERROR, "operator %u is not a valid ordering operator", compareOperator);
-
-		fmgr_info(compareFunction, compareOpFn);
-
-		/* set ordering flags */
-		*compareFlags = reverse ? SK_BT_DESC : 0;
-		if (sl->nullsFirst[idx])
-			*compareFlags |= SK_BT_NULLS_FIRST;
-	}
-}
-
+/*
+ * ExecSkylineCacheCompareFunctionInfo
+ *
+ *	FIXME
+ */
 static void
 ExecSkylineCacheCompareFunctionInfo(SkylineState *slstate, Skyline *node)
 {
@@ -228,9 +208,21 @@ ExecSkylineCacheCompareFunctionInfo(SkylineState *slstate, Skyline *node)
 	slstate->compareFlags = (int *) palloc(node->numCols * sizeof(int));
 
 	for (i = 0; i < node->numCols; ++i)
-		ExecSkylineGetOrderingOp(node, i, &(slstate->compareOpFn[i]), &slstate->compareFlags[i]);
+	{
+		Oid			compareFunction;
+		SelectSortFunction(node->skylinebyOperators[i], 
+						   node->nullsFirst[i], 
+						   &compareFunction,
+						   &slstate->compareFlags[i]);
+		fmgr_info(compareFunction, &(slstate->compareOpFn[i]));
+	}
 }
 
+/*
+ * ExecSkylineNeedExtraSlot
+ *
+ *	FIXME
+ */
 static bool
 ExecSkylineNeedExtraSlot(Skyline *node)
 {
@@ -245,6 +237,11 @@ ExecSkylineNeedExtraSlot(Skyline *node)
 	}
 }
 
+/*
+ * ExecSkylineInitTupleWindow
+ *
+ *	FIXME
+ */
 static void
 ExecSkylineInitTupleWindow(SkylineState *node, Skyline *sl)
 {
@@ -290,6 +287,11 @@ ExecSkylineInitTupleWindow(SkylineState *node, Skyline *sl)
 	}
 }
 
+/*
+ * ExecInitSkyline
+ *
+ *	FIXME
+ */
 SkylineState *
 ExecInitSkyline(Skyline *node, EState *estate, int eflags)
 {
@@ -390,12 +392,22 @@ ExecInitSkyline(Skyline *node, EState *estate, int eflags)
 	return slstate;
 }
 
+/*
+ * ExecCountSlotsSkyline
+ *
+ *	FIXME
+ */
 int
 ExecCountSlotsSkyline(Skyline *node)
 {
 	return ExecCountSlotsNode(outerPlan(node)) + SKYLINE_NSLOTS + (ExecSkylineNeedExtraSlot(node) ? 1 : 0);
 }
 
+/*
+ * ExecSkyline_1DimDistinct
+ *
+ *	FIXME
+ */
 static TupleTableSlot *
 ExecSkyline_1DimDistinct(SkylineState *node, Skyline *sl)
 {
@@ -455,6 +467,11 @@ ExecSkyline_1DimDistinct(SkylineState *node, Skyline *sl)
 	}
 }
 
+/*
+ * ExecSkyline_1Dim
+ *
+ *	FIXME
+ */
 static TupleTableSlot *
 ExecSkyline_1Dim(SkylineState *node, Skyline *sl)
 {
@@ -553,6 +570,11 @@ ExecSkyline_1Dim(SkylineState *node, Skyline *sl)
 	}
 }
 
+/*
+ * ExecSkyline_2DimPreSort
+ *
+ *	FIXME
+ */
 static TupleTableSlot *
 ExecSkyline_2DimPreSort(SkylineState *node, Skyline *sl)
 {
@@ -610,6 +632,11 @@ ExecSkyline_2DimPreSort(SkylineState *node, Skyline *sl)
 	return NULL;
 }
 
+/*
+ * ExecSkyline_MaterializedNestedLoop
+ *
+ *	FIXME
+ */
 static TupleTableSlot *
 ExecSkyline_MaterializedNestedLoop(SkylineState *node, Skyline *sl)
 {
@@ -693,6 +720,11 @@ ExecSkyline_MaterializedNestedLoop(SkylineState *node, Skyline *sl)
 	}
 }
 
+/*
+ * ExecSkyline_BlockNestedLoop
+ *
+ *	FIXME
+ */
 static TupleTableSlot *
 ExecSkyline_BlockNestedLoop(SkylineState *node, Skyline *sl)
 {
@@ -906,6 +938,11 @@ ExecSkyline_BlockNestedLoop(SkylineState *node, Skyline *sl)
 	}
 }
 
+/*
+ * ExecSkyline_SortFilterSkyline
+ *
+ *	FIXME
+ */
 static TupleTableSlot *
 ExecSkyline_SortFilterSkyline(SkylineState *node, Skyline *sl)
 {
@@ -1067,6 +1104,11 @@ ExecSkyline_SortFilterSkyline(SkylineState *node, Skyline *sl)
 	}							/* for */
 }
 
+/*
+ * ExecSkyline
+ *
+ *	FIXME
+ */
 TupleTableSlot *
 ExecSkyline(SkylineState *node)
 {
@@ -1093,15 +1135,14 @@ ExecSkyline(SkylineState *node)
 	}
 }
 
-
+/*
+ * ExecEndSkyline
+ *
+ *	FIXME
+ */
 void
 ExecEndSkyline(SkylineState *node)
 {
-	/* FIXME: no need to free it if we didn't alloc it */
-#if 0
-	ExecFreeExprContext(&node->ss.ps);
-#endif
-
 	/*
 	 * clean out the tuple table
 	 */

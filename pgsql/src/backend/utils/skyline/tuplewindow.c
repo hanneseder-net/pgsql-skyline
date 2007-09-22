@@ -1,9 +1,31 @@
+/*-------------------------------------------------------------------------
+ *
+ * tuplewindow.c
+ *    Routines to handle maintain a tuplewindow, used for skyline nodes.
+ *    see: executor/nodeSkyline.c
+ *
+ * Portions Copyright (c) 2007, PostgreSQL Global Development Group
+ *
+ *
+ * DESCRIPTION
+ *    We are using a double linked list with a sentinel.
+ *
+ *    For double linked list with sentinel see: [COR2002, Ch. 10.2, p 204-209]
+ *    [COR2002] Cormen, Thomas H., Introduction to Algorithms,
+ *    Second Edition, Third printing 2002, MIT Press, ISBN 0-262-03293-7
+ *
+ * IDENTIFICATION
+ *	  $PostgreSQL: $
+ *
+ *-------------------------------------------------------------------------
+ */
+
 #include "postgres.h"
 
 #include "utils/tuplewindow.h"
 #include "utils/memutils.h"
 
-/* TODO: This is from tuplestore.c and could be factored out. */
+/* FIXME: This is from tuplestore.c and could be factored out. */
 #define LACKMEM(state)		((state)->availMem < 0)
 #define USEMEM(state,amt)	((state)->availMem -= (amt))
 #define FREEMEM(state,amt)	((state)->availMem += (amt))
@@ -29,11 +51,12 @@ struct TupleWindowState
 };
 
 /*
- * We are using a double linked list with a sentinel.
+ * tuplewindow_begin
  *
- * For double linked list with sentinel see: [COR2002, Ch. 10.2, p 204-209]
- * [COR2002] Cormen, Thomas H., Introduction to Algorithms,
- * Second Edition, Third printing 2002, MIT Press, ISBN 0-262-03293-7
+ *	Initialize a tuplewindow. If maxSlots is unequal to -1 then the tuple-
+ *	window is only restricted by the number of slots, memory is not
+ *	considered in that case. If maxSlots is equal to -1 maxKBytes is the
+ *	limiting factor.
  */
 TupleWindowState *
 tuplewindow_begin(int maxKBytes, int maxSlots)
@@ -63,6 +86,12 @@ tuplewindow_begin(int maxKBytes, int maxSlots)
 	return state;
 }
 
+/*
+ * tuplewindow_has_freespace
+ *
+ *	Returns true, if the tuple window is large enough to store at least
+ *	one more tuple.
+ */
 bool
 tuplewindow_has_freespace(TupleWindowState *state)
 {
@@ -72,6 +101,11 @@ tuplewindow_has_freespace(TupleWindowState *state)
 		return !LACKMEM(state);
 }
 
+/*
+ * tuplewindow_puttupleslot
+ *
+ *	Adds the tuple in slot to the tuplewindow.
+ */
 void
 tuplewindow_puttupleslot(TupleWindowState *state,
 						 TupleTableSlot *slot,
@@ -113,6 +147,11 @@ tuplewindow_puttupleslot(TupleWindowState *state,
 	windowSlot->prev->next = windowSlot;
 }
 
+/*
+ * tuplewindow_removeslot
+ *
+ *	Helper for tuplewindow_removecurrent.
+ */
 static void
 tuplewindow_removeslot(TupleWindowState *state,
 					   TupleWindowSlot *slot,
@@ -163,6 +202,11 @@ tuplewindow_removeslot(TupleWindowState *state,
 		state->current = next;
 }
 
+/*
+ * tuplewindow_rewind
+ *
+ *	Resets the cursor (current) to the first tuple in the window.
+ */
 void
 tuplewindow_rewind(TupleWindowState *state)
 {
@@ -171,6 +215,11 @@ tuplewindow_rewind(TupleWindowState *state)
 	state->current = state->nil->next;
 }
 
+/*
+ * tuplewindow_ateof
+ *
+ *	Returns true if the cursor (current) is at the end of the tuplewindow.
+ */
 bool
 tuplewindow_ateof(TupleWindowState *state)
 {
@@ -179,6 +228,14 @@ tuplewindow_ateof(TupleWindowState *state)
 	return (state->current == state->nil);
 }
 
+/*
+ * tuplewindow_movenext
+ *
+ *	Move the cursor (current) to the next slot, also so
+ *	tuplewindow_removecurrent, which also advances the
+ *	cursor. Use tuplewindow_rewind to reset the cursor to
+ *	the beginning.
+ */
 void
 tuplewindow_movenext(TupleWindowState *state)
 {
@@ -188,6 +245,11 @@ tuplewindow_movenext(TupleWindowState *state)
 		state->current = state->current->next;
 }
 
+/*
+ * tuplewindow_timestampcurrent
+ *
+ *	Returns the timestamp of the current tuple.
+ */
 int64
 tuplewindow_timestampcurrent(TupleWindowState *state)
 {
@@ -198,6 +260,11 @@ tuplewindow_timestampcurrent(TupleWindowState *state)
 	return state->current->timestamp;
 }
 
+/*
+ * tuplewindow_gettupleslot
+ *
+ *	FIXME
+ */
 bool
 tuplewindow_gettupleslot(TupleWindowState *state,
 						 TupleTableSlot *slot,
@@ -251,8 +318,7 @@ tuplewindow_removecurrent(TupleWindowState *state)
  * tuplewindow_clean
  * 
  *	Removes all tuple from the window. tuplewindow_removeall might be a
- *	better name, but anyway it's a tuple*window* and windows are are
- *	cleaned.
+ *	better name, but anyway it's a tuple*window* and windows are cleaned.
  */
 void
 tuplewindow_clean(TupleWindowState *state)

@@ -526,6 +526,8 @@ ExecSkyline_1Dim(SkylineState *node, Skyline *sl)
 					node->status = SS_PIPEOUT;
 				}
 
+				/* fall through */
+
 			case SS_PIPEOUT:
 				Assert(node->tuplestorestate != NULL);
 
@@ -537,6 +539,7 @@ ExecSkyline_1Dim(SkylineState *node, Skyline *sl)
 					node->tuplestorestate = NULL;
 
 					node->status = SS_DONE;
+					return NULL;
 				}
 
 			case SS_DONE:
@@ -758,6 +761,9 @@ ExecSkyline_BlockNestedLoop(SkylineState *node, Skyline *sl)
 							 * We haven't written any tuples to the temp, so
 							 * we are done.
 							 */
+							tuplestore_end(node->tempOut);
+							node->tempOut = NULL;
+
 							tuplewindow_rewind(window);
 							node->status = SS_FINALPIPEOUT;
 						}
@@ -967,6 +973,9 @@ ExecSkyline_SortFilterSkyline(SkylineState *node, Skyline *sl)
 							 * We haven't written any tuples to the temp, so
 							 * we are done.
 							 */
+							tuplestore_end(node->tempOut);
+							node->tempOut = NULL;
+
 							node->status = SS_DONE;
 							return NULL;
 						}
@@ -991,9 +1000,7 @@ ExecSkyline_SortFilterSkyline(SkylineState *node, Skyline *sl)
 							 * We just clean the window here, the tuples have
 							 * allready been piped out.
 							 */
-							tuplewindow_rewind(window);
-							while (!tuplewindow_ateof(node->window))
-								tuplewindow_removecurrent(node->window);
+							tuplewindow_clean(window);
 						}
 						break;
 					}
@@ -1090,16 +1097,7 @@ ExecSkyline(SkylineState *node)
 void
 ExecEndSkyline(SkylineState *node)
 {
-	SO1_printf("ExecEndSkyline: %s\n",
-			   "shutting down skyline node");
-
-	/* free tuple store state if allocated */
-	if (node->tuplestorestate)
-	{
-		tuplestore_end(node->tuplestorestate);
-		node->tuplestorestate = NULL;
-	}
-
+	/* FIXME: no need to free it if we didn't alloc it */
 #if 0
 	ExecFreeExprContext(&node->ss.ps);
 #endif
@@ -1108,14 +1106,14 @@ ExecEndSkyline(SkylineState *node)
 	 * clean out the tuple table
 	 */
 	ExecClearTuple(node->ss.ss_ScanTupleSlot);
-	/* must drop pointer to sort result tuple */
 	ExecClearTuple(node->ss.ps.ps_ResultTupleSlot);
+	if (ExecSkylineNeedExtraSlot((Skyline *)node->ss.ps.plan))
+	{
+		ExecClearTuple(node->extraSlot);
+	}
 
 	/*
 	 * shut down the subplan
 	 */
 	ExecEndNode(outerPlanState(node));
-
-	SO1_printf("ExecEndSkyline: %s\n",
-			   "skyline node shutdown");
 }

@@ -19,7 +19,11 @@ typedef struct TupleWindowSlot
 struct TupleWindowState
 {
 	long		availMem;
-	long		availSlots;		/* if -1 only restrict mem */
+	int			availSlots;		/* if -1 only restrict mem */
+
+	int			maxKBytes;
+	int			maxSlots;
+
 	TupleWindowSlot *nil;
 	TupleWindowSlot *current;
 };
@@ -38,14 +42,22 @@ tuplewindow_begin(int maxKBytes, int maxSlots)
 
 	state = (TupleWindowState *) palloc0(sizeof(TupleWindowState));
 
+	state->maxKBytes = maxKBytes;
+	state->maxSlots = maxSlots;
+
 	state->availMem = maxKBytes * 1024L;
 	state->availSlots = maxSlots;
 
-	/* create sentinel, we don't count this memory usage */
+	/*
+	 * Create sentinel, we don't count this memory usage.
+	 */
 	state->nil = (TupleWindowSlot *) palloc(sizeof(TupleWindowSlot));
 	state->nil->next = state->nil;
 	state->nil->prev = state->nil;
 
+	/*
+	 * Set cursor (current) to sentinel.
+	 */
 	state->current = state->nil;
 
 	return state;
@@ -236,24 +248,23 @@ tuplewindow_removecurrent(TupleWindowState *state)
 }
 
 /*
- * tuplewindow_end
- *
- *	Release resources and cleanup.
+ * tuplewindow_clean
+ * 
+ *	Removes all tuple from the window. tuplewindow_removeall might be a
+ *	better name, but anyway it's a tuple*window* and windows are are
+ *	cleaned.
  */
 void
-tuplewindow_end(TupleWindowState *state)
+tuplewindow_clean(TupleWindowState *state)
 {
-	/*
-	 * NOTE: we could also use the external interface, if we want to be more
-	 * independend from the internal representation.
-	 *
-	 *	tuplewindow_rewind(state); 
-	 *	while (!tuplewindow_ateof(state))
-	 *		tuplewindow_removecurrent(state);
-	 */
+	TupleWindowSlot *slot;
 
-	/* free all slots */
-	TupleWindowSlot *slot = state->nil->next;
+	AssertArg(state != NULL);
+
+	/*
+	 * Free all slots and the tuples in the slot.
+	 */
+	slot = state->nil->next;
 
 	while (slot != state->nil)
 	{
@@ -263,6 +274,38 @@ tuplewindow_end(TupleWindowState *state)
 		pfree(slot);
 		slot = next;
 	}
+
+	/*
+	 * Reset sentinel.
+	 */
+	state->nil->next = state->nil;
+	state->nil->prev = state->nil;
+
+	/*
+	 * Reset cursor (current) to sentinel.
+	 */
+	state->current = state->nil;
+
+	/*
+	 * We have free'd all slots and all tuples, so all the memory is
+	 * available again.
+	 */
+	state->availMem = state->maxKBytes * 1024L;
+	state->availSlots = state->maxSlots;
+}
+
+/*
+ * tuplewindow_end
+ *
+ *	Release resources and cleanup.
+ */
+void
+tuplewindow_end(TupleWindowState *state)
+{
+	AssertArg(state != NULL);
+
+	/* free all slots */
+	tuplewindow_clean(state);
 
 	/* free the sentinel */
 	pfree(state->nil);

@@ -14,6 +14,7 @@ extern void tuplewindow_movenext(TupleWindowState *state);
 extern int64 tuplewindow_timestampcurrent(TupleWindowState *state);
 extern bool tuplewindow_gettupleslot(TupleWindowState *state, TupleTableSlot *slot, bool removeit);
 extern void tuplewindow_removecurrent(TupleWindowState *state);
+extern void tuplewindow_clean(TupleWindowState *state);
 extern void tuplewindow_end(TupleWindowState *state);
 
 #endif   /* TUPLEWINDOW_H */

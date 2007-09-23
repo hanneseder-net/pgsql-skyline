@@ -1,0 +1,36 @@
+*** ../pgsql-cvshead/src/tools/msvc/Install.pm	Sun Sep 23 20:27:59 2007
+--- src/tools/msvc/Install.pm	Sun Sep 23 21:24:13 2007
+***************
+*** 50,56 ****
+  									push(@$sample_files, $File::Find::name); 
+  							} 
+  				  }, 
+! 					 "../.." );
+      CopySetOfFiles('config files', $sample_files , $target . '/share/');
+      CopyFiles(
+          'Import libraries',
+--- 50,56 ----
+  									push(@$sample_files, $File::Find::name); 
+  							} 
+  				  }, 
+! 					 "." );
+      CopySetOfFiles('config files', $sample_files , $target . '/share/');
+      CopyFiles(
+          'Import libraries',
+***************
+*** 81,87 ****
+  				   [ glob ("src\\backend\\snowball\\stopwords\\*.stop") ], 
+  				   $target . '/share/tsearch_data/');
+      CopySetOfFiles('Dictionaries sample files', 
+! 				   [ glob ("src\\backend\\tsearch\\\*_sample.*" ) ], 
+  				   $target . '/share/tsearch_data/');
+      CopyContribFiles($config,$target);
+      CopyIncludeFiles($target);
+--- 81,87 ----
+  				   [ glob ("src\\backend\\snowball\\stopwords\\*.stop") ], 
+  				   $target . '/share/tsearch_data/');
+      CopySetOfFiles('Dictionaries sample files', 
+! 				   [ glob ("src\\backend\\tsearch\\*_sample.*" ) ], 
+  				   $target . '/share/tsearch_data/');
+      CopyContribFiles($config,$target);
+      CopyIncludeFiles($target);

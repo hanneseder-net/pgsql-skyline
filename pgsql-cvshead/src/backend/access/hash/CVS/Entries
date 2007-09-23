@@ -1,7 +1,7 @@
 /Makefile/1.13/Sat Jan 20 17:16:10 2007//
 /README/1.6/Thu Apr 19 20:24:04 2007//
 /hash.c/1.96/Fri Sep 14 18:55:53 2007//
-/hashfunc.c/1.52/Fri Jun  1 18:34:57 2007//
+/hashfunc.c/1.53/Sun Sep 23 18:27:48 2007//
 /hashinsert.c/1.47/Fri Sep 21 18:07:23 2007//
 /hashovfl.c/1.60/Fri Sep 21 18:07:23 2007//
 /hashpage.c/1.70/Fri Sep 21 18:07:23 2007//

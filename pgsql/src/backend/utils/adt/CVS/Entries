@@ -24,8 +24,8 @@
 /inet_net_pton.c/1.23/Fri Jul 14 16:59:19 2006//
 /int.c/1.80/Wed Jun  6 16:05:51 2007//
 /int8.c/1.67/Wed Sep  5 06:37:06 2007//
-/like.c/1.69/Sat Jun  2 11:40:29 2007//
-/like_match.c/1.16/Sat Jun  2 11:40:29 2007//
+/like.c/1.71/Sun Sep 23 18:27:50 2007//
+/like_match.c/1.18/Sun Sep 23 18:27:50 2007//
 /lockfuncs.c/1.29/Fri Sep 14 18:56:01 2007//
 /mac.c/1.38/Wed Jun  6 16:05:51 2007//
 /misc.c/1.57/Wed Sep  5 06:37:06 2007//
@@ -35,13 +35,13 @@
 /numeric.c/1.106/Wed Aug  1 09:00:54 2007//
 /numutils.c/1.75/Fri Jan  5 22:19:41 2007//
 /oid.c/1.72/Wed Jun  6 16:05:51 2007//
-/oracle_compat.c/1.71/Wed Sep 19 17:57:19 2007//
+/oracle_compat.c/1.73/Sun Sep 23 18:27:50 2007//
 /pg_locale.c/1.39/Fri Jan  5 22:19:41 2007//
 /pg_lzcompress.c/1.27/Mon Aug  6 09:10:19 2007//
 /pgstatfuncs.c/1.45/Fri Sep 21 18:07:28 2007//
 /pseudotypes.c/1.20/Thu Jun  7 10:42:36 2007//
 /quote.c/1.22/Tue Feb 27 23:48:08 2007//
-/regexp.c/1.73/Fri Aug 17 09:40:56 2007//
+/regexp.c/1.75/Sun Sep 23 18:27:50 2007//
 /regproc.c/1.103/Wed Sep  5 06:37:06 2007//
 /ri_triggers.c/1.97/Fri Sep 14 18:56:01 2007//
 /rowtypes.c/1.19/Sat Mar  3 19:32:55 2007//
@@ -64,7 +64,7 @@
 /uuid.c/1.4/Wed Jun  6 16:05:51 2007//
 /varbit.c/1.55/Wed Sep  5 06:37:07 2007//
 /varchar.c/1.124/Sat Jun 23 07:56:17 2007//
-/varlena.c/1.157/Wed Aug  1 09:00:55 2007//
+/varlena.c/1.159/Sun Sep 23 18:27:50 2007//
 /version.c/1.15/Tue Feb 27 23:48:09 2007//
 /xid.c/1.10/Fri Jan  5 22:19:42 2007//
 /xml.c/1.46/Wed Aug  1 09:00:55 2007//

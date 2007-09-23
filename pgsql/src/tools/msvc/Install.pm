@@ -3,16 +3,14 @@ package Install;
 #
 # Package that provides 'make install' functionality for msvc builds
 #
-# $PostgreSQL: pgsql/src/tools/msvc/Install.pm,v 1.19 2007/09/12 13:58:23 mha Exp $
+# $PostgreSQL: pgsql/src/tools/msvc/Install.pm,v 1.20 2007/09/22 20:38:10 adunstan Exp $
 #
 use strict;
 use warnings;
 use Carp;
 use File::Basename;
 use File::Copy;
-use File::Find;
-use File::Glob;
-use File::Spec;
+use File::Find ();
 
 use Exporter;
 our (@ISA,@EXPORT_OK);
@@ -46,20 +44,31 @@ sub Install
 
     CopySolutionOutput($conf, $target);
     copy($target . '/lib/libpq.dll', $target . '/bin/libpq.dll');
-    CopySetOfFiles('config files', "*.sample", $target . '/share/');
+	my $sample_files = [];
+	File::Find::find({wanted => 
+						  sub { /^.*\.sample\z/s && 
+									push(@$sample_files, $File::Find::name); 
+							} 
+				  }, 
+					 "." );
+    CopySetOfFiles('config files', $sample_files , $target . '/share/');
     CopyFiles(
         'Import libraries',
         $target .'/lib/',
         "$conf\\", "postgres\\postgres.lib","libpq\\libpq.lib", "libecpg\\libecpg.lib", "libpgport\\libpgport.lib"
     );
-    CopySetOfFiles('timezone names', 'src\timezone\tznames\*.txt',$target . '/share/timezonesets/');
+    CopySetOfFiles('timezone names', 
+				   [ glob('src\timezone\tznames\*.txt') ] ,
+				   $target . '/share/timezonesets/');
     CopyFiles(
         'timezone sets',
         $target . '/share/timezonesets/',
         'src/timezone/tznames/', 'Default','Australia','India'
     );
-    CopySetOfFiles('BKI files', "src\\backend\\catalog\\postgres.*", $target .'/share/');
-    CopySetOfFiles('SQL files', "src\\backend\\catalog\\*.sql", $target . '/share/');
+    CopySetOfFiles('BKI files', [ glob("src\\backend\\catalog\\postgres.*") ], 
+				   $target .'/share/');
+    CopySetOfFiles('SQL files', [ glob("src\\backend\\catalog\\*.sql") ], 
+				   $target . '/share/');
     CopyFiles(
         'Information schema data',
         $target . '/share/',
@@ -68,8 +77,12 @@ sub Install
     GenerateConversionScript($target);
     GenerateTimezoneFiles($target,$conf);
     GenerateTsearchFiles($target);
-    CopySetOfFiles('Stopword files', "src\\backend\\snowball\\stopwords\\*.stop", $target . '/share/tsearch_data/');
-    CopySetOfFiles('Dictionaries sample files', "src\\backend\\tsearch\\*_sample.*", $target . '/share/tsearch_data/', 0, 1);
+    CopySetOfFiles('Stopword files', 
+				   [ glob ("src\\backend\\snowball\\stopwords\\*.stop") ], 
+				   $target . '/share/tsearch_data/');
+    CopySetOfFiles('Dictionaries sample files', 
+				   [ glob ("src\\backend\\tsearch\\*_sample.*" ) ], 
+				   $target . '/share/tsearch_data/');
     CopyContribFiles($config,$target);
     CopyIncludeFiles($target);
 
@@ -106,61 +119,20 @@ sub CopyFiles
     print "\n";
 }
 
-sub FindFiles
-{
-    my $spec = shift;
-    my $nonrecursive = shift;
-    my $pat = basename($spec);
-    my $dir = dirname($spec);
-
-    if ($dir eq '') { $dir = '.'; }
-
-    -d $dir || croak "Could not list directory $dir: $!\n";
-
-    if ($nonrecursive)
-    {
-        return glob($spec);
-    }
-
-    # borrowed from File::DosGlob
-    # escape regex metachars but not glob chars
-    $pat =~ s:([].+^\-\${}[|]):\\$1:g;
-    # and convert DOS-style wildcards to regex
-    $pat =~ s/\*/.*/g;
-    $pat =~ s/\?/.?/g;
-
-    $pat = '^' . $pat . '\z';
-
-    my @res;
-    find(
-        {
-            wanted => sub { /$pat/s && push (@res, File::Spec->canonpath($File::Find::name)); }
-        },
-        $dir
-    );
-    return @res;
-}
-
 sub CopySetOfFiles
 {
     my $what = shift;
-    my $spec = shift;
+    my $flist = shift;
     my $target = shift;
-    my $silent = shift;
-    my $norecurse = shift;
-
-    print "Copying $what" unless ($silent);
-
-    foreach (FindFiles($spec, $norecurse))
+    print "Copying $what" if $what;
+    foreach (@$flist)
     {
         next if /regress/; # Skip temporary install in regression subdir
         next if /ecpg.test/; # Skip temporary install in regression subdir
-        my $src = $_;
-        my $tgt = $target . basename($src);
+        my $tgt = $target . basename($_);
         print ".";
-        copy($src, $tgt) || croak "Could not copy $src to $tgt: $!\n";
+        copy($_, $tgt) || croak "Could not copy $_: $!\n";
     }
-
     print "\n";
 }
 
@@ -410,7 +382,9 @@ sub CopyIncludeFiles
         $target . '/include/server/',
         'src/include/', 'pg_config.h', 'pg_config_os.h'
     );
-    CopySetOfFiles('', "src\\include\\*.h", $target . '/include/server/', 1, 1);
+    CopySetOfFiles('', 
+				   [ glob( "src\\include\\*.h" ) ], 
+				   $target . '/include/server/');
     my $D;
     opendir($D, 'src/include') || croak "Could not opendir on src/include!\n";
 
@@ -450,19 +424,24 @@ sub GenerateNLSFiles
 {
     my $target = shift;
     my $nlspath = shift;
+    my $D;
 
     print "Installing NLS files...";
     EnsureDirectories($target, "share/locale");
-
-    foreach (FindFiles("nls.mk"))
+	my @flist;
+	File::Find::find({wanted => 
+						  sub { /^nls\.mk\z/s && 
+									!                                                                       push(@flist, $File::Find::name); 	
+							} 
+				  }, ".");
+    foreach (@flist)
     {
         s/nls.mk/po/;
         my $dir = $_;
         next unless ($dir =~ /([^\\]+)\\po$/);
         my $prgm = $1;
         $prgm = 'postgres' if ($prgm eq 'backend');
-
-        foreach (FindFiles("$dir\\*.po", 1))
+        foreach (glob("$dir/*.po"))
         {
             my $lang;
             next unless /^(.*)\.po/;
@@ -476,7 +455,6 @@ sub GenerateNLSFiles
             print ".";
         }
     }
-
     print "\n";
 }
 

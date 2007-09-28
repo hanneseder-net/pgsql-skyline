@@ -7,7 +7,7 @@
  * Portions Copyright (c) 1996-2007, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
- * $PostgreSQL: pgsql/src/include/catalog/pg_proc.h,v 1.471 2007/09/20 17:56:32 tgl Exp $
+ * $PostgreSQL: pgsql/src/include/catalog/pg_proc.h,v 1.473 2007/09/25 20:03:38 tgl Exp $
  *
  * NOTES
  *	  The script catalog/genbki.sh reads this file and generates .bki
@@ -2244,9 +2244,6 @@ DESCR("convert string with specified destination encoding name");
 DATA(insert OID = 1813 (  convert		   PGNSP PGUID 12 1 0 f f t f s 3 17 "17 19 19" _null_ _null_ _null_ pg_convert - _null_ _null_ ));
 DESCR("convert string with specified encoding names");
 
-DATA(insert OID = 1619 (  convert_using    PGNSP PGUID 12 1 0 f f t f s 2 17 "25 25" _null_ _null_ _null_ pg_convert_using - _null_ _null_ ));
-DESCR("convert string with specified conversion name");
-
 DATA(insert OID = 1264 (  pg_char_to_encoding	   PGNSP PGUID 12 1 0 f f t f s 1 23 "19" _null_ _null_ _null_	PG_char_to_encoding - _null_ _null_ ));
 DESCR("convert encoding name to encoding id");
 
@@ -2945,6 +2942,11 @@ DATA(insert OID = 2772 ( pg_stat_get_bgwriter_buf_written_clean PGNSP PGUID 12 1
 DESCR("statistics: number of buffers written by the bgwriter for cleaning dirty buffers");
 DATA(insert OID = 2773 ( pg_stat_get_bgwriter_maxwritten_clean PGNSP PGUID 12 1 0 f f t f s 0 20 "" _null_ _null_ _null_ pg_stat_get_bgwriter_maxwritten_clean - _null_ _null_ ));
 DESCR("statistics: number of times the bgwriter stopped processing when it had written too many buffers while cleaning");
+DATA(insert OID = 2775 ( pg_stat_get_buf_written_backend PGNSP PGUID 12 1 0 f f t f s 0 20 "" _null_ _null_ _null_ pg_stat_get_buf_written_backend - _null_ _null_ ));
+DESCR("statistics: number of buffers written by backends");
+DATA(insert OID = 2859 ( pg_stat_get_buf_alloc			PGNSP PGUID 12 1 0 f f t f s 0 20 "" _null_ _null_ _null_ pg_stat_get_buf_alloc - _null_ _null_ ));
+DESCR("statistics: number of buffer allocations");
+
 DATA(insert OID = 2230 (  pg_stat_clear_snapshot		PGNSP PGUID 12 1 0 f f f f v 0 2278  "" _null_ _null_ _null_	pg_stat_clear_snapshot - _null_ _null_ ));
 DESCR("statistics: discard current transaction's statistics snapshot");
 DATA(insert OID = 2274 (  pg_stat_reset					PGNSP PGUID 12 1 0 f f f f v 0 2278  "" _null_ _null_ _null_	pg_stat_reset - _null_ _null_ ));

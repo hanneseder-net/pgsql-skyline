@@ -134,7 +134,7 @@
 //#define HAVE_FUNCNAME__FUNC 1
 
 /* Define to 1 if your compiler understands __FUNCTION__. */
-#undef HAVE_FUNCNAME__FUNCTION
+#define HAVE_FUNCNAME__FUNCTION 1
 
 /* Define to 1 if you have getaddrinfo(). */
 /* #undef HAVE_GETADDRINFO */

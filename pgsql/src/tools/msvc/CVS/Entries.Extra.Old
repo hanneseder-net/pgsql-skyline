@@ -5,6 +5,7 @@
 /README////*///
 /Solution.pm////*///
 /build.bat////*///
+/build.pl////*///
 /builddoc.bat////*///
 /clean.bat////*///
 /config.pl////*///
@@ -17,3 +18,4 @@
 /pgbison.bat////*///
 /pgflex.bat////*///
 /vcregress.bat////*///
+/vcregress.pl////*///

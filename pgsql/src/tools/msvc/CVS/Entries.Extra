@@ -5,15 +5,16 @@
 /README////*///
 /Solution.pm////*///
 /build.bat////*///
+/build.pl////*///
 /builddoc.bat////*///
 /clean.bat////*///
 /config.pl////*///
 /ecpg_regression.proj////*///
 /gendef.pl////*///
-/getregress.pl////*///
 /install.bat////*///
 /install.pl////*///
 /mkvcbuild.pl////*///
 /pgbison.bat////*///
 /pgflex.bat////*///
 /vcregress.bat////*///
+/vcregress.pl////*///

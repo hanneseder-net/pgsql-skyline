@@ -11,10 +11,12 @@
  * on the number of tuples and pages we will keep track of at once.
  *
  * We are willing to use at most maintenance_work_mem memory space to keep
- * track of dead tuples.  We initially allocate an array of TIDs of that size.
- * If the array threatens to overflow, we suspend the heap scan phase and
- * perform a pass of index cleanup and page compaction, then resume the heap
- * scan with an empty TID array.
+ * track of dead tuples.  We initially allocate an array of TIDs of that size,
+ * with an upper limit that depends on table size (this limit ensures we don't
+ * allocate a huge area uselessly for vacuuming small tables).  If the array
+ * threatens to overflow, we suspend the heap scan phase and perform a pass of
+ * index cleanup and page compaction, then resume the heap scan with an empty
+ * TID array.
  *
  * We can limit the storage for page free space to MaxFSMPages entries,
  * since that's the most the free space map will be willing to remember
@@ -36,7 +38,7 @@
  *
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/backend/commands/vacuumlazy.c,v 1.98 2007/09/20 21:43:27 tgl Exp $
+ *	  $PostgreSQL: pgsql/src/backend/commands/vacuumlazy.c,v 1.101 2007/09/26 20:16:28 alvherre Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -68,6 +70,12 @@
 #define REL_TRUNCATE_MINIMUM	1000
 #define REL_TRUNCATE_FRACTION	16
 
+/*
+ * Guesstimation of number of dead tuples per page.  This is used to
+ * provide an upper limit to memory allocated when vacuuming small
+ * tables.
+ */
+#define LAZY_ALLOC_TUPLES		MaxHeapTuplesPerPage
 
 typedef struct LVRelStats
 {
@@ -154,7 +162,7 @@ lazy_vacuum_rel(Relation onerel, VacuumStmt *vacstmt,
 	pg_rusage_init(&ru0);
 
 	/* measure elapsed time iff autovacuum logging requires it */
-	if (IsAutoVacuumWorkerProcess() && Log_autovacuum > 0)
+	if (IsAutoVacuumWorkerProcess() && Log_autovacuum_min_duration > 0)
 		starttime = GetCurrentTimestamp();
 
 	if (vacstmt->verbose)
@@ -221,11 +229,11 @@ lazy_vacuum_rel(Relation onerel, VacuumStmt *vacstmt,
 						 vacstmt->analyze, vacrelstats->rel_tuples);
 
 	/* and log the action if appropriate */
-	if (IsAutoVacuumWorkerProcess() && Log_autovacuum >= 0)
+	if (IsAutoVacuumWorkerProcess() && Log_autovacuum_min_duration >= 0)
 	{
-		if (Log_autovacuum == 0 ||
+		if (Log_autovacuum_min_duration == 0 ||
 			TimestampDifferenceExceeds(starttime, GetCurrentTimestamp(),
-									   Log_autovacuum))
+									   Log_autovacuum_min_duration))
 			ereport(LOG,
 					(errmsg("automatic vacuum of table \"%s.%s.%s\": index scans: %d\n"
 							"pages: %d removed, %d remain\n"
@@ -1001,6 +1009,11 @@ lazy_space_alloc(LVRelStats *vacrelstats, BlockNumber relblocks)
 		maxtuples = (maintenance_work_mem * 1024L) / sizeof(ItemPointerData);
 		maxtuples = Min(maxtuples, INT_MAX);
 		maxtuples = Min(maxtuples, MaxAllocSize / sizeof(ItemPointerData));
+
+		/* curious coding here to ensure the multiplication can't overflow */
+		if ((BlockNumber) (maxtuples / LAZY_ALLOC_TUPLES) > relblocks)
+			maxtuples = relblocks * LAZY_ALLOC_TUPLES;
+
 		/* stay sane if small maintenance_work_mem */
 		maxtuples = Max(maxtuples, MaxHeapTuplesPerPage);
 	}

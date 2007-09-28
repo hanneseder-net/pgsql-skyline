@@ -1,5 +1,5 @@
 /catalog.h/1.37/Fri Jan  5 22:19:51 2007//
-/catversion.h/1.427/Sun Sep 23 18:27:54 2007//
+/catversion.h/1.429/Fri Sep 28 13:32:42 2007//
 /dependency.h/1.30/Wed Sep  5 06:37:13 2007//
 /duplicate_oids/1.8/Mon Jul 31 01:16:37 2006//
 /heap.h/1.86/Fri Jan  5 22:19:52 2007//
@@ -34,7 +34,7 @@
 /pg_operator.h/1.155/Wed Sep  5 06:37:14 2007//
 /pg_opfamily.h/1.6/Wed Sep  5 06:37:14 2007//
 /pg_pltemplate.h/1.4/Mon Mar 26 16:58:41 2007//
-/pg_proc.h/1.471/Fri Sep 21 18:07:32 2007//
+/pg_proc.h/1.473/Fri Sep 28 13:32:42 2007//
 /pg_rewrite.h/1.28/Mon Mar 19 23:38:31 2007//
 /pg_shdepend.h/1.5/Fri Jan  5 22:19:53 2007//
 /pg_shdescription.h/1.4/Fri Jan  5 22:19:53 2007//

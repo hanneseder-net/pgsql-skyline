@@ -1,7 +1,7 @@
 /Makefile/1.37/Wed Sep  5 06:36:57 2007//
 /aggregatecmds.c/1.43/Mon Apr  2 03:49:37 2007//
 /alter.c/1.25/Wed Sep  5 06:36:57 2007//
-/analyze.c/1.108/Thu May 31 10:06:52 2007//
+/analyze.c/1.109/Mon Sep 24 20:20:26 2007//
 /async.c/1.136/Thu Apr 12 06:53:46 2007//
 /cluster.c/1.163/Fri Sep 14 18:55:55 2007//
 /comment.c/1.97/Wed Sep  5 06:36:57 2007//
@@ -28,7 +28,7 @@
 /typecmds.c/1.107/Wed Sep  5 06:36:58 2007//
 /user.c/1.177/Wed Sep  5 06:36:58 2007//
 /vacuum.c/1.359/Fri Sep 21 18:07:24 2007//
-/vacuumlazy.c/1.98/Fri Sep 21 18:07:24 2007//
+/vacuumlazy.c/1.101/Fri Sep 28 13:32:35 2007//
 /variable.c/1.121/Mon Aug  6 09:10:17 2007//
 /view.c/1.102/Wed Sep  5 06:36:58 2007//
 D/_deadcode////

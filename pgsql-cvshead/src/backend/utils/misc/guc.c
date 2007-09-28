@@ -10,7 +10,7 @@
  * Written by Peter Eisentraut <peter_e@gmx.net>.
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/backend/utils/misc/guc.c,v 1.420 2007/09/11 00:06:42 tgl Exp $
+ *	  $PostgreSQL: pgsql/src/backend/utils/misc/guc.c,v 1.423 2007/09/26 22:36:30 tgl Exp $
  *
  *--------------------------------------------------------------------
  */
@@ -169,7 +169,7 @@ static const char *assign_backslash_quote(const char *newval, bool doit, GucSour
 static const char *assign_timezone_abbreviations(const char *newval, bool doit, GucSource source);
 static const char *assign_xmlbinary(const char *newval, bool doit, GucSource source);
 static const char *assign_xmloption(const char *newval, bool doit, GucSource source);
-
+static const char *show_archive_command(void);
 static bool assign_tcp_keepalives_idle(int newval, bool doit, GucSource source);
 static bool assign_tcp_keepalives_interval(int newval, bool doit, GucSource source);
 static bool assign_tcp_keepalives_count(int newval, bool doit, GucSource source);
@@ -736,47 +736,23 @@ static struct config_bool ConfigureNamesBool[] =
 		&Explain_pretty_print,
 		true, NULL, NULL
 	},
-	{
-		{"stats_start_collector", PGC_POSTMASTER, STATS_COLLECTOR,
-			gettext_noop("Starts the server statistics-collection subprocess."),
-			NULL
-		},
-		&pgstat_collect_startcollector,
-		true, NULL, NULL
-	},
-	{
-		{"stats_reset_on_server_start", PGC_POSTMASTER, STATS_COLLECTOR,
-			gettext_noop("Zeroes collected statistics on server restart."),
-			NULL
-		},
-		&pgstat_collect_resetonpmstart,
-		false, NULL, NULL
-	},
-	{
-		{"stats_row_level", PGC_SUSET, STATS_COLLECTOR,
-			gettext_noop("Collects row-level statistics on database activity."),
-			NULL
-		},
-		&pgstat_collect_tuplelevel,
-		true, NULL, NULL
-	},
-	{
-		{"stats_block_level", PGC_SUSET, STATS_COLLECTOR,
-			gettext_noop("Collects block-level statistics on database activity."),
-			NULL
-		},
-		&pgstat_collect_blocklevel,
-		false, NULL, NULL
-	},
 
 	{
-		{"stats_command_string", PGC_SUSET, STATS_COLLECTOR,
+		{"track_activities", PGC_SUSET, STATS_COLLECTOR,
 			gettext_noop("Collects information about executing commands."),
 			gettext_noop("Enables the collection of information on the currently "
-					"executing command of each session, along with the time "
-						 "at which that command began execution.")
+						 "executing command of each session, along with "
+						 "the time at which that command began execution.")
 		},
-		&pgstat_collect_querystring,
+		&pgstat_track_activities,
+		true, NULL, NULL
+	},
+	{
+		{"track_counts", PGC_SUSET, STATS_COLLECTOR,
+			gettext_noop("Collects statistics on database activity."),
+			NULL
+		},
+		&pgstat_track_counts,
 		true, NULL, NULL
 	},
 
@@ -1075,6 +1051,15 @@ static struct config_bool ConfigureNamesBool[] =
 		&standard_conforming_strings,
 		false, NULL, NULL
 	},
+
+    {
+        {"archive_mode", PGC_POSTMASTER, WAL_SETTINGS,
+            gettext_noop("Allows archiving of WAL files using archive_command."),
+            NULL
+        },
+        &XLogArchiveMode,
+        false, NULL, NULL
+    },
 
 	{
 		{"allow_system_table_mods", PGC_POSTMASTER, DEVELOPER_OPTIONS,
@@ -1562,9 +1547,9 @@ static struct config_int ConfigureNamesInt[] =
 
 	{
 		{"log_min_duration_statement", PGC_SUSET, LOGGING_WHEN,
-			gettext_noop("Sets the minimum execution time above which statements will "
-						 "be logged."),
-			gettext_noop("Zero prints all queries. The default is -1 (turning this feature off)."),
+			gettext_noop("Sets the minimum execution time above which "
+						 "statements will be logged."),
+			gettext_noop("Zero prints all queries. -1 turns this feature off."),
 			GUC_UNIT_MS
 		},
 		&log_min_duration_statement,
@@ -1572,13 +1557,13 @@ static struct config_int ConfigureNamesInt[] =
 	},
 
 	{
-		{"log_autovacuum", PGC_SIGHUP, LOGGING_WHAT,
-			gettext_noop("Sets the minimum execution time above which autovacuum actions "
-						 "will be logged."),
-			gettext_noop("Zero prints all actions.  The default is -1 (disabling autovacuum logging)."),
+		{"log_autovacuum_min_duration", PGC_SIGHUP, LOGGING_WHAT,
+			gettext_noop("Sets the minimum execution time above which "
+						 "autovacuum actions will be logged."),
+			gettext_noop("Zero prints all actions. -1 turns autovacuum logging off."),
 			GUC_UNIT_MS
 		},
-		&Log_autovacuum,
+		&Log_autovacuum_min_duration,
 		-1, -1, INT_MAX / 1000, NULL, NULL
 	},
 
@@ -1598,7 +1583,7 @@ static struct config_int ConfigureNamesInt[] =
 			NULL
 		},
 		&bgwriter_lru_maxpages,
-		5, 0, 1000, NULL, NULL
+		100, 0, 1000, NULL, NULL
 	},
 
 	{
@@ -1845,12 +1830,12 @@ static struct config_real ConfigureNamesReal[] =
 	},
 
 	{
-		{"bgwriter_lru_percent", PGC_SIGHUP, RESOURCES,
-			gettext_noop("Background writer percentage of LRU buffers to flush per round."),
+		{"bgwriter_lru_multiplier", PGC_SIGHUP, RESOURCES,
+			gettext_noop("Background writer multiplier on average buffers to scan per round."),
 			NULL
 		},
-		&bgwriter_lru_percent,
-		1.0, 0.0, 100.0, NULL, NULL
+		&bgwriter_lru_multiplier,
+		2.0, 0.0, 10.0, NULL, NULL
 	},
 
 	{
@@ -1904,7 +1889,7 @@ static struct config_string ConfigureNamesString[] =
 			NULL
 		},
 		&XLogArchiveCommand,
-		"", NULL, NULL
+		"", NULL, show_archive_command
 	},
 
 	{
@@ -6387,7 +6372,7 @@ GUCArrayDelete(ArrayType *array, const char *name)
 
 
 /*
- * assign_hook subroutines
+ * assign_hook and show_hook subroutines
  */
 
 static const char *
@@ -6994,6 +6979,15 @@ assign_xmloption(const char *newval, bool doit, GucSource source)
 		xmloption = xo;
 
 	return newval;
+}
+
+static const char *
+show_archive_command(void)
+{
+	if (XLogArchiveMode)
+		return XLogArchiveCommand;
+	else
+		return "(disabled)";
 }
 
 static bool

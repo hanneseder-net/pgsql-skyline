@@ -7,7 +7,7 @@
  * Portions Copyright (c) 1996-2007, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
- * $PostgreSQL: pgsql/src/backend/access/transam/xlog.c,v 1.282 2007/09/26 22:36:30 tgl Exp $
+ * $PostgreSQL: pgsql/src/backend/access/transam/xlog.c,v 1.285 2007/09/30 17:28:56 tgl Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -48,7 +48,7 @@
 #include "storage/spin.h"
 #include "utils/builtins.h"
 #include "utils/pg_locale.h"
-
+#include "utils/ps_status.h"
 
 
 /* File path names (all relative to $PGDATA) */
@@ -2276,6 +2276,7 @@ XLogFileRead(uint32 log, uint32 seg, int emode)
 {
 	char		path[MAXPGPATH];
 	char		xlogfname[MAXFNAMELEN];
+	char		activitymsg[MAXFNAMELEN + 16];
 	ListCell   *cell;
 	int			fd;
 
@@ -2296,9 +2297,15 @@ XLogFileRead(uint32 log, uint32 seg, int emode)
 		if (tli < curFileTLI)
 			break;				/* don't bother looking at too-old TLIs */
 
+		XLogFileName(xlogfname, tli, log, seg);
+
 		if (InArchiveRecovery)
 		{
-			XLogFileName(xlogfname, tli, log, seg);
+			/* Report recovery progress in PS display */
+			snprintf(activitymsg, sizeof(activitymsg), "waiting for %s",
+					 xlogfname);
+			set_ps_display(activitymsg, false);
+
 			restoredFromArchive = RestoreArchivedFile(path, xlogfname,
 													  "RECOVERYXLOG",
 													  XLogSegSize);
@@ -2311,6 +2318,12 @@ XLogFileRead(uint32 log, uint32 seg, int emode)
 		{
 			/* Success! */
 			curFileTLI = tli;
+
+			/* Report recovery progress in PS display */
+			snprintf(activitymsg, sizeof(activitymsg), "recovering %s",
+					 xlogfname);
+			set_ps_display(activitymsg, false);
+
 			return fd;
 		}
 		if (errno != ENOENT)	/* unexpected failure? */
@@ -4518,7 +4531,8 @@ exitArchiveRecovery(TimeLineID endTLI, uint32 endLogId, uint32 endLogSeg)
 	 *
 	 * Note that if we are establishing a new timeline, ThisTimeLineID is
 	 * already set to the new value, and so we will create a new file instead
-	 * of overwriting any existing file.
+	 * of overwriting any existing file.  (This is, in fact, always the case
+	 * at present.)
 	 */
 	snprintf(recoveryPath, MAXPGPATH, XLOGDIR "/RECOVERYXLOG");
 	XLogFilePath(xlogpath, ThisTimeLineID, endLogId, endLogSeg);
@@ -4700,7 +4714,7 @@ StartupXLOG(void)
 	XLogCtlInsert *Insert;
 	CheckPoint	checkPoint;
 	bool		wasShutdown;
-	bool		needNewTimeLine = false;
+	bool		reachedStopPoint = false;
 	bool		haveBackupLabel = false;
 	XLogRecPtr	RecPtr,
 				LastRec,
@@ -5010,7 +5024,7 @@ StartupXLOG(void)
 				 */
 				if (recoveryStopsHere(record, &recoveryApply))
 				{
-					needNewTimeLine = true;		/* see below */
+					reachedStopPoint = true;		/* see below */
 					recoveryContinue = false;
 					if (!recoveryApply)
 						break;
@@ -5078,11 +5092,10 @@ StartupXLOG(void)
 	 */
 	if (XLByteLT(EndOfLog, ControlFile->minRecoveryPoint))
 	{
-		if (needNewTimeLine)	/* stopped because of stop request */
+		if (reachedStopPoint)	/* stopped because of stop request */
 			ereport(FATAL,
 					(errmsg("requested recovery stop point is before end time of backup dump")));
-		else
-			/* ran off end of WAL */
+		else					/* ran off end of WAL */
 			ereport(FATAL,
 					(errmsg("WAL ends before end time of backup dump")));
 	}
@@ -5090,12 +5103,18 @@ StartupXLOG(void)
 	/*
 	 * Consider whether we need to assign a new timeline ID.
 	 *
-	 * If we stopped short of the end of WAL during recovery, then we are
-	 * generating a new timeline and must assign it a unique new ID.
-	 * Otherwise, we can just extend the timeline we were in when we ran out
-	 * of WAL.
+	 * If we are doing an archive recovery, we always assign a new ID.  This
+	 * handles a couple of issues.  If we stopped short of the end of WAL
+	 * during recovery, then we are clearly generating a new timeline and must
+	 * assign it a unique new ID.  Even if we ran to the end, modifying the
+	 * current last segment is problematic because it may result in trying
+	 * to overwrite an already-archived copy of that segment, and we encourage
+	 * DBAs to make their archive_commands reject that.  We can dodge the
+	 * problem by making the new active segment have a new timeline ID.
+	 *
+	 * In a normal crash recovery, we can just extend the timeline we were in.
 	 */
-	if (needNewTimeLine)
+	if (InArchiveRecovery)
 	{
 		ThisTimeLineID = findNewestTimeLine(recoveryTargetTLI) + 1;
 		ereport(LOG,

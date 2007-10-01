@@ -1,4 +1,5 @@
 /Makefile////*///
+/alloc.pgc////*///
 /prep.pgc////*///
 /thread.pgc////*///
 /thread_implicit.pgc////*///

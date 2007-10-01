@@ -1,4 +1,4 @@
-/RELEASE_CHANGES/1.78/Wed Sep 19 17:57:28 2007//
+/RELEASE_CHANGES/1.79/Sun Sep 30 10:30:02 2007//
 /ccsym/1.7/Sat Mar 11 04:38:41 2006//
 /codelines/1.3/Sat Mar 11 04:38:41 2006//
 /copyright/1.14/Wed Jan 10 02:41:28 2007//
@@ -11,7 +11,7 @@
 /make_etags/1.3/Sat Mar 11 04:38:41 2006//
 /make_keywords/1.2/Sat Mar 11 04:38:41 2006//
 /make_mkid/1.11/Sat Mar 11 04:38:41 2006//
-/pgcvslog/1.33/Wed Jan 31 22:17:03 2007//
+/pgcvslog/1.36/Mon Oct  1 20:16:16 2007//
 /pgtest/1.6/Sat Mar 11 04:38:41 2006//
 D/backend////
 D/editors////

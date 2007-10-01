@@ -1,7 +1,7 @@
 /Makefile/1.15/Mon Jul  9 10:05:55 2007//
 /README.intarray/1.14/Fri Sep 14 18:55:47 2007//
 /_int.h/1.13/Wed Feb 28 22:44:38 2007//
-/_int.sql.in/1.24/Fri Sep 14 18:55:47 2007//
+/_int.sql.in/1.25/Sun Sep 30 10:29:39 2007//
 /_int_bool.c/1.11/Wed Feb 28 22:44:38 2007//
 /_int_gin.c/1.4/Wed Jan 31 15:09:45 2007//
 /_int_gist.c/1.17/Fri Apr  6 04:21:41 2007//

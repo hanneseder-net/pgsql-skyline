@@ -133,6 +133,9 @@
 /thread-alloc.stderr////*///
 /thread-alloc.stdout////*///
 /thread-alloc_2.stdout////*///
+/thread-descriptor.c////*///
+/thread-descriptor.stderr////*///
+/thread-descriptor.stdout////*///
 /thread-prep.c////*///
 /thread-prep.stderr////*///
 /thread-prep.stdout////*///

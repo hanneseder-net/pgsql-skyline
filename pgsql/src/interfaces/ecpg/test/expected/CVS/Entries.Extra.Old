@@ -129,6 +129,10 @@
 /sql-show.c////*///
 /sql-show.stderr////*///
 /sql-show.stdout////*///
+/thread-alloc.c////*///
+/thread-alloc.stderr////*///
+/thread-alloc.stdout////*///
+/thread-alloc_2.stdout////*///
 /thread-prep.c////*///
 /thread-prep.stderr////*///
 /thread-prep.stdout////*///

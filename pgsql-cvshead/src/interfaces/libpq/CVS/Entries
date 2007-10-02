@@ -12,7 +12,7 @@
 /fe-print.c/1.74/Fri Jan  5 22:20:01 2007//
 /fe-protocol2.c/1.27/Fri Jan  5 22:20:01 2007//
 /fe-protocol3.c/1.30/Fri Jan  5 22:20:01 2007//
-/fe-secure.c/1.94/Fri Feb 16 17:07:00 2007//
+/fe-secure.c/1.96/Tue Oct  2 09:43:05 2007//
 /libpq-fe.h/1.138/Mon Jul  9 10:06:10 2007//
 /libpq-int.h/1.126/Wed Aug  1 09:01:15 2007//
 /libpq.rc.in/1.5/Fri Jan  5 20:54:41 2007//

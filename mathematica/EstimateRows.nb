@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       145,          7]
-NotebookDataLength[     13990,        287]
-NotebookOptionsPosition[     13628,        270]
-NotebookOutlinePosition[     13968,        285]
-CellTagsIndexPosition[     13925,        282]
+NotebookDataLength[     14902,        314]
+NotebookOptionsPosition[     14540,        297]
+NotebookOutlinePosition[     14880,        312]
+CellTagsIndexPosition[     14837,        309]
 WindowFrame->Normal
 ContainsDynamic->False*)
 
@@ -46,16 +46,17 @@ Cell[BoxData[{
   "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
  RowBox[{"Plot", "[", 
   RowBox[{
-   RowBox[{"{", " ", 
-    RowBox[{"n", " ", ",", " ", 
-     RowBox[{"sc", "[", 
-      RowBox[{"n", ",", "4"}], "]"}], ",", " ", 
-     RowBox[{"sc", "[", 
-      RowBox[{"n", ",", "5"}], "]"}], ",", " ", 
-     RowBox[{"scr", "[", 
-      RowBox[{"n", ",", "4"}], "]"}], ",", " ", 
-     RowBox[{"scr", "[", 
-      RowBox[{"n", ",", "5"}], "]"}]}], "}"}], ",", " ", 
+   RowBox[{"Tooltip", "[", 
+    RowBox[{"{", " ", 
+     RowBox[{"n", " ", ",", " ", 
+      RowBox[{"sc", "[", 
+       RowBox[{"n", ",", "4"}], "]"}], ",", " ", 
+      RowBox[{"sc", "[", 
+       RowBox[{"n", ",", "5"}], "]"}], ",", " ", 
+      RowBox[{"scr", "[", 
+       RowBox[{"n", ",", "4"}], "]"}], ",", " ", 
+      RowBox[{"scr", "[", 
+       RowBox[{"n", ",", "5"}], "]"}]}], "}"}], "]"}], ",", " ", 
    RowBox[{"{", 
     RowBox[{"n", ",", " ", "1", ",", " ", "10000"}], "}"}]}], "]"}]}], "Input",\
 
@@ -63,11 +64,13 @@ Cell[BoxData[{
   3.3985017766875*^9, 3.3985018355625*^9}, {3.39850191040625*^9, 
   3.398501917140625*^9}, {3.398502072390625*^9, 3.398502133453125*^9}, {
   3.398502550828125*^9, 3.398502579203125*^9}, {3.3985037441875*^9, 
-  3.39850382453125*^9}}],
+  3.39850382453125*^9}, {3.400309250265625*^9, 3.4003092533125*^9}}],
 
 Cell[BoxData[
  GraphicsBox[{{}, {}, 
-   {Hue[0.67, 0.6, 0.6], LineBox[CompressedData["
+   {Hue[0.67, 0.6, 0.6], 
+    TagBox[
+     TooltipBox[LineBox[CompressedData["
 1:eJxNxW0w03EcAPDRauvm6EroydLhqqPrwUNijTNPJ3rc1ZGkqE0rveg8XSWM
 ttBwpmTnIY4taw3ZGvpn67idRCeq2bjmikuk7Dyeh+qF7//34nMfh0sJp+LM
 CQRC+D//f17AmO8n/KavvhwoO5zK2OC7ej6bYsJ42+GIz8OHqnl7YfrD8L5i
@@ -83,8 +86,12 @@ Bj7QI43vVuJri6ZU+7a+hfubdC4fuPifBJRxAzqbVvcDfUflnjVZyFksZw90
 5ixVhPxl2noTKxu5J7D3FrokuSAdPcpgVYqsa6+y6EYeEB5c53YfOSG23Rc9
 pJgbhr40b34VPU69UoJON2E16Fuc7jaiv+ctdqHXNrfo0NPHU0fQI+2PmJD1
 7ifmV5D/AuaBgYQ=
-     "]]}, 
-   {Hue[0.9060679774997897, 0.6, 0.6], LineBox[CompressedData["
+       "]],
+      "n"],
+     Annotation[#, $CellContext`n, "Tooltip"]& ]}, 
+   {Hue[0.9060679774997897, 0.6, 0.6], 
+    TagBox[
+     TooltipBox[LineBox[CompressedData["
 1:eJwV0Xk0FAobBnC6tj5dxbXebny6qKRF4mZ/yFKW7GvZiWFk/WwRY8aYiVIi
 KaGSLaZCCREjchOKUtbPlBLpSmOLcGf+eM9zfuc85/nnlfcOsfXbwMPDQ+Ic
 NysvGv14w/NNv4klfE+acVN3zYRxKM5oCwIEjez8JAVwgSDMbqL9AfWuC4Zy
@@ -129,8 +136,13 @@ WwC1FRodVO33XPeY9EZybG2bRZzguizmIoljFfWC69Ncuw1vvsbt81euL3A8
 0niFPterPzb4czyfeF3EjGu/lvVcjuUoM6/cudZnNxVzXO/TuMGXaxnFM9Uc
 u+XR1Ahcd9F+vuDuSUtlR3BdUt8wwPHtE4NtMVyTpuM+cXzpx9WFBK6Py2qx
 Oc6fcd5B5nhI3frHOsfteuLONI7/Bbcn1jo=
-     "]]}, 
-   {Hue[0.14213595499957954`, 0.6, 0.6], LineBox[CompressedData["
+       "]],
+      SuperscriptBox[
+       RowBox[{"Log", "[", "n", "]"}], "3"]],
+     Annotation[#, Log[$CellContext`n]^3, "Tooltip"]& ]}, 
+   {Hue[0.14213595499957954`, 0.6, 0.6], 
+    TagBox[
+     TooltipBox[LineBox[CompressedData["
 1:eJwVzHk81IkDxnGiTSlZ0VAiV9IL6w6ZPCQdQq6fUK52cyxGrV3nsI6YKSV+
 Q3KEta6cM47ByLlZySpy5ogObdYiUm77nT+e1+f1/ueRcadY/7CNh4fHhxi3
 pYkmK/0884ZuXtLrJnqvDTZNy3RDTIRRwMuzy3NdCPe8BBcbaZL4zVXS46du
@@ -168,8 +180,13 @@ u7ub8CPWH93XCb9K1vhGK64NVXts7jK5pnz/BIQ7hbVj67g+lxJjTnhv0r7w
 Fq43VrZ5EDbb2+7bw/UPLVsPCPd+5jH/xLXhYmM+4YWP7SYrXEsohFcSdr1C
 N+CVJPwXbb2LsFETn/K3XBfUc4YJV5dy5CS4jpwJmSKccMD/oAzXTlL6i9z/
 7TL7lAiPaF9c2SIcQunepU74P9rHRKs=
-     "]]}, 
-   {Hue[0.37820393249936934`, 0.6, 0.6], LineBox[CompressedData["
+       "]],
+      SuperscriptBox[
+       RowBox[{"Log", "[", "n", "]"}], "4"]],
+     Annotation[#, Log[$CellContext`n]^4, "Tooltip"]& ]}, 
+   {Hue[0.37820393249936934`, 0.6, 0.6], 
+    TagBox[
+     TooltipBox[LineBox[CompressedData["
 1:eJwV0mk01AsABXBJlqOQbKlIUSpNVIRobpbJEmWZ7Ma+VSgO2ZJlZMsWvdKG
 LBOSrZFRZDxSLypbZSstyhRZCqF6//lwzz2/c+7Hq+AWYOnJy8PDE0OE23cy
 DX718kySLWNZnI1fzuj+oVRohhuIIbnW/l+1oCFyhq/wTGPiepzZI/xKQvsH
@@ -214,8 +231,14 @@ v2m9tbKT8HRSYGw14f6c3fx7z7egUkBqdyfXAR6tIKzI5mW85Nr4UrwZ4ZG6
 8Q29XP/+xetN2JzaKDTItWfz3yuEJWxNRsa4Js80FhPeMq5sM871WqWzNYQv
 PlzRMcl1R+LSM8KpYqz7c1yXsBreEJa5mEla5DrmW/go4ZUW3oV/uHaQ054h
 7GuyX5b3kAsG1I/++kuYFL0qYwXh/wFpbMUh
-     "]]}, 
-   {Hue[0.6142719099991583, 0.6, 0.6], LineBox[CompressedData["
+       "]],
+      FractionBox[
+       SuperscriptBox[
+        RowBox[{"Log", "[", "n", "]"}], "3"], "6"]],
+     Annotation[#, Rational[1, 6] Log[$CellContext`n]^3, "Tooltip"]& ]}, 
+   {Hue[0.6142719099991583, 0.6, 0.6], 
+    TagBox[
+     TooltipBox[LineBox[CompressedData["
 1:eJwVyXk81AkDx3Hng5eK3JvdUIhNtid2rBzztY5djcEMssh9DQbjvrqcS5Rl
 0Spp2sLMksrRrNRgLCu5Nx5yPNR20W0dudrf/PF9fV7v11crIJoeLCYiIsIk
 Juz1IpuPoyLvyAvvlDjjQyXmW3b136TayGOXqMgxW84f5J/CZBf5uZ9DZUHh
@@ -253,7 +276,11 @@ ZOR0Yqr4nEyf0IN2I/GE72xd9hgWmptclE74heIN7pjQ3lNyFwlbHu62nyM8
 H8DdL/TmR7FQ4d9kaE8SOrjjUznhOWptLkVo8iK/mvDyxaxxZ6E/0znZSLj0
 Zy+9o0L35270ET59SqzHT+iaO60ThAfiRlRDhE5/lfqMcNNOdmiE0F67Dy8S
 JnlE8FiEJ792/viJMO2IsVQi4X8B8UszbA==
-     "]]}},
+       "]],
+      FractionBox[
+       SuperscriptBox[
+        RowBox[{"Log", "[", "n", "]"}], "4"], "24"]],
+     Annotation[#, Rational[1, 24] Log[$CellContext`n]^4, "Tooltip"]& ]}},
   AspectRatio->NCache[GoldenRatio^(-1), 0.6180339887498948],
   Axes->True,
   AxesOrigin->{0, 0},
@@ -265,7 +292,7 @@ JnlE8FiEJ792/viJMO2IsVQi4X8B8UszbA==
  CellChangeTimes->{
   3.39850183675*^9, 3.398501917609375*^9, {3.398502079390625*^9, 
    3.398502134109375*^9}, {3.39850255178125*^9, 3.398502579640625*^9}, {
-   3.3985037766875*^9, 3.398503824953125*^9}}]
+   3.3985037766875*^9, 3.398503824953125*^9}, 3.4003092539375*^9}]
 }, Open  ]]
 },
 WindowSize->{616, 750},
@@ -286,8 +313,8 @@ CellTagsIndex->{}
 Notebook[{
 Cell[568, 21, 122, 1, 29, "Text"],
 Cell[CellGroupData[{
-Cell[715, 26, 1371, 39, 113, "Input"],
-Cell[2089, 67, 11523, 200, 232, "Output"]
+Cell[715, 26, 1460, 40, 133, "Input"],
+Cell[2178, 68, 12346, 226, 232, "Output"]
 }, Open  ]]
 }
 ]

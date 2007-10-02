@@ -1,0 +1,23 @@
+*** ../pgsql-cvshead/src/interfaces/libpq/fe-secure.c	Tue Oct  2 11:43:05 2007
+--- src/interfaces/libpq/fe-secure.c	Tue Oct  2 23:37:48 2007
+***************
+*** 588,596 ****
+  
+  #ifndef WIN32
+  	struct stat buf2;
+  #endif
+  	char		fnbuf[MAXPGPATH];
+- 	FILE		*fp;
+  	BIO			*bio;
+  	PGconn		*conn = (PGconn *) SSL_get_app_data(ssl);
+  	char		sebuf[256];
+--- 588,596 ----
+  
+  #ifndef WIN32
+  	struct stat buf2;
++ 	FILE		*fp;
+  #endif
+  	char		fnbuf[MAXPGPATH];
+  	BIO			*bio;
+  	PGconn		*conn = (PGconn *) SSL_get_app_data(ssl);
+  	char		sebuf[256];

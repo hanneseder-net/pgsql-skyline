@@ -1363,6 +1363,9 @@ typedef struct SkylineState
 	int64				pass;
 	int					windowsize;
 	int					windowslots;
+
+	int64				cmps_tuples;
+	int64				cmps_fields;
 } SkylineState;
 
 /* ---------------------

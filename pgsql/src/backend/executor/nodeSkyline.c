@@ -136,6 +136,9 @@ ExecSkylineIsDominating(SkylineState *node, TupleTableSlot *inner_slot, TupleTab
 	bool		cmp_lt = false;
 	bool		cmp_gt = false;
 
+	/* collect statistics */
+	node->cmps_tuples++;
+
 	for (i = 0; i < sl->numCols; ++i)
 	{
 		Datum		datum1;
@@ -144,6 +147,9 @@ ExecSkylineIsDominating(SkylineState *node, TupleTableSlot *inner_slot, TupleTab
 		bool		isnull2;
 		int			attnum = sl->skylineColIdx[i];
 		int			cmp;
+
+		/* collect statistics */
+		node->cmps_fields++;
 
 		datum1 = slot_getattr(inner_slot, attnum, &isnull1);
 		datum2 = slot_getattr(slot, attnum, &isnull2);
@@ -309,6 +315,9 @@ ExecInitSkyline(Skyline *node, EState *estate, int eflags)
 	slstate->source = SS_OUTER;
 	slstate->skyline_method = node->skyline_method;
 	slstate->pass = 1;
+
+	slstate->cmps_tuples = 0;
+	slstate->cmps_fields = 0;
 
 	ExecSkylineInitTupleWindow(slstate, node);
 

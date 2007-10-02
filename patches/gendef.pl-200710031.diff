@@ -1,0 +1,14 @@
+*** ../pgsql-cvshead/src/tools/msvc/gendef.pl	Thu May  3 16:04:03 2007
+--- src/tools/msvc/gendef.pl	Wed Oct  3 00:53:23 2007
+***************
+*** 38,43 ****
+--- 38,46 ----
+          next if $pieces[6] =~ /^__NULL_IMPORT/;
+          next if $pieces[6] =~ /^\?\?_C/;
+  
++ 	# whitespace required between name and ordinal
++ 	$pieces[6] =~ s/@/ @/;
++ 
+          push @def, $pieces[6];
+      }
+      close(F);

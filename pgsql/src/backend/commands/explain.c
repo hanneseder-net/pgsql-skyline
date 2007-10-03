@@ -1217,8 +1217,7 @@ show_skyline_info(SkylineState *skylinestate,
 			for (i = 0; i < indent; i++)
 				appendStringInfo(str, "  ");
 			
-			/* FIXME: use %lld instead of %d? */
-			appendStringInfo(str, "  Skyline Stats: passes=%d", skylinestate->pass);
+			appendStringInfo(str, "  Skyline Stats: passes=%lld", skylinestate->pass);
 			if (skylinestate->windowsize != -1)
 				appendStringInfo(str, " window=%dk", skylinestate->windowsize);
 			if (skylinestate->windowslots != -1)
@@ -1229,8 +1228,7 @@ show_skyline_info(SkylineState *skylinestate,
 		for (i = 0; i < indent; i++)
 			appendStringInfo(str, "  ");
 
-		/* FIXME: use %lld instead of %d? */
-		appendStringInfo(str, "  Skyline Cmps: tuples=%d fields=%d\n", 
+		appendStringInfo(str, "  Skyline Cmps: tuples=%lld fields=%lld\n", 
 						 skylinestate->cmps_tuples,
 						 skylinestate->cmps_fields);
 		

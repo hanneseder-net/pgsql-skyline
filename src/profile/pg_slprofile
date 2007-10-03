@@ -15,8 +15,18 @@ sub plog {
   print "\"$runid\";\"$name\";\"$value\"\n";
 }
 
+sub plog_cost {
+  my $name = shift;
+  my $value = shift;
 
-$query = "select * from e2d1000 skyline by distinct (d1), (d2) max with sfs window=1";
+  my ($start, $total) = split(/\.\./, $value);
+
+  plog($name, $value);
+  plog($name . ".start", $start);
+  plog($name . ".total", $total);
+}
+
+$query = "select * from a3d10000 skyline by (d1), (d2) max, (d3) with sfs window=1";
 $sql = "explain analyze $query;";
 
 
@@ -40,10 +50,10 @@ if ($res =~ m/Skyline Attr:\s*([^\r\n]+)/m) {
 
 if ($res =~ m/Skyline\s*\(cost=([0-9.]+\.\.[0-9.]+)\s+rows=([0-9]+)\s+width=([0-9]+)\)\s+\(actual time=([0-9.]+\.\.[0-9.]+)\s+rows=([0-9]+)\s+loops=([0-9]+)\)/m) {
 
-  plog("skyline.est.cost", $1);
+  plog_cost("skyline.est.cost", $1);
   plog("skyline.est.rows", $2);
   plog("skyline.width", $3);
-  plog("skyline.cost", $4);
+  plog_cost("skyline.cost", $4);
   plog("skyline.rows", $5);
 #  plog("skyline.loops", $6);
 }
@@ -60,21 +70,26 @@ if ($res =~ m/Skyline Stats: passes=(\d+)(\s+window=(\d+)k)?(\s+slots=(\d))?/m) 
   }
 }
 
+if ($res =~ m/Skyline Cmps: tuples=(\d+) fields=(\d+)/m) {
+    plog("skyline.cmps.tuples", $1);
+    plog("skyline.cmps.fields", $2);
+    plog("skyline.cmps.ratio", $2 / $1);
+}
+
 
 if ($res =~ m/Seq Scan on ([^ ]+)\s*\(cost=([0-9.]+\.\.[0-9.]+)\s+rows=([0-9]+)\s+width=([0-9]+)\)\s+\(actual time=([0-9.]+\.\.[0-9.]+)\s+rows=([0-9]+)\s+loops=([0-9]+)\)/m) {
   $seq_table = $1;
-  $seq_cost = $5;
   $seq_rows = $6;
 
   plog("seqscan.table", $1);
-  plog("seqscan.cost", $5);
+  plog_cost("seqscan.cost", $5);
   plog("seqscan.rows", $6);
 }
 
 if ($res =~ m/Sort\s+\(cost=([0-9.]+\.\.[0-9.]+)\s+rows=([0-9]+)\s+width=([0-9]+)\)\s+\(actual time=([0-9.]+\.\.[0-9.]+)\s+rows=([0-9]+)\s+loops=([0-9]+)\)/m) {
   $sort_cost = $4;
 
-  plog("sort.cost", $4);
+  plog_cost("sort.cost", $4);
 
   if ($res =~ m/Sort Method:\s*([^\n\r]+)/m) {
     $sort_method = "\"$1\"";
@@ -91,7 +106,7 @@ if ($res =~ m/Index Scan using ([^ ]+) on ([^ ]+)\s*\(cost=([0-9.]+\.\.[0-9.]+)\
 
   plog("idxscan.idx", $1);
   plog("idxscan.table", $2);
-  plog("idxscan.cost", $6);
+  plog_cost("idxscan.cost", $6);
   plog("idxscan.rows", $7);
 }
 

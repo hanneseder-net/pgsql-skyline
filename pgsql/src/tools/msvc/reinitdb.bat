@@ -3,4 +3,5 @@ set PGDATA=%PGROOT%\db
 
 rmdir /S /Q %PGDATA% 
 
-initdb
+initdb -E UTF8
+

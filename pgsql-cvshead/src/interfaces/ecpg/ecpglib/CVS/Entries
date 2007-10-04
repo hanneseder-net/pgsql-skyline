@@ -1,13 +1,14 @@
-/Makefile/1.48/Fri Sep 28 13:32:43 2007//
-/connect.c/1.45/Tue Oct  2 11:17:16 2007//
-/data.c/1.38/Thu May 10 14:29:21 2007//
-/descriptor.c/1.24/Tue Oct  2 11:17:16 2007//
-/error.c/1.17/Fri Aug 17 09:41:04 2007//
-/execute.c/1.71/Tue Oct  2 11:17:16 2007//
-/extern.h/1.29/Tue Oct  2 11:17:16 2007//
-/memory.c/1.9/Mon Oct  1 20:16:10 2007//
-/misc.c/1.38/Tue Oct  2 11:17:16 2007//
+/Makefile/1.51/Thu Oct  4 20:22:42 2007//
+/connect.c/1.47/Thu Oct  4 20:22:42 2007//
+/data.c/1.39/Thu Oct  4 20:22:42 2007//
+/descriptor.c/1.27/Thu Oct  4 20:22:42 2007//
+/error.c/1.18/Thu Oct  4 20:22:42 2007//
+/execute.c/1.72/Thu Oct  4 20:22:42 2007//
+/exports.txt/1.4/Thu Oct  4 17:49:31 2007//
+/extern.h/1.31/Thu Oct  4 20:22:42 2007//
+/memory.c/1.11/Thu Oct  4 20:22:42 2007//
+/misc.c/1.40/Thu Oct  4 20:22:43 2007//
 /pg_type.h/1.7/Fri Jan  5 22:20:00 2007//
-/prepare.c/1.21/Mon Oct  1 20:16:10 2007//
-/typename.c/1.12/Fri Feb  2 09:31:10 2007//
+/prepare.c/1.22/Thu Oct  4 20:22:43 2007//
+/typename.c/1.13/Thu Oct  4 20:22:43 2007//
 D

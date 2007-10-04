@@ -133,6 +133,9 @@
 /thread-alloc.stderr/1.1/Sun Sep 30 11:38:48 2007//
 /thread-alloc.stdout/1.1/Sun Sep 30 11:38:48 2007//
 /thread-alloc_2.stdout/1.1/Sun Sep 30 11:38:48 2007//
+/thread-descriptor.c/1.2/Tue Oct  2 21:31:12 2007//
+/thread-descriptor.stderr/1.1/Tue Oct  2 09:49:59 2007//
+/thread-descriptor.stdout/1.1/Tue Oct  2 09:49:59 2007//
 /thread-prep.c/1.2/Mon Oct  1 20:16:11 2007//
 /thread-prep.stderr/1.1/Wed Sep 26 10:57:01 2007//
 /thread-prep.stdout/1.1/Wed Sep 26 10:57:01 2007//

@@ -1,5 +1,6 @@
 /Makefile////*///
 /README////*///
+/chklocale.c////*///
 /copydir.c////*///
 /crypt.c////*///
 /dirent.c////*///

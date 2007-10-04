@@ -6,7 +6,7 @@
 /getopt_long.h/1.8/Fri Jan  5 22:19:50 2007//
 /miscadmin.h/1.196/Mon Aug  6 09:10:23 2007//
 /pg_config.h.in/1.123/Tue Oct  2 09:43:00 2007//
-/pg_config.h.win32/1.43/Mon Oct  1 20:16:09 2007//
+/pg_config.h.win32/1.44/Thu Oct  4 20:22:41 2007//
 /pg_config_manual.h/1.27/Sat Jun  9 11:02:41 2007//
 /pg_trace.h/1.2/Wed Oct  4 00:30:06 2006//
 /pgstat.h/1.68/Fri Sep 28 13:32:42 2007//

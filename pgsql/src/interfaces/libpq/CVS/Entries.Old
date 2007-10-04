@@ -12,7 +12,7 @@
 /fe-print.c/1.74/Fri Jan  5 22:20:01 2007//
 /fe-protocol2.c/1.27/Fri Jan  5 22:20:01 2007//
 /fe-protocol3.c/1.30/Fri Jan  5 22:20:01 2007//
-/fe-secure.c/1.94/Fri Feb 16 17:07:00 2007//
+/fe-secure.c/1.97/Tue Oct  2 23:29:14 2007//
 /libpq-fe.h/1.138/Mon Jul  9 10:06:10 2007//
 /libpq-int.h/1.126/Wed Aug  1 09:01:15 2007//
 /libpq.rc.in/1.5/Fri Jan  5 20:54:41 2007//
@@ -25,5 +25,5 @@
 /pthread-win32.c/1.14/Wed Apr 18 08:32:40 2007//
 /win32.c/1.22/Thu Feb  1 19:10:29 2007//
 /win32.h/1.28/Tue Dec  6 02:29:04 2005//
-/win32.mak/1.48/Mon Oct  1 20:16:14 2007//
+/win32.mak/1.49/Tue Oct  2 21:31:13 2007//
 D/po////

@@ -11,7 +11,7 @@
  *
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/interfaces/libpq/fe-secure.c,v 1.96 2007/10/02 00:25:20 tgl Exp $
+ *	  $PostgreSQL: pgsql/src/interfaces/libpq/fe-secure.c,v 1.99 2007/10/03 15:12:45 tgl Exp $
  *
  * NOTES
  *	  [ Most of these notes are wrong/obsolete, but perhaps not all ]
@@ -602,11 +602,33 @@ client_cert_cb(SSL *ssl, X509 **x509, EVP_PKEY **pkey)
 		return 0;
 	}
 
-	/* save OpenSSL error stack */
-	ERR_set_mark();
-
 	/* read the user certificate */
 	snprintf(fnbuf, sizeof(fnbuf), "%s/%s", homedir, USER_CERT_FILE);
+
+	/* 
+	 * OpenSSL <= 0.9.8 lacks error stack handling, which means it's likely
+	 * to report wrong error messages if access to the cert file fails.
+	 * Do our own check for the readability of the file to catch the
+	 * majority of such problems before OpenSSL gets involved.
+	 */
+#ifndef HAVE_ERR_SET_MARK
+	{
+		FILE		*fp2;
+
+		if ((fp2 = fopen(fnbuf, "r")) == NULL)
+		{
+			printfPQExpBuffer(&conn->errorMessage,
+							  libpq_gettext("could not open certificate file \"%s\": %s\n"),
+							  fnbuf, pqStrerror(errno, sebuf, sizeof(sebuf)));
+			return 0;
+		}
+		fclose(fp2);
+	}
+#endif
+
+	/* save OpenSSL error stack */
+	ERR_set_mark();
+	
 	if ((bio = BIO_new_file(fnbuf, "r")) == NULL)
 	{
 		printfPQExpBuffer(&conn->errorMessage,

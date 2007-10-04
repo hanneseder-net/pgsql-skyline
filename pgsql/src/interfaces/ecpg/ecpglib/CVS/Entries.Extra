@@ -4,6 +4,7 @@
 /descriptor.c////*///
 /error.c////*///
 /execute.c////*///
+/exports.txt////*///
 /extern.h////*///
 /memory.c////*///
 /misc.c////*///

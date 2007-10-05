@@ -38,9 +38,6 @@ while (<$ARGV[0]/*.obj>)
         next if $pieces[6] =~ /^__NULL_IMPORT/;
         next if $pieces[6] =~ /^\?\?_C/;
 
-	# whitespace required between name and ordinal
-	$pieces[6] =~ s/@/ @/;
-
         push @def, $pieces[6];
     }
     close(F);

@@ -2770,6 +2770,11 @@ make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause, SkylineMet
 	{
 		Path		path;		/* just a dummy */
 
+		/*
+		 * FIXME: in the presents of a Elimination Filter we must estimate
+		 * the rows different, in fact we just should take the
+		 * outertree->plan_rows
+		 */
 		cost_skyline(&path, root, outertree->startup_cost, outertree->plan_rows, outertree->plan_width, plan->plan_rows, numskylinecols, skyline_method, limit_tuples);
 
 		plan->startup_cost = path.startup_cost;
@@ -2781,6 +2786,15 @@ make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause, SkylineMet
 	node->skyline_method = skyline_method;
 
 	/* To disable use: return (Skyline *) lefttree; */
+	return node;
+}
+
+ElimFilter *
+make_elimfilter(PlannerInfo *root, Plan *lefttree, Node *skyline_clause, int limit_tuples)
+{
+	/* FIXME: HACK */
+	ElimFilter *node = (ElimFilter *) make_skyline(root, lefttree, skyline_clause, SM_2DIM_PRESORT, limit_tuples);
+	node->plan.type = T_ElimFilter;
 	return node;
 }
 

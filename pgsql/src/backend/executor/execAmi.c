@@ -20,6 +20,7 @@
 #include "executor/nodeBitmapHeapscan.h"
 #include "executor/nodeBitmapIndexscan.h"
 #include "executor/nodeBitmapOr.h"
+#include "executor/nodeElimFilter.h"
 #include "executor/nodeFunctionscan.h"
 #include "executor/nodeGroup.h"
 #include "executor/nodeGroup.h"
@@ -33,6 +34,7 @@
 #include "executor/nodeResult.h"
 #include "executor/nodeSeqscan.h"
 #include "executor/nodeSetOp.h"
+#include "executor/nodeSkyline.h"
 #include "executor/nodeSort.h"
 #include "executor/nodeSubplan.h"
 #include "executor/nodeSubqueryscan.h"
@@ -171,6 +173,14 @@ ExecReScan(PlanState *node, ExprContext *exprCtxt)
 
 		case T_GroupState:
 			ExecReScanGroup((GroupState *) node, exprCtxt);
+			break;
+
+		case T_SkylineState:
+			ExecReScanSkyline((SkylineState *) node, exprCtxt);
+			break;
+
+		case T_ElimFilterState:
+			ExecReScanElimFilter((ElimFilterState *) node, exprCtxt);
 			break;
 
 		case T_AggState:
@@ -475,6 +485,7 @@ ExecMayReturnRawTuples(PlanState *node)
 			}
 
 			/* All projecting node types come here */
+		/* FIXME: what about skyline */
 		default:
 			break;
 	}

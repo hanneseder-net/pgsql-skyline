@@ -1170,6 +1170,15 @@ grouping_planner(PlannerInfo *root, double tuple_fraction)
 
 		Assert(skyline_method != SM_UNKNOWN);
 
+		{
+			int	use_elim_filter = 0;
+
+			if (skyline_option_get_int(((SkylineClause *) parse->skylineClause)->skyline_by_options, "ef", &use_elim_filter))
+			{
+				result_plan = (Plan *) make_elimfilter(root, result_plan, parse->skylineClause, limit_tuples);
+			}
+		}
+
 		if (skyline_method == SM_2DIM_PRESORT || skyline_method == SM_SFS)
 		{
 			if (!has_matching_path)

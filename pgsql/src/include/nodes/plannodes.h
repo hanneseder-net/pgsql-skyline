@@ -456,7 +456,6 @@ typedef struct Sort
  *		skyline node
  * ----------------
  */
-
 typedef enum SkylineMethod
 {
 	SM_UNKNOWN,
@@ -480,6 +479,12 @@ typedef struct Skyline
 	List	   *skyline_by_options;
 	SkylineMethod skyline_method;
 } Skyline;
+
+/* ----------------
+ *		elimination filter node
+ * ----------------
+ */
+typedef Skyline ElimFilter;
 
 /* ---------------
  *	 group node -

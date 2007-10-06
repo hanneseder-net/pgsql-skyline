@@ -21,6 +21,11 @@ static SkylineAnOption
 skyline_options[] = {
 	{ "blocknestedloop"			, SOT_METHOD, SM_BLOCKNESTEDLOOP },
 	{ "bnl"						, SOT_METHOD, SM_BLOCKNESTEDLOOP } ,
+	{ "ef"						, SOT_PARAM , SM_UNKNOWN },
+	{ "efslots"					, SOT_PARAM , SM_UNKNOWN },
+	{ "efwindow"				, SOT_PARAM , SM_UNKNOWN },
+	{ "efwindowsize"			, SOT_PARAM , SM_UNKNOWN },
+	{ "efwindowslots"			, SOT_PARAM , SM_UNKNOWN },
 	{ "materializednestedloop"	, SOT_METHOD, SM_MATERIALIZEDNESTEDLOOP },
 	{ "mnl"						, SOT_METHOD, SM_MATERIALIZEDNESTEDLOOP },
 	{ "presort"					, SOT_METHOD, SM_2DIM_PRESORT },

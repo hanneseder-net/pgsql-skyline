@@ -85,6 +85,7 @@
 #include "executor/nodeBitmapHeapscan.h"
 #include "executor/nodeBitmapIndexscan.h"
 #include "executor/nodeBitmapOr.h"
+#include "executor/nodeElimFilter.h"
 #include "executor/nodeFunctionscan.h"
 #include "executor/nodeGroup.h"
 #include "executor/nodeHash.h"
@@ -242,6 +243,11 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
 												   estate, eflags);
 			break;
 
+		case T_ElimFilter:
+			result = (PlanState *) ExecInitElimFilter((ElimFilter *) node,
+													  estate, eflags);
+			break;
+
 		case T_Agg:
 			result = (PlanState *) ExecInitAgg((Agg *) node,
 											   estate, eflags);
@@ -394,6 +400,10 @@ ExecProcNode(PlanState *node)
 
 		case T_SkylineState:
 			result = ExecSkyline((SkylineState *) node);
+			break;
+
+		case T_ElimFilterState:
+			result = ExecElimFilter((ElimFilterState *) node);
 			break;
 
 		case T_GroupState:
@@ -571,6 +581,9 @@ ExecCountSlotsNode(Plan *node)
 		case T_Skyline:
 			return ExecCountSlotsSkyline((Skyline *) node);
 
+		case T_ElimFilter:
+			return ExecCountSlotsElimFilter((ElimFilter *) node);
+
 		case T_Agg:
 			return ExecCountSlotsAgg((Agg *) node);
 
@@ -704,6 +717,10 @@ ExecEndNode(PlanState *node)
 
 		case T_SkylineState:
 			ExecEndSkyline((SkylineState *) node);
+			break;
+
+		case T_ElimFilterState:
+			ExecEndElimFilter((ElimFilterState *) node);
 			break;
 
 		case T_GroupState:

@@ -1339,6 +1339,10 @@ typedef struct GroupState
 	bool		grp_done;		/* indicates completion of Group scan */
 } GroupState;
 
+/* --------------------------
+ *  SkylineState information
+ * --------------------------
+ */
 typedef enum SkylineStatus SkylineStatus;
 
 typedef enum SkylineSource SkylineSource;
@@ -1367,6 +1371,15 @@ typedef struct SkylineState
 	int64				cmps_tuples;
 	int64				cmps_fields;
 } SkylineState;
+
+/* -----------------------------
+ *  ElimFilterState information
+ * -----------------------------
+ */
+
+/* it's a little waste of memory but it's simpler for the moment */
+typedef SkylineState ElimFilterState;
+
 
 /* ---------------------
  *	AggState information

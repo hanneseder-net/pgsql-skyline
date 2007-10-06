@@ -127,7 +127,7 @@ inlineApplyCompareFunction(FmgrInfo *compFunction, int sk_flags,
  *
  *	FIXME
  */
-static int
+int
 ExecSkylineIsDominating(SkylineState *node, TupleTableSlot *inner_slot, TupleTableSlot *slot)
 {
 	Skyline    *sl = (Skyline *) node->ss.ps.plan;
@@ -205,7 +205,7 @@ ExecSkylineIsDominating(SkylineState *node, TupleTableSlot *inner_slot, TupleTab
  *
  *	FIXME
  */
-static void
+void
 ExecSkylineCacheCompareFunctionInfo(SkylineState *slstate, Skyline *node)
 {
 	int			i;
@@ -260,7 +260,10 @@ ExecSkylineInitTupleWindow(SkylineState *node, Skyline *sl)
 		node->skyline_method == SM_SFS)
 	{
 		if (node->window != NULL)
-			elog(ERROR, "ExecSkylineInitTupleWindow called twice");
+		{
+			tuplewindow_end(node->window);
+			node->window = NULL;
+		}
 
 		/*
 		 * Can be overrided by an option, otherwise use entire
@@ -636,9 +639,6 @@ ExecSkyline_2DimPreSort(SkylineState *node, Skyline *sl)
 			AssertState(0);
  			return NULL;
 	}
-
-
-	return NULL;
 }
 
 /*
@@ -859,14 +859,11 @@ ExecSkyline_BlockNestedLoop(SkylineState *node, Skyline *sl)
 
 						cmp = ExecSkylineIsDominating(node, inner_slot, slot);
 
-						if (sl->skyline_distinct && cmp == SKYLINE_CMP_ALL_EQ)
-							break;
-
 						/*
 						 * The tuple in slot is dominated by a inner_slot in
 						 * the window, so fetch the next.
 						 */
-						if (cmp == SKYLINE_CMP_FIRST_DOMINATES)
+						if (cmp == SKYLINE_CMP_FIRST_DOMINATES || cmp == SKYLINE_CMP_ALL_EQ && sl->skyline_distinct)
 							break;
 
 						if (cmp == SYKLINE_CMP_SECOND_DOMINATES)
@@ -1085,14 +1082,11 @@ ExecSkyline_SortFilterSkyline(SkylineState *node, Skyline *sl)
 
 						cmp = ExecSkylineIsDominating(node, inner_slot, slot);
 
-						if (sl->skyline_distinct && cmp == SKYLINE_CMP_ALL_EQ)
-							break;
-
 						/*
 						 * The tuple in slot is dominated by a inner_slot in
 						 * the window, so fetch the next.
 						 */
-						if (cmp == SKYLINE_CMP_FIRST_DOMINATES)
+						if (cmp == SKYLINE_CMP_FIRST_DOMINATES || cmp == SKYLINE_CMP_ALL_EQ && sl->skyline_distinct)
 							break;
 
 						Assert(cmp != SYKLINE_CMP_SECOND_DOMINATES);
@@ -1166,4 +1160,46 @@ ExecEndSkyline(SkylineState *node)
 	 * shut down the subplan
 	 */
 	ExecEndNode(outerPlanState(node));
+}
+
+/*
+ * ExecReScanSkyline
+ *
+ *	FIXME
+ */
+void
+ExecReScanSkyline(SkylineState *node, ExprContext *exprCtxt)
+{
+	/* FIXME: code coverage = 0 !!! */
+	_CrtDbgBreak();
+
+	node->status = SS_INIT;
+
+	/* must clear first tuple */
+	ExecClearTuple(node->ss.ss_ScanTupleSlot);
+
+	if (((PlanState *) node)->lefttree &&
+		((PlanState *) node)->lefttree->chgParam == NULL)
+		ExecReScan(((PlanState *) node)->lefttree, exprCtxt);
+
+	node->status = SS_OUTER;
+
+	/* reinit tuple window */
+	ExecSkylineInitTupleWindow(node, (Skyline *) node->ss.ps.plan);
+
+
+	/* close temp files */
+	if (node->tempIn)
+	{
+		tuplestore_end(node->tempIn);
+		node->tempIn = NULL;
+	}
+
+	if (node->tempOut)
+	{
+		tuplestore_end(node->tempOut);
+		node->tempOut = NULL;
+	}
+
+	/* FIXME: there is maybe more that need to be done here */
 }

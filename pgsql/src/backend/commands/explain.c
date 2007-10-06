@@ -572,6 +572,9 @@ explain_outNode(StringInfo str,
 		case T_Skyline:
 			pname = "Skyline";
 			break;
+		case T_ElimFilter:
+			pname = "Elimination Filter";
+			break;
 		case T_Group:
 			pname = "Group";
 			break;

@@ -21,7 +21,8 @@ OBJS = execAmi.o execCurrent.o execGrouping.o execJunk.o execMain.o \
        nodeNestloop.o nodeFunctionscan.o nodeResult.o nodeSeqscan.o \
        nodeSetOp.o nodeSort.o nodeUnique.o \
        nodeValuesscan.o nodeLimit.o nodeGroup.o nodeSkyline.o \
-       nodeSubplan.o nodeSubqueryscan.o nodeTidscan.o tstoreReceiver.o spi.o
+       nodeSubplan.o nodeSubqueryscan.o nodeTidscan.o tstoreReceiver.o spi.o \
+       nodeElimFilter.o
 
 all: SUBSYS.o
 

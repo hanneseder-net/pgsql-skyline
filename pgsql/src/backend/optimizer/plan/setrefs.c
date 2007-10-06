@@ -307,6 +307,7 @@ set_plan_refs(PlannerGlobal *glob, Plan *plan, int rtoffset)
 		case T_Material:
 		case T_Sort:
 		case T_Skyline:
+		case T_ElimFilter:
 		case T_Unique:
 		case T_SetOp:
 

@@ -28,6 +28,7 @@ WANTED_DIRS = \
 		pgcrypto	\
 		pgrowlocks	\
 		pgstattuple	\
+		randdataset	\
 		seg		\
 		spi		\
 		tablefunc	\

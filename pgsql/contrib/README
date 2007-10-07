@@ -114,6 +114,10 @@ pgstattuple -
 	space within a table
 	by Tatsuo Ishii <ishii@sraoss.co.jp>
 
+randdataset -
+	Random datasets used for skyline query testing
+	by Hannes Eder <Hannes@HannesEder.net>
+
 seg -
 	Confidence-interval datatype (GiST indexing example)
 	by Gene Selkov, Jr. <selkovjr@mcs.anl.gov>

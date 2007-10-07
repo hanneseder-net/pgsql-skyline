@@ -16,7 +16,7 @@ sub init()
     use Getopt::Std;
     $Getopt::Std::STANDARD_HELP_VERSION = true;
     usage() if $#ARGV == -1;
-    my $opt_string = 'hecad:n:p:rt:is:';
+    my $opt_string = 'hicad:n:p:rt:Is:';
     getopts( "$opt_string", \%opt ) or usage();
     usage() if $opt{h};
 }
@@ -30,23 +30,23 @@ sub usage()
 
 Data Generator for Skyline for feeding PostgreSQL psql
 
-usage: $0 [-hecadnrti] -- [OPTIONS FOR $ksldg]
+usage: $0 [-hicadnrtI] -- [OPTIONS FOR $ksldg]
 
  -h,  --help    print this help and exit.
  --version      display the version of $0 and exit.
 
- -e|-c|-a       distribution
+ -i|-c|-a       distribution
  -d DIM         dimensions
  -n NUMBER      number of vectors
  -s SEED        seed random generator to SEED
  -p PAD         add PAD long varchar for padding
  -r             (re)create table
- -t TABLE       override default table name (e|c|a)DIMdNUMBER[sSEED][pPAD]
- -i             unique id for every vector
+ -t TABLE       override default table name (i|c|a)DIMdNUMBER[sSEED][pPAD]
+ -I             unique id for every vector
 
 Options for $ksldg: see $ksldg -h
 
-example: $0 -e -d 3 -n 100 | psql postgres
+example: $0 -i -d 3 -n 100 | psql postgres
 
 EOF
     exit;
@@ -68,14 +68,14 @@ EOF
 
 init();
 
-die "$0: error: you must spec. exactly one distribution, stopped at" if ($opt{e} + $opt{c} + $opt{a} != 1);
+die "$0: error: you must spec. exactly one distribution, stopped at" if ($opt{i} + $opt{c} + $opt{a} != 1);
 die "$0: error: you must spec. the number of vectors, stopped at" if ($opt{n} eq "");
 
 $header=1;
 $id = 1;
 $prefix = "";
 $suffix = "";
-$dist = $opt{e} ? "e" : $opt{c} ? "c" : $opt{a} ? "a" : "?";
+$dist = $opt{i} ? "i" : $opt{c} ? "c" : $opt{a} ? "a" : "?";
 $dim = $opt{d};
 $n = $opt{n};
 $pad = $opt{p};
@@ -112,8 +112,8 @@ while ($line = <KSLDG>) {
     @fields = split(/ /, $line);
     $dim = $#fields + 1;
 
-    push @flds, "id" if ($opt{i});
-    push @defs, "id int" if ($opt{i});
+    push @flds, "id" if ($opt{I});
+    push @defs, "id int" if ($opt{I});
 
     for ($i=1; $i<=$dim; $i++) {
       push @flds, "d$i";
@@ -132,7 +132,7 @@ while ($line = <KSLDG>) {
     $header = 0;
   }
 
-  if ($opt{i}) {
+  if ($opt{I}) {
     $prefix = "$id;";
     $id++;
   }

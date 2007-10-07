@@ -55,15 +55,15 @@ main(int argc, char **argv)
   int dist = 0;
   int header = 0;
   int stats = 0;
-  char * filename = "-";
+  char *filename = "-";
 
-  while ((c = getopt(argc, argv, "tpecad:n:o:s:h?")) != -1) {
+  while ((c = getopt(argc, argv, "tpicad:n:o:s:h?")) != -1) {
     switch (c) {
-    case 'e':
+    case 'i':
     case 'c':
     case 'a':
       if (dist != 0 && dist != c)
-        invalidargs("distribution already selected, hint: use only one of -e | -c | -a");
+        invalidargs("distribution already selected, hint: use only one of -i | -c | -a");
       dist = c;
       break;
 
@@ -108,8 +108,8 @@ main(int argc, char **argv)
   if (dim < 1)
     invalidargs("dimension less than 1");
 
-  if (dim < 2 && dist != 'e') {
-    dist = 'e';
+  if (dim < 2 && dist != 'i') {
+    dist = 'i';
     warning("for 1 dimensional data, equal distribution is used");
   }
 
@@ -137,7 +137,7 @@ main(int argc, char **argv)
     fprintf(fout, "%d %d\n", count, dim);
 
   switch (dist) {
-  case 'e':
+  case 'i':
     GenerateDataEqually(count, dim);
     break;
   case 'c':

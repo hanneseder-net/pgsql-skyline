@@ -1,1 +1,1 @@
-DROP FUNCTION pg_catalog.pg_rand_dataset(int,int,int,int);
+DROP FUNCTION pg_catalog.pg_rand_dataset(text,int,int,int);

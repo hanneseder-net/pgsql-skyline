@@ -2,6 +2,6 @@
  * Random Dataset generator functions for PostgreSQL 
  * *********************************************** */
 
-CREATE OR REPLACE FUNCTION pg_catalog.pg_rand_dataset(disttype int, dim int, rows int, seed int) RETURNS setof record
+CREATE OR REPLACE FUNCTION pg_catalog.pg_rand_dataset(disttype text, dim int, rows int, seed int) RETURNS setof record
    AS 'MODULE_PATHNAME', 'pg_rand_dataset'
 	LANGUAGE C IMMUTABLE STRICT;

@@ -36,7 +36,7 @@
 #define RAND48_ADD		(0x000b)
 
 static void
-_ctx_dorand48(random_ctx *ctx)
+_ctx_dorand48(rand_ctx_t *ctx)
 {
 	unsigned long accu;
 	unsigned short temp[2];
@@ -61,7 +61,7 @@ _ctx_dorand48(random_ctx *ctx)
 }
 
 long
-ctx_lrand48(random_ctx *ctx)
+ctx_lrand48(rand_ctx_t *ctx)
 {
 	_ctx_dorand48(ctx);
 	return ((long) (ctx->_rand48_seed[2]) << 15) + 
@@ -69,7 +69,7 @@ ctx_lrand48(random_ctx *ctx)
 }
 
 void
-ctx_srand48(random_ctx *ctx, long seed)
+ctx_srand48(rand_ctx_t *ctx, long seed)
 {
 	ctx->_rand48_seed[0] = RAND48_SEED_0;
 	ctx->_rand48_seed[1] = (unsigned short) seed;

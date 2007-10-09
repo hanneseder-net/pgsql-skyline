@@ -59,15 +59,11 @@ if ($res =~ m/Skyline\s*\(cost=([0-9.]+\.\.[0-9.]+)\s+rows=([0-9]+)\s+width=([0-
 }
     
 
-if ($res =~ m/Skyline Stats: passes=(\d+)(\s+window=(\d+)k)?(\s+slots=(\d))?/m) {
+if ($res =~ m/Skyline Stats: passes=(\d+)(\s+window=(\d+)k)?(\s+slots=(\d))?(\s+rows=(\d+(, \d+)*))?/m) {
   plog("skyline.passes", $1);
-  if ($2 ne "") {
-    plog("skyline.window", $3);
-  }
-
-  if ($4 ne "") {
-    plog("skyline.slots", $5);
-  }
+  plog("skyline.window", $3) if ($2 ne "");
+  plog("skyline.slots", $5) if ($4 ne "");
+  plog("skyline.passes.rows", $7) if ($6 ne "");
 }
 
 if ($res =~ m/Skyline Cmps: tuples=(\d+) fields=(\d+)/m) {

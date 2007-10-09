@@ -1370,6 +1370,8 @@ typedef struct SkylineState
 
 	int64				cmps_tuples;
 	int64				cmps_fields;
+
+	StringInfo			pass_info;
 } SkylineState;
 
 /* -----------------------------

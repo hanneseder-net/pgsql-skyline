@@ -321,6 +321,7 @@ ExecInitSkyline(Skyline *node, EState *estate, int eflags)
 
 	slstate->cmps_tuples = 0;
 	slstate->cmps_fields = 0;
+	slstate->pass_info = makeStringInfo();
 
 	ExecSkylineInitTupleWindow(slstate, node);
 
@@ -784,12 +785,15 @@ ExecSkyline_BlockNestedLoop(SkylineState *node, Skyline *sl)
 						tuplestore_gettupleslot(node->tempIn, true, slot);
 					}
 
-					node->timestampIn++;
-
 					if (TupIsNull(slot))
 					{
-						/* if we have read all tuples for the outer node */
-						/* switch to temp */
+						if (node->source == SS_OUTER)
+							appendStringInfo(node->pass_info, "%d", node->timestampIn);
+
+						/*
+						 * If we have read all tuples for the outer node
+						 * switch to temp (FIXME: comment is wrong)
+						 */
 						if (node->source == SS_TEMP)
 						{
 							tuplestore_end(node->tempIn);
@@ -811,7 +815,8 @@ ExecSkyline_BlockNestedLoop(SkylineState *node, Skyline *sl)
 						else
 						{
 							node->pass++;
-							elog(INFO, "start pass %lld with %lld tuples in temp", node->pass, node->timestampOut);
+							appendStringInfo(node->pass_info, ", %d", node->timestampOut);
+							elog(DEBUG, "start pass %lld with %lld tuples in temp", node->pass, node->timestampOut);
 
 							node->source = SS_TEMP;
 							node->tempIn = node->tempOut;
@@ -830,6 +835,8 @@ ExecSkyline_BlockNestedLoop(SkylineState *node, Skyline *sl)
 						}
 						break;
 					}
+
+					node->timestampIn++;
 
 					tuplewindow_rewind(window);
 					for (;;)
@@ -1000,9 +1007,12 @@ ExecSkyline_SortFilterSkyline(SkylineState *node, Skyline *sl)
 
 					if (TupIsNull(slot))
 					{
+						if (node->source == SS_OUTER)
+							appendStringInfo(node->pass_info, "%d", node->timestampIn);
+
 						/*
 						 * If we have read all tuples for the outer node
-						 * switch to temp
+						 * switch to temp (FIXME: comment is wrong)
 						 */
 						if (node->source == SS_TEMP)
 						{
@@ -1025,7 +1035,8 @@ ExecSkyline_SortFilterSkyline(SkylineState *node, Skyline *sl)
 						else
 						{
 							node->pass++;
-							elog(INFO, "start pass %lld with %lld tuples in temp", node->pass, node->timestampOut);
+							appendStringInfo(node->pass_info, ", %d", node->timestampOut);
+							elog(DEBUG, "start pass %lld with %lld tuples in temp", node->pass, node->timestampOut);
 
 							node->source = SS_TEMP;
 							node->tempIn = node->tempOut;
@@ -1047,6 +1058,8 @@ ExecSkyline_SortFilterSkyline(SkylineState *node, Skyline *sl)
 						}
 						break;
 					}
+
+					node->timestampIn++;
 
 					tuplewindow_rewind(window);
 					for (;;)
@@ -1183,6 +1196,11 @@ ExecReScanSkyline(SkylineState *node, ExprContext *exprCtxt)
 		ExecReScan(((PlanState *) node)->lefttree, exprCtxt);
 
 	node->status = SS_OUTER;
+	node->pass = 1;
+
+	node->cmps_tuples = 0;
+	node->cmps_fields = 0;
+	resetStringInfo(node->pass_info);
 
 	/* reinit tuple window */
 	ExecSkylineInitTupleWindow(node, (Skyline *) node->ss.ps.plan);

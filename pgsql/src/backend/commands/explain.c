@@ -1225,6 +1225,9 @@ show_skyline_info(SkylineState *skylinestate,
 				appendStringInfo(str, " window=%dk", skylinestate->windowsize);
 			if (skylinestate->windowslots != -1)
 				appendStringInfo(str, " slots=%d", skylinestate->windowslots);
+
+			appendStringInfo(str, " rows=%s", skylinestate->pass_info->data);
+
 			appendStringInfo(str, "\n");
 		}
 

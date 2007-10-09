@@ -931,7 +931,7 @@ grouping_planner(PlannerInfo *root, double tuple_fraction)
 		 * always read all the input tuples, so use the cheapest-total path.
 		 * Otherwise, trust query_planner's decision about which to use.
 		 */
-		if (use_hashed_grouping || (!sorted_path && !skyline_path))
+		if (use_hashed_grouping || (!sorted_path && !(parse->skylineClause && skyline_path)))
 			best_path = cheapest_path;
 		else if (parse->skylineClause && skyline_path)
 		{

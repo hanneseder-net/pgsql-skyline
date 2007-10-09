@@ -1,4 +1,4 @@
-/Makefile/1.99/Wed Sep  5 06:36:54 2007//
+/Makefile/1.101/Tue Oct  9 17:24:58 2007//
 /advanced.sgml/1.54/Thu Feb  1 00:28:16 2007//
 /arch-dev.sgml/2.30/Wed Aug  1 09:00:45 2007//
 /array.sgml/1.62/Fri Jun  8 07:10:06 2007//
@@ -25,7 +25,7 @@
 /features.sgml/2.27/Sat Feb  3 17:59:35 2007//
 /filelist.sgml/1.50/Wed Sep  5 06:36:54 2007//
 /fixrtf/2.3/Sat Mar 11 04:38:30 2006//
-/func.sgml/1.398/Mon Sep 24 20:20:25 2007//
+/func.sgml/1.399/Tue Oct  9 17:24:58 2007//
 /geqo.sgml/1.40/Wed Aug  1 09:00:45 2007//
 /gin.sgml/2.11/Fri Feb 16 03:50:29 2007//
 /gist.sgml/1.28/Wed Jan 31 20:56:17 2007//
@@ -36,13 +36,13 @@
 /info.sgml/1.25/Wed May 30 13:52:55 2007//
 /information_schema.sgml/1.33/Tue Feb 20 23:14:19 2007//
 /install-win32.sgml/1.41/Mon Aug  6 09:10:16 2007//
-/installation.sgml/1.293/Mon Oct  1 20:16:03 2007//
+/installation.sgml/1.294/Tue Oct  9 17:24:58 2007//
 /intro.sgml/1.32/Wed Jan 31 20:56:17 2007//
 /keywords.sgml/2.19/Sat Dec 30 21:21:52 2006//
 /legal.sgml/1.22/Fri Jan  5 22:19:21 2007//
 /libpq.sgml/1.246/Fri Sep 28 13:32:34 2007//
 /lobj.sgml/1.46/Wed Mar 14 00:15:26 2007//
-/maintenance.sgml/1.82/Mon Sep 24 20:20:25 2007//
+/maintenance.sgml/1.84/Tue Oct  9 17:24:58 2007//
 /manage-ag.sgml/2.54/Sun Jun  3 20:15:59 2007//
 /mk_feature_tables.pl/2.2/Sat Mar 11 04:38:30 2006//
 /monitoring.sgml/1.54/Fri Sep 28 13:32:34 2007//
@@ -64,7 +64,7 @@
 /reference.ced/1.2/Wed Nov 21 05:53:41 2001//
 /reference.sgml/1.65/Wed Sep  5 06:36:56 2007//
 /regress.sgml/1.58/Thu Jun 14 07:08:42 2007//
-/release.sgml/1.513/Thu Oct  4 20:22:35 2007//
+/release.sgml/1.515/Tue Oct  9 17:24:58 2007//
 /rowtypes.sgml/2.9/Thu Feb  1 00:28:18 2007//
 /rules.sgml/1.51/Thu Feb  1 19:10:24 2007//
 /runtime.sgml/1.381/Fri Mar 30 03:19:02 2007//

@@ -21,23 +21,8 @@
 #include "utils/tuplewindow.h"
 #include "utils/skyline.h"
 
-/* FIXME: refactor (copy from nodeSkyline.c) */
-#define SKYLINE_CMP_ALL_EQ 1
-#define SKYLINE_CMP_FIRST_DOMINATES 2
-#define SYKLINE_CMP_SECOND_DOMINATES 3
-#define SKYLINE_CMP_INCOMPARABLE 4
-
 void ExecSkylineCacheCompareFunctionInfo(SkylineState *slstate, Skyline *node);
 int ExecSkylineIsDominating(SkylineState *node, TupleTableSlot *inner_slot, TupleTableSlot *slot);
-
-enum SkylineStatus
-{
-	SS_INIT,
-	SS_PIPEOUT,
-	SS_FINALPIPEOUT,
-	SS_PROCESS,
-	SS_DONE
-};
 
 /*
  * ExecElimFilterInitTupleWindow

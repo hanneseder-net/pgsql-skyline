@@ -1343,9 +1343,20 @@ typedef struct GroupState
  *  SkylineState information
  * --------------------------
  */
-typedef enum SkylineStatus SkylineStatus;
+typedef enum
+{
+	SS_INIT,
+	SS_PIPEOUT,
+	SS_FINALPIPEOUT,
+	SS_PROCESS,
+	SS_DONE
+} SkylineStatus;
 
-typedef enum SkylineSource SkylineSource;
+typedef enum
+{
+	SS_OUTER,
+	SS_TEMP
+} SkylineSource;
 
 typedef struct SkylineState
 {

@@ -1185,7 +1185,7 @@ show_sort_keys(Plan *sortplan, int nkeys, AttrNumber *keycols,
 }
 
 /*
- * FIXME
+ * Show the method details for a Skyline node.
  */
 static void
 show_skyline_details(Skyline *skyline,
@@ -1210,7 +1210,7 @@ show_skyline_info(SkylineState *skylinestate,
 				  StringInfo str, int indent, ExplainState *es)
 {
 	Assert(IsA(skylinestate, SkylineState));
-	if (es->printAnalyze /* && skylinestate->status == SS_DONE FIXME */)
+	if (es->printAnalyze && skylinestate->status == SS_DONE)
 	{
 		int			i;
 		

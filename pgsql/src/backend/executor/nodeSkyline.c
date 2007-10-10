@@ -34,21 +34,6 @@
 #define STOP _CrtDbgBreak()
 #endif
 
-enum SkylineStatus
-{
-	SS_INIT,
-	SS_PIPEOUT,
-	SS_FINALPIPEOUT,
-	SS_PROCESS,
-	SS_DONE
-};
-
-enum SkylineSource
-{
-	SS_OUTER,
-	SS_TEMP
-};
-
 /*
  * Inline-able copy of FunctionCall2() to save some cycles in sorting.
  */
@@ -117,11 +102,6 @@ inlineApplyCompareFunction(FmgrInfo *compFunction, int sk_flags,
 	return compare;
 }
 
-#define SKYLINE_CMP_ALL_EQ 1
-#define SKYLINE_CMP_FIRST_DOMINATES 2
-#define SYKLINE_CMP_SECOND_DOMINATES 3
-#define SKYLINE_CMP_INCOMPARABLE 4
-
 /*
  * ExecSkylineIsDominating
  *
@@ -179,6 +159,14 @@ ExecSkylineIsDominating(SkylineState *node, TupleTableSlot *inner_slot, TupleTab
 
 				break;
 			case SKYLINEBY_DIFF:
+				/*
+				 * FIXME: For SFS if we sort first on all the DIFF attrs
+				 * then we could flush the tuple window in this case.
+				 * Return SKYLINE_CMP_DIFF_GRP_DIFF to indicate this
+				 *
+				 * FIXME: we could use SKYLINE_CMP_DIFF_GRP_DIFF for all
+				 * other methods in the same places as SKYLINE_CMP_DIFF_GRP_DIFF
+				 */
 				if (cmp != 0)
 					return SKYLINE_CMP_INCOMPARABLE;
 				break;

@@ -4,6 +4,12 @@
 #include "nodes/parsenodes.h"
 #include "nodes/plannodes.h"
 
+#define SKYLINE_CMP_FIRST_DOMINATES -2
+#define SKYLINE_CMP_INCOMPARABLE -1
+#define SKYLINE_CMP_ALL_EQ 0
+#define SKYLINE_CMP_DIFF_GRP_DIFF 1
+#define SYKLINE_CMP_SECOND_DOMINATES 2
+
 extern SkylineMethod skyline_method_forced_by_options(SkylineClause *skyline_clause);
 extern SkylineMethod skyline_choose_method(SkylineClause *skyline_clause, bool has_matching_path);
 extern int	skyline_get_dim(SkylineClause *skyline_clause);

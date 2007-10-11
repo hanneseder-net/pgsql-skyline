@@ -12,9 +12,8 @@
  * DESCRIPTION
  *	A random dataset generator similar to the one used in [Borzsonyi2001].
  *
- * [Borzsonyi2001]	Börzsönyi, S.; Kossmann, D. & Stocker, K. The Skyline Operator
- *					17th International Conference on Data Engineering (ICDE' 01),
- *					IEEE, 2001, 421--432
+ * [Borzsonyi2001]	Börzsönyi, S.; Kossmann, D. & Stocker, K.:
+ *					The Skyline Operator, ICDE 2001, 421--432
  *
  * IDENTIFICATION
  *	  $PostgreSQL: $

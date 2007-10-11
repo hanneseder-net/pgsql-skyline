@@ -27,9 +27,9 @@ psql -U postgres postgres < randdataset.sql
 Usage Examples
 ==============
 
-select * from pg_rand_dataset('indep',2,10,0) ds(id int, d1 float8, d2 float8);
-select * from pg_rand_dataset('corr',3,10,0) ds(id int, d1 float8, d2 float8, d3 float8);
-select * from pg_rand_dataset('anti',3,20,0) ds(id int, d1 float8, d2 float8, d3 float8);
+select * from pg_rand_dataset('indep',2,10,0) ds(id int, d1 float, d2 float);
+select * from pg_rand_dataset('corr',3,10,0) ds(id int, d1 float, d2 float, d3 float);
+select * from pg_rand_dataset('anti',3,20,0) ds(id int, d1 float, d2 float, d3 float);
 
 
 Objects implemented
@@ -40,6 +40,4 @@ setof record pg_rand_dataset(disttype text, dim int, rows int, seed int)
 References
 ==========
 
-[Borzsonyi2001]	Börzsönyi, S.; Kossmann, D. & Stocker, K. The Skyline Operator
-				17th International Conference on Data Engineering (ICDE' 01),
-				IEEE, 2001, 421--432
+[Borzsonyi2001]	Börzsönyi, S.; Kossmann, D. & Stocker, K.: The Skyline Operator, ICDE 2001, 421--432

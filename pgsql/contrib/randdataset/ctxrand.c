@@ -1,8 +1,10 @@
 /*-------------------------------------------------------------------------
  *
- * rand.c
- *	  Missing rand implementations for Win32
+ * ctxrand.c
+ *	  based on rand.c (Missing rand implementations for Win32)
  *
+ *    Modified by Hannes Eder <Hannes@HannesEder.net>
+ *    to have individual contexts
  *-------------------------------------------------------------------------
  */
 #include "c.h"
@@ -20,11 +22,6 @@
  * This software is provided ``as is'', and comes with no warranties
  * of any kind. I shall in no event be liable for anything that happens
  * to anyone/anything when using this software.
- */
-
-/*
- * Rewritten by Hannes Eder <Hannes@HannesEder.net>
- * to have multiple contexts
  */
 
 #define RAND48_SEED_0	(0x330e)

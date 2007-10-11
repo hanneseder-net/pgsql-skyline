@@ -27,9 +27,9 @@ psql -U postgres postgres < randdataset.sql
 Usage Examples
 ==============
 
-select * from pg_rand_dataset('indep',2,10,0) ds1(id int, d1 float8, d2 float8);
-select * from pg_rand_dataset('corr',3,10,0) ds1(id int, d1 float8, d2 float8, d3 float8);
-select * from pg_rand_dataset('anti',3,20,0) ds1(id int, d1 float8, d2 float8, d3 float8);
+select * from pg_rand_dataset('indep',2,10,0) ds(id int, d1 float8, d2 float8);
+select * from pg_rand_dataset('corr',3,10,0) ds(id int, d1 float8, d2 float8, d3 float8);
+select * from pg_rand_dataset('anti',3,20,0) ds(id int, d1 float8, d2 float8, d3 float8);
 
 
 Objects implemented

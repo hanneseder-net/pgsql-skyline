@@ -115,7 +115,7 @@ pgstattuple -
 	by Tatsuo Ishii <ishii@sraoss.co.jp>
 
 randdataset -
-	Random datasets used for skyline query testing
+	Random dataset generator used for skyline query evaluation
 	by Hannes Eder <Hannes@HannesEder.net>
 
 seg -

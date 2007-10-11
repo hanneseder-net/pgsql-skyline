@@ -11,4 +11,4 @@ typedef struct
 extern long ctx_lrand48(rand_ctx_t *ctx);
 extern void ctx_srand48(rand_ctx_t *ctx, long seed);
 
-#endif /* CTXRAND_H */
+#endif   /* CTXRAND_H */

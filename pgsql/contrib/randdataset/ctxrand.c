@@ -3,8 +3,8 @@
  * ctxrand.c
  *	  based on rand.c (Missing rand implementations for Win32)
  *
- *    Modified by Hannes Eder <Hannes@HannesEder.net>
- *    to have individual contexts
+ *	  Modified by Hannes Eder <Hannes@HannesEder.net>
+ *	  to have individual contexts
  *-------------------------------------------------------------------------
  */
 #include "c.h"
@@ -38,20 +38,20 @@ _ctx_dorand48(rand_ctx_t *ctx)
 	unsigned long accu;
 	unsigned short temp[2];
 
-	accu = (unsigned long) ctx->_rand48_mult[0] * 
-		   (unsigned long) ctx->_rand48_seed[0] +
-		   (unsigned long) ctx->_rand48_add;
+	accu = (unsigned long) ctx->_rand48_mult[0] *
+		(unsigned long) ctx->_rand48_seed[0] +
+		(unsigned long) ctx->_rand48_add;
 	temp[0] = (unsigned short) accu;	/* lower 16 bits */
 	accu >>= sizeof(unsigned short) * 8;
-	accu += (unsigned long) ctx->_rand48_mult[0] * 
-			(unsigned long) ctx->_rand48_seed[1] +
-			(unsigned long) ctx->_rand48_mult[1] * 
-			(unsigned long) ctx->_rand48_seed[0];
+	accu += (unsigned long) ctx->_rand48_mult[0] *
+		(unsigned long) ctx->_rand48_seed[1] +
+		(unsigned long) ctx->_rand48_mult[1] *
+		(unsigned long) ctx->_rand48_seed[0];
 	temp[1] = (unsigned short) accu;	/* middle 16 bits */
 	accu >>= sizeof(unsigned short) * 8;
-	accu += ctx->_rand48_mult[0] * ctx->_rand48_seed[2] + 
-			ctx->_rand48_mult[1] * ctx->_rand48_seed[1] + 
-			ctx->_rand48_mult[2] * ctx->_rand48_seed[0];
+	accu += ctx->_rand48_mult[0] * ctx->_rand48_seed[2] +
+		ctx->_rand48_mult[1] * ctx->_rand48_seed[1] +
+		ctx->_rand48_mult[2] * ctx->_rand48_seed[0];
 	ctx->_rand48_seed[0] = temp[0];
 	ctx->_rand48_seed[1] = temp[1];
 	ctx->_rand48_seed[2] = (unsigned short) accu;
@@ -61,8 +61,8 @@ long
 ctx_lrand48(rand_ctx_t *ctx)
 {
 	_ctx_dorand48(ctx);
-	return ((long) (ctx->_rand48_seed[2]) << 15) + 
-			((long) (ctx->_rand48_seed[1]) >> 1);
+	return ((long) (ctx->_rand48_seed[2]) << 15) +
+		((long) (ctx->_rand48_seed[1]) >> 1);
 }
 
 void

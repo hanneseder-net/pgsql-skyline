@@ -6,7 +6,7 @@
  * Copyright (c) 2007, PostgreSQL Global Development Group
  *
  * Author:	Hannes Eder <Hannes@HannesEder.net>
- *			code based on [Borzsonyi2001], thanks to 
+ *			code based on [Borzsonyi2001], thanks to
  *			Donald Kossmann / ETH Zurich for providing the code
  *
  * DESCRIPTION
@@ -36,7 +36,7 @@ Datum		pg_rand_dataset(PG_FUNCTION_ARGS);
 
 PG_FUNCTION_INFO_V1(pg_rand_dataset);
 
-typedef void (*generate_fn_t)(rand_ctx_t *, int, Datum *);
+typedef void (*generate_fn_t) (rand_ctx_t *, int, Datum *);
 
 typedef struct
 {
@@ -53,6 +53,9 @@ typedef struct
 	rand_ctx_t		rand_ctx;
 } randdataset_fctx_t;
 
+/*
+ * Limit to 20 dimensions seems to be sane
+ */
 #define MAXDATASETDIM 20
 
 /* forward decl's */
@@ -60,28 +63,28 @@ static double rand_equal(rand_ctx_t *rand_ctx, double min, double max);
 static void generate_indep(rand_ctx_t *rand_ctx, int dim, Datum *values);
 static void generate_corr(rand_ctx_t *rand_ctx, int dim, Datum *values);
 static void generate_anti(rand_ctx_t *rand_ctx, int dim, Datum *values);
-static int cmp_dist_info(const void *m1, const void *m2);
+static int	cmp_dist_info(const void *m1, const void *m2);
 static dist_info_t *dist_info_lookup(const char *name);
 
 /*
- * the data return will always be NOT NULL so we can init the
- * isnull array here to false
+ * The data returned will always be NOT NULL so we can init the
+ * isnull array here to false and reuse it.
  */
-const bool isnull[MAXDATASETDIM+1];
+static const bool	isnull[MAXDATASETDIM + 1];
 
 /*
  * pg_rand_dataset
  *
  *	example:
- *	select * from pg_rand_dataset('indep',2,10,0) ds1(id int, d1 float8, d2 float8);
- *	select * from pg_rand_dataset('corr',3,10,0) ds1(id int, d1 float8, d2 float8, d3 float8);
- *	select * from pg_rand_dataset('anti',3,20,0) ds1(id int, d1 float8, d2 float8, d3 float8);
+ *	select * from pg_rand_dataset('indep',2,10,0) ds1(id int, d1 float, d2 float);
+ *	select * from pg_rand_dataset('corr',3,10,0) ds1(id int, d1 float, d2 float, d3 float);
+ *	select * from pg_rand_dataset('anti',3,20,0) ds1(id int, d1 float, d2 float, d3 float);
  */
 Datum
 pg_rand_dataset(PG_FUNCTION_ARGS)
 {
 	FuncCallContext	   *funcctx;
-	randdataset_fctx_t   *fctx;
+	randdataset_fctx_t *fctx;
 
 	if (SRF_IS_FIRSTCALL())
 	{
@@ -98,8 +101,8 @@ pg_rand_dataset(PG_FUNCTION_ARGS)
 		oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
 
 		fctx = palloc(sizeof(randdataset_fctx_t));
-		
-		fctx->id = 0;
+
+		fctx->id = 1;
 
 		/* lookup distribution */
 		disttype_arg = PG_GETARG_TEXT_P(0);
@@ -112,19 +115,25 @@ pg_rand_dataset(PG_FUNCTION_ARGS)
 		if (dist_info == NULL)
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-					errmsg("distribution type \"%s\" not known", disttype)));
+					 errmsg("distribution type \"%s\" not known", disttype),
+					 errhint("use 'indep', 'corr' or 'anti' as distribution type")));
 
+		Assert(dist_info->generate_fn);
 		fctx->generate_fn = dist_info->generate_fn;
-
+		
 		/* setup dimensions */
 		fctx->dim = PG_GETARG_INT32(1);
-		if (! (0 < fctx->dim && fctx->dim <= MAXDATASETDIM))
+		if (!(0 < fctx->dim && fctx->dim <= MAXDATASETDIM))
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-					errmsg("dim \"%d\" not in range {0, .., %d}", fctx->dim, MAXDATASETDIM)));
+					 errmsg("dim \"%d\" not in range {0, .., %d}", fctx->dim, MAXDATASETDIM)));
 
 		/* number of vectors */
 		fctx->n = PG_GETARG_INT32(2);
+		if (fctx->n < 0)
+			ereport(ERROR,
+					(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+					 errmsg("the number of vectors is negativ")));
 
 		/* seed random generator */
 		ctx_srand48(&(fctx->rand_ctx), PG_GETARG_INT32(3));
@@ -138,10 +147,10 @@ pg_rand_dataset(PG_FUNCTION_ARGS)
 
 		for (i = 1; i <= fctx->dim; ++i)
 		{
-			char	fieldname[32];
+			char		fieldname[32];
 
 			snprintf(fieldname, sizeof(fieldname), "d%d", i);
-			TupleDescInitEntry(tupdesc, (AttrNumber) (i+1), fieldname,
+			TupleDescInitEntry(tupdesc, (AttrNumber) (i + 1), fieldname,
 							   FLOAT8OID, -1, 0);
 		}
 
@@ -154,14 +163,15 @@ pg_rand_dataset(PG_FUNCTION_ARGS)
 	funcctx = SRF_PERCALL_SETUP();
 	fctx = (randdataset_fctx_t *) funcctx->user_fctx;
 
+	Assert(fctx->n >= 0);
 	while (fctx->n--)
 	{
 		HeapTuple	tuple;
-		Datum		values[MAXDATASETDIM+1];
+		Datum		values[MAXDATASETDIM + 1];
 
 		/* set id */
-		fctx->id++;
 		values[0] = Int32GetDatum(fctx->id);
+		fctx->id++;
 
 		/* set vector elements */
 		fctx->generate_fn(&(fctx->rand_ctx), fctx->dim, &values[1]);
@@ -217,7 +227,7 @@ dist_info_lookup(const char *name)
 static double
 rand_equal(rand_ctx_t *rand_ctx, double min, double max)
 {
-	double	x = (double) ctx_lrand48(rand_ctx) / LONG_MAX;
+	double		x = (double) ctx_lrand48(rand_ctx) / LONG_MAX;
 
 	return x * (max - min) + min;
 }
@@ -225,19 +235,19 @@ rand_equal(rand_ctx_t *rand_ctx, double min, double max)
 /*
  * rand_peak
  *
- *	returns a random value within [min,max[ as sum of dim equally 
+ *	returns a random value within [min,max[ as sum of dim equally
  *	dist. random values
  */
 double
 rand_peak(rand_ctx_t *rand_ctx, double min, double max, int dim)
 {
-  double	sum = 0.0;
-  int		d;
+	double		sum = 0.0;
+	int			d;
 
-  for (d = 0; d < dim; d++)
-    sum += rand_equal(rand_ctx, 0, 1);
-  sum /= dim;
-  return sum * (max - min) + min;
+	for (d = 0; d < dim; d++)
+		sum += rand_equal(rand_ctx, 0, 1);
+	sum /= dim;
+	return sum * (max - min) + min;
 }
 
 /*
@@ -249,7 +259,7 @@ rand_peak(rand_ctx_t *rand_ctx, double min, double max, int dim)
 double
 rand_normal(rand_ctx_t *rand_ctx, double med, double var)
 {
-  return rand_peak(rand_ctx, med - var, med + var, 12);
+	return rand_peak(rand_ctx, med - var, med + var, 12);
 }
 
 /*
@@ -278,10 +288,12 @@ is_vector_ok(int dim, double *x)
 static void
 generate_indep(rand_ctx_t *rand_ctx, int dim, Datum *values)
 {
-	int		i;
-	for (i = 0; i<dim; ++i)
+	int			i;
+
+	for (i = 0; i < dim; ++i)
 	{
-		double rand_value = rand_equal(rand_ctx, 0, 1);
+		double		rand_value = rand_equal(rand_ctx, 0, 1);
+
 		values[i] = Float8GetDatum(rand_value);
 	}
 }
@@ -294,25 +306,27 @@ generate_indep(rand_ctx_t *rand_ctx, int dim, Datum *values)
 static void
 generate_corr(rand_ctx_t *rand_ctx, int dim, Datum *values)
 {
-	int		i;
-	double	x[MAXDATASETDIM];
+	int			i;
+	double		x[MAXDATASETDIM];
 
-	do {
-		double	v = rand_peak(rand_ctx, 0, 1, dim);
-		double	l = v <= 0.5 ? v : 1.0 - v;
+	do
+	{
+		double		v = rand_peak(rand_ctx, 0, 1, dim);
+		double		l = v <= 0.5 ? v : 1.0 - v;
 
-		for (i = 0; i<dim; ++i)
+		for (i = 0; i < dim; ++i)
 			x[i] = v;
 
-		for (i = 0; i<dim; ++i)
+		for (i = 0; i < dim; ++i)
 		{
-			double	h = rand_normal(rand_ctx, 0, l);
+			double		h = rand_normal(rand_ctx, 0, l);
+
 			x[i] += h;
 			x[(i + 1) % dim] -= h;
 		}
 	} while (!is_vector_ok(dim, x));
 
-	for (i = 0; i<dim; ++i)
+	for (i = 0; i < dim; ++i)
 	{
 		values[i] = Float8GetDatum(x[i]);
 	}
@@ -326,25 +340,27 @@ generate_corr(rand_ctx_t *rand_ctx, int dim, Datum *values)
 static void
 generate_anti(rand_ctx_t *rand_ctx, int dim, Datum *values)
 {
-	int		i;
-	double	x[MAXDATASETDIM];
+	int			i;
+	double		x[MAXDATASETDIM];
 
-	do {
-		double	v = rand_normal(rand_ctx, 0.5, 0.25);
-		double	l = v <= 0.5 ? v : 1.0 - v;
+	do
+	{
+		double		v = rand_normal(rand_ctx, 0.5, 0.25);
+		double		l = v <= 0.5 ? v : 1.0 - v;
 
-		for (i = 0; i<dim; ++i)
+		for (i = 0; i < dim; ++i)
 			x[i] = v;
 
-		for (i = 0; i<dim; ++i)
+		for (i = 0; i < dim; ++i)
 		{
-			double	h = rand_equal(rand_ctx, -l, l);
+			double		h = rand_equal(rand_ctx, -l, l);
+
 			x[i] += h;
 			x[(i + 1) % dim] -= h;
 		}
 	} while (!is_vector_ok(dim, x));
 
-	for (i = 0; i<dim; ++i)
+	for (i = 0; i < dim; ++i)
 	{
 		values[i] = Float8GetDatum(x[i]);
 	}

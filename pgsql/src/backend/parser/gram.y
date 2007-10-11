@@ -6459,38 +6459,33 @@ skyline_by_list:
 				}
 		;
 
-/* FIMXE: we require parantheses to avoid shift/reduce conflicts */
+/*
+ * FIMXE: skyline attr is a restricted to c_expr instead of a_expr
+ * to avoid shift/reduce conflicts.
+ */
 skyline_by_expr: 
-			'(' a_expr ')' IDENT opt_nulls_order
+			c_expr IDENT opt_nulls_order
 				{
 					$$ = makeNode(SkylineByExpr);
-					$$->node = $2;
-					if (strcmp($4, "min") == 0)
+					$$->node = $1;
+					if (strcmp($2, "min") == 0)
 						$$->skylineby_dir = SKYLINEBY_MIN;
-					else if (strcmp($4, "max") == 0)
+					else if (strcmp($2, "max") == 0)
 						$$->skylineby_dir = SKYLINEBY_MAX;
-					else if (strcmp($4, "diff") == 0)
+					else if (strcmp($2, "diff") == 0)
 						$$->skylineby_dir = SKYLINEBY_DIFF;
 					else
 						yyerror("syntax error");
-					$$->skylineby_nulls = $5;
 					$$->useOp = NIL;
+					$$->skylineby_nulls = $3;
 				}
-			| '(' a_expr ')' opt_nulls_order
+			| c_expr USING qual_all_Op opt_nulls_order
 				{
 					$$ = makeNode(SkylineByExpr);
-					$$->node = $2;
-					$$->skylineby_dir = SKYLINEBY_DEFAULT;
-					$$->skylineby_nulls = $4;
-					$$->useOp = NIL;
-				}
-			| '(' a_expr ')' USING qual_all_Op opt_nulls_order
-				{
-					$$ = makeNode(SkylineByExpr);
-					$$->node = $2;
+					$$->node = $1;
 					$$->skylineby_dir = SKYLINEBY_USING;
-					$$->skylineby_nulls = $6;
-					$$->useOp = $5;
+					$$->useOp = $3;
+					$$->skylineby_nulls = $4;
 				}
 		;
 

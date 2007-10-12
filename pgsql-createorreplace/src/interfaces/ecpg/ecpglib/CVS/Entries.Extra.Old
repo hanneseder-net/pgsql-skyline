@@ -1,0 +1,13 @@
+/Makefile////*///
+/connect.c////*///
+/data.c////*///
+/descriptor.c////*///
+/error.c////*///
+/execute.c////*///
+/exports.txt////*///
+/extern.h////*///
+/memory.c////*///
+/misc.c////*///
+/pg_type.h////*///
+/prepare.c////*///
+/typename.c////*///

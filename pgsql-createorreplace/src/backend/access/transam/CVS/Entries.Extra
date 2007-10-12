@@ -1,0 +1,15 @@
+/Makefile////*///
+/README////*///
+/clog.c////*///
+/multixact.c////*///
+/recovery.conf.sample////*///
+/rmgr.c////*///
+/slru.c////*///
+/subtrans.c////*///
+/transam.c////*///
+/twophase.c////*///
+/twophase_rmgr.c////*///
+/varsup.c////*///
+/xact.c////*///
+/xlog.c////*///
+/xlogutils.c////*///

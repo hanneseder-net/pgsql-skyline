@@ -1,0 +1,16 @@
+/Makefile/1.24/Sun Jan  7 08:49:31 2007//
+/ipc_test.c/1.22/Fri Jan  5 22:19:34 2007//
+/posix_sema.c/1.18/Fri Jan  5 22:19:34 2007//
+/sysv_sema.c/1.21/Fri Jan  5 22:19:35 2007//
+/sysv_shmem.c/1.51/Mon Jul  9 10:06:00 2007//
+/win32_sema.c/1.5/Tue Apr 24 12:25:18 2007//
+/win32_shmem.c/1.2/Wed Mar 28 08:06:11 2007//
+D/BSD44_derived////
+D/aix////
+D/darwin////
+D/dynloader////
+D/hpux////
+D/nextstep////
+D/sunos4////
+D/tas////
+D/win32////

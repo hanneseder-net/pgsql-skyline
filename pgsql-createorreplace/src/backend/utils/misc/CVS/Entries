@@ -1,0 +1,13 @@
+/.cvsignore/1.1/Fri Jun  2 00:04:26 2000//
+/Makefile/1.27/Sat Jan 20 17:16:14 2007//
+/README/1.7/Fri Sep 14 18:56:03 2007//
+/check_guc/1.10/Sat Sep  2 13:12:50 2006//
+/guc-file.l/1.52/Fri Sep 14 18:56:03 2007//
+/guc.c/1.423/Fri Sep 28 13:32:40 2007//
+/help_config.c/1.18/Fri Jan  5 22:19:46 2007//
+/pg_rusage.c/1.5/Fri Jan  5 22:19:46 2007//
+/postgresql.conf.sample/1.231/Fri Sep 28 13:32:40 2007//
+/ps_status.c/1.35/Fri Feb 16 21:34:04 2007//
+/superuser.c/1.36/Fri Jan  5 22:19:46 2007//
+/tzparser.c/1.5/Sun Jun  3 10:06:18 2007//
+D

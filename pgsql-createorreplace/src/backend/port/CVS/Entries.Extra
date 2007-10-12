@@ -1,0 +1,15 @@
+/Makefile////*///
+/ipc_test.c////*///
+/posix_sema.c////*///
+/sysv_sema.c////*///
+/sysv_shmem.c////*///
+/win32_sema.c////*///
+/win32_shmem.c////*///
+D/aix///////
+D/darwin///////
+D/dynloader///////
+D/hpux///////
+D/nextstep///////
+D/sunos4///////
+D/tas///////
+D/win32///////

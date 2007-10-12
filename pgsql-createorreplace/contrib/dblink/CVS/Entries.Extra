@@ -1,0 +1,9 @@
+/Makefile////*///
+/README.dblink////*///
+/dblink.c////*///
+/dblink.h////*///
+/dblink.sql.in////*///
+/uninstall_dblink.sql////*///
+D/doc///////
+D/expected///////
+D/sql///////

@@ -1,0 +1,7 @@
+/Makefile////*///
+/README.pgstattuple.euc_jp////*///
+/README.pgstattuple////*///
+/pgstatindex.c////*///
+/pgstattuple.c////*///
+/pgstattuple.sql.in////*///
+/uninstall_pgstattuple.sql////*///

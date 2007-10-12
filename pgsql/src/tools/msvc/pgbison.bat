@@ -24,7 +24,7 @@ exit 1
 :generate
 SET fn=%1
 SET cf=%2
-bison.exe -d %fn% -o %cf%
+bison.exe -r all -d %fn% -o %cf%
 if errorlevel 1 exit 1
 SET hf=%cf:~0,-2%.h
 if not "%hf%"=="%3" (

@@ -109,6 +109,15 @@ static Node *doNegate(Node *n, int location);
 static void doNegateFloat(Value *v);
 static Node *makeXmlExpr(XmlExprOp op, char *name, List *named_args, List *args);
 
+#define EREPORT_ON_OR_REPLACE(REPLACE,TYPE) \
+	do { \
+		if (REPLACE) \
+			ereport(ERROR, \
+					(errcode(ERRCODE_FEATURE_NOT_SUPPORTED), \
+					 errmsg("OR REPLACE not yet implemented for CREATE %s statement", (TYPE)), \
+					 errhint("Use DROP %s IF EXISTS ... instead.", (TYPE)))); \
+	} while(0)
+
 %}
 
 %name-prefix="base_yy"
@@ -629,12 +638,12 @@ stmt :
  *****************************************************************************/
 
 CreateRoleStmt:
-			CREATE ROLE RoleId opt_with OptRoleList
+			CREATE opt_or_replace ROLE RoleId opt_with OptRoleList
 				{
 					CreateRoleStmt *n = makeNode(CreateRoleStmt);
 					n->stmt_type = ROLESTMT_ROLE;
-					n->role = $3;
-					n->options = $5;
+					n->role = $4;
+					n->options = $6;
 					$$ = (Node *)n;
 				}
 		;
@@ -767,12 +776,12 @@ OptRoleElem:
  *****************************************************************************/
 
 CreateUserStmt:
-			CREATE USER RoleId opt_with OptRoleList
+			CREATE opt_or_replace USER RoleId opt_with OptRoleList
 				{
 					CreateRoleStmt *n = makeNode(CreateRoleStmt);
 					n->stmt_type = ROLESTMT_USER;
-					n->role = $3;
-					n->options = $5;
+					n->role = $4;
+					n->options = $6;
 					$$ = (Node *)n;
 				}
 		;
@@ -895,12 +904,12 @@ DropUserStmt:
  *****************************************************************************/
 
 CreateGroupStmt:
-			CREATE GROUP_P RoleId opt_with OptRoleList
+			CREATE opt_or_replace GROUP_P RoleId opt_with OptRoleList
 				{
 					CreateRoleStmt *n = makeNode(CreateRoleStmt);
 					n->stmt_type = ROLESTMT_GROUP;
-					n->role = $3;
-					n->options = $5;
+					n->role = $4;
+					n->options = $6;
 					$$ = (Node *)n;
 				}
 		;
@@ -961,25 +970,25 @@ DropGroupStmt:
  *****************************************************************************/
 
 CreateSchemaStmt:
-			CREATE SCHEMA OptSchemaName AUTHORIZATION RoleId OptSchemaEltList
+			CREATE opt_or_replace SCHEMA OptSchemaName AUTHORIZATION RoleId OptSchemaEltList
 				{
 					CreateSchemaStmt *n = makeNode(CreateSchemaStmt);
 					/* One can omit the schema name or the authorization id. */
-					if ($3 != NULL)
-						n->schemaname = $3;
+					if ($4 != NULL)
+						n->schemaname = $4;
 					else
-						n->schemaname = $5;
-					n->authid = $5;
-					n->schemaElts = $6;
+						n->schemaname = $6;
+					n->authid = $6;
+					n->schemaElts = $7;
 					$$ = (Node *)n;
 				}
-			| CREATE SCHEMA ColId OptSchemaEltList
+			| CREATE opt_or_replace SCHEMA ColId OptSchemaEltList
 				{
 					CreateSchemaStmt *n = makeNode(CreateSchemaStmt);
 					/* ...but not both */
-					n->schemaname = $3;
+					n->schemaname = $4;
 					n->authid = NULL;
-					n->schemaElts = $4;
+					n->schemaElts = $5;
 					$$ = (Node *)n;
 				}
 		;
@@ -1885,39 +1894,39 @@ opt_using:
 /*****************************************************************************
  *
  *		QUERY :
- *				CREATE TABLE relname
+ *				CREATE [ OR REPLACE ] TABLE relname
  *
  *****************************************************************************/
 
-CreateStmt:	CREATE OptTemp TABLE qualified_name '(' OptTableElementList ')'
+CreateStmt:	CREATE opt_or_replace OptTemp TABLE qualified_name '(' OptTableElementList ')'
 			OptInherit OptWith OnCommitOption OptTableSpace
 				{
 					CreateStmt *n = makeNode(CreateStmt);
-					$4->istemp = $2;
-					n->relation = $4;
-					n->tableElts = $6;
-					n->inhRelations = $8;
+					$5->istemp = $3;
+					n->relation = $5;
+					n->tableElts = $7;
+					n->inhRelations = $9;
 					n->constraints = NIL;
-					n->options = $9;
-					n->oncommit = $10;
-					n->tablespacename = $11;
+					n->options = $10;
+					n->oncommit = $11;
+					n->tablespacename = $12;
 					$$ = (Node *)n;
 				}
-		| CREATE OptTemp TABLE qualified_name OF qualified_name
+		| CREATE opt_or_replace OptTemp TABLE qualified_name OF qualified_name
 			'(' OptTableElementList ')' OptWith OnCommitOption OptTableSpace
 				{
 					/* SQL99 CREATE TABLE OF <UDT> (cols) seems to be satisfied
 					 * by our inheritance capabilities. Let's try it...
 					 */
 					CreateStmt *n = makeNode(CreateStmt);
-					$4->istemp = $2;
-					n->relation = $4;
-					n->tableElts = $8;
-					n->inhRelations = list_make1($6);
+					$5->istemp = $3;
+					n->relation = $5;
+					n->tableElts = $9;
+					n->inhRelations = list_make1($7);
 					n->constraints = NIL;
-					n->options = $10;
-					n->oncommit = $11;
-					n->tablespacename = $12;
+					n->options = $11;
+					n->oncommit = $12;
+					n->tablespacename = $13;
 					$$ = (Node *)n;
 				}
 		;
@@ -2367,7 +2376,7 @@ OptConsTableSpace:   USING INDEX TABLESPACE name	{ $$ = $4; }
  */
 
 CreateAsStmt:
-		CREATE OptTemp TABLE create_as_target AS SelectStmt
+		CREATE opt_or_replace OptTemp TABLE create_as_target AS SelectStmt
 				{
 					/*
 					 * When the SelectStmt is a set-operation tree, we must
@@ -2376,14 +2385,14 @@ CreateAsStmt:
 					 * to find it.	Similarly, the output column names must
 					 * be attached to that Select's target list.
 					 */
-					SelectStmt *n = findLeftmostSelect((SelectStmt *) $6);
+					SelectStmt *n = findLeftmostSelect((SelectStmt *) $7);
 					if (n->intoClause != NULL)
 						ereport(ERROR,
 								(errcode(ERRCODE_SYNTAX_ERROR),
 								 errmsg("CREATE TABLE AS cannot specify INTO")));
-					$4->rel->istemp = $2;
-					n->intoClause = $4;
-					$$ = $6;
+					$5->rel->istemp = $3;
+					n->intoClause = $5;
+					$$ = $7;
 				}
 		;
 
@@ -2429,18 +2438,18 @@ CreateAsElement:
 /*****************************************************************************
  *
  *		QUERY :
- *				CREATE SEQUENCE seqname
+ *				CREATE [ OR REPLACE ] SEQUENCE seqname
  *				ALTER SEQUENCE seqname
  *
  *****************************************************************************/
 
 CreateSeqStmt:
-			CREATE OptTemp SEQUENCE qualified_name OptSeqList
+			CREATE opt_or_replace OptTemp SEQUENCE qualified_name OptSeqList
 				{
 					CreateSeqStmt *n = makeNode(CreateSeqStmt);
-					$4->istemp = $2;
-					n->sequence = $4;
-					n->options = $5;
+					$5->istemp = $3;
+					n->sequence = $5;
+					n->options = $6;
 					$$ = (Node *)n;
 				}
 		;
@@ -2528,30 +2537,30 @@ IntegerOnly: SignedIconst							{ $$ = makeInteger($1); };
 /*****************************************************************************
  *
  *		QUERIES :
- *				CREATE PROCEDURAL LANGUAGE ...
+ *				CREATE [ OR REPLACE ] PROCEDURAL LANGUAGE ...
  *				DROP PROCEDURAL LANGUAGE ...
  *
  *****************************************************************************/
 
 CreatePLangStmt:
-			CREATE opt_trusted opt_procedural LANGUAGE ColId_or_Sconst
+			CREATE opt_or_replace opt_trusted opt_procedural LANGUAGE ColId_or_Sconst
 			{
 				CreatePLangStmt *n = makeNode(CreatePLangStmt);
-				n->plname = $5;
+				n->plname = $6;
 				/* parameters are all to be supplied by system */
 				n->plhandler = NIL;
 				n->plvalidator = NIL;
 				n->pltrusted = false;
 				$$ = (Node *)n;
 			}
-			| CREATE opt_trusted opt_procedural LANGUAGE ColId_or_Sconst
+			| CREATE opt_or_replace opt_trusted opt_procedural LANGUAGE ColId_or_Sconst
 			  HANDLER handler_name opt_validator opt_lancompiler
 			{
 				CreatePLangStmt *n = makeNode(CreatePLangStmt);
-				n->plname = $5;
-				n->plhandler = $7;
-				n->plvalidator = $8;
-				n->pltrusted = $2;
+				n->plname = $6;
+				n->plhandler = $8;
+				n->plvalidator = $9;
+				n->pltrusted = $3;
 				/* LANCOMPILER is now ignored entirely */
 				$$ = (Node *)n;
 			}
@@ -2608,16 +2617,16 @@ opt_procedural:
 /*****************************************************************************
  *
  * 		QUERY:
- *             CREATE TABLESPACE tablespace LOCATION '/path/to/tablespace/'
+ *             CREATE [ OR REPLACE ] TABLESPACE tablespace LOCATION '/path/to/tablespace/'
  *
  *****************************************************************************/
 
-CreateTableSpaceStmt: CREATE TABLESPACE name OptTableSpaceOwner LOCATION Sconst
+CreateTableSpaceStmt: CREATE opt_or_replace TABLESPACE name OptTableSpaceOwner LOCATION Sconst
 				{
 					CreateTableSpaceStmt *n = makeNode(CreateTableSpaceStmt);
-					n->tablespacename = $3;
-					n->owner = $4;
-					n->location = $6;
+					n->tablespacename = $4;
+					n->owner = $5;
+					n->location = $7;
 					$$ = (Node *) n;
 				}
 		;
@@ -2655,49 +2664,49 @@ DropTableSpaceStmt: DROP TABLESPACE name
 /*****************************************************************************
  *
  *		QUERIES :
- *				CREATE TRIGGER ...
+ *				CREATE [ OR REPLACE ] TRIGGER ...
  *				DROP TRIGGER ...
  *
  *****************************************************************************/
 
 CreateTrigStmt:
-			CREATE TRIGGER name TriggerActionTime TriggerEvents ON
+			CREATE opt_or_replace TRIGGER name TriggerActionTime TriggerEvents ON
 			qualified_name TriggerForSpec EXECUTE PROCEDURE
 			func_name '(' TriggerFuncArgs ')'
 				{
 					CreateTrigStmt *n = makeNode(CreateTrigStmt);
-					n->trigname = $3;
-					n->relation = $7;
-					n->funcname = $11;
-					n->args = $13;
-					n->before = $4;
-					n->row = $8;
-					memcpy(n->actions, $5, 4);
+					n->trigname = $4;
+					n->relation = $8;
+					n->funcname = $12;
+					n->args = $14;
+					n->before = $5;
+					n->row = $9;
+					memcpy(n->actions, $6, 4);
 					n->isconstraint  = FALSE;
 					n->deferrable	 = FALSE;
 					n->initdeferred  = FALSE;
 					n->constrrel = NULL;
 					$$ = (Node *)n;
 				}
-			| CREATE CONSTRAINT TRIGGER name AFTER TriggerEvents ON
+			| CREATE opt_or_replace CONSTRAINT TRIGGER name AFTER TriggerEvents ON
 			qualified_name OptConstrFromTable
 			ConstraintAttributeSpec
 			FOR EACH ROW EXECUTE PROCEDURE
 			func_name '(' TriggerFuncArgs ')'
 				{
 					CreateTrigStmt *n = makeNode(CreateTrigStmt);
-					n->trigname = $4;
-					n->relation = $8;
-					n->funcname = $16;
-					n->args = $18;
+					n->trigname = $5;
+					n->relation = $9;
+					n->funcname = $17;
+					n->args = $19;
 					n->before = FALSE;
 					n->row = TRUE;
-					memcpy(n->actions, $6, 4);
+					memcpy(n->actions, $7, 4);
 					n->isconstraint  = TRUE;
-					n->deferrable = ($10 & 1) != 0;
-					n->initdeferred = ($10 & 2) != 0;
+					n->deferrable = ($11 & 1) != 0;
+					n->initdeferred = ($11 & 2) != 0;
 
-					n->constrrel = $9;
+					n->constrrel = $10;
 					$$ = (Node *)n;
 				}
 		;
@@ -2852,21 +2861,21 @@ DropTrigStmt:
 /*****************************************************************************
  *
  *		QUERIES :
- *				CREATE ASSERTION ...
+ *				CREATE [ OR REPLACE ] ASSERTION ...
  *				DROP ASSERTION ...
  *
  *****************************************************************************/
 
 CreateAssertStmt:
-			CREATE ASSERTION name CHECK '(' a_expr ')'
+			CREATE opt_or_replace ASSERTION name CHECK '(' a_expr ')'
 			ConstraintAttributeSpec
 				{
 					CreateTrigStmt *n = makeNode(CreateTrigStmt);
-					n->trigname = $3;
-					n->args = list_make1($6);
+					n->trigname = $4;
+					n->args = list_make1($7);
 					n->isconstraint  = TRUE;
-					n->deferrable = ($8 & 1) != 0;
-					n->initdeferred = ($8 & 2) != 0;
+					n->deferrable = ($9 & 1) != 0;
+					n->initdeferred = ($9 & 2) != 0;
 
 					ereport(ERROR,
 							(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
@@ -2900,133 +2909,137 @@ DropAssertStmt:
  *****************************************************************************/
 
 DefineStmt:
-			CREATE AGGREGATE func_name aggr_args definition
+			CREATE opt_or_replace AGGREGATE func_name aggr_args definition
 				{
 					DefineStmt *n = makeNode(DefineStmt);
 					n->kind = OBJECT_AGGREGATE;
 					n->oldstyle = false;
-					n->defnames = $3;
-					n->args = $4;
-					n->definition = $5;
+					n->defnames = $4;
+					n->args = $5;
+					n->definition = $6;
 					$$ = (Node *)n;
 				}
-			| CREATE AGGREGATE func_name old_aggr_definition
+			| CREATE opt_or_replace AGGREGATE func_name old_aggr_definition
 				{
 					/* old-style (pre-8.2) syntax for CREATE AGGREGATE */
 					DefineStmt *n = makeNode(DefineStmt);
 					n->kind = OBJECT_AGGREGATE;
 					n->oldstyle = true;
-					n->defnames = $3;
+					n->defnames = $4;
 					n->args = NIL;
-					n->definition = $4;
+					n->definition = $5;
 					$$ = (Node *)n;
 				}
-			| CREATE OPERATOR any_operator definition
+			| CREATE opt_or_replace OPERATOR any_operator definition
 				{
 					DefineStmt *n = makeNode(DefineStmt);
 					n->kind = OBJECT_OPERATOR;
 					n->oldstyle = false;
-					n->defnames = $3;
+					n->defnames = $4;
 					n->args = NIL;
-					n->definition = $4;
+					n->definition = $5;
 					$$ = (Node *)n;
 				}
-			| CREATE TYPE_P any_name definition
+			| CREATE opt_or_replace TYPE_P any_name definition
 				{
 					DefineStmt *n = makeNode(DefineStmt);
 					n->kind = OBJECT_TYPE;
 					n->oldstyle = false;
-					n->defnames = $3;
+					n->defnames = $4;
 					n->args = NIL;
-					n->definition = $4;
+					n->definition = $5;
 					$$ = (Node *)n;
+
+					EREPORT_ON_OR_REPLACE($2,"TYPE");
 				}
-			| CREATE TYPE_P any_name
+			| CREATE opt_or_replace TYPE_P any_name
 				{
 					/* Shell type (identified by lack of definition) */
 					DefineStmt *n = makeNode(DefineStmt);
 					n->kind = OBJECT_TYPE;
 					n->oldstyle = false;
-					n->defnames = $3;
+					n->defnames = $4;
 					n->args = NIL;
 					n->definition = NIL;
 					$$ = (Node *)n;
 				}
-			| CREATE TYPE_P any_name AS '(' TableFuncElementList ')'
+			| CREATE opt_or_replace TYPE_P any_name AS '(' TableFuncElementList ')'
 				{
 					CompositeTypeStmt *n = makeNode(CompositeTypeStmt);
 					RangeVar *r = makeNode(RangeVar);
 
 					/* can't use qualified_name, sigh */
-					switch (list_length($3))
+					switch (list_length($4))
 					{
 						case 1:
 							r->catalogname = NULL;
 							r->schemaname = NULL;
-							r->relname = strVal(linitial($3));
+							r->relname = strVal(linitial($4));
 							break;
 						case 2:
 							r->catalogname = NULL;
-							r->schemaname = strVal(linitial($3));
-							r->relname = strVal(lsecond($3));
+							r->schemaname = strVal(linitial($4));
+							r->relname = strVal(lsecond($4));
 							break;
 						case 3:
-							r->catalogname = strVal(linitial($3));
-							r->schemaname = strVal(lsecond($3));
-							r->relname = strVal(lthird($3));
+							r->catalogname = strVal(linitial($4));
+							r->schemaname = strVal(lsecond($4));
+							r->relname = strVal(lthird($4));
 							break;
 						default:
 							ereport(ERROR,
 									(errcode(ERRCODE_SYNTAX_ERROR),
 									 errmsg("improper qualified name (too many dotted names): %s",
-											NameListToString($3))));
+											NameListToString($4))));
 							break;
 					}
 					n->typevar = r;
-					n->coldeflist = $6;
+					n->coldeflist = $7;
 					$$ = (Node *)n;
+
+					EREPORT_ON_OR_REPLACE($2,"TYPE");
 				}
-			| CREATE TYPE_P any_name AS ENUM_P '(' enum_val_list ')'
+			| CREATE opt_or_replace TYPE_P any_name AS ENUM_P '(' enum_val_list ')'
 				{
 					CreateEnumStmt *n = makeNode(CreateEnumStmt);
-					n->typename = $3;
-					n->vals = $7;
+					n->typename = $4;
+					n->vals = $8;
 					$$ = (Node *)n;
 				}
-			| CREATE TEXT_P SEARCH PARSER any_name definition
+			| CREATE opt_or_replace TEXT_P SEARCH PARSER any_name definition
 				{
 					DefineStmt *n = makeNode(DefineStmt);
 					n->kind = OBJECT_TSPARSER;
 					n->args = NIL;
-					n->defnames = $5;
-					n->definition = $6;
+					n->defnames = $6;
+					n->definition = $7;
 					$$ = (Node *)n;
 				}
-			| CREATE TEXT_P SEARCH DICTIONARY any_name definition
+			| CREATE opt_or_replace TEXT_P SEARCH DICTIONARY any_name definition
 				{
 					DefineStmt *n = makeNode(DefineStmt);
 					n->kind = OBJECT_TSDICTIONARY;
 					n->args = NIL;
-					n->defnames = $5;
-					n->definition = $6;
+					n->defnames = $6;
+					n->definition = $7;
 					$$ = (Node *)n;
 				}
-			| CREATE TEXT_P SEARCH TEMPLATE any_name definition
+			| CREATE opt_or_replace TEXT_P SEARCH TEMPLATE any_name definition
 				{
 					DefineStmt *n = makeNode(DefineStmt);
 					n->kind = OBJECT_TSTEMPLATE;
 					n->args = NIL;
-					n->defnames = $5;
-					n->definition = $6;
+					n->defnames = $6;
+					n->definition = $7;
 					$$ = (Node *)n;
 				}
-			| CREATE TEXT_P SEARCH CONFIGURATION any_name definition
+			| CREATE opt_or_replace TEXT_P SEARCH CONFIGURATION any_name definition
 				{
 					DefineStmt *n = makeNode(DefineStmt);
 					n->kind = OBJECT_TSCONFIGURATION;
 					n->args = NIL;
-					n->defnames = $5;
-					n->definition = $6;
+					n->defnames = $6;
+					n->definition = $7;
 					$$ = (Node *)n;
 				}
 		;
@@ -3083,8 +3096,8 @@ enum_val_list:	Sconst
 /*****************************************************************************
  *
  *		QUERIES :
- *				CREATE OPERATOR CLASS ...
- *				CREATE OPERATOR FAMILY ...
+ *				CREATE [ OR REPLACE ] OPERATOR CLASS ...
+ *				CREATE [ OR REPLACE ] OPERATOR FAMILY ...
  *				ALTER OPERATOR FAMILY ...
  *				DROP OPERATOR CLASS ...
  *				DROP OPERATOR FAMILY ...
@@ -3092,16 +3105,16 @@ enum_val_list:	Sconst
  *****************************************************************************/
 
 CreateOpClassStmt:
-			CREATE OPERATOR CLASS any_name opt_default FOR TYPE_P Typename
+			CREATE opt_or_replace OPERATOR CLASS any_name opt_default FOR TYPE_P Typename
 			USING access_method opt_opfamily AS opclass_item_list
 				{
 					CreateOpClassStmt *n = makeNode(CreateOpClassStmt);
-					n->opclassname = $4;
-					n->isDefault = $5;
-					n->datatype = $8;
-					n->amname = $10;
-					n->opfamilyname = $11;
-					n->items = $13;
+					n->opclassname = $5;
+					n->isDefault = $6;
+					n->datatype = $9;
+					n->amname = $11;
+					n->opfamilyname = $12;
+					n->items = $14;
 					$$ = (Node *) n;
 				}
 		;
@@ -3174,11 +3187,11 @@ opt_recheck:	RECHECK						{ $$ = TRUE; }
 
 
 CreateOpFamilyStmt:
-			CREATE OPERATOR FAMILY any_name USING access_method
+			CREATE opt_or_replace OPERATOR FAMILY any_name USING access_method
 				{
 					CreateOpFamilyStmt *n = makeNode(CreateOpFamilyStmt);
-					n->opfamilyname = $4;
-					n->amname = $6;
+					n->opfamilyname = $5;
+					n->amname = $7;
 					$$ = (Node *) n;
 				}
 		;
@@ -3972,7 +3985,7 @@ opt_granted_by: GRANTED BY RoleId						{ $$ = $3; }
 
 /*****************************************************************************
  *
- *		QUERY: CREATE INDEX
+ *		QUERY: CREATE [ OR REPLACE ] INDEX
  *
  * Note: we can't factor CONCURRENTLY into a separate production without
  * making it a reserved word.
@@ -3981,29 +3994,13 @@ opt_granted_by: GRANTED BY RoleId						{ $$ = $3; }
  * willing to make TABLESPACE a fully reserved word.
  *****************************************************************************/
 
-IndexStmt:	CREATE index_opt_unique INDEX index_name
+IndexStmt:	CREATE opt_or_replace index_opt_unique INDEX index_name
 			ON qualified_name access_method_clause '(' index_params ')'
 			opt_definition OptTableSpace where_clause
 				{
 					IndexStmt *n = makeNode(IndexStmt);
-					n->unique = $2;
+					n->unique = $3;
 					n->concurrent = false;
-					n->idxname = $4;
-					n->relation = $6;
-					n->accessMethod = $7;
-					n->indexParams = $9;
-					n->options = $11;
-					n->tableSpace = $12;
-					n->whereClause = $13;
-					$$ = (Node *)n;
-				}
-			| CREATE index_opt_unique INDEX CONCURRENTLY index_name
-			ON qualified_name access_method_clause '(' index_params ')'
-			opt_definition OptTableSpace where_clause
-				{
-					IndexStmt *n = makeNode(IndexStmt);
-					n->unique = $2;
-					n->concurrent = true;
 					n->idxname = $5;
 					n->relation = $7;
 					n->accessMethod = $8;
@@ -4011,6 +4008,22 @@ IndexStmt:	CREATE index_opt_unique INDEX index_name
 					n->options = $12;
 					n->tableSpace = $13;
 					n->whereClause = $14;
+					$$ = (Node *)n;
+				}
+			| CREATE opt_or_replace index_opt_unique INDEX CONCURRENTLY index_name
+			ON qualified_name access_method_clause '(' index_params ')'
+			opt_definition OptTableSpace where_clause
+				{
+					IndexStmt *n = makeNode(IndexStmt);
+					n->unique = $3;
+					n->concurrent = true;
+					n->idxname = $6;
+					n->relation = $8;
+					n->accessMethod = $9;
+					n->indexParams = $11;
+					n->options = $13;
+					n->tableSpace = $14;
+					n->whereClause = $15;
 					$$ = (Node *)n;
 				}
 		;
@@ -4082,11 +4095,11 @@ opt_nulls_order: NULLS_FIRST				{ $$ = SORTBY_NULLS_FIRST; }
 /*****************************************************************************
  *
  *		QUERY:
- *				create [or replace] function <fname>
+ *				CREATE [OR REPLACE] FUNCTION <fname>
  *						[(<type-1> { , <type-n>})]
- *						returns <type-r>
- *						as <filename or code in language as appropriate>
- *						language <lang> [with parameters]
+ *						RETURNS <type-r>
+ *						AS <filename or code in language as appropriate>
+ *						LANGUAGE <lang> [with parameters]
  *
  *****************************************************************************/
 
@@ -4458,28 +4471,28 @@ any_operator:
 
 /*****************************************************************************
  *
- *		CREATE CAST / DROP CAST
+ *		CREATE [OR REPLACE] CAST / DROP CAST
  *
  *****************************************************************************/
 
-CreateCastStmt: CREATE CAST '(' Typename AS Typename ')'
+CreateCastStmt: CREATE opt_or_replace CAST '(' Typename AS Typename ')'
 					WITH FUNCTION function_with_argtypes cast_context
 				{
 					CreateCastStmt *n = makeNode(CreateCastStmt);
-					n->sourcetype = $4;
-					n->targettype = $6;
-					n->func = $10;
-					n->context = (CoercionContext) $11;
+					n->sourcetype = $5;
+					n->targettype = $7;
+					n->func = $11;
+					n->context = (CoercionContext) $12;
 					$$ = (Node *)n;
 				}
-			| CREATE CAST '(' Typename AS Typename ')'
+			| CREATE opt_or_replace CAST '(' Typename AS Typename ')'
 					WITHOUT FUNCTION cast_context
 				{
 					CreateCastStmt *n = makeNode(CreateCastStmt);
-					n->sourcetype = $4;
-					n->targettype = $6;
+					n->sourcetype = $5;
+					n->targettype = $7;
 					n->func = NULL;
-					n->context = (CoercionContext) $10;
+					n->context = (CoercionContext) $11;
 					$$ = (Node *)n;
 				}
 		;
@@ -5240,29 +5253,17 @@ transaction_mode_list_or_empty:
  *
  *****************************************************************************/
 
-ViewStmt: CREATE OptTemp VIEW qualified_name opt_column_list
+ViewStmt: CREATE opt_or_replace OptTemp VIEW qualified_name opt_column_list
 				AS SelectStmt opt_check_option
 				{
 					ViewStmt *n = makeNode(ViewStmt);
-					n->view = $4;
-					n->view->istemp = $2;
-					n->aliases = $5;
-					n->query = $7;
-					n->replace = false;
+					n->view = $5;
+					n->view->istemp = $3;
+					n->aliases = $6;
+					n->query = $8;
+					n->replace = $2;
 					$$ = (Node *) n;
 				}
-		| CREATE OR REPLACE OptTemp VIEW qualified_name opt_column_list
-				AS SelectStmt opt_check_option
-				{
-					ViewStmt *n = makeNode(ViewStmt);
-					n->view = $6;
-					n->view->istemp = $4;
-					n->aliases = $7;
-					n->query = $9;
-					n->replace = true;
-					$$ = (Node *) n;
-				}
-		;
 
 /*
  * We use merged tokens here to avoid creating shift/reduce conflicts against
@@ -5308,16 +5309,16 @@ LoadStmt:	LOAD file_name
 
 /*****************************************************************************
  *
- *		CREATE DATABASE
+ *		CREATE [OR REPLACE] DATABASE
  *
  *****************************************************************************/
 
 CreatedbStmt:
-			CREATE DATABASE database_name opt_with createdb_opt_list
+			CREATE opt_or_replace DATABASE database_name opt_with createdb_opt_list
 				{
 					CreatedbStmt *n = makeNode(CreatedbStmt);
-					n->dbname = $3;
-					n->options = $5;
+					n->dbname = $4;
+					n->options = $6;
 					$$ = (Node *)n;
 				}
 		;
@@ -5458,12 +5459,12 @@ DropdbStmt: DROP DATABASE database_name
  *****************************************************************************/
 
 CreateDomainStmt:
-			CREATE DOMAIN_P any_name opt_as Typename ColQualList
+			CREATE opt_or_replace DOMAIN_P any_name opt_as Typename ColQualList
 				{
 					CreateDomainStmt *n = makeNode(CreateDomainStmt);
-					n->domainname = $3;
-					n->typename = $5;
-					n->constraints = $6;
+					n->domainname = $4;
+					n->typename = $6;
+					n->constraints = $7;
 					$$ = (Node *)n;
 				}
 		;
@@ -5600,21 +5601,21 @@ AlterTSConfigurationStmt:
  *
  * Manipulate a conversion
  *
- *		CREATE [DEFAULT] CONVERSION <conversion_name>
+ *		CREATE [OR REPLACE] [DEFAULT] CONVERSION <conversion_name>
  *		FOR <encoding_name> TO <encoding_name> FROM <func_name>
  *
  *****************************************************************************/
 
 CreateConversionStmt:
-			CREATE opt_default CONVERSION_P any_name FOR Sconst
+			CREATE opt_or_replace opt_default CONVERSION_P any_name FOR Sconst
 			TO Sconst FROM any_name
 			{
 			  CreateConversionStmt *n = makeNode(CreateConversionStmt);
-			  n->conversion_name = $4;
-			  n->for_encoding_name = $6;
-			  n->to_encoding_name = $8;
-			  n->func_name = $10;
-			  n->def = $2;
+			  n->conversion_name = $5;
+			  n->for_encoding_name = $7;
+			  n->to_encoding_name = $9;
+			  n->func_name = $11;
+			  n->def = $3;
 			  $$ = (Node *)n;
 			}
 		;
@@ -5815,7 +5816,7 @@ PreparableStmt:
 /*****************************************************************************
  *
  * EXECUTE <plan_name> [(params, ...)]
- * CREATE TABLE <name> AS EXECUTE <plan_name> [(params, ...)]
+ * CREATE [OR REPLACE] TABLE <name> AS EXECUTE <plan_name> [(params, ...)]
  *
  *****************************************************************************/
 
@@ -5827,15 +5828,15 @@ ExecuteStmt: EXECUTE name execute_param_clause
 					n->into = NULL;
 					$$ = (Node *) n;
 				}
-			| CREATE OptTemp TABLE create_as_target AS
+			| CREATE opt_or_replace OptTemp TABLE create_as_target AS
 				EXECUTE name execute_param_clause
 				{
 					ExecuteStmt *n = makeNode(ExecuteStmt);
-					n->name = $7;
-					n->params = $8;
-					$4->rel->istemp = $2;
-					n->into = $4;
-					if ($4->colNames)
+					n->name = $8;
+					n->params = $9;
+					$5->rel->istemp = $3;
+					n->into = $5;
+					if ($5->colNames)
 						ereport(ERROR,
 								(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
 								 errmsg("column name list not allowed in CREATE TABLE / AS EXECUTE")));

@@ -1,5 +1,0 @@
-/.cvsignore////*///
-/Makefile////*///
-/bootparse.y////*///
-/bootscanner.l////*///
-/bootstrap.c////*///

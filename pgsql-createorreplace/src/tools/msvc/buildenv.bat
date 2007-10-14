@@ -1,1 +1,0 @@
-SET DOCROOT=c:\docbook

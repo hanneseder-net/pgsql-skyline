@@ -1,9 +1,0 @@
-/Makefile////*///
-/autovacuum.c////*///
-/bgwriter.c////*///
-/fork_process.c////*///
-/pgarch.c////*///
-/pgstat.c////*///
-/postmaster.c////*///
-/syslogger.c////*///
-/walwriter.c////*///

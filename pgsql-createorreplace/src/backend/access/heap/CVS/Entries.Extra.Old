@@ -1,8 +1,0 @@
-/Makefile////*///
-/README.HOT////*///
-/heapam.c////*///
-/hio.c////*///
-/pruneheap.c////*///
-/rewriteheap.c////*///
-/syncscan.c////*///
-/tuptoaster.c////*///

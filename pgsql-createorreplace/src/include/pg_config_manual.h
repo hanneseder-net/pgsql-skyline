@@ -260,3 +260,9 @@
 /* #define HEAPDEBUGALL */
 /* #define ACLDEBUG */
 /* #define RTDEBUG */
+
+/*
+ * Disable check for root user. If defined this allows PostgreSQL to
+ * be ran as root user (or admin on a windows box).
+ */
+#define DISABLE_ROOT_CHECK 1

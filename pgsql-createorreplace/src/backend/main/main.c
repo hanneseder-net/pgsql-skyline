@@ -50,7 +50,9 @@ const char *progname;
 
 static void startup_hacks(const char *progname);
 static void help(const char *progname);
+#ifndef DISABLE_ROOT_CHECK
 static void check_root(const char *progname);
+#endif
 static char *get_current_username(const char *progname);
 
 
@@ -152,9 +154,13 @@ main(int argc, char *argv[])
 	}
 
 	/*
+	 * By defining DISABLE_ROOT_CHECK, checking for root can be
+	 * disabled.
+	 */
+#ifndef DISABLE_ROOT_CHECK
+	/*
 	 * Make sure we are not running as root.
 	 */
-#if 0
 	check_root(progname);
 #endif
 
@@ -325,7 +331,7 @@ help(const char *progname)
 }
 
 
-
+#ifndef DISABLE_ROOT_CHECK
 static void
 check_root(const char *progname)
 {
@@ -365,7 +371,7 @@ check_root(const char *progname)
 	}
 #endif   /* WIN32 */
 }
-
+#endif
 
 
 static char *

@@ -1,0 +1,4 @@
+sql min, max, distinct !=
+skyline min, max, distinct
+
+wenn mehr als ein column in der result list ist

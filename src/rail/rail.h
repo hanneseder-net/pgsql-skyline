@@ -50,14 +50,6 @@ typedef struct rule {
 	struct rule *next;
 } RULETYPE;
 
-typedef union {
-	IDTYPE *id;	/* identifier */
-	int num;	/* number */
-	char *text;	/* text */
-	BODYTYPE *body;	/* body */
-	RULETYPE *rule;	/* rule */
-} YYSTYPE;
-
 extern unsigned line;
 extern int copy;
 

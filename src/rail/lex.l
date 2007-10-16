@@ -58,33 +58,33 @@ extern YYSTYPE yylval;
 		return(CS);
 }
 
-\\[^ \n\t] {
+\\[^ \n\r\t] {
 		COPY;
 		return(CS);
 }
 
-'[^\n\t']*' {
+'[^\n\r\t']*' {
 		COPY;
 		yytext[yyleng-1]='\0';
 		yylval.text=mcheck(strdup(yytext+1));
 		return(STRING);
 }
 
-\[[^\n\t\]]*\] {
+\[[^\n\r\t\]]*\] {
 		COPY;
 		yytext[yyleng-1]='\0';
 		yylval.text=mcheck(strdup(yytext+1));
 		return(ANNOT);
 }
 
-\"[^\n\t\"]*\" {
+\"[^\n\r\t\"]*\" {
 		COPY;
 		yytext[yyleng-1]='\0';
 		yylval.text=mcheck(strdup(yytext+1));
 		return(STRING);
 }
 
-[ \t]+ {
+[ \r\t]+ {
 		COPY;
 }
 

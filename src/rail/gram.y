@@ -40,6 +40,14 @@ char optchar;
 
 %type <text> annot
 
+%union {
+	IDTYPE *id;	/* identifier */
+	int num;	/* number */
+	char *text;	/* text */
+	BODYTYPE *body;	/* body */
+	RULETYPE *rule;	/* rule */
+};
+
 %start rails
 
 %%

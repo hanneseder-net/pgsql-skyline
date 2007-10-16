@@ -6,6 +6,8 @@ D/btree_gist///////
 D/chkpass///////
 D/cube///////
 D/dblink///////
+D/dict_int///////
+D/dict_xsyn///////
 D/earthdistance///////
 D/fuzzystrmatch///////
 D/hstore///////
@@ -29,6 +31,7 @@ D/spi///////
 D/sslinfo///////
 D/start-scripts///////
 D/tablefunc///////
+D/test_parser///////
 D/tsearch2///////
 D/txid///////
 D/uuid-ossp///////

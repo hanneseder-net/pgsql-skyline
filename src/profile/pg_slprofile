@@ -2,11 +2,30 @@
 # -*- Perl -*-
 
 use FileHandle;
+use Getopt::Long;
 
 $program = "c:/pgsql/bin/psql";
 $args = "";
 
-$runid = "1";
+my $runid = "1";
+my $dim = 2;
+my $maxdim = 15;
+my $method = "bnl";
+my $windowslots = undef;
+my $dist = "indep";
+my $rows = 1000;
+my $seed = 0;
+
+$result = GetOptions("runid=s" => \$runid,
+		     "dim|d=i" => \$dim,
+		     "maxdim|md=i" => \$maxdim,
+		     "method|m=s" => \$method,
+		     "slots=i" => \$windowslots,
+		     "dist=s" => \$dist,
+		     "rows|vectors|n=i" => \$rows,
+		     "seed|s=i" => \$seed);
+
+# TODO: check $result
 
 sub plog {
   my $name = shift;
@@ -26,9 +45,15 @@ sub plog_cost {
   plog($name . ".total", $total);
 }
 
-$query = "select * from a3d10000 skyline by (d1), (d2) max, (d3) with sfs window=1";
-$sql = "explain analyze $query;";
 
+@skydim = ();
+for ($i=1; $i<=$dim; ++$i)
+{
+    push @skydim, "d${i} min";
+}
+
+$query = "select * from rds${maxdim}d('${dist}', ${rows}, ${seed}) skyline by " . join(", ", @skydim) . " with ${method}" . (defined($windowslots) ? " slots=${windowslots}" : "");
+$sql = "explain analyze $query;";
 
 $res = `$program $args 2>&1 <<EOF
 $sql
@@ -59,7 +84,7 @@ if ($res =~ m/Skyline\s*\(cost=([0-9.]+\.\.[0-9.]+)\s+rows=([0-9]+)\s+width=([0-
 }
     
 
-if ($res =~ m/Skyline Stats: passes=(\d+)(\s+window=(\d+)k)?(\s+slots=(\d))?(\s+rows=(\d+(, \d+)*))?/m) {
+if ($res =~ m/Skyline Stats: passes=(\d+)(\s+window=(\d+)k)?(\s+slots=(\d+))?(\s+rows=(\d+(, \d+)*))?/m) {
   plog("skyline.passes", $1);
   plog("skyline.window", $3) if ($2 ne "");
   plog("skyline.slots", $5) if ($4 ne "");
@@ -105,6 +130,17 @@ if ($res =~ m/Index Scan using ([^ ]+) on ([^ ]+)\s*\(cost=([0-9.]+\.\.[0-9.]+)\
   plog_cost("idxscan.cost", $6);
   plog("idxscan.rows", $7);
 }
+
+#   ->  Function Scan on rds15d  (cost=0.00..260.00 rows=1000 width=124) (actual time=760.596..802.940 rows=100000 loops=1)
+if ($res =~ m/Function Scan on ([^ ]+)\s*\(cost=([0-9.]+\.\.[0-9.]+)\s+rows=([0-9]+)\s+width=([0-9]+)\)\s+\(actual time=([0-9.]+\.\.[0-9.]+)\s+rows=([0-9]+)\s+loops=([0-9]+)\)/m) {
+
+  plog("funcscan.on", $1);
+  plog("funcscan.width", $4);
+  plog_cost("funcscan.cost", $5);
+  plog("funcscan.rows", $6);
+}
+
+
 
 if ($res =~ m/Total runtime: ([0-9.]+) ms/m) {
   plog("total", $1);

@@ -7,7 +7,7 @@
 /comment.c/1.97/Wed Sep  5 06:36:57 2007//
 /conversioncmds.c/1.31/Wed Feb 14 01:58:56 2007//
 /copy.c/1.287/Fri Sep 14 18:55:55 2007//
-/dbcommands.c/1.199/Sun Sep 30 10:29:52 2007//
+/dbcommands.c/1.201/Tue Oct 16 08:26:41 2007//
 /define.c/1.100/Fri Jan  5 22:19:26 2007//
 /discard.c/1.1/Thu Apr 26 16:13:10 2007//
 /explain.c/1.165/Fri Aug 17 09:40:54 2007//
@@ -21,7 +21,7 @@
 /proclang.c/1.73/Wed Sep  5 06:36:57 2007//
 /schemacmds.c/1.46/Mon Jun 25 20:20:07 2007//
 /sequence.c/1.146/Fri Sep 21 18:07:24 2007//
-/tablecmds.c/1.233/Sun Sep 30 10:29:52 2007//
+/tablecmds.c/1.234/Tue Oct 16 08:26:41 2007//
 /tablespace.c/1.49/Mon Aug  6 09:10:17 2007//
 /trigger.c/1.219/Fri Sep 14 18:55:56 2007//
 /tsearchcmds.c/1.5/Wed Aug 22 22:30:20 2007//

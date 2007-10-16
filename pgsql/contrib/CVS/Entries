@@ -1,11 +1,13 @@
-/Makefile/1.79/Tue Oct  9 17:24:53 2007//
-/README/1.93/Sat May 19 08:05:54 2007//
+/Makefile/1.81/Tue Oct 16 08:26:36 2007//
+/README/1.94/Tue Oct 16 08:26:36 2007//
 /contrib-global.mk/1.10/Tue Sep 27 17:43:31 2005//
 D/adminpack////
 D/btree_gist////
 D/chkpass////
 D/cube////
 D/dblink////
+D/dict_int////
+D/dict_xsyn////
 D/earthdistance////
 D/fuzzystrmatch////
 D/hstore////
@@ -29,6 +31,7 @@ D/spi////
 D/sslinfo////
 D/start-scripts////
 D/tablefunc////
+D/test_parser////
 D/tsearch2////
 D/txid////
 D/uuid-ossp////

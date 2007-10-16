@@ -1,9 +1,9 @@
-/Makefile/1.67/Fri Sep 14 18:56:00 2007//
+/Makefile/1.68/Tue Oct 16 08:26:43 2007//
 /acl.c/1.138/Tue Feb 27 23:48:07 2007//
 /array_userfuncs.c/1.22/Tue Feb 27 23:48:07 2007//
 /arrayfuncs.c/1.139/Fri Apr  6 04:21:42 2007//
 /arrayutils.c/1.24/Sat Jun 23 07:56:17 2007//
-/ascii.c/1.30/Fri Jan  5 22:19:40 2007//
+/ascii.c/1.31/Tue Oct 16 08:26:43 2007//
 /bool.c/1.40/Wed Jun  6 16:05:51 2007//
 /cash.c/1.73/Wed Sep  5 06:37:06 2007//
 /char.c/1.47/Tue Feb 27 23:48:07 2007//
@@ -45,7 +45,7 @@
 /regproc.c/1.103/Wed Sep  5 06:37:06 2007//
 /ri_triggers.c/1.97/Fri Sep 14 18:56:01 2007//
 /rowtypes.c/1.19/Sat Mar  3 19:32:55 2007//
-/ruleutils.c/1.263/Wed Aug  1 09:00:54 2007//
+/ruleutils.c/1.264/Tue Oct 16 08:26:43 2007//
 /selfuncs.c/1.236/Wed Sep  5 06:37:07 2007//
 /tid.c/1.58/Wed Sep  5 06:37:07 2007//
 /timestamp.c/1.182/Wed Sep 19 17:57:19 2007//
@@ -61,11 +61,12 @@
 /tsvector.c/1.4/Fri Sep 14 18:56:02 2007//
 /tsvector_op.c/1.5/Fri Sep 14 18:56:02 2007//
 /tsvector_parser.c/1.1/Fri Sep  7 15:09:56 2007//
+/txid.c/1.1/Sat Oct 13 23:06:26 2007//
 /uuid.c/1.4/Wed Jun  6 16:05:51 2007//
 /varbit.c/1.55/Wed Sep  5 06:37:07 2007//
 /varchar.c/1.124/Sat Jun 23 07:56:17 2007//
 /varlena.c/1.159/Sun Sep 23 18:27:50 2007//
 /version.c/1.15/Tue Feb 27 23:48:09 2007//
 /xid.c/1.10/Fri Jan  5 22:19:42 2007//
-/xml.c/1.47/Mon Sep 24 20:20:28 2007//
+/xml.c/1.49/Tue Oct 16 08:26:43 2007//
 D

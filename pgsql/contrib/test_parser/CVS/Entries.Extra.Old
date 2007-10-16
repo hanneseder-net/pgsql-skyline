@@ -1,0 +1,5 @@
+/Makefile////*///
+/README.test_parser////*///
+/test_parser.c////*///
+/test_parser.sql.in////*///
+/uninstall_test_parser.sql////*///

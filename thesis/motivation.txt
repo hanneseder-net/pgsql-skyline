@@ -1,0 +1,14 @@
+example of skyline
+
+when travelling by plan: time vs. costs
+
+TODO: more dim: #stops, total dist
+travel by bus: #of visited cities
+
+it is shown on some website. which?
+
+Credit To: Ali (room mate)
+
+
+employee (salary, revenue, years in the company)
+

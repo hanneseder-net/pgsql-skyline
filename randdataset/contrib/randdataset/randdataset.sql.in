@@ -1,0 +1,360 @@
+/* ***********************************************
+ * Random Dataset generator functions for PostgreSQL 
+ * *********************************************** */
+
+CREATE OR REPLACE FUNCTION pg_catalog.pg_rand_dataset(disttype text, dim int, rows int, seed int) RETURNS setof record
+   AS 'MODULE_PATHNAME', 'pg_rand_dataset'
+	LANGUAGE C IMMUTABLE STRICT;
+
+/*
+ * the code below was generated using createwrapper.pl
+ */
+
+/*
+ * drop all wrapper functions and data types
+ */
+DROP FUNCTION IF EXISTS rds1d(text,int,int);
+DROP TYPE IF EXISTS rand_dataset_1d;
+
+DROP FUNCTION IF EXISTS rds2d(text,int,int);
+DROP TYPE IF EXISTS rand_dataset_2d;
+
+DROP FUNCTION IF EXISTS rds3d(text,int,int);
+DROP TYPE IF EXISTS rand_dataset_3d;
+
+DROP FUNCTION IF EXISTS rds4d(text,int,int);
+DROP TYPE IF EXISTS rand_dataset_4d;
+
+DROP FUNCTION IF EXISTS rds5d(text,int,int);
+DROP TYPE IF EXISTS rand_dataset_5d;
+
+DROP FUNCTION IF EXISTS rds6d(text,int,int);
+DROP TYPE IF EXISTS rand_dataset_6d;
+
+DROP FUNCTION IF EXISTS rds7d(text,int,int);
+DROP TYPE IF EXISTS rand_dataset_7d;
+
+DROP FUNCTION IF EXISTS rds8d(text,int,int);
+DROP TYPE IF EXISTS rand_dataset_8d;
+
+DROP FUNCTION IF EXISTS rds9d(text,int,int);
+DROP TYPE IF EXISTS rand_dataset_9d;
+
+DROP FUNCTION IF EXISTS rds10d(text,int,int);
+DROP TYPE IF EXISTS rand_dataset_10d;
+
+DROP FUNCTION IF EXISTS rds11d(text,int,int);
+DROP TYPE IF EXISTS rand_dataset_11d;
+
+DROP FUNCTION IF EXISTS rds12d(text,int,int);
+DROP TYPE IF EXISTS rand_dataset_12d;
+
+DROP FUNCTION IF EXISTS rds13d(text,int,int);
+DROP TYPE IF EXISTS rand_dataset_13d;
+
+DROP FUNCTION IF EXISTS rds14d(text,int,int);
+DROP TYPE IF EXISTS rand_dataset_14d;
+
+DROP FUNCTION IF EXISTS rds15d(text,int,int);
+DROP TYPE IF EXISTS rand_dataset_15d;
+
+DROP FUNCTION IF EXISTS rds16d(text,int,int);
+DROP TYPE IF EXISTS rand_dataset_16d;
+
+DROP FUNCTION IF EXISTS rds17d(text,int,int);
+DROP TYPE IF EXISTS rand_dataset_17d;
+
+DROP FUNCTION IF EXISTS rds18d(text,int,int);
+DROP TYPE IF EXISTS rand_dataset_18d;
+
+DROP FUNCTION IF EXISTS rds19d(text,int,int);
+DROP TYPE IF EXISTS rand_dataset_19d;
+
+DROP FUNCTION IF EXISTS rds20d(text,int,int);
+DROP TYPE IF EXISTS rand_dataset_20d;
+
+/*
+ * data types for wrapper functions
+ */
+CREATE TYPE rand_dataset_1d AS
+	(id int, d1 float);
+
+CREATE TYPE rand_dataset_2d AS
+	(id int, d1 float, d2 float);
+
+CREATE TYPE rand_dataset_3d AS
+	(id int, d1 float, d2 float, d3 float);
+
+CREATE TYPE rand_dataset_4d AS
+	(id int, d1 float, d2 float, d3 float, d4 float);
+
+CREATE TYPE rand_dataset_5d AS
+	(id int, d1 float, d2 float, d3 float, d4 float, d5 float);
+
+CREATE TYPE rand_dataset_6d AS
+	(id int, d1 float, d2 float, d3 float, d4 float, d5 float,
+	 d6 float);
+
+CREATE TYPE rand_dataset_7d AS
+	(id int, d1 float, d2 float, d3 float, d4 float, d5 float,
+	 d6 float, d7 float);
+
+CREATE TYPE rand_dataset_8d AS
+	(id int, d1 float, d2 float, d3 float, d4 float, d5 float,
+	 d6 float, d7 float, d8 float);
+
+CREATE TYPE rand_dataset_9d AS
+	(id int, d1 float, d2 float, d3 float, d4 float, d5 float,
+	 d6 float, d7 float, d8 float, d9 float);
+
+CREATE TYPE rand_dataset_10d AS
+	(id int, d1 float, d2 float, d3 float, d4 float, d5 float,
+	 d6 float, d7 float, d8 float, d9 float, d10 float);
+
+CREATE TYPE rand_dataset_11d AS
+	(id int, d1 float, d2 float, d3 float, d4 float, d5 float,
+	 d6 float, d7 float, d8 float, d9 float, d10 float,
+	 d11 float);
+
+CREATE TYPE rand_dataset_12d AS
+	(id int, d1 float, d2 float, d3 float, d4 float, d5 float,
+	 d6 float, d7 float, d8 float, d9 float, d10 float,
+	 d11 float, d12 float);
+
+CREATE TYPE rand_dataset_13d AS
+	(id int, d1 float, d2 float, d3 float, d4 float, d5 float,
+	 d6 float, d7 float, d8 float, d9 float, d10 float,
+	 d11 float, d12 float, d13 float);
+
+CREATE TYPE rand_dataset_14d AS
+	(id int, d1 float, d2 float, d3 float, d4 float, d5 float,
+	 d6 float, d7 float, d8 float, d9 float, d10 float,
+	 d11 float, d12 float, d13 float, d14 float);
+
+CREATE TYPE rand_dataset_15d AS
+	(id int, d1 float, d2 float, d3 float, d4 float, d5 float,
+	 d6 float, d7 float, d8 float, d9 float, d10 float,
+	 d11 float, d12 float, d13 float, d14 float, d15 float);
+
+CREATE TYPE rand_dataset_16d AS
+	(id int, d1 float, d2 float, d3 float, d4 float, d5 float,
+	 d6 float, d7 float, d8 float, d9 float, d10 float,
+	 d11 float, d12 float, d13 float, d14 float, d15 float,
+	 d16 float);
+
+CREATE TYPE rand_dataset_17d AS
+	(id int, d1 float, d2 float, d3 float, d4 float, d5 float,
+	 d6 float, d7 float, d8 float, d9 float, d10 float,
+	 d11 float, d12 float, d13 float, d14 float, d15 float,
+	 d16 float, d17 float);
+
+CREATE TYPE rand_dataset_18d AS
+	(id int, d1 float, d2 float, d3 float, d4 float, d5 float,
+	 d6 float, d7 float, d8 float, d9 float, d10 float,
+	 d11 float, d12 float, d13 float, d14 float, d15 float,
+	 d16 float, d17 float, d18 float);
+
+CREATE TYPE rand_dataset_19d AS
+	(id int, d1 float, d2 float, d3 float, d4 float, d5 float,
+	 d6 float, d7 float, d8 float, d9 float, d10 float,
+	 d11 float, d12 float, d13 float, d14 float, d15 float,
+	 d16 float, d17 float, d18 float, d19 float);
+
+CREATE TYPE rand_dataset_20d AS
+	(id int, d1 float, d2 float, d3 float, d4 float, d5 float,
+	 d6 float, d7 float, d8 float, d9 float, d10 float,
+	 d11 float, d12 float, d13 float, d14 float, d15 float,
+	 d16 float, d17 float, d18 float, d19 float, d20 float);
+
+/*
+ * wrapper functions for convenience
+ */
+CREATE OR REPLACE FUNCTION rds1d(disttype text, rows int, seed int)
+	RETURNS setof rand_dataset_1d
+	AS $$
+	SELECT *
+	FROM pg_catalog.pg_rand_dataset($1, 1, $2, $3) AS
+	rds(id int, d1 float)
+	$$ LANGUAGE SQL IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION rds2d(disttype text, rows int, seed int)
+	RETURNS setof rand_dataset_2d
+	AS $$
+	SELECT *
+	FROM pg_catalog.pg_rand_dataset($1, 2, $2, $3) AS
+	rds(id int, d1 float, d2 float)
+	$$ LANGUAGE SQL IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION rds3d(disttype text, rows int, seed int)
+	RETURNS setof rand_dataset_3d
+	AS $$
+	SELECT *
+	FROM pg_catalog.pg_rand_dataset($1, 3, $2, $3) AS
+	rds(id int, d1 float, d2 float, d3 float)
+	$$ LANGUAGE SQL IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION rds4d(disttype text, rows int, seed int)
+	RETURNS setof rand_dataset_4d
+	AS $$
+	SELECT *
+	FROM pg_catalog.pg_rand_dataset($1, 4, $2, $3) AS
+	rds(id int, d1 float, d2 float, d3 float, d4 float)
+	$$ LANGUAGE SQL IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION rds5d(disttype text, rows int, seed int)
+	RETURNS setof rand_dataset_5d
+	AS $$
+	SELECT *
+	FROM pg_catalog.pg_rand_dataset($1, 5, $2, $3) AS
+	rds(id int, d1 float, d2 float, d3 float, d4 float, d5 float)
+	$$ LANGUAGE SQL IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION rds6d(disttype text, rows int, seed int)
+	RETURNS setof rand_dataset_6d
+	AS $$
+	SELECT *
+	FROM pg_catalog.pg_rand_dataset($1, 6, $2, $3) AS
+	rds(id int, d1 float, d2 float, d3 float, d4 float, d5 float,
+	    d6 float)
+	$$ LANGUAGE SQL IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION rds7d(disttype text, rows int, seed int)
+	RETURNS setof rand_dataset_7d
+	AS $$
+	SELECT *
+	FROM pg_catalog.pg_rand_dataset($1, 7, $2, $3) AS
+	rds(id int, d1 float, d2 float, d3 float, d4 float, d5 float,
+	    d6 float, d7 float)
+	$$ LANGUAGE SQL IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION rds8d(disttype text, rows int, seed int)
+	RETURNS setof rand_dataset_8d
+	AS $$
+	SELECT *
+	FROM pg_catalog.pg_rand_dataset($1, 8, $2, $3) AS
+	rds(id int, d1 float, d2 float, d3 float, d4 float, d5 float,
+	    d6 float, d7 float, d8 float)
+	$$ LANGUAGE SQL IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION rds9d(disttype text, rows int, seed int)
+	RETURNS setof rand_dataset_9d
+	AS $$
+	SELECT *
+	FROM pg_catalog.pg_rand_dataset($1, 9, $2, $3) AS
+	rds(id int, d1 float, d2 float, d3 float, d4 float, d5 float,
+	    d6 float, d7 float, d8 float, d9 float)
+	$$ LANGUAGE SQL IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION rds10d(disttype text, rows int, seed int)
+	RETURNS setof rand_dataset_10d
+	AS $$
+	SELECT *
+	FROM pg_catalog.pg_rand_dataset($1, 10, $2, $3) AS
+	rds(id int, d1 float, d2 float, d3 float, d4 float, d5 float,
+	    d6 float, d7 float, d8 float, d9 float, d10 float)
+	$$ LANGUAGE SQL IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION rds11d(disttype text, rows int, seed int)
+	RETURNS setof rand_dataset_11d
+	AS $$
+	SELECT *
+	FROM pg_catalog.pg_rand_dataset($1, 11, $2, $3) AS
+	rds(id int, d1 float, d2 float, d3 float, d4 float, d5 float,
+	    d6 float, d7 float, d8 float, d9 float, d10 float,
+	    d11 float)
+	$$ LANGUAGE SQL IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION rds12d(disttype text, rows int, seed int)
+	RETURNS setof rand_dataset_12d
+	AS $$
+	SELECT *
+	FROM pg_catalog.pg_rand_dataset($1, 12, $2, $3) AS
+	rds(id int, d1 float, d2 float, d3 float, d4 float, d5 float,
+	    d6 float, d7 float, d8 float, d9 float, d10 float,
+	    d11 float, d12 float)
+	$$ LANGUAGE SQL IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION rds13d(disttype text, rows int, seed int)
+	RETURNS setof rand_dataset_13d
+	AS $$
+	SELECT *
+	FROM pg_catalog.pg_rand_dataset($1, 13, $2, $3) AS
+	rds(id int, d1 float, d2 float, d3 float, d4 float, d5 float,
+	    d6 float, d7 float, d8 float, d9 float, d10 float,
+	    d11 float, d12 float, d13 float)
+	$$ LANGUAGE SQL IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION rds14d(disttype text, rows int, seed int)
+	RETURNS setof rand_dataset_14d
+	AS $$
+	SELECT *
+	FROM pg_catalog.pg_rand_dataset($1, 14, $2, $3) AS
+	rds(id int, d1 float, d2 float, d3 float, d4 float, d5 float,
+	    d6 float, d7 float, d8 float, d9 float, d10 float,
+	    d11 float, d12 float, d13 float, d14 float)
+	$$ LANGUAGE SQL IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION rds15d(disttype text, rows int, seed int)
+	RETURNS setof rand_dataset_15d
+	AS $$
+	SELECT *
+	FROM pg_catalog.pg_rand_dataset($1, 15, $2, $3) AS
+	rds(id int, d1 float, d2 float, d3 float, d4 float, d5 float,
+	    d6 float, d7 float, d8 float, d9 float, d10 float,
+	    d11 float, d12 float, d13 float, d14 float, d15 float)
+	$$ LANGUAGE SQL IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION rds16d(disttype text, rows int, seed int)
+	RETURNS setof rand_dataset_16d
+	AS $$
+	SELECT *
+	FROM pg_catalog.pg_rand_dataset($1, 16, $2, $3) AS
+	rds(id int, d1 float, d2 float, d3 float, d4 float, d5 float,
+	    d6 float, d7 float, d8 float, d9 float, d10 float,
+	    d11 float, d12 float, d13 float, d14 float, d15 float,
+	    d16 float)
+	$$ LANGUAGE SQL IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION rds17d(disttype text, rows int, seed int)
+	RETURNS setof rand_dataset_17d
+	AS $$
+	SELECT *
+	FROM pg_catalog.pg_rand_dataset($1, 17, $2, $3) AS
+	rds(id int, d1 float, d2 float, d3 float, d4 float, d5 float,
+	    d6 float, d7 float, d8 float, d9 float, d10 float,
+	    d11 float, d12 float, d13 float, d14 float, d15 float,
+	    d16 float, d17 float)
+	$$ LANGUAGE SQL IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION rds18d(disttype text, rows int, seed int)
+	RETURNS setof rand_dataset_18d
+	AS $$
+	SELECT *
+	FROM pg_catalog.pg_rand_dataset($1, 18, $2, $3) AS
+	rds(id int, d1 float, d2 float, d3 float, d4 float, d5 float,
+	    d6 float, d7 float, d8 float, d9 float, d10 float,
+	    d11 float, d12 float, d13 float, d14 float, d15 float,
+	    d16 float, d17 float, d18 float)
+	$$ LANGUAGE SQL IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION rds19d(disttype text, rows int, seed int)
+	RETURNS setof rand_dataset_19d
+	AS $$
+	SELECT *
+	FROM pg_catalog.pg_rand_dataset($1, 19, $2, $3) AS
+	rds(id int, d1 float, d2 float, d3 float, d4 float, d5 float,
+	    d6 float, d7 float, d8 float, d9 float, d10 float,
+	    d11 float, d12 float, d13 float, d14 float, d15 float,
+	    d16 float, d17 float, d18 float, d19 float)
+	$$ LANGUAGE SQL IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION rds20d(disttype text, rows int, seed int)
+	RETURNS setof rand_dataset_20d
+	AS $$
+	SELECT *
+	FROM pg_catalog.pg_rand_dataset($1, 20, $2, $3) AS
+	rds(id int, d1 float, d2 float, d3 float, d4 float, d5 float,
+	    d6 float, d7 float, d8 float, d9 float, d10 float,
+	    d11 float, d12 float, d13 float, d14 float, d15 float,
+	    d16 float, d17 float, d18 float, d19 float, d20 float)
+	$$ LANGUAGE SQL IMMUTABLE STRICT;

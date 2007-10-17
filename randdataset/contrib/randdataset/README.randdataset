@@ -1,0 +1,43 @@
+PostgreSQL Random Dataset Generator Functions
+=============================================
+
+This directory is a PostgreSQL 'contrib' module which implements a random
+dataset generator as the one use in [Borzsonyi2001]. It's primary aim is
+the be used for the evaluation of SKYLINE query processing.
+
+Installation
+============
+
+This module is normally distributed as a PostgreSQL 'contrib' module. To
+install it from a pre-configured source tree run the following commands
+as a user with appropriate privileges from the adminpack source directory:
+
+make
+make install
+
+Alternatively, if you have a PostgreSQL 8.2 or higher installation but no 
+source tree you can install using PGXS. Simply run the following commands the
+adminpack source directory:
+ 
+make USE_PGXS=1 
+make USE_PGXS=1 install 
+
+psql -U postgres postgres < randdataset.sql
+
+Usage Examples
+==============
+
+select * from pg_rand_dataset('indep',2,10,0) ds(id int, d1 float, d2 float);
+select * from pg_rand_dataset('corr',3,10,0) ds(id int, d1 float, d2 float, d3 float);
+select * from pg_rand_dataset('anti',3,20,0) ds(id int, d1 float, d2 float, d3 float);
+
+
+Objects implemented
+===================
+
+setof record pg_rand_dataset(disttype text, dim int, rows int, seed int)
+
+References
+==========
+
+[Borzsonyi2001]	Börzsönyi, S.; Kossmann, D. & Stocker, K.: The Skyline Operator, ICDE 2001, 421--432

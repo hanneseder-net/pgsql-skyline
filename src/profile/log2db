@@ -1,0 +1,19 @@
+#!/bin/perl -w
+# -*- Perl -*-
+
+# Author: Hannes Eder <Hannes@HannesEder.net>
+
+my $table = "profile";
+
+print "drop table if exists $table;\n";
+print "create table $table (method varchar(3),disttype varchar(5),dim int, rows int, rep int, total float);\n";
+print "copy $table(method,disttype,dim,rows,rep,total) from stdin delimiters ',' csv quote '\"';\n";
+
+while (<>)
+{
+    if (m/^\"(\w+)\.(\w+)\.(\d+)\.(\d+)\.(\d+)\",\"([^\"]+)\"/) {
+	print "\"$1\",\"$2\",$3,$4,$5,$6\n";
+    }
+}
+
+print "\\.\n";

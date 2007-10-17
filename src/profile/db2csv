@@ -1,0 +1,22 @@
+#!/bin/bash
+# -*- Bash -*-
+
+
+for method in bnl sfs; do
+for disttype in indep corr anti; do
+
+psql >$method-$disttype.csv <<EOF
+copy
+(select dim, rows, avg(total)
+from profile
+where method='$method' and disttype='$disttype'
+group by method, dim, rows 
+order by dim, rows)
+
+to stdout with csv;
+EOF
+
+done
+done
+
+

@@ -31,7 +31,7 @@ sub plog {
   my $name = shift;
   my $value = shift;
 
-  print "\"$runid\";\"$name\";\"$value\"\n";
+  print "\"$runid\",\"$name\",\"$value\"\n";
 }
 
 sub plog_cost {

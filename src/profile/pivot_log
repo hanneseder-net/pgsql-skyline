@@ -1,0 +1,71 @@
+#!/bin/perl -w
+# -*- Perl -*- t~ell emacs it's a perl file
+
+# Author: Hannes Eder <Hannes@HannesEder.net>
+
+use Getopt::Long;
+use Text::CSV;
+
+my @columns = ();
+my $show_header = 1;
+
+my $result = GetOptions("column|c=s" => \@columns,
+			"header!" => \$show_header);
+
+die "error: couldn't parse options, stopped at : " if (!$result);
+
+print join(";", map { "\"$_\""; } ("runid", @columns)), "\n" if ($show_header);
+
+my $cur_runid = "";
+my $runid;
+my $name;
+my $value;
+
+my $csv = Text::CSV->new();
+
+my %values = ();
+
+
+sub output()
+{
+    my @outfields = ();
+    push @outfields, $cur_runid;
+
+    for $column (@columns) {
+	my $v = $values { $column };
+	push @outfields, defined($v) ? $v : "";
+    }
+
+    if ($csv->combine(@outfields)) {
+	print $csv->string(), "\n";
+    }
+}
+
+while (defined($line = <>)) {
+    chomp $line;
+    if ($csv->parse($line)) {
+	my @fields = $csv->fields;
+
+	die "error: csv file must have 3 fields (runid, name, value), stopped at " if ($#fields != 2);
+	my ($runid, $name, $value) = @fields;
+
+	if ($runid ne $cur_runid) {
+	    if ($cur_runid) {
+		# output values
+		output();
+	    }
+	    
+	    %values = ();
+
+	    $cur_runid = $runid;
+	}
+
+	$values{ $name } = $value;
+    }
+    else {
+	my $err = $csv->error_input;
+	die "error: CSV parse failed on argument: ${err}, stopped at ";
+    }
+}
+
+output() if ($cur_runid);

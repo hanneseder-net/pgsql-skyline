@@ -5,6 +5,7 @@
  */
 
 #include <unistd.h>
+#include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
@@ -350,7 +351,7 @@ Test data generator for Skyline Operator\n\
 usage: %s [OPTIONS] [FILE]\n\
 \n\
 Options:\n\
-       -e       equally distributed (dim >= 1)\n\
+       -i       independ (dim >= 1)\n\
        -c       correlated (dim >= 2)\n\
        -a       anti-correlated (dim >= 2)\n\
 \n\

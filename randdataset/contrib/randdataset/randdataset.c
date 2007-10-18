@@ -28,7 +28,7 @@
 #include "funcapi.h"
 #include "miscadmin.h"
 #include "ctxrand.h"
-#include "access\heapam.h"
+#include "access/heapam.h"
 
 PG_MODULE_MAGIC;
 
@@ -40,7 +40,7 @@ typedef void (*generate_fn_t) (rand_ctx_t *, int, Datum *);
 
 typedef struct
 {
-	char		   *name;
+	const char	   *name;
 	generate_fn_t	generate_fn;
 } dist_info_t;
 
@@ -60,6 +60,8 @@ typedef struct
 
 /* forward decl's */
 static double rand_equal(rand_ctx_t *rand_ctx, double min, double max);
+static double rand_peak(rand_ctx_t *rand_ctx, double min, double max, int dim);
+static double rand_normal(rand_ctx_t *rand_ctx, double med, double var);
 static void generate_indep(rand_ctx_t *rand_ctx, int dim, Datum *values);
 static void generate_corr(rand_ctx_t *rand_ctx, int dim, Datum *values);
 static void generate_anti(rand_ctx_t *rand_ctx, int dim, Datum *values);
@@ -70,7 +72,7 @@ static dist_info_t *dist_info_lookup(const char *name);
  * The data returned will always be NOT NULL so we can init the
  * isnull array here to false and reuse it.
  */
-static const bool	isnull[MAXDATASETDIM + 1];
+static bool	isnull[MAXDATASETDIM + 1];
 
 /*
  * pg_rand_dataset

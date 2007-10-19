@@ -1,26 +1,20 @@
 #
-# -*- Makefile -*-
+# -*- Makefile -*- tell emacs -- it's a Makefile ;)
 #
 #
 
 BINDIR = ~/bin
 
-all: kossmann-main ksldg nd
+all: sldg
 
-kossmann-main: kossmann-main.cpp
-	gcc -o $@ $< -lstdc++
-
-ksldg: ksldg.c
-	gcc -std=c99 -Wall -o $@ $<
-
-nd: nd.c
-	gcc -std=c99 -Wall -o $@ $<
+sldg: sldg.c
+	gcc -Wall -o $@ $<
 
 clean:
-	rm -rf kossmann-main ksldg kossmann-main.exe ksldg.exe
+	rm -rf sldg 
 
 install:
 	make clean
 	make
-	install ksldg $(BINDIR)
+	install sldg $(BINDIR)
 	install pg_sldg $(BINDIR)

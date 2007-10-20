@@ -4,3 +4,5 @@
 /dict_xsyn.sql.in////*///
 /uninstall_dict_xsyn.sql////*///
 /xsyn_sample.rules////*///
+D/expected///////
+D/sql///////

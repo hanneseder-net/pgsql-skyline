@@ -7,7 +7,7 @@
  * Portions Copyright (c) 1996-2007, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
- * $PostgreSQL: pgsql/src/include/catalog/pg_proc.h,v 1.474 2007/10/13 23:06:26 tgl Exp $
+ * $PostgreSQL: pgsql/src/include/catalog/pg_proc.h,v 1.476 2007/10/19 22:01:45 tgl Exp $
  *
  * NOTES
  *	  The script catalog/genbki.sh reads this file and generates .bki
@@ -4260,7 +4260,7 @@ DESCR("show real useful query for GiST index");
 
 DATA(insert OID = 3684 (  ts_rewrite		PGNSP PGUID 12 1 0 f f t f i 3 3615 "3615 3615 3615" _null_ _null_ _null_ tsquery_rewrite_query - _null_ _null_ ));
 DESCR("rewrite tsquery");
-DATA(insert OID = 3685 (  ts_rewrite		PGNSP PGUID 12 1 1000 f f t t v 2 3615 "3615 25" _null_ _null_ _null_ tsquery_rewrite - _null_ _null_ ));
+DATA(insert OID = 3685 (  ts_rewrite		PGNSP PGUID 12 1 0 f f t f v 2 3615 "3615 25" _null_ _null_ _null_ tsquery_rewrite - _null_ _null_ ));
 DESCR("rewrite tsquery");
 DATA(insert OID = 3686 (  ts_rewrite_accum	PGNSP PGUID 12 1 0 f f f f i 2 3615 "3615 3645" _null_ _null_ _null_ ts_rewrite_accum - _null_ _null_ ));
 DESCR("rewrite tsquery accumulator");
@@ -4326,9 +4326,7 @@ DESCR("");
 DATA(insert OID = 3721 (  prsd_lextype		PGNSP PGUID 12 1 0 f f t f i 1 2281 "2281" _null_ _null_ _null_ prsd_lextype - _null_ _null_ ));
 DESCR("");
 
-DATA(insert OID = 3723 (  ts_lexize			PGNSP PGUID 12 1 0 f f t f i 2 1009 "26 25" _null_ _null_ _null_ ts_lexize_byid - _null_ _null_ ));
-DESCR("normalize one word by dictionary");
-DATA(insert OID = 3724 (  ts_lexize			PGNSP PGUID 12 1 0 f f t f s 2 1009 "25 25" _null_ _null_ _null_ ts_lexize_byname - _null_ _null_ ));
+DATA(insert OID = 3723 (  ts_lexize			PGNSP PGUID 12 1 0 f f t f i 2 1009 "3769 25" _null_ _null_ _null_ ts_lexize - _null_ _null_ ));
 DESCR("normalize one word by dictionary");
 
 DATA(insert OID = 3725 (  dsimple_init		PGNSP PGUID 12 1 0 f f t f i 1 2281 "2281" _null_ _null_ _null_ dsimple_init - _null_ _null_ ));

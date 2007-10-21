@@ -61,6 +61,7 @@
 /tsvector.c////*///
 /tsvector_op.c////*///
 /tsvector_parser.c////*///
+/txid.c////*///
 /uuid.c////*///
 /varbit.c////*///
 /varchar.c////*///

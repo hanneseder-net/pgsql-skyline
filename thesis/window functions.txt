@@ -1,0 +1,4 @@
+SQL:2003 window clause is differnt from SKYLINE clause.
+
+explain more
+

@@ -1,3 +1,5 @@
+motivation: green computing: less cpu time, less computers, less energy --> safe the planet
+
 example of skyline
 
 when travelling by plan: time vs. costs

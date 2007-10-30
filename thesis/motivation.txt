@@ -1,5 +1,7 @@
 motivation: green computing: less cpu time, less computers, less energy --> safe the planet
 
+stocks: risk vs. costs (--> streaming skyline see [Tao2006])
+
 example of skyline
 
 when travelling by plan: time vs. costs

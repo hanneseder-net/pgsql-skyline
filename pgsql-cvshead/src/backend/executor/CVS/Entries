@@ -6,7 +6,7 @@
 /execJunk.c/1.56/Fri Jan  5 22:19:27 2007//
 /execMain.c/1.298/Fri Sep 21 18:07:25 2007//
 /execProcnode.c/1.61/Tue Feb 27 01:11:25 2007//
-/execQual.c/1.222/Fri Sep 14 18:55:56 2007//
+/execQual.c/1.223/Tue Oct 30 09:22:12 2007//
 /execScan.c/1.41/Fri Feb  2 00:07:03 2007//
 /execTuples.c/1.99/Fri Jan  5 22:19:27 2007//
 /execUtils.c/1.151/Fri Sep 21 18:07:25 2007//
@@ -33,9 +33,9 @@
 /nodeSort.c/1.61/Fri May  4 01:13:44 2007//
 /nodeSubplan.c/1.90/Wed Sep  5 06:36:58 2007//
 /nodeSubqueryscan.c/1.37/Tue Feb 27 01:11:25 2007//
-/nodeTidscan.c/1.55/Tue Jun 12 07:05:44 2007//
+/nodeTidscan.c/1.56/Tue Oct 30 09:22:12 2007//
 /nodeUnique.c/1.55/Wed Jan 10 18:06:02 2007//
 /nodeValuesscan.c/1.7/Thu Feb 22 22:00:23 2007//
-/spi.c/1.181/Fri Sep 21 18:07:25 2007//
+/spi.c/1.183/Tue Oct 30 09:22:12 2007//
 /tstoreReceiver.c/1.18/Fri Jan  5 22:19:29 2007//
 D

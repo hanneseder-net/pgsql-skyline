@@ -1,9 +1,9 @@
 /backendid.h/1.20/Fri Jan  5 22:19:57 2007//
 /block.h/1.23/Fri Jan  5 22:19:57 2007//
 /buf.h/1.22/Thu May 31 10:07:00 2007//
-/buf_internals.h/1.92/Wed Aug  1 09:01:01 2007//
+/buf_internals.h/1.93/Fri Sep 28 13:32:43 2007//
 /buffile.h/1.22/Fri Jun  8 07:10:12 2007//
-/bufmgr.h/1.107/Fri Sep 21 18:07:34 2007//
+/bufmgr.h/1.108/Fri Sep 28 13:32:43 2007//
 /bufpage.h/1.75/Sun Sep 23 18:27:55 2007//
 /fd.h/1.60/Wed Aug  1 09:01:01 2007//
 /freespace.h/1.26/Wed Aug  1 09:01:01 2007//

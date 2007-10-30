@@ -5,7 +5,7 @@
  *
  * Copyright (c) 1998-2007, PostgreSQL Global Development Group
  *
- * $PostgreSQL: pgsql/src/include/tsearch/ts_utils.h,v 1.5 2007/10/19 22:01:45 tgl Exp $
+ * $PostgreSQL: pgsql/src/include/tsearch/ts_utils.h,v 1.7 2007/10/23 01:44:39 tgl Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -22,10 +22,12 @@
 
 /* tsvector parser support. */
 
-struct TSVectorParseStateData;
+struct TSVectorParseStateData;	/* opaque struct in tsvector_parser.c */
 typedef struct TSVectorParseStateData *TSVectorParseState;
 
-extern TSVectorParseState init_tsvector_parser(char *input, bool oprisdelim);
+extern TSVectorParseState init_tsvector_parser(char *input,
+											   bool oprisdelim,
+											   bool is_tsquery);
 extern void reset_tsvector_parser(TSVectorParseState state, char *input);
 extern bool gettoken_tsvector(TSVectorParseState state, 
 							  char **token, int *len,
@@ -170,6 +172,7 @@ typedef struct QTNode
 	struct QTNode **child;
 } QTNode;
 
+/* bits in QTNode.flags */
 #define QTN_NEEDFREE	0x01
 #define QTN_NOCHANGE	0x02
 #define QTN_WORDFREE	0x04
@@ -187,6 +190,7 @@ extern void QTNTernary(QTNode * in);
 extern void QTNBinary(QTNode * in);
 extern int	QTNodeCompare(QTNode * an, QTNode * bn);
 extern QTNode *QTNCopy(QTNode *in);
+extern void QTNClearFlags(QTNode *in, uint32 flags);
 extern bool QTNEq(QTNode * a, QTNode * b);
 extern TSQuerySign makeTSQuerySign(TSQuery a);
 

@@ -10,6 +10,7 @@
 /make_ctags////*///
 /make_etags////*///
 /make_keywords////*///
+/make_libpq.sh////*///
 /make_mkid////*///
 /pgcvslog////*///
 /pgtest////*///

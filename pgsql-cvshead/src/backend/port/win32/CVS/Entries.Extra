@@ -1,4 +1,5 @@
 /Makefile////*///
+/mingwcompat.c////*///
 /security.c////*///
 /signal.c////*///
 /socket.c////*///

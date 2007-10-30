@@ -1,6 +1,7 @@
-/Makefile/1.10/Wed Mar 21 14:39:23 2007//
+/Makefile/1.11/Tue Oct 30 09:22:20 2007//
+/mingwcompat.c/1.2/Mon Oct 29 14:04:42 2007//
 /security.c/1.12/Fri Jan  5 22:19:35 2007//
-/signal.c/1.18/Fri Jan  5 22:19:35 2007//
+/signal.c/1.19/Tue Oct 30 09:22:20 2007//
 /socket.c/1.18/Mon Jun  4 20:00:14 2007//
 /timer.c/1.14/Fri Jan  5 22:19:35 2007//
 D/regex////

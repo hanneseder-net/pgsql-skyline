@@ -116,6 +116,7 @@
 /tsdicts.out////*///
 /tsearch.out////*///
 /tstypes.out////*///
+/txid.out////*///
 /type_sanity.out////*///
 /union.out////*///
 /update.out////*///

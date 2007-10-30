@@ -69,7 +69,7 @@
 /oidjoins.out/1.21/Wed Sep  5 06:37:21 2007//
 /opr_sanity.out/1.78/Wed Sep  5 06:37:21 2007//
 /path.out/1.6/Thu Sep 25 06:58:06 2003//
-/plancache.out/1.4/Fri Mar 23 19:53:52 2007//
+/plancache.out/1.5/Tue Oct 16 08:26:51 2007//
 /plpgsql.out/1.58/Wed Aug  1 09:01:17 2007//
 /point.out/1.17/Wed May 30 13:52:58 2007//
 /polygon.out/1.13/Sun Sep 10 00:29:35 2006//
@@ -116,7 +116,8 @@
 /tsdicts.out/1.2/Sun Sep 23 18:27:59 2007//
 /tsearch.out/1.3/Sat Aug 25 01:06:25 2007//
 /tstypes.out/1.2/Tue Aug 21 15:41:13 2007//
-/type_sanity.out/1.31/Sat Jun 23 07:56:23 2007//
+/txid.out/1.1/Sat Oct 13 23:06:27 2007//
+/type_sanity.out/1.32/Tue Oct 16 08:26:51 2007//
 /union.out/1.11/Tue Mar 14 22:48:25 2006//
 /update.out/1.5/Sun Sep  3 22:37:06 2006//
 /uuid.out/1.3/Mon Jun  4 08:43:44 2007//

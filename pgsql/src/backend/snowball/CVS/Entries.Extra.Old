@@ -3,3 +3,5 @@
 /dict_snowball.c////*///
 /snowball.sql.in////*///
 /snowball_func.sql.in////*///
+D/libstemmer///////
+D/stopwords///////

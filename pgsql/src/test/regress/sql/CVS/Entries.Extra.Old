@@ -103,6 +103,7 @@
 /tsdicts.sql////*///
 /tsearch.sql////*///
 /tstypes.sql////*///
+/txid.sql////*///
 /type_sanity.sql////*///
 /union.sql////*///
 /update.sql////*///

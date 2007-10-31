@@ -118,14 +118,17 @@ raili	: '{' NUMBER '}'
 	;
 
 rules	: rules ';' rule
-		{ $$=addrule($1,$3); }
-	| rules ';'
-		{ $$=$1; }
+		{
+			if(isemptybody($3->body))
+				$$=$1;
+			else
+				$$=addrule($1,$3);
+		}
 	| rule
 	| error
 		{ $$=NULL; }
 	;
-	
+
 rule	: IDENTIFIER ':'
 		{ errorid=$1; }
           body

@@ -33,7 +33,7 @@ clean:
 
 lint: rail.c gram.c lex.c gram.h 
 	lint rail.c gram.c lex.c
-	
+
 shar:
 	makekit -m -n SHAR.
 

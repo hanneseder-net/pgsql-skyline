@@ -7,7 +7,6 @@
 #include "rail.h"
 #include "gram.h"
 
-unsigned line;	/* current input line */
 int copy;	/* copy to output flag */
 
 #define	COPY	(copy && fputs(yytext,outf))
@@ -15,6 +14,8 @@ int copy;	/* copy to output flag */
 extern YYSTYPE yylval;
 
 %}
+
+%option yylineno
 
 %%
 
@@ -84,13 +85,8 @@ extern YYSTYPE yylval;
 		return(STRING);
 }
 
-[ \r\t]+ {
+[ \n\r\t]+ {
 		COPY;
-}
-
-\n {
-		COPY;
-		line++;
 }
 
 . {

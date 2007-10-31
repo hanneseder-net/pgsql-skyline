@@ -50,7 +50,7 @@ typedef struct rule {
 	struct rule *next;
 } RULETYPE;
 
-extern unsigned line;
+extern int yylineno;
 extern int copy;
 
 extern FILE *outf;

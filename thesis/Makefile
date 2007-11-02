@@ -8,6 +8,8 @@ FILES=\
 	01-titlepage-en.tex 01-titlepage-de.tex \
 	02-acknowledgement.tex \
 	03-abstract-en.tex 03-abstract-de.tex \
+	07-results.tex \
+	07-01-railroad-diagrams.tex \
 	04-introduction.tex \
 	08-summary.tex
 
@@ -36,7 +38,7 @@ UPLOADDIR=./output
 REVISION := $(shell svn info | perl -n -e 'if ($$_ =~ m/^Revision:\s*(\d+)/) { print "$$1"; }')
 
 # tools options
-TEXIFYFLAGS=--tex-option="-quiet -c-style-errors -halt-on-error"
+TEXIFYFLAGS=--tex-option="-c-style-errors -halt-on-error"
 
 # [NOTE] this is first, because we want `make` just build the draft
 draft: 00-thesis-draft.dvi

@@ -18,6 +18,7 @@
 \author{Bakk.techn. Hannes Eder}
 \date{\today}
 \usepackage{heder}
+\usepackage{rail}
 \makeindex
 \begin{document}
 \input{FILE}

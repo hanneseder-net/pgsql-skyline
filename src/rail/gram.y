@@ -34,7 +34,7 @@ char optchar;
 
 %token <text> STRING
 
-%type <rule> rule rules
+%type <rule> rule rules rules0
 
 %type <body> body body0 body1 body2e body2 body3 body4e body4 empty
 
@@ -117,14 +117,25 @@ raili	: '{' NUMBER '}'
 		}
 	;
 
-rules	: rules ';' rule
+/*
+ * we use this construct of rules, rules0 and rule to allow the
+ * the last rule to be terminated by ';' without generating an
+ * empty body rule, i.e. to parse "{ foo: 'bar' | 'blah' ; }"
+ * as "rule" and not as "rule ; empty-rule".
+ */
+rules	: rule
+	| rules0 rule
 		{
-			if(isemptybody($3->body))
+			if (isemptybody($2->body))
 				$$=$1;
 			else
-				$$=addrule($1,$3);
+				$$=addrule($1,$2);
 		}
-	| rule
+	;
+
+rules0	: rules0 rule ';'
+		{ $$=addrule($1,$2); }
+	| rule ';'
 	| error
 		{ $$=NULL; }
 	;

@@ -16,7 +16,7 @@
 /pg_enum.c/1.2/Mon Apr  2 22:14:17 2007//
 /pg_largeobject.c/1.27/Fri Jan  5 22:19:25 2007//
 /pg_namespace.c/1.17/Fri Jan  5 22:19:25 2007//
-/pg_operator.c/1.100/Fri Jan  5 22:19:25 2007//
+/pg_operator.c/1.101/Thu Nov  8 22:04:04 2007//
 /pg_proc.c/1.146/Wed Sep  5 06:36:57 2007//
 /pg_shdepend.c/1.20/Tue May 15 21:22:54 2007//
 /pg_type.c/1.113/Sat May 12 09:16:11 2007//

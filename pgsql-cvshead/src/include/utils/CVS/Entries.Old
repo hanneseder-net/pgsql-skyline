@@ -1,7 +1,7 @@
 /acl.h/1.102/Wed Sep  5 06:37:16 2007//
 /array.h/1.65/Sat Jun 23 07:56:20 2007//
 /ascii.h/1.15/Fri Jan  5 22:19:58 2007//
-/builtins.h/1.304/Mon Sep 24 20:20:32 2007//
+/builtins.h/1.305/Tue Oct 16 08:26:47 2007//
 /cash.h/1.24/Wed Jan  3 01:19:51 2007//
 /catcache.h/1.65/Wed Aug  1 09:01:01 2007//
 /combocid.h/1.1/Fri Feb  9 03:35:34 2007//
@@ -24,7 +24,7 @@
 /int8.h/1.47/Wed Jun  6 16:05:56 2007//
 /inval.h/1.40/Fri Jan  5 22:19:59 2007//
 /logtape.h/1.16/Fri Jan  5 22:19:59 2007//
-/lsyscache.h/1.119/Thu Jun  7 10:42:39 2007//
+/lsyscache.h/1.120/Tue Oct 16 08:26:47 2007//
 /memutils.h/1.63/Wed Aug  1 09:01:01 2007//
 /nabstime.h/1.50/Fri Jan  5 22:19:59 2007//
 /numeric.h/1.25/Fri Sep 28 13:32:43 2007//

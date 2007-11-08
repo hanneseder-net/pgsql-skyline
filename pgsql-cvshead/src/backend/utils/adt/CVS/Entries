@@ -46,7 +46,7 @@
 /ri_triggers.c/1.97/Fri Sep 14 18:56:01 2007//
 /rowtypes.c/1.19/Sat Mar  3 19:32:55 2007//
 /ruleutils.c/1.264/Tue Oct 16 08:26:43 2007//
-/selfuncs.c/1.236/Wed Sep  5 06:37:07 2007//
+/selfuncs.c/1.238/Thu Nov  8 22:04:06 2007//
 /tid.c/1.58/Wed Sep  5 06:37:07 2007//
 /timestamp.c/1.182/Wed Sep 19 17:57:19 2007//
 /tsginidx.c/1.5/Sat Oct 20 23:30:19 2007//
@@ -68,5 +68,5 @@
 /varlena.c/1.159/Sun Sep 23 18:27:50 2007//
 /version.c/1.15/Tue Feb 27 23:48:09 2007//
 /xid.c/1.10/Fri Jan  5 22:19:42 2007//
-/xml.c/1.49/Tue Oct 16 08:26:43 2007//
+/xml.c/1.53/Thu Nov  8 22:04:06 2007//
 D

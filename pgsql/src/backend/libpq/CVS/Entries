@@ -1,8 +1,8 @@
 /Makefile/1.38/Sat Jan 20 17:16:11 2007//
-/README.SSL/1.4/Thu Jan  6 18:29:08 2005//
+/README.SSL/1.5/Thu Nov  8 22:04:04 2007//
 /auth.c/1.156/Fri Sep 14 18:55:56 2007//
 /be-fsstubs.c/1.86/Sat Mar  3 19:52:46 2007//
-/be-secure.c/1.80/Sat May 19 08:06:15 2007//
+/be-secure.c/1.81/Thu Nov  8 22:04:04 2007//
 /crypt.c/1.73/Sat Feb 10 14:58:54 2007//
 /hba.c/1.162/Wed Aug  1 09:00:49 2007//
 /ip.c/1.40/Sat Feb 10 14:58:54 2007//

@@ -1,3 +1,4 @@
+/.cvsignore////*///
 /Makefile////*///
 /connect.c////*///
 /data.c////*///

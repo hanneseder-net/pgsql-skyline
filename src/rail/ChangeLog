@@ -1,5 +1,12 @@
 2007-11-08  Hannes Eder  <Hannes@HannesEder.net>
 
+	* rail.c: changed myname to progname
+	
+	* rail.c (fatal): use stdio.h `remove' instead of unistd.h `unlink'
+	
+	* rail.c, rail.h: use function prototypes and declare some of the functions static
+	within rail.c
+
 	* lex.l, rail.c: use option noyywrap and nounput 
 
 2007-11-04  Hannes Eder  <Hannes@HannesEder.net>

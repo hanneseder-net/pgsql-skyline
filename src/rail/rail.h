@@ -60,22 +60,31 @@ extern int anonymous;
 
 extern IDTYPE *errorid;
 
-extern char *mcheck();
+extern char *mcheck(char *s);
 
-extern BODYTYPE *newbody();
-extern freebody();
-extern int isemptybody();
-extern BODYTYPE *addbody();
-extern BODYTYPE *revbody();
+extern BODYTYPE *newbody(int kind, BODYTYPE *body1, BODYTYPE *body2);
+extern void freebody(BODYTYPE *body);
+extern int isemptybody(BODYTYPE *body);
+extern BODYTYPE *addbody(int kind, BODYTYPE *body1, BODYTYPE *body2);
+extern BODYTYPE *revbody(BODYTYPE *body);
 
-extern RULETYPE *newrule();
-extern freerule();
-extern RULETYPE *addrule();
-extern outrule();
+extern RULETYPE *newrule(IDTYPE *id, BODYTYPE *body);
+extern void freerule(RULETYPE *rule);
+extern RULETYPE *addrule(RULETYPE *rule1, RULETYPE *rule2);
+extern void outrule(RULETYPE *rule);
 
-extern IDTYPE *lookup();
-extern delete();
+extern IDTYPE *lookup(char *name);
 
-extern undef();
-extern redef();
-extern error();
+extern void delete(IDTYPE *id);
+extern void undef(IDTYPE *id);
+extern void redef(IDTYPE *id);
+
+extern void error(const char *f, const char *s);
+extern void fatal(const char *f, const char *s);
+
+extern int setopt(char c, char *s);
+
+extern int yylex(void);
+extern int yyparse(void);
+extern void yyerror(const char *msg);
+

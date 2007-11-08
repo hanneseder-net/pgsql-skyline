@@ -181,13 +181,6 @@ char *s;
 	fatal("%s",s);
 }
 
-/* wrap-up routine for yylex() */
-
-yywrap()
-{
-	return(1);
-}
-
 /* check for non-NULL pointer */
 
 char *mcheck(s)

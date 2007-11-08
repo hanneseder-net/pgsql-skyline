@@ -15,7 +15,7 @@ extern YYSTYPE yylval;
 
 %}
 
-%option yylineno
+%option yylineno noyywrap nounput
 
 %%
 

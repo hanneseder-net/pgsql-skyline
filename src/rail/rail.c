@@ -16,7 +16,23 @@
 static char SccsId[]="@(#)rail 26-Jul-1998";
 #endif
 
-#define USAGE	"usage: %s [-+acdith] [file]\n"
+#define USAGE	"\
+Usage: %s [-+acdith] [file]\n\
+\n\
+Options:\n\
+  -a    An alternate layout is used for the operator with an empty second\n\
+        argument. Instead of transforming \"x *\" into \"() | x +\" it is\n\
+        transformed into \"() + x\".\n\
+  -c    The input is checked for undefined identifiers and unnamed rules.\n\
+        Statistics about those are printed to the standard output stream.\n\
+  -d    Turns on yacc (1) debugging output. This only works if the program\n\
+        has been compiled with YYDEBUG defined (which is the default) and\n\
+        your yacc supports it.\n\
+  -h    Arrow-heads are drawn where lines enter the boxes.\n\
+  -i    Index entries are generated for all named rules, i.e., rules that\n\
+        are of the form identifier : body .\n\
+  -t    The parse tree of a rule body is included as comments in file .rao .\n\
+"
 
 #include <stdlib.h>
 #include <stdio.h>

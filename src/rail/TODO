@@ -1,0 +1,3 @@
+  * strip down USAGE info in rail.c
+  * use getopt
+  * use autoconf

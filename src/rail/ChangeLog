@@ -1,3 +1,9 @@
+2007-11-09  Hannes Eder  <Hannes@HannesEder.net>
+
+	* TODO: add
+
+	* rail.c (USAGE): full info from rail.man included
+
 2007-11-08  Hannes Eder  <Hannes@HannesEder.net>
 
 	* rail.c: changed myname to progname

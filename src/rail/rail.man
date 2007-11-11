@@ -85,6 +85,7 @@ output file
 L.W.J. Rooijakkers <lwj@cs.kun.nl>,
 K. Barthelmann <barthel@informatik.uni-mainz.de> with contributions by
 J. Olsson and others
+Hannes Eder <hannes@hanneseder.net>
 .SH VERSION
 1.2 #1
 .SH BUGS

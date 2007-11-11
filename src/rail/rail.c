@@ -9,6 +9,7 @@
  * 28-Jun-1994 K. Barthelmann	minor changes
  * 12-Jan-1997 K. Barthelmann	minor portability improvements
  * 19-May-1998 J. Olsson        Added suport for arrow heads.
+ * 08-Nov-2007 H. Eder		FIXME      
  *
  */
 

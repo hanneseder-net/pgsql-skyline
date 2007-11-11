@@ -1,6 +1,14 @@
+2007-11-11  Hannes Eder  <Hannes@HannesEder.net>
+
+	* AUTHORS: added
+
+	* rail.man: add Hannes Eder to the list of authors
+
+	* README: remove trailing newlines
+
 2007-11-09  Hannes Eder  <Hannes@HannesEder.net>
 
-	* TODO: add
+	* TODO: added
 
 	* rail.c (USAGE): full info from rail.man included
 

@@ -87,6 +87,7 @@
 /rules.out////*///
 /sanity_check.out////*///
 /select.out////*///
+/select_1.out////*///
 /select_distinct.out////*///
 /select_distinct_on.out////*///
 /select_having.out////*///

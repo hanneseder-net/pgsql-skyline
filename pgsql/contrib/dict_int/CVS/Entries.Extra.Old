@@ -3,3 +3,5 @@
 /dict_int.c////*///
 /dict_int.sql.in////*///
 /uninstall_dict_int.sql////*///
+D/expected///////
+D/sql///////

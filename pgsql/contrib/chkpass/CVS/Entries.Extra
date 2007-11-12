@@ -1,5 +1,4 @@
 /Makefile////*///
-/README.chkpass////*///
 /chkpass.c////*///
 /chkpass.sql.in////*///
 /uninstall_chkpass.sql////*///

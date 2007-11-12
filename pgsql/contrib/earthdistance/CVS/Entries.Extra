@@ -1,5 +1,4 @@
 /Makefile////*///
-/README.earthdistance////*///
 /earthdistance.c////*///
 /earthdistance.sql.in////*///
 /uninstall_earthdistance.sql////*///

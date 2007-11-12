@@ -1,5 +1,4 @@
 /Makefile////*///
-/README.pg_trgm////*///
 /pg_trgm.sql.in////*///
 /trgm.h////*///
 /trgm_gin.c////*///

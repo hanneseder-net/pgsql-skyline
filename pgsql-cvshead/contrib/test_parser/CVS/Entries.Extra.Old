@@ -3,3 +3,5 @@
 /test_parser.c////*///
 /test_parser.sql.in////*///
 /uninstall_test_parser.sql////*///
+D/expected///////
+D/sql///////

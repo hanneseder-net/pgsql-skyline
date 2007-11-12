@@ -1,5 +1,4 @@
 /Makefile////*///
-/README.intarray////*///
 /_int.h////*///
 /_int.sql.in////*///
 /_int_bool.c////*///

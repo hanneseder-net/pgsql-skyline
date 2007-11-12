@@ -1,6 +1,5 @@
 /.cvsignore////*///
 /Makefile////*///
-/README.seg////*///
 /seg-validate.pl////*///
 /seg.c////*///
 /seg.sql.in////*///

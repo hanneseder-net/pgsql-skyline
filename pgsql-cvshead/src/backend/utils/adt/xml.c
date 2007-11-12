@@ -7,7 +7,7 @@
  * Portions Copyright (c) 1996-2007, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
- * $PostgreSQL: pgsql/src/backend/utils/adt/xml.c,v 1.53 2007/11/08 15:16:45 petere Exp $
+ * $PostgreSQL: pgsql/src/backend/utils/adt/xml.c,v 1.56 2007/11/10 19:29:54 tgl Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -676,11 +676,11 @@ xmlpi(char *target, text *arg, bool arg_is_null, bool *result_is_null)
 	xmltype *result;
 	StringInfoData buf;
 
-	if (pg_strncasecmp(target, "xml", 3) == 0)
+	if (pg_strcasecmp(target, "xml") == 0)
 		ereport(ERROR,
 				(errcode(ERRCODE_SYNTAX_ERROR),	/* really */
 				 errmsg("invalid XML processing instruction"),
-				 errdetail("XML processing instruction target name cannot start with \"xml\".")));
+				 errdetail("XML processing instruction target name cannot be \"%s\".", target)));
 
 	/*
 	 * Following the SQL standard, the null check comes after the
@@ -997,13 +997,24 @@ xml_init(void)
 #define SKIP_XML_SPACE(p) \
 	while (xmlIsBlank_ch(*(p))) (p)++
 
+/* Letter | Digit | '.' | '-' | '_' | ':' | CombiningChar | Extender */
+/* Beware of multiple evaluations of argument! */
+#define PG_XMLISNAMECHAR(c) \
+	(xmlIsBaseChar_ch(c) || xmlIsIdeographicQ(c) \
+			|| xmlIsDigit_ch(c) \
+			|| c == '.' || c == '-' || c == '_' || c == ':' \
+			|| xmlIsCombiningQ(c) \
+			|| xmlIsExtender_ch(c))
+
 static int
-parse_xml_decl(const xmlChar *str,size_t *lenp,
+parse_xml_decl(const xmlChar *str, size_t *lenp,
 			   xmlChar **version, xmlChar **encoding, int *standalone)
 {
 	const xmlChar *p;
 	const xmlChar *save_p;
 	size_t		len;
+	int			utf8char;
+	int			utf8len;
 
 	xml_init();
 
@@ -1017,6 +1028,12 @@ parse_xml_decl(const xmlChar *str,size_t *lenp,
 	p = str;
 
 	if (xmlStrncmp(p, (xmlChar *)"<?xml", 5) != 0)
+		goto finished;
+
+	/* if next char is name char, it's a PI like <?xml-stylesheet ...?> */
+	utf8len = strlen((const char *) (p+5));
+	utf8char = xmlGetUTF8Char(p+5, &utf8len);
+	if (PG_XMLISNAMECHAR(utf8char))
 		goto finished;
 
 	p += 5;
@@ -2690,11 +2707,11 @@ map_sql_schema_to_xmlschema_types(Oid nspid, List *relid_list, bool nulls,
 
 		if (!tableforest)
 			appendStringInfo(&result,
-							 "    <xsd:element name=\"%s\" type=\"%s\" />\n",
+							 "    <xsd:element name=\"%s\" type=\"%s\"/>\n",
 							 xmltn, tabletypename);
 		else
 			appendStringInfo(&result,
-							 "    <xsd:element name=\"%s\" type=\"%s\" minOccurs=\"0\" maxOccurs=\"unbounded\" />\n",
+							 "    <xsd:element name=\"%s\" type=\"%s\" minOccurs=\"0\" maxOccurs=\"unbounded\"/>\n",
 							 xmltn, tabletypename);
 	}
 
@@ -2756,7 +2773,7 @@ map_sql_catalog_to_xmlschema_types(List *nspid_list, bool nulls,
 																		NULL);
 
 		appendStringInfo(&result,
-						 "    <xsd:element name=\"%s\" type=\"%s\" />\n",
+						 "    <xsd:element name=\"%s\" type=\"%s\"/>\n",
 						 xmlsn, schematypename);
 	}
 
@@ -3094,7 +3111,7 @@ map_sql_type_to_xmlschema_type(Oid typeoid, int typmod)
 					base_typeoid = getBaseTypeAndTypmod(typeoid, &base_typmod);
 
 					appendStringInfo(&result,
-									 "  <xsd:restriction base=\"%s\">\n",
+									 "  <xsd:restriction base=\"%s\"/>\n",
 									 map_sql_type_to_xml_name(base_typeoid, base_typmod));
 				}
 				break;

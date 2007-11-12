@@ -107,7 +107,7 @@
 /text.out/1.4/Thu Jun  7 10:42:42 2007//
 /time.out/1.13/Thu Feb  1 19:10:30 2007//
 /timestamp.out/1.35/Fri Feb 16 17:49:15 2007//
-/timestamptz.out/1.27/Thu Jun 14 07:08:53 2007//
+/timestamptz.out/1.28/Thu Nov  8 22:04:12 2007//
 /timetz.out/1.8/Thu Feb  1 19:10:30 2007//
 /tinterval.out/1.13/Wed May 30 13:52:58 2007//
 /transactions.out/1.17/Sat Jun  9 20:54:25 2007//
@@ -126,5 +126,5 @@
 /varchar_1.out/1.2/Thu Apr  7 01:51:40 2005//
 /without_oid.out/1.8/Fri Feb  9 03:35:35 2007//
 /xml.out/1.19/Sat Jun 23 07:56:23 2007//
-/xml_1.out/1.18/Sat Jun 23 07:56:23 2007//
+/xml_1.out/1.20/Thu Nov  8 22:04:12 2007//
 D

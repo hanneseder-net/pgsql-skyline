@@ -1,5 +1,4 @@
 /Makefile////*///
-/README.pg_buffercache////*///
 /pg_buffercache.sql.in////*///
 /pg_buffercache_pages.c////*///
 /uninstall_pg_buffercache.sql////*///

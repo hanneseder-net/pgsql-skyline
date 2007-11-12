@@ -2792,9 +2792,31 @@ make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause, SkylineMet
 ElimFilter *
 make_elimfilter(PlannerInfo *root, Plan *lefttree, Node *skyline_clause, int limit_tuples)
 {
+	int			i;
+
 	/* FIXME: HACK */
 	ElimFilter *node = (ElimFilter *) make_skyline(root, lefttree, skyline_clause, SM_2DIM_PRESORT, limit_tuples);
 	node->plan.type = T_ElimFilter;
+
+	
+#if 0
+	for (i = 0; i < node->numCols; ++i)
+	{
+		VariableStatData	vardata;
+		Oid					sortop = node->skylinebyOperators[i];
+
+		examine_variable(root, node->skylineColIdx[i], 0, &vardata);
+		if (vardata.statsTuple != NULL || vardata.isunique)
+		{
+			/*
+			extern bool get_variable_range(PlannerInfo *root, VariableStatData *vardata,
+							   Oid sortop, Datum *min, Datum *max);
+			*/
+		}
+		ReleaseVariableStats(vardata);
+	}
+#endif
+
 	return node;
 }
 

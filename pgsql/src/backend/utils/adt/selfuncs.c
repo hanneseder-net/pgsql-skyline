@@ -3776,6 +3776,33 @@ get_variable_numdistinct(VariableStatData *vardata)
 }
 
 /*
+ * get_variable_range
+ *		Estimate the minimum und maximum value of the specified variable.
+ *		If sucessful, store value in *min and *max and return TRUE.
+ *		If no data available, return FALSE.
+ *
+ * FIXME: by calling get_variable_maximum twice, there is some code that
+ * is executed twice. Should it be optimized?
+ */
+bool
+get_variable_range(PlannerInfo *root, VariableStatData *vardata,
+				   Oid sortop, Datum *min, Datum *max)
+{
+	Oid		reverse_sortop = get_commutator(sortop);
+
+	if (!OidIsValid(reverse_sortop))
+		return false;
+
+	if (!get_variable_maximum(root, vardata, reverse_sortop, min))
+		return false;
+	
+	if (!get_variable_maximum(root, vardata, sortop, max))
+		return false;
+
+	return true;
+}
+
+/*
  * get_variable_maximum
  *		Estimate the maximum value of the specified variable.
  *		If successful, store value in *max and return TRUE.

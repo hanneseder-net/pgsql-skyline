@@ -106,6 +106,8 @@ extern bool get_restriction_variable(PlannerInfo *root, List *args,
 extern void get_join_variables(PlannerInfo *root, List *args,
 				   VariableStatData *vardata1,
 				   VariableStatData *vardata2);
+extern bool get_variable_range(PlannerInfo *root, VariableStatData *vardata,
+							   Oid sortop, Datum *min, Datum *max);
 extern double get_variable_numdistinct(VariableStatData *vardata);
 extern double mcv_selectivity(VariableStatData *vardata, FmgrInfo *opproc,
 				Datum constval, bool varonleft,

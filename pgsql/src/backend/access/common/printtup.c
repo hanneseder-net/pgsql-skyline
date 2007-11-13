@@ -16,6 +16,7 @@
 #include "postgres.h"
 
 #include "access/printtup.h"
+#include "catalog/pg_type.h"
 #include "libpq/libpq.h"
 #include "libpq/pqformat.h"
 #include "tcop/pquery.h"
@@ -632,4 +633,44 @@ printtup_internal_20(TupleTableSlot *slot, DestReceiver *self)
 	}
 
 	pq_endmessage(&buf);
+}
+
+/*
+ * datum_to_text
+ *
+ * converts Datum into text
+ * call pfree on returned pointer
+ */
+char *
+datum_to_text(Datum datum, bool isnull, Oid restype)
+{
+	char	   *res = NULL;
+	Oid			typoutput;
+	bool		typisvarlena;
+	Datum		out_datum;
+
+	if (isnull)
+		return NULL;
+
+	if (restype == UNKNOWNOID)
+		restype = TEXTOID;
+
+	getTypeOutputInfo(restype, &typoutput, &typisvarlena);
+
+	/*
+	 * If we have a toasted datum, forcibly detoast it here to avoid
+	 * memory leakage inside the type's output routine.
+	 */
+	if (typisvarlena)
+		out_datum = PointerGetDatum(PG_DETOAST_DATUM(datum));
+	else
+		out_datum = datum;
+
+	res = OidOutputFunctionCall(typoutput, out_datum);
+
+	/* Clean up detoasted copy, if any */
+	if (out_datum != datum)
+		pfree(DatumGetPointer(out_datum));
+
+	return res;
 }

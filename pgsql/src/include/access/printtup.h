@@ -25,6 +25,8 @@ extern void debugStartup(DestReceiver *self, int operation,
 			 TupleDesc typeinfo);
 extern void debugtup(TupleTableSlot *slot, DestReceiver *self);
 
+extern char *datum_to_text(Datum datum, bool isnull, Oid restype);
+
 /* XXX these are really in executor/spi.c */
 extern void spi_dest_startup(DestReceiver *self, int operation,
 				 TupleDesc typeinfo);

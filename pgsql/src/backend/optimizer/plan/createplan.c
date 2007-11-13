@@ -20,6 +20,7 @@
 #include <math.h>
 
 #include "access/skey.h"
+#include "access/printtup.h"
 #include "nodes/makefuncs.h"
 #include "optimizer/clauses.h"
 #include "optimizer/cost.h"
@@ -33,7 +34,9 @@
 #include "parser/parse_expr.h"
 #include "parser/parsetree.h"
 #include "utils/lsyscache.h"
+#include "utils/selfuncs.h"
 #include "utils/skyline.h"
+#include "utils/syscache.h"
 
 
 static Plan *create_scan_plan(PlannerInfo *root, Path *best_path);
@@ -2750,13 +2753,39 @@ make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause, SkylineMet
 	numskylinecols = 0;
 	foreach(l, skylinecls)
 	{
-		SkylineBy  *skylinecl = (SkylineBy *) lfirst(l);
-		TargetEntry *tle = get_skylineclause_tle(skylinecl, sub_tlist);
+		SkylineBy		   *skylinecl = (SkylineBy *) lfirst(l);
+		TargetEntry		   *tle = get_skylineclause_tle(skylinecl, sub_tlist);
+		VariableStatData	vardata;
 
 		node->skylineColIdx[numskylinecols] = tle->resno;
 		node->skylinebyOperators[numskylinecols] = skylinecl->sortop;
 		node->nullsFirst[numskylinecols] = skylinecl->nulls_first;
 		node->skylineByDir[numskylinecols] = (int) skylinecl->skylineby_dir;
+	
+		examine_variable(root, (Node *)tle->expr, 0, &vardata);
+		if (vardata.statsTuple != NULL)
+		{
+			Datum	min;
+			Datum	max;
+
+			if(get_variable_range(root, &vardata, skylinecl->sortop,
+								  &min, &max))
+			{
+				char	   *min_value;
+				char	   *max_value;
+
+				min_value = datum_to_text(min, false, exprType((Node *) tle->expr));
+				max_value = datum_to_text(max, false, exprType((Node *) tle->expr));
+
+				elog(DEBUG1, "stats for column '%s': [%s,%s]", (tle->resname ? tle->resname : "?"), min_value, max_value);
+
+				pfree(min_value);
+				pfree(max_value);
+			}
+		}
+		else
+			elog(DEBUG1, "no stats for column '%s'", (tle->resname ? tle->resname : "?"));
+		ReleaseVariableStats(vardata);
 
 		numskylinecols++;
 	}
@@ -2792,30 +2821,13 @@ make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause, SkylineMet
 ElimFilter *
 make_elimfilter(PlannerInfo *root, Plan *lefttree, Node *skyline_clause, int limit_tuples)
 {
-	int			i;
-
 	/* FIXME: HACK */
+	/*
+	 * As the Elimination Filter scans over the table just once as 
+	 * SM_2_DIM_PRESORT, we use this method for cost estimation
+	 */
 	ElimFilter *node = (ElimFilter *) make_skyline(root, lefttree, skyline_clause, SM_2DIM_PRESORT, limit_tuples);
 	node->plan.type = T_ElimFilter;
-
-	
-#if 0
-	for (i = 0; i < node->numCols; ++i)
-	{
-		VariableStatData	vardata;
-		Oid					sortop = node->skylinebyOperators[i];
-
-		examine_variable(root, node->skylineColIdx[i], 0, &vardata);
-		if (vardata.statsTuple != NULL || vardata.isunique)
-		{
-			/*
-			extern bool get_variable_range(PlannerInfo *root, VariableStatData *vardata,
-							   Oid sortop, Datum *min, Datum *max);
-			*/
-		}
-		ReleaseVariableStats(vardata);
-	}
-#endif
 
 	return node;
 }

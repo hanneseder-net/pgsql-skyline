@@ -141,10 +141,22 @@ tuplewindow_puttupleslot(TupleWindowState *state,
 	 * We insert at the end of the list, to preserve relative tuple order in
 	 * the tuple window.
 	 */
-	windowSlot->next = state->nil;
-	windowSlot->prev = state->nil->prev;
-	state->nil->prev = windowSlot;
-	windowSlot->prev->next = windowSlot;
+	/*
+	if (rand() > RAND_MAX / 2)
+	{
+		windowSlot->next = state->nil->next;
+		windowSlot->prev = state->nil;
+		state->nil->next = windowSlot;
+		windowSlot->next->prev = windowSlot;
+	}
+	else
+	{
+	*/
+		windowSlot->next = state->nil;
+		windowSlot->prev = state->nil->prev;
+		state->nil->prev = windowSlot;
+		windowSlot->prev->next = windowSlot;
+	//}
 }
 
 /*

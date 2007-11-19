@@ -1,5 +1,4 @@
 /Makefile////*///
-/README.btree_gist////*///
 /btree_bit.c////*///
 /btree_bytea.c////*///
 /btree_cash.c////*///

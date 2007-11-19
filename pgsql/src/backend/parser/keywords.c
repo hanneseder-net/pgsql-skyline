@@ -8,7 +8,7 @@
  *
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/backend/parser/keywords.c,v 1.192 2007/09/24 01:29:29 adunstan Exp $
+ *	  $PostgreSQL: pgsql/src/backend/parser/keywords.c,v 1.193 2007/11/15 21:14:37 momjian Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -394,8 +394,8 @@ static const ScanKeyword ScanKeywords[] = {
 	 * though it is currently unreserved according to gram.y.  This is because
 	 * we expect we'll have to make it reserved to implement SQL WITH clauses.
 	 * If that patch manages to do without reserving WITH, adjust this entry
-	 * at that time; in any case this should be back in sync with gram.y
-	 * after WITH clauses are implemented.
+	 * at that time; in any case this should be back in sync with gram.y after
+	 * WITH clauses are implemented.
 	 */
 	{"with", WITH, RESERVED_KEYWORD},
 	{"without", WITHOUT, UNRESERVED_KEYWORD},

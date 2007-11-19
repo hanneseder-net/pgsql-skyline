@@ -1,12 +1,12 @@
 /.cvsignore/1.1/Mon Jan 17 04:38:49 2000//
 /INSTALL/1.2/Fri Feb  9 01:05:42 2001//
 /Makefile/1.31/Wed Aug  1 09:01:16 2007//
-/gram.y/1.105/Wed Aug  1 09:01:16 2007//
-/pl_comp.c/1.117/Wed Aug  1 09:01:16 2007//
+/gram.y/1.106/Mon Nov 12 10:59:35 2007//
+/pl_comp.c/1.118/Mon Nov 12 10:59:35 2007//
 /pl_exec.c/1.199/Wed Aug  1 09:01:16 2007//
 /pl_funcs.c/1.63/Wed Aug  1 09:01:16 2007//
 /pl_handler.c/1.37/Mon Apr  2 03:49:42 2007//
 /plerrcodes.h/1.11/Fri Jan  5 22:20:02 2007//
 /plpgsql.h/1.91/Wed Aug  1 09:01:16 2007//
-/scan.l/1.58/Wed Aug  1 09:01:16 2007//
+/scan.l/1.59/Mon Nov 12 10:59:35 2007//
 D

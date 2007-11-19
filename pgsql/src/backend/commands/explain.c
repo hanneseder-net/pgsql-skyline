@@ -7,7 +7,7 @@
  * Portions Copyright (c) 1994-5, Regents of the University of California
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/backend/commands/explain.c,v 1.165 2007/08/15 21:39:50 tgl Exp $
+ *	  $PostgreSQL: pgsql/src/backend/commands/explain.c,v 1.167 2007/11/15 22:25:15 momjian Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -52,10 +52,10 @@ typedef struct ExplainState
 } ExplainState;
 
 static void ExplainOneQuery(Query *query, ExplainStmt *stmt,
-							const char *queryString,
-							ParamListInfo params, TupOutputState *tstate);
+				const char *queryString,
+				ParamListInfo params, TupOutputState *tstate);
 static void report_triggers(ResultRelInfo *rInfo, bool show_relname,
-							StringInfo buf);
+				StringInfo buf);
 static double elapsed_time(instr_time *starttime);
 static void explain_outNode(StringInfo str,
 				Plan *plan, PlanState *planstate,
@@ -96,14 +96,14 @@ ExplainQuery(ExplainStmt *stmt, const char *queryString,
 	getParamListTypes(params, &param_types, &num_params);
 
 	/*
-	 * Run parse analysis and rewrite.  Note this also acquires sufficient
+	 * Run parse analysis and rewrite.	Note this also acquires sufficient
 	 * locks on the source table(s).
 	 *
-	 * Because the parser and planner tend to scribble on their input, we
-	 * make a preliminary copy of the source querytree.  This prevents
-	 * problems in the case that the EXPLAIN is in a portal or plpgsql
-	 * function and is executed repeatedly.  (See also the same hack in
-	 * DECLARE CURSOR and PREPARE.)  XXX FIXME someday.
+	 * Because the parser and planner tend to scribble on their input, we make
+	 * a preliminary copy of the source querytree.	This prevents problems in
+	 * the case that the EXPLAIN is in a portal or plpgsql function and is
+	 * executed repeatedly.  (See also the same hack in DECLARE CURSOR and
+	 * PREPARE.)  XXX FIXME someday.
 	 */
 	rewritten = pg_analyze_and_rewrite((Node *) copyObject(stmt->query),
 									   queryString, param_types, num_params);
@@ -382,8 +382,8 @@ report_triggers(ResultRelInfo *rInfo, bool show_relname, StringInfo buf)
 		InstrEndLoop(instr);
 
 		/*
-		 * We ignore triggers that were never invoked; they likely
-		 * aren't relevant to the current query type.
+		 * We ignore triggers that were never invoked; they likely aren't
+		 * relevant to the current query type.
 		 */
 		if (instr->ntuples == 0)
 			continue;
@@ -636,7 +636,7 @@ explain_outNode(StringInfo str,
 			if (ScanDirectionIsBackward(((IndexScan *) plan)->indexorderdir))
 				appendStringInfoString(str, " Backward");
 			appendStringInfo(str, " using %s",
-					explain_get_index_name(((IndexScan *) plan)->indexid));
+					  explain_get_index_name(((IndexScan *) plan)->indexid));
 			/* FALL THRU */
 		case T_SeqScan:
 		case T_BitmapHeapScan:
@@ -1160,7 +1160,7 @@ show_sort_keys(Plan *sortplan, int nkeys, AttrNumber *keycols,
 
 	/* Set up deparsing context */
 	context = deparse_context_for_plan((Node *) outerPlan(sortplan),
-									   NULL,		/* Sort has no innerPlan */
+									   NULL,	/* Sort has no innerPlan */
 									   es->rtable);
 	useprefix = list_length(es->rtable) > 1;
 
@@ -1272,7 +1272,7 @@ show_sort_info(SortState *sortstate,
 static const char *
 explain_get_index_name(Oid indexId)
 {
-	const char   *result;
+	const char *result;
 
 	if (explain_get_index_name_hook)
 		result = (*explain_get_index_name_hook) (indexId);

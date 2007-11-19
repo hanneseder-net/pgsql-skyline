@@ -1,9 +1,9 @@
 /Makefile/1.28/Wed Sep  5 06:37:23 2007//
 /README/1.5/Tue Jul 25 03:51:22 2006//
 /ialloc.c/1.9/Tue Oct 30 09:22:37 2007//
-/localtime.c/1.18/Tue Oct 30 09:22:37 2007//
-/pgtz.c/1.54/Wed Sep  5 06:37:23 2007//
-/pgtz.h/1.19/Fri Jan  5 22:20:04 2007//
+/localtime.c/1.19/Mon Nov 19 11:53:42 2007//
+/pgtz.c/1.56/Mon Nov 19 11:53:42 2007//
+/pgtz.h/1.20/Mon Nov 19 11:53:42 2007//
 /private.h/1.11/Wed Feb 23 04:34:21 2005//
 /scheck.c/1.8/Tue Oct 30 09:22:37 2007//
 /strftime.c/1.11/Fri Jul 14 14:52:27 2006//

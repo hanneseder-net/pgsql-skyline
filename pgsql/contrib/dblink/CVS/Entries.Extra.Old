@@ -1,5 +1,4 @@
 /Makefile////*///
-/README.dblink////*///
 /dblink.c////*///
 /dblink.h////*///
 /dblink.sql.in////*///

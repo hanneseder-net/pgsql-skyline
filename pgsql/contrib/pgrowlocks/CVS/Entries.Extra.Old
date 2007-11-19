@@ -1,6 +1,5 @@
 /Makefile////*///
 /README.pgrowlocks.euc_jp////*///
-/README.pgrowlocks////*///
 /pgrowlocks.c////*///
 /pgrowlocks.sql.in////*///
 /uninstall_pgrowlocks.sql////*///

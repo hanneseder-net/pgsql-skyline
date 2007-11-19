@@ -1,6 +1,5 @@
-/Makefile/1.4/Mon Jul  9 10:05:56 2007//
-/README.pg_buffercache/1.4/Sat Apr  7 16:09:14 2007//
-/pg_buffercache.sql.in/1.5/Sat Apr  7 16:09:14 2007//
+/Makefile/1.5/Mon Nov 12 10:59:05 2007//
+/pg_buffercache.sql.in/1.6/Mon Nov 12 10:59:05 2007//
 /pg_buffercache_pages.c/1.13/Wed Aug  1 09:00:40 2007//
-/uninstall_pg_buffercache.sql/1.1/Mon Feb 27 12:54:39 2006//
+/uninstall_pg_buffercache.sql/1.2/Mon Nov 12 10:59:05 2007//
 D

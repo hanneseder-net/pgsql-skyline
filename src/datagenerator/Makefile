@@ -4,14 +4,16 @@
 #
 
 BINDIR = ~/bin
+CFLAGS = -Wall -g
+CC = gcc
 
-all: sldg
+all: randdataset
 
-sldg: sldg.c
-	gcc -Wall -o $@ $<
+randdataset: randdataset.c
+	$(CC) $(CFLAGS) -o $@ $<
 
 clean:
-	rm -rf sldg 
+	rm -rf randdataset
 
 install:
 	make clean

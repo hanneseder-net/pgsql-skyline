@@ -15,6 +15,7 @@
  *		The Skyline Operator, ICDE 2001, 421--432
  */
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -26,7 +27,7 @@
 /*
  * some macros for warnings/errors
  */
-const char *progname = "sldg";
+const char *progname = "randdataset";
 
 #define warning(FMT, ...) fprintf(stderr, "%s: warning: " FMT "\n", progname, ##__VA_ARGS__)
 #define invalidargs(FMT, ...) do { fprintf(stderr, "%s: error: " FMT "\n", progname, ##__VA_ARGS__); usage(); exit(1); } while (0)
@@ -36,6 +37,9 @@ const char *progname = "sldg";
  * forward decl's
  */
 static double sqr(double a);
+
+static void padding_init(void);
+static void padding_done(void);
 
 static int stats_vector_count;
 static double *stats_sum_x;
@@ -59,6 +63,16 @@ static void generate_anti(int count, int dim);
 
 static void usage();
 
+static int id = 0;
+static int opt_id = 0;
+static int opt_pad = 0;
+static int opt_copy = 0;
+static int opt_create = 0;
+
+static char    *pad_alphabet = "abcdefghijklmnopqrstuvwxyz";
+static int		pad_alphabet_len = 0;
+static char	   *padding = NULL;
+
 /*
  * main
  */
@@ -69,13 +83,14 @@ main(int argc, char **argv)
 	int dim = 0;
 	int count = 0;
 	int dist = 0;
-	int header = 0;
 	int stats = 0;
+	char table_name[64];
+	char *user_table_name = NULL;
 
 	/*
 	 * process command line arguments 
 	 */
-	while ((c = getopt(argc, argv, "icad:n:s:pSh?")) != -1)
+	while ((c = getopt(argc, argv, "icad:n:Is:p:SCRT:h?")) != -1)
 	{
 		switch (c)
 		{
@@ -95,8 +110,25 @@ main(int argc, char **argv)
 			count = atoi(optarg);
 			break;
 
+		case 'I':
+			opt_id = 1;
+			break;
+
+		case 'C':
+			opt_copy = 1;
+			break;
+
+		case 'R':
+			opt_create = 1;
+			opt_copy = 1;
+			break;
+
+		case 'T':
+			user_table_name = optarg;
+			break;
+
 		case 'p':
-			header = 1;
+			opt_pad = atoi(optarg);
 			break;
 
 		case 'S':
@@ -145,13 +177,66 @@ main(int argc, char **argv)
 	if (count < 0)
 		invalidargs("the number of vectors must be non negative");
 
+	if (opt_pad < 0)
+		invalidargs("padding must be non negativ");
+
+	if (opt_pad > 10240)
+		invalidargs("padding is restricted to 10KB");
+
 	/*
 	 * here we go
 	 */
+	padding_init();
 	stats_init(dim);
 
-	if (header)
-		fprintf(stdout, "%d %d\n", count, dim);
+	if (opt_create)
+	{
+		int		i;
+
+		if (user_table_name)
+		{
+			strncpy(table_name, user_table_name, sizeof(table_name));
+		}
+		else
+		{
+			if (opt_pad)
+				snprintf(table_name, sizeof(table_name), "%c%dd%dp%d", dist, dim, count, opt_pad);
+			else
+				snprintf(table_name, sizeof(table_name), "%c%dd%d", dist, dim, count);
+		}
+
+		fprintf(stdout, "DROP TABLE IF EXISTS \"%s\";\n", table_name);
+		fprintf(stdout, "CREATE TABLE \"%s\" (", table_name);
+
+		if (opt_id)
+			fprintf(stdout, "id int, ");
+
+		for (i = 1; i <= dim; ++i)
+			fprintf(stdout, "%sd%d float", (i>1 ? ", ": ""), i);
+
+		if (opt_pad)
+			fprintf(stdout, ", pad%d varchar(%d)", opt_pad, opt_pad);
+
+		fprintf(stdout, ");\n");
+	}
+
+	if (opt_copy)
+	{
+		int		i;
+		fprintf(stdout, "COPY \"%s\" (", table_name);
+
+		if (opt_id)
+			fprintf(stdout, "id, ");
+
+		for (i = 1; i <= dim; ++i)
+			fprintf(stdout, "%sd%d", (i>1 ? ", ": ""), i);
+
+		if (opt_pad)
+			fprintf(stdout, ", pad%d", opt_pad);
+
+		fprintf(stdout, ") FROM STDIN DELIMITERS ',' CSV QUOTE '''';\n");
+	}
+
 
 	switch (dist)
 	{
@@ -169,8 +254,15 @@ main(int argc, char **argv)
 		break;
 	}
 
+	if (opt_copy)
+	{
+		fprintf(stdout, "\\.\n");
+	}
+
 	if (stats)
 		stats_output(dim);
+
+	padding_done();
 
 	return 0;
 }
@@ -185,11 +277,53 @@ sqr(double a)
 }
 
 /*
+ * padding_init
+ */
+static void
+padding_init(void)
+{
+	if (opt_pad)
+	{
+		int		pad_len;
+		int		i;
+		char   *p;
+
+		assert(pad_alphabet);
+		pad_alphabet_len = strlen(pad_alphabet);
+		assert(pad_alphabet_len > 0);
+
+		pad_len = ((opt_pad+pad_alphabet_len) / pad_alphabet_len + 1) * pad_alphabet_len;
+
+		padding = (char *) malloc(pad_len + 1);
+		assert(padding);
+
+		for (p = padding, i = 0; i<pad_len; ++i)
+		{
+			*p++ = pad_alphabet[i % pad_alphabet_len];
+		}
+		*p++ = '\0';
+	}
+}
+
+/*
+ * padding_done
+ */
+static void
+padding_done(void)
+{
+	if (padding)
+	{
+		free(padding);
+		padding = NULL;
+	}
+}
+
+/*
  * stats_init
  *
  *	inits the statistics, what else ;) 
  */
-void
+static void
 stats_init(int dim)
 {
 	int		d;
@@ -221,7 +355,7 @@ stats_init(int dim)
  *
  *	adds the vector x[0..dim-1] into the stats
  */
-void
+static void
 stats_enter(int dim, double *x)
 {
 	int		d;
@@ -242,7 +376,7 @@ stats_enter(int dim, double *x)
  *
  *	write the statistics to STDERR
  */
-void
+static void
 stats_output(int dim)
 {
 	int		d;
@@ -255,18 +389,18 @@ stats_output(int dim)
 		double E = stats_sum_x[d] / stats_vector_count;
 		double V = stats_sum_x_sqr[d] / stats_vector_count - E * E;
 		double s = sqrt(V);
-		fprintf(stderr, "# E[X%d]=%5.2f Var[X%d]=%5.2f s[X%d]=%5.2f\n", d + 1, E, d + 1, V,
+		fprintf(stderr, "-- E[X%d]=%5.2f Var[X%d]=%5.2f s[X%d]=%5.2f\n", d + 1, E, d + 1, V,
 			d + 1, s);
 	}
 
 	/*
 	 * correlation factor matrix
 	 */
-	fprintf(stderr, "#\n# correlation factor matrix:\n");
+	fprintf(stderr, "--\n-- correlation factor matrix:\n");
 	for (d = 0; d < dim; d++) {
 		int		dd;
 
-		fprintf(stderr, "#");
+		fprintf(stderr, "--");
 		for (dd = 0; dd < dim; dd++) {
 			double cov =
 				(stats_sum_x_prod[d * dim + dd] / stats_vector_count) -
@@ -281,7 +415,7 @@ stats_output(int dim)
 		}
 		fprintf(stderr, "\n");
 	}
-	fprintf(stderr, "#\n# %d vector(s) generated\n", stats_vector_count);
+	fprintf(stderr, "--\n-- %d vector(s) generated\n", stats_vector_count);
 }
 
 /*
@@ -338,8 +472,21 @@ random_normal(double med, double var)
 static void
 output_vector(int dim, double *x)
 {
+	++id;
+	if (opt_id)
+	{
+		fprintf(stdout, "%d,", id);
+	}
+
 	while (dim--)
-          fprintf(stdout, "%.*e%s", DBL_DIG, *(x++), dim ? " " : "\n");
+          fprintf(stdout, "%.*e%s", DBL_DIG, *(x++), dim ? "," : "");
+
+	if (opt_pad)
+	{
+		fprintf(stdout, ",'%.*s'", opt_pad, padding+(id-1) % pad_alphabet_len);
+	}
+	
+	fprintf(stdout, "\n");
 }
 
 /*
@@ -476,18 +623,22 @@ Options:\n\
 \n\
        -d DIM   dimensions >=1\n\
        -n COUNT number of vectors\n\
+       -I       unique id for every vector\n\
+       -p PAD   add a PAD long padding field\n\
+\n\
+       -C       generate SQL COPY statement\n\
+       -R       generate SQL CREATE TABLE statement\n\
+       -T NAME  use NAME instead of default table name\n\
 \n\
        -s SEED  set random generator seed to SEED\n\
-\n\
-       -p       print dimension and number of vectors\n\
 \n\
        -S       output stats to stderr\n\
 \n\
        -h -?    display this help message and exit\n\
 \n\
 Examples:\n\
-       %s -e -d 3 -n 10\n\
-       %s -a -d 2 -n 100 -S -p\n\
+       %s -i -d 3 -n 10 -I -R\n\
+       %s -a -d 2 -n 100 -S\n\
 \n\
 ", progname, progname, progname);
 }

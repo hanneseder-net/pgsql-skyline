@@ -36,11 +36,11 @@
 /ts_locale.h/1.8/Mon Jan 15 15:16:28 2007//
 /ts_stat.c/1.17/Tue Feb 27 23:48:06 2007//
 /ts_stat.h/1.7/Tue Feb 27 23:48:06 2007//
-/tsearch.sql.in/1.20/Sun Sep 10 17:36:52 2006//
+/tsearch.sql.in/1.21/Mon Nov 12 10:59:12 2007//
 /tsvector.c/1.28/Tue Feb 27 23:48:06 2007//
 /tsvector.h/1.9/Tue Feb 27 23:48:06 2007//
 /tsvector_op.c/1.8/Tue Feb 27 23:48:06 2007//
-/untsearch.sql.in/1.8/Sun Sep 10 17:36:52 2006//
+/untsearch.sql.in/1.9/Mon Nov 12 10:59:12 2007//
 /wparser.c/1.13/Mon Apr  2 11:42:04 2007//
 /wparser.h/1.2/Mon Aug  4 00:43:11 2003//
 /wparser_def.c/1.15/Tue Nov 22 18:17:04 2005//

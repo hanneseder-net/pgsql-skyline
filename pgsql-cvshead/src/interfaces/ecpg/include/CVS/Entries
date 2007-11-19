@@ -1,7 +1,7 @@
 /Makefile/1.31/Fri Sep 28 13:32:44 2007//
 /datetime.h/1.12/Sat Mar 11 04:38:39 2006//
 /decimal.h/1.14/Sat Mar 11 04:38:39 2006//
-/ecpg-pthread-win32.h/1.4/Thu Oct  4 20:22:43 2007//
+/ecpg-pthread-win32.h/1.5/Mon Nov 19 11:53:12 2007//
 /ecpg_config.h.in/1.4/Thu Mar 29 12:02:24 2007//
 /ecpg_informix.h/1.18/Sat Mar 11 04:38:39 2006//
 /ecpgerrno.h/1.27/Sat Mar 11 04:38:39 2006//

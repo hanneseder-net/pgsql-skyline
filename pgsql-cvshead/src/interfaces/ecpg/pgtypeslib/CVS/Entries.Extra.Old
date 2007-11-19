@@ -1,3 +1,4 @@
+/.cvsignore////*///
 /Makefile////*///
 /common.c////*///
 /datetime.c////*///

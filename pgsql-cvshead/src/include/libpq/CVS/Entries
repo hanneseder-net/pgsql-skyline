@@ -3,11 +3,11 @@
 /crypt.h/1.36/Fri Jan  5 22:19:55 2007//
 /hba.h/1.47/Wed Aug  1 09:00:59 2007//
 /ip.h/1.19/Fri Jan  5 22:19:55 2007//
-/libpq-be.h/1.63/Mon Aug  6 09:10:24 2007//
+/libpq-be.h/1.64/Mon Nov 19 11:53:08 2007//
 /libpq-fs.h/1.22/Fri Jan  5 22:19:55 2007//
 /libpq.h/1.68/Fri Jan  5 22:19:55 2007//
 /md5.h/1.4/Fri Jan  5 22:19:55 2007//
-/pqcomm.h/1.106/Wed Aug  1 09:01:00 2007//
+/pqcomm.h/1.107/Mon Nov 19 11:53:08 2007//
 /pqformat.h/1.25/Fri Jan  5 22:19:55 2007//
 /pqsignal.h/1.31/Fri Jan  5 22:19:55 2007//
 D

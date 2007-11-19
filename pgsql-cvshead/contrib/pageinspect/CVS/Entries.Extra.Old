@@ -1,5 +1,4 @@
 /Makefile////*///
-/README.pageinspect////*///
 /btreefuncs.c////*///
 /heapfuncs.c////*///
 /pageinspect.sql.in////*///

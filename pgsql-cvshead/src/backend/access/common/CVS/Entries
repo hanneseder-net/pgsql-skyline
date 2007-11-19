@@ -1,8 +1,8 @@
 /Makefile/1.23/Sat Jan 20 17:16:10 2007//
-/heaptuple.c/1.118/Thu Nov  8 22:04:04 2007//
-/indextuple.c/1.83/Thu Nov  8 22:04:04 2007//
+/heaptuple.c/1.119/Mon Nov 19 11:52:32 2007//
+/indextuple.c/1.84/Mon Nov 19 11:52:32 2007//
 /printtup.c/1.100/Fri Jan  5 22:19:21 2007//
-/reloptions.c/1.5/Mon Jun  4 08:43:36 2007//
+/reloptions.c/1.6/Mon Nov 19 11:52:32 2007//
 /scankey.c/1.30/Fri Apr  6 22:33:41 2007//
 /tupdesc.c/1.121/Mon Nov 12 10:59:15 2007//
 D

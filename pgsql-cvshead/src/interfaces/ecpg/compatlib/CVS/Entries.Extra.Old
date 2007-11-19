@@ -1,3 +1,4 @@
+/.cvsignore////*///
 /Makefile////*///
 /exports.txt////*///
 /informix.c////*///

@@ -1,12 +1,12 @@
 /.cvsignore/1.1/Mon Apr  3 18:47:41 2006//
 /CHANGES/1.3/Tue Jul 25 23:23:44 2006//
 /Makefile/1.21/Mon Nov 12 10:59:01 2007//
-/cube.c/1.33/Wed Jun  6 16:05:43 2007//
-/cube.sql.in/1.22/Mon Nov 12 10:59:01 2007//
+/cube.c/1.34/Mon Nov 19 11:52:19 2007//
+/cube.sql.in/1.23/Mon Nov 19 11:52:19 2007//
 /cubedata.h/1.9/Wed Mar  7 21:21:12 2007//
 /cubeparse.y/1.17/Tue Feb 27 23:48:05 2007//
 /cubescan.l/1.11/Sat Mar 11 04:38:28 2006//
-/uninstall_cube.sql/1.6/Mon Nov 12 10:59:01 2007//
+/uninstall_cube.sql/1.7/Mon Nov 19 11:52:19 2007//
 D/data////
 D/expected////
 D/sql////

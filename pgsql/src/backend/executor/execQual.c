@@ -1628,7 +1628,7 @@ ExecMakeTableFunctionResult(ExprState *funcexpr,
 									   -1,
 									   0);
 				}
-				tupstore = tuplestore_begin_heap(true, false, work_mem);
+				tupstore = tuplestore_begin_heap(true, false, function_scan_work_mem);
 				MemoryContextSwitchTo(oldcontext);
 				rsinfo.setResult = tupstore;
 				rsinfo.setDesc = tupdesc;
@@ -1695,7 +1695,7 @@ no_function_result:
 	if (rsinfo.setResult == NULL)
 	{
 		MemoryContextSwitchTo(econtext->ecxt_per_query_memory);
-		tupstore = tuplestore_begin_heap(true, false, work_mem);
+		tupstore = tuplestore_begin_heap(true, false, function_scan_work_mem);
 		rsinfo.setResult = tupstore;
 		if (!returnsSet)
 		{

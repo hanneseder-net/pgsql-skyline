@@ -21,13 +21,14 @@
 #include <math.h>
 #include <float.h>
 #include <string.h>
+#include <libgen.h>
 
 #include "port.h"
 
 /*
  * some macros for warnings/errors
  */
-const char *progname = "randdataset";
+const char *progname = NULL;
 
 #define warning(FMT, ...) fprintf(stderr, "%s: warning: " FMT "\n", progname, ##__VA_ARGS__)
 #define invalidargs(FMT, ...) do { fprintf(stderr, "%s: error: " FMT "\n", progname, ##__VA_ARGS__); usage(); exit(1); } while (0)
@@ -86,6 +87,14 @@ main(int argc, char **argv)
 	int stats = 0;
 	char table_name[64];
 	char *user_table_name = NULL;
+
+	/*
+	 * setup progname
+	 */
+	if (argc>0)
+		progname = basename(argv[0]);
+	if (progname == NULL || progname[0] == '\0')
+		progname = "randdataset";
 
 	/*
 	 * process command line arguments 
@@ -624,7 +633,7 @@ Options:\n\
        -d DIM   dimensions >=1\n\
        -n COUNT number of vectors\n\
        -I       unique id for every vector\n\
-       -p PAD   add a PAD long padding field\n\
+       -p PAD   add a padding field, PAD characters long\n\
 \n\
        -C       generate SQL COPY statement\n\
        -R       generate SQL CREATE TABLE statement\n\

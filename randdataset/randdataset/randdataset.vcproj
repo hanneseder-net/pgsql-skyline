@@ -40,7 +40,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
+				AdditionalIncludeDirectories="."
+				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -117,7 +118,8 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
+				AdditionalIncludeDirectories="."
+				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS"
 				RuntimeLibrary="2"
 				DisableLanguageExtensions="true"
 				UsePrecompiledHeader="0"
@@ -179,15 +181,19 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath=".\src\basename.c"
+				>
+			</File>
+			<File
 				RelativePath=".\src\getopt.c"
 				>
 			</File>
 			<File
-				RelativePath=".\src\randdataset.c"
+				RelativePath=".\src\port.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\port.h"
+				RelativePath=".\src\randdataset.c"
 				>
 			</File>
 		</Filter>

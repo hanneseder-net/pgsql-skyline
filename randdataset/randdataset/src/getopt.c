@@ -25,6 +25,9 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  */
+#include <config.h>
+
+#ifndef HAVE_GETOPT
 
 #include <stdio.h>
 #include <string.h>
@@ -115,3 +118,5 @@ getopt(int nargc, char * const *nargv, const char *ostr)
 	}
 	return optopt;				/* dump back option letter */
 }
+
+#endif	/* !HAVE_GETOPT */

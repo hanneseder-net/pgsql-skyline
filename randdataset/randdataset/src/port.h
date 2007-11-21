@@ -13,10 +13,20 @@
 #ifndef PG_PORT_H
 #define PG_PORT_H
 
+#include <config.h>
+
 #ifndef HAVE_GETOPT
 extern int	getopt(int nargc, char *const * nargv, const char *ostr);
 extern char	   *optarg;
 extern int		optind;
+#endif
+
+#ifndef HAVE_BASENAME
+extern char *basename(const char *path);
+#endif
+
+#if !defined(HAVE_SNPRINTF) && _WIN32
+#define snprintf _snprintf
 #endif
 
 #endif   /* PG_PORT_H */

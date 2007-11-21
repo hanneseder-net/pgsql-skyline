@@ -14,6 +14,7 @@
  *		[Borzsonyi2001] Börzsönyi, S.; Kossmann, D. & Stocker, K.: 
  *		The Skyline Operator, ICDE 2001, 421--432
  */
+#include <config.h>
 
 #include <assert.h>
 #include <stdio.h>
@@ -21,7 +22,9 @@
 #include <math.h>
 #include <float.h>
 #include <string.h>
+#ifdef HAVE_LIBGEN_H
 #include <libgen.h>
+#endif
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
@@ -74,7 +77,7 @@ static int opt_copy = 0;
 static int opt_create = 0;
 
 static char    *pad_alphabet = "abcdefghijklmnopqrstuvwxyz";
-static int		pad_alphabet_len = 0;
+static size_t	pad_alphabet_len = 0;
 static char	   *padding = NULL;
 
 /*
@@ -296,8 +299,8 @@ padding_init(void)
 {
 	if (opt_pad)
 	{
-		int		pad_len;
-		int		i;
+		size_t	pad_len;
+		size_t	i;
 		char   *p;
 
 		assert(pad_alphabet);

@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8,00"
-	Name="sldg"
+	Name="randdataset"
 	ProjectGUID="{4C3EB843-9564-4F18-9E78-42E7462E223E}"
-	RootNamespace="sldg"
+	RootNamespace="randdataset"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -183,7 +183,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\sldg.c"
+				RelativePath=".\randdataset.c"
 				>
 			</File>
 		</Filter>

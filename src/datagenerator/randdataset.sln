@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 9.00
 # Visual Studio 2005
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sldg", "sldg.vcproj", "{4C3EB843-9564-4F18-9E78-42E7462E223E}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "randdataset", "randdataset.vcproj", "{4C3EB843-9564-4F18-9E78-42E7462E223E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

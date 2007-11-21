@@ -22,6 +22,9 @@
 #include <float.h>
 #include <string.h>
 #include <libgen.h>
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 
 #include "port.h"
 

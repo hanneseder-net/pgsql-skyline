@@ -1,7 +1,7 @@
 AC_INIT([randdataset],[1.0],[Hannes@HannesEder.net])
 AC_PREREQ([2.60])
 AC_CONFIG_SRCDIR([src/randdataset.c])
-AM_INIT_AUTOMAKE([-Wall -Werror foreign dist-bzip2])
+AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_PROG_CC
 AC_C_CONST
 AC_HEADER_STDC

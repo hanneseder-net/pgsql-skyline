@@ -22,10 +22,12 @@ skyline_options[] = {
 	{ "blocknestedloop"			, SOT_METHOD, SM_BLOCKNESTEDLOOP },
 	{ "bnl"						, SOT_METHOD, SM_BLOCKNESTEDLOOP } ,
 	{ "ef"						, SOT_PARAM , SM_UNKNOWN },
+	{ "efentropy"				, SOT_PARAM	, SM_UNKNOWN },
 	{ "efslots"					, SOT_PARAM , SM_UNKNOWN },
 	{ "efwindow"				, SOT_PARAM , SM_UNKNOWN },
 	{ "efwindowsize"			, SOT_PARAM , SM_UNKNOWN },
 	{ "efwindowslots"			, SOT_PARAM , SM_UNKNOWN },
+	{ "entropy"					, SOT_PARAM , SM_UNKNOWN },
 	{ "materializednestedloop"	, SOT_METHOD, SM_MATERIALIZEDNESTEDLOOP },
 	{ "mnl"						, SOT_METHOD, SM_MATERIALIZEDNESTEDLOOP },
 	{ "presort"					, SOT_METHOD, SM_2DIM_PRESORT },
@@ -186,6 +188,8 @@ skyline_choose_method(SkylineClause *skyline_clause, bool has_matching_path)
 
 /*
  * This function is used to decide in the planner of the current_paths can be kept
+ *
+ * FIXME: this can't be used if entropy is used
  */
 bool
 skyline_method_preserves_tuple_order(SkylineMethod skyline_method)

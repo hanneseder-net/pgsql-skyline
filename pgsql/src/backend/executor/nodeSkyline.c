@@ -103,6 +103,45 @@ inlineApplyCompareFunction(FmgrInfo *compFunction, int sk_flags,
 }
 
 /*
+ * ExecSkylineRank
+ *
+ *  FIXME
+ *  HACK: this needs to depand on the stats of the columns in question
+ */
+double
+ExecSkylineRank(SkylineState *node, TupleTableSlot *slot)
+{
+	Skyline    *sl = (Skyline *) node->ss.ps.plan;
+	double		res = 0.0;
+	int			i;
+
+	for (i = 0; i < sl->numCols; ++i)
+	{
+		Datum		datum;
+		double		value;
+		bool		isnull;
+		int			attnum = sl->skylineColIdx[i];
+
+		datum = slot_getattr(slot, attnum, &isnull);
+
+		/* HACK */
+		if (isnull)
+			return DBL_MAX;
+
+		value = DatumGetFloat8(datum);
+
+		if (value <= 1e-6)
+			value = 1e-6;
+		else if (value >= 1-1e-6)
+			value = 1-1e-6;
+
+		res += log(value);
+	}
+
+	return res;
+}
+
+/*
  * ExecSkylineIsDominating
  *
  *	FIXME
@@ -294,6 +333,7 @@ ExecInitSkyline(Skyline *node, EState *estate, int eflags)
 {
 	SkylineState   *slstate;
 	bool			need_extra_slot = ExecSkylineNeedExtraSlot(node);
+	int				use_entropy;
 
 	/* check for unsupported flags */
 	Assert(!(eflags & (EXEC_FLAG_BACKWARD | EXEC_FLAG_MARK)));
@@ -310,6 +350,12 @@ ExecInitSkyline(Skyline *node, EState *estate, int eflags)
 	slstate->cmps_tuples = 0;
 	slstate->cmps_fields = 0;
 	slstate->pass_info = makeStringInfo();
+	slstate->flags = 0;
+
+	if (skyline_option_get_int( node->skyline_by_options, "entropy", &use_entropy))
+	{
+		slstate->flags |= SL_FLAGS_ENTROPY;
+	}
 
 	ExecSkylineInitTupleWindow(slstate, node);
 
@@ -827,6 +873,8 @@ ExecSkyline_BlockNestedLoop(SkylineState *node, Skyline *sl)
 					node->timestampIn++;
 
 					tuplewindow_rewind(window);
+					if (node->flags & SL_FLAGS_ENTROPY)
+						tuplewindow_setinsertrank(window, ExecSkylineRank(node, slot));
 					for (;;)
 					{
 						int			cmp;
@@ -840,7 +888,10 @@ ExecSkyline_BlockNestedLoop(SkylineState *node, Skyline *sl)
 							 */
 							if (tuplewindow_has_freespace(window))
 							{
-								tuplewindow_puttupleslot(window, slot, node->timestampOut);
+								if (node->flags & SL_FLAGS_ENTROPY)
+									tuplewindow_puttupleslotatinsertrank(window, slot, node->timestampOut);
+								else
+									tuplewindow_puttupleslot(window, slot, node->timestampOut);
 							}
 							else
 							{
@@ -1050,6 +1101,8 @@ ExecSkyline_SortFilterSkyline(SkylineState *node, Skyline *sl)
 					node->timestampIn++;
 
 					tuplewindow_rewind(window);
+					if (node->flags & SL_FLAGS_ENTROPY)
+						tuplewindow_setinsertrank(window, ExecSkylineRank(node, slot));
 					for (;;)
 					{
 						int			cmp;
@@ -1064,7 +1117,10 @@ ExecSkyline_SortFilterSkyline(SkylineState *node, Skyline *sl)
 							 */ 
 							if (tuplewindow_has_freespace(window))
 							{
-								tuplewindow_puttupleslot(window, slot, 0);
+								if (node->flags & SL_FLAGS_ENTROPY)
+									tuplewindow_puttupleslotatinsertrank(window, slot, 0);
+								else
+									tuplewindow_puttupleslot(window, slot, 0);
 
 								/*
 								 * We can pipe out the tuple here.

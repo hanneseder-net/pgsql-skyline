@@ -1360,11 +1360,14 @@ typedef enum
 	SS_TEMP
 } SkylineSource;
 
+#define SL_FLAGS_ENTROPY 1
+
 typedef struct SkylineState
 {
 	ScanState			ss;					/* its first field is NodeTag */
 	SkylineStatus		status;
 	SkylineMethod		skyline_method;
+	int					flags;
 	FmgrInfo		   *compareOpFn;		/* compare funtions */
 	int				   *compareFlags;
 	int64				sl_pos;				/* for MNL */

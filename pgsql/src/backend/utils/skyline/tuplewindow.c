@@ -10,7 +10,7 @@
  * DESCRIPTION
  *    We are using a double linked list with a sentinel.
  *
- *    For double linked list with sentinel see: [COR2002, Ch. 10.2, p 204-209]
+ *    For double linked list with sentinel see: [COR2002, Ch. 10.2, p 204--209]
  *    [COR2002] Cormen, Thomas H., Introduction to Algorithms,
  *    Second Edition, Third printing 2002, MIT Press, ISBN 0-262-03293-7
  *
@@ -21,6 +21,8 @@
  */
 
 #include "postgres.h"
+
+#include <float.h>
 
 #include "utils/tuplewindow.h"
 #include "utils/memutils.h"
@@ -34,6 +36,7 @@ typedef struct TupleWindowSlot
 {
 	void	   *tuple;
 	int64		timestamp;
+	double		rank;
 	struct TupleWindowSlot *next;
 	struct TupleWindowSlot *prev;
 } TupleWindowSlot;
@@ -48,7 +51,13 @@ struct TupleWindowState
 
 	TupleWindowSlot *nil;
 	TupleWindowSlot *current;
+
+	double		insertrank;
+	TupleWindowSlot *rankinsert;
 };
+
+/* forward decl's */
+static void tuplewindow_puttupleslot_impl(TupleWindowState *state, TupleTableSlot *slot, int64 timestamp, TupleWindowSlot *insertbefore, double rank);
 
 /*
  * tuplewindow_begin
@@ -77,11 +86,19 @@ tuplewindow_begin(int maxKBytes, int maxSlots)
 	state->nil = (TupleWindowSlot *) palloc(sizeof(TupleWindowSlot));
 	state->nil->next = state->nil;
 	state->nil->prev = state->nil;
+	state->nil->timestamp = 0;
+	state->nil->rank = DBL_MIN;
 
 	/*
 	 * Set cursor (current) to sentinel.
 	 */
 	state->current = state->nil;
+
+	/*
+	 * Set rank cursor
+	 */
+	state->insertrank = DBL_MIN;
+	state->rankinsert = state->nil;
 
 	return state;
 }
@@ -111,52 +128,11 @@ tuplewindow_puttupleslot(TupleWindowState *state,
 						 TupleTableSlot *slot,
 						 int64 timestamp)
 {
-	MinimalTuple tuple;
-	TupleWindowSlot *windowSlot;
-
-	/*
-	 * Form a MinimalTuple in working memory.
-	 */
-	tuple = ExecCopySlotMinimalTuple(slot);
-	USEMEM(state, GetMemoryChunkSpace(tuple));
-
-	windowSlot = (TupleWindowSlot *) palloc(sizeof(TupleWindowSlot));
-	USEMEM(state, GetMemoryChunkSpace(windowSlot));
-
-	if (state->availSlots != -1)
-	{
-		/*
-		 * If we are counting the slots, then at this point availSlots must be
-		 * > 0.
-		 */
-		AssertState(state->availSlots > 0);
-
-		state->availSlots--;
-	}
-
-	windowSlot->tuple = tuple;
-	windowSlot->timestamp = timestamp;
-
 	/*
 	 * We insert at the end of the list, to preserve relative tuple order in
 	 * the tuple window.
 	 */
-	/*
-	if (rand() > RAND_MAX / 2)
-	{
-		windowSlot->next = state->nil->next;
-		windowSlot->prev = state->nil;
-		state->nil->next = windowSlot;
-		windowSlot->next->prev = windowSlot;
-	}
-	else
-	{
-	*/
-		windowSlot->next = state->nil;
-		windowSlot->prev = state->nil->prev;
-		state->nil->prev = windowSlot;
-		windowSlot->prev->next = windowSlot;
-	//}
+	tuplewindow_puttupleslot_impl(state, slot, timestamp, state->nil, DBL_MIN);
 }
 
 /*
@@ -212,6 +188,9 @@ tuplewindow_removeslot(TupleWindowState *state,
 	 */
 	if (state->current == slot)
 		state->current = next;
+
+	if (state->rankinsert == slot)
+		state->rankinsert = next;
 }
 
 /*
@@ -225,6 +204,7 @@ tuplewindow_rewind(TupleWindowState *state)
 	AssertArg(state != NULL);
 
 	state->current = state->nil->next;
+	state->rankinsert = state->nil->next;
 }
 
 /*
@@ -254,7 +234,15 @@ tuplewindow_movenext(TupleWindowState *state)
 	AssertArg(state != NULL);
 
 	if (state->current != state->nil)
+	{
+		if (state->current == state->rankinsert)
+		{
+			if (state->current->rank <= state->insertrank)
+				state->rankinsert = state->current->next;
+		}
+
 		state->current = state->current->next;
+	}
 }
 
 /*
@@ -390,4 +378,93 @@ tuplewindow_end(TupleWindowState *state)
 
 	/* free the state buffer */
 	pfree(state);
+}
+
+/*
+ * tuplewindow_setinsertrank
+ *
+ * FIXME
+ */
+void
+tuplewindow_setinsertrank(TupleWindowState *state, double rank)
+{
+	AssertArg(state != NULL);
+
+	state->insertrank = rank;
+}
+
+/*
+ *
+ */
+static void
+tuplewindow_puttupleslot_impl(TupleWindowState *state, TupleTableSlot *slot, int64 timestamp, TupleWindowSlot *insertbefore, double rank)
+{
+	MinimalTuple tuple;
+	TupleWindowSlot *windowSlot;
+
+	AssertState(state != NULL);
+
+	/*
+	 * Form a MinimalTuple in working memory.
+	 */
+	tuple = ExecCopySlotMinimalTuple(slot);
+	USEMEM(state, GetMemoryChunkSpace(tuple));
+
+	windowSlot = (TupleWindowSlot *) palloc(sizeof(TupleWindowSlot));
+	USEMEM(state, GetMemoryChunkSpace(windowSlot));
+
+	if (state->availSlots != -1)
+	{
+		/*
+		 * If we are counting the slots, then at this point availSlots must be
+		 * > 0.
+		 */
+		AssertState(state->availSlots > 0);
+
+		state->availSlots--;
+	}
+
+	windowSlot->tuple = tuple;
+	windowSlot->timestamp = timestamp;
+	windowSlot->rank = rank;
+
+
+	insertbefore->prev->next = windowSlot;
+	windowSlot->prev = insertbefore->prev;
+	windowSlot->next = insertbefore;
+	insertbefore->prev = windowSlot;
+
+	/*
+	windowSlot->next = insertafter->next;
+	windowSlot->prev = insertafter;
+	insertafter->next = windowSlot;
+	windowSlot->next->prev = windowSlot;
+	*/
+}
+
+/*
+ * tuplewindow_puttupleslotatinsertrank
+ *
+ * FIXME
+ */
+void
+tuplewindow_puttupleslotatinsertrank(TupleWindowState *state, TupleTableSlot *slot, int64 timestamp)
+{
+	tuplewindow_puttupleslot_impl(state, slot, timestamp, state->rankinsert, state->insertrank);
+}
+
+void
+tuplewindow_puttupleslot_ranked(TupleWindowState *state, TupleTableSlot *slot, int64 timestamp)
+{
+	if (!tuplewindow_has_freespace(state))
+	{
+		/*
+		 * remove the slot with the lowest ranking
+		 */
+		Assert(state->nil->prev != state->nil);
+
+		tuplewindow_removeslot(state, state->nil->prev, true);
+	}
+
+	tuplewindow_puttupleslotatinsertrank(state, slot, timestamp);
 }

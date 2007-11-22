@@ -21,8 +21,9 @@
 #include "utils/tuplewindow.h"
 #include "utils/skyline.h"
 
-void ExecSkylineCacheCompareFunctionInfo(SkylineState *slstate, Skyline *node);
-int ExecSkylineIsDominating(SkylineState *node, TupleTableSlot *inner_slot, TupleTableSlot *slot);
+extern void ExecSkylineCacheCompareFunctionInfo(SkylineState *slstate, Skyline *node);
+extern int ExecSkylineIsDominating(SkylineState *node, TupleTableSlot *inner_slot, TupleTableSlot *slot);
+extern double ExecSkylineRank(SkylineState *node, TupleTableSlot *slot);
 
 /*
  * ExecElimFilterInitTupleWindow
@@ -77,11 +78,18 @@ ElimFilterState *
 ExecInitElimFilter(ElimFilter *node, EState *estate, int eflags)
 {
 	ElimFilterState	   *state;
+	int					use_entropy;
 
 	state = makeNode(ElimFilterState);
 	state->ss.ps.plan = (Plan *) node;
 	state->ss.ps.state = estate;
 	state->status = SS_INIT;
+
+	state->flags = SL_FLAGS_ENTROPY;
+	if (skyline_option_get_int( node->skyline_by_options, "efentropy", &use_entropy))
+	{
+		state->flags |= SL_FLAGS_ENTROPY;
+	}
 
 #define ELIMFILTER_NSLOTS 2
 
@@ -208,21 +216,20 @@ ExecElimFilter(ElimFilterState *node)
 				}
 
 				tuplewindow_rewind(window);
+				if (node->flags & SL_FLAGS_ENTROPY)
+					tuplewindow_setinsertrank(window, ExecSkylineRank(node, slot));
 				for (;;)
 				{
 					int cmp;
 
 					if (tuplewindow_ateof(window))
 					{
-						if (tuplewindow_has_freespace(window))
-						{
-							tuplewindow_puttupleslot(window, slot, 0 /* FIXME: score */);
-							return slot;
-						}
-						else
-						{
-							return slot;
-						}
+						if (node->flags & SL_FLAGS_ENTROPY)
+							tuplewindow_puttupleslot_ranked(window, slot, 0);
+						else if (tuplewindow_has_freespace(window))
+							tuplewindow_puttupleslot(window, slot, 0);
+
+						return slot;
 					}
 
 					tuplewindow_gettupleslot(window, inner_slot, false);

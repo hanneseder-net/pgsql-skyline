@@ -16,5 +16,8 @@ extern bool tuplewindow_gettupleslot(TupleWindowState *state, TupleTableSlot *sl
 extern void tuplewindow_removecurrent(TupleWindowState *state);
 extern void tuplewindow_clean(TupleWindowState *state);
 extern void tuplewindow_end(TupleWindowState *state);
+extern void tuplewindow_setinsertrank(TupleWindowState *state, double rank);
+extern void tuplewindow_puttupleslotatinsertrank(TupleWindowState *state, TupleTableSlot *slot, int64 timestamp);
+extern void tuplewindow_puttupleslot_ranked(TupleWindowState *state, TupleTableSlot *slot, int64 timestamp);
 
 #endif   /* TUPLEWINDOW_H */

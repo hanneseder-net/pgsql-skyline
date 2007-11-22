@@ -16,7 +16,7 @@
 /enum.c/1.5/Mon Nov 19 11:52:52 2007//
 /float.c/1.152/Mon Nov 19 11:52:52 2007//
 /format_type.c/1.48/Mon Nov 19 11:52:52 2007//
-/formatting.c/1.132/Mon Nov 19 11:52:52 2007//
+/formatting.c/1.136/Thu Nov 22 22:38:46 2007//
 /genfile.c/1.16/Tue Feb 27 23:48:08 2007//
 /geo_ops.c/1.97/Mon Nov 19 11:52:52 2007//
 /geo_selfuncs.c/1.30/Fri Jan  5 22:19:41 2007//
@@ -68,5 +68,5 @@
 /varlena.c/1.161/Mon Nov 19 11:52:54 2007//
 /version.c/1.15/Tue Feb 27 23:48:09 2007//
 /xid.c/1.10/Fri Jan  5 22:19:42 2007//
-/xml.c/1.58/Mon Nov 19 11:52:54 2007//
+/xml.c/1.59/Thu Nov 22 22:38:46 2007//
 D

@@ -102,6 +102,8 @@ sub setref($)
 {
     my $query = shift;
 
+    $refquery = $query;
+
     print "TEST[$testnr]: ", $basequery, " .";
     
     psql($query, "result.ref");
@@ -118,6 +120,7 @@ sub cmpref($)
 
     if (($? >> 8) != 0)
     {
+	print "REF: $refquery\nTHIS: $query\n";
 	die "FAILED.\n\n";
     }
 }
@@ -132,14 +135,18 @@ sub runtest()
   setref(std_query());
   cmpref(skyline_query());
   cmpref(skyline_query("bnl slots=1"));
+  cmpref(skyline_query("bnl entropy"));
   cmpref(skyline_query("sfs"));
   my @spec = split(/\s*,\s*/, $sl_attr);
   if ($#spec < 2) {
       cmpref(skyline_query("presort"));
   }
+  cmpref(skyline_query("sfs entropy"));
   cmpref(skyline_query("sfs slots=1"));
   cmpref(skyline_query("sfs ef efslots=5"));
+  cmpref(skyline_query("sfs ef efslots=5 efentropy"));
   cmpref(skyline_query("bnl ef efslots=5"));
+  cmpref(skyline_query("bnl ef efslots=5 efentropy"));
   cmpdone();
 }
 
@@ -162,12 +169,12 @@ sub selecttest($)
     $querysuffix = "order by r.id";
     $tlist = "id";
     $sl_attr = "d1 min";
-    $basequery = "select * from pg_rand_dataset('indep', 2, 1000, 0) ds(id int, d1 float, d2 float)";
+    $basequery = "select * from rds2d('indep', 1000, 0)";
     return if ($select == $test++);
 
 # 2
     $sl_attr = "d1 min, d2 min";
-    $basequery = "select * from pg_rand_dataset('indep', 2, 1000, 0) ds(id int, d1 float, d2 float)";
+    $basequery = "select * from rds2d('indep', 1000, 0)";
     return if ($select == $test++);
 
 # 3
@@ -176,12 +183,12 @@ sub selecttest($)
 
 # 4    
     $sl_attr = "d1 min, d2 min, g1 diff";
-    $basequery = "select *, floor(d1*10) as g1 from pg_rand_dataset('indep', 2, 1000, 0) ds(id int, d1 float, d2 float)";
+    $basequery = "select *, floor(d1*10) as g1 from rds2d('indep', 1000, 0)";
     return if ($select == $test++);
 
 # 5
     $sl_attr = "d1 min, d2 min, g1 diff, g2 diff";
-    $basequery = "select *, floor(d1*2) as g1, floor(d2*3) as g2 from pg_rand_dataset('indep', 2, 1000, 0) ds(id int, d1 float, d2 float)";
+    $basequery = "select *, floor(d1*2) as g1, floor(d2*3) as g2 from rds2d('indep', 1000, 0)";
     return if ($select == $test++);
 
 # END

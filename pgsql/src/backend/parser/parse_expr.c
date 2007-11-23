@@ -2226,10 +2226,10 @@ typecast_expression(ParseState *pstate, Node *expr, TypeName *typename)
 	Oid			targetType;
 	int32		targetTypmod;
 
-	targetType = typenameTypeId(pstate, typename, &targetTypmod);
-
 	if (inputType == InvalidOid)
 		return expr;			/* do nothing if NULL input */
+
+	targetType = typenameTypeId(pstate, typename, &targetTypmod);
 
 	expr = coerce_to_target_type(pstate, expr, inputType,
 								 targetType, targetTypmod,

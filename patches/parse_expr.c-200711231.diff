@@ -1,0 +1,18 @@
+Index: src/backend/parser/parse_expr.c
+===================================================================
+--- src/backend/parser/parse_expr.c	(revision 377)
++++ src/backend/parser/parse_expr.c	(working copy)
+@@ -2226,11 +2226,11 @@
+ 	Oid			targetType;
+ 	int32		targetTypmod;
+ 
+-	targetType = typenameTypeId(pstate, typename, &targetTypmod);
+-
+ 	if (inputType == InvalidOid)
+ 		return expr;			/* do nothing if NULL input */
+ 
++	targetType = typenameTypeId(pstate, typename, &targetTypmod);
++
+ 	expr = coerce_to_target_type(pstate, expr, inputType,
+ 								 targetType, targetTypmod,
+ 								 COERCION_EXPLICIT,

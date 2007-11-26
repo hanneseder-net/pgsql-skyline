@@ -29,9 +29,12 @@
 #include "utils/lsyscache.h"
 #include "utils/skyline.h"
 
+/* FIXME */
 #if 0
 #include <crtdbg.h>
 #define STOP _CrtDbgBreak()
+#else
+#define STOP (void)(0)
 #endif
 
 /*
@@ -659,7 +662,7 @@ ExecSkyline_2DimPreSort(SkylineState *node, Skyline *sl)
 
 				cmp = ExecSkylineIsDominating(node, slot, resultSlot);
 
-				if (cmp == SKYLINE_CMP_INCOMPARABLE || cmp == SKYLINE_CMP_ALL_EQ && !sl->skyline_distinct)
+				if (cmp == SKYLINE_CMP_INCOMPARABLE || (cmp == SKYLINE_CMP_ALL_EQ && !sl->skyline_distinct))
 				{
 					ExecCopySlot(resultSlot, slot);
 					return resultSlot;
@@ -822,7 +825,7 @@ ExecSkyline_BlockNestedLoop(SkylineState *node, Skyline *sl)
 					if (TupIsNull(slot))
 					{
 						if (node->source == SS_OUTER)
-							appendStringInfo(node->pass_info, "%d", node->timestampIn);
+							appendStringInfo(node->pass_info, "%lld", node->timestampIn);
 
 						/*
 						 * If we have read all tuples for the outer node
@@ -849,8 +852,8 @@ ExecSkyline_BlockNestedLoop(SkylineState *node, Skyline *sl)
 						else
 						{
 							node->pass++;
-							appendStringInfo(node->pass_info, ", %d", node->timestampOut);
-							elog(DEBUG, "start pass %lld with %lld tuples in temp", node->pass, node->timestampOut);
+							appendStringInfo(node->pass_info, ", %lld", node->timestampOut);
+							elog(DEBUG1, "start pass %lld with %lld tuples in temp", node->pass, node->timestampOut);
 
 							node->source = SS_TEMP;
 							node->tempIn = node->tempOut;
@@ -909,7 +912,7 @@ ExecSkyline_BlockNestedLoop(SkylineState *node, Skyline *sl)
 						 * The tuple in slot is dominated by a inner_slot in
 						 * the window, so fetch the next.
 						 */
-						if (cmp == SKYLINE_CMP_FIRST_DOMINATES || cmp == SKYLINE_CMP_ALL_EQ && sl->skyline_distinct)
+						if (cmp == SKYLINE_CMP_FIRST_DOMINATES || (cmp == SKYLINE_CMP_ALL_EQ && sl->skyline_distinct))
 							break;
 
 						if (cmp == SYKLINE_CMP_SECOND_DOMINATES)
@@ -1047,7 +1050,7 @@ ExecSkyline_SortFilterSkyline(SkylineState *node, Skyline *sl)
 					if (TupIsNull(slot))
 					{
 						if (node->source == SS_OUTER)
-							appendStringInfo(node->pass_info, "%d", node->timestampIn);
+							appendStringInfo(node->pass_info, "%lld", node->timestampIn);
 
 						/*
 						 * If we have read all tuples for the outer node
@@ -1074,8 +1077,8 @@ ExecSkyline_SortFilterSkyline(SkylineState *node, Skyline *sl)
 						else
 						{
 							node->pass++;
-							appendStringInfo(node->pass_info, ", %d", node->timestampOut);
-							elog(DEBUG, "start pass %lld with %lld tuples in temp", node->pass, node->timestampOut);
+							appendStringInfo(node->pass_info, ", %lld", node->timestampOut);
+							elog(DEBUG1, "start pass %lld with %lld tuples in temp", node->pass, node->timestampOut);
 
 							node->source = SS_TEMP;
 							node->tempIn = node->tempOut;
@@ -1143,7 +1146,7 @@ ExecSkyline_SortFilterSkyline(SkylineState *node, Skyline *sl)
 						 * The tuple in slot is dominated by a inner_slot in
 						 * the window, so fetch the next.
 						 */
-						if (cmp == SKYLINE_CMP_FIRST_DOMINATES || cmp == SKYLINE_CMP_ALL_EQ && sl->skyline_distinct)
+						if (cmp == SKYLINE_CMP_FIRST_DOMINATES || (cmp == SKYLINE_CMP_ALL_EQ && sl->skyline_distinct))
 							break;
 
 						Assert(cmp != SYKLINE_CMP_SECOND_DOMINATES);
@@ -1228,7 +1231,7 @@ void
 ExecReScanSkyline(SkylineState *node, ExprContext *exprCtxt)
 {
 	/* FIXME: code coverage = 0 !!! */
-	_CrtDbgBreak();
+	STOP;
 
 	node->status = SS_INIT;
 

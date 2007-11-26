@@ -3,6 +3,7 @@
 
 #include "nodes/parsenodes.h"
 #include "nodes/plannodes.h"
+#include "nodes/execnodes.h"
 
 #define SKYLINE_CMP_FIRST_DOMINATES -2
 #define SKYLINE_CMP_INCOMPARABLE -1
@@ -17,5 +18,9 @@ extern bool skyline_method_preserves_tuple_order(SkylineMethod skyline_method);
 extern bool skyline_option_get_int(List *skyline_by_options, char *name, int *value);
 extern const char *skyline_method_name(SkylineMethod skyline_method);
 extern bool skyline_methode_can_use_limit(SkylineMethod skyline_method);
+
+/* from backend/executor/nodeSkyline.c */
+extern int ExecSkylineIsDominating(SkylineState *node, TupleTableSlot *inner_slot, TupleTableSlot *slot);
+extern void ExecSkylineCacheCompareFunctionInfo(SkylineState *slstate, Skyline *node);
 
 #endif   /* SKYLINE_H */

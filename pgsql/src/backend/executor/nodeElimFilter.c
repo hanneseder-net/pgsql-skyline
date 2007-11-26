@@ -18,12 +18,9 @@
 #include "postgres.h"
 
 #include "executor/executor.h"
+#include "executor/nodeElimFilter.h"
 #include "utils/tuplewindow.h"
 #include "utils/skyline.h"
-
-extern void ExecSkylineCacheCompareFunctionInfo(SkylineState *slstate, Skyline *node);
-extern int ExecSkylineIsDominating(SkylineState *node, TupleTableSlot *inner_slot, TupleTableSlot *slot);
-extern double ExecSkylineRank(SkylineState *node, TupleTableSlot *slot);
 
 /*
  * ExecElimFilterInitTupleWindow
@@ -168,7 +165,6 @@ void
 ExecReScanElimFilter(ElimFilterState *node, ExprContext *exprCtxt)
 {
 	/* FIXME: code coverage = 0 !!! */
-	_CrtDbgBreak();
 
 	node->status = SS_INIT;
 
@@ -240,7 +236,7 @@ ExecElimFilter(ElimFilterState *node)
 					 * The tuple in slot is dominated by a inner_slot in
 					 * the window, so fetch the next.
 					 */
-					if (cmp == SKYLINE_CMP_FIRST_DOMINATES || cmp == SKYLINE_CMP_ALL_EQ && plan->skyline_distinct)
+					if (cmp == SKYLINE_CMP_FIRST_DOMINATES || (cmp == SKYLINE_CMP_ALL_EQ && plan->skyline_distinct))
 						break;
 					else if (cmp == SYKLINE_CMP_SECOND_DOMINATES)
 					{

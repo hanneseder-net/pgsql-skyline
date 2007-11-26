@@ -22,5 +22,6 @@ extern bool skyline_methode_can_use_limit(SkylineMethod skyline_method);
 /* from backend/executor/nodeSkyline.c */
 extern int ExecSkylineIsDominating(SkylineState *node, TupleTableSlot *inner_slot, TupleTableSlot *slot);
 extern void ExecSkylineCacheCompareFunctionInfo(SkylineState *slstate, Skyline *node);
+extern double ExecSkylineRank(SkylineState *node, TupleTableSlot *slot);
 
 #endif   /* SKYLINE_H */

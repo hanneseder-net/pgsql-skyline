@@ -29,14 +29,6 @@
 #include "utils/lsyscache.h"
 #include "utils/skyline.h"
 
-/* FIXME */
-#if 0
-#include <crtdbg.h>
-#define STOP _CrtDbgBreak()
-#else
-#define STOP (void)(0)
-#endif
-
 /*
  * Inline-able copy of FunctionCall2() to save some cycles in sorting.
  */
@@ -1231,7 +1223,6 @@ void
 ExecReScanSkyline(SkylineState *node, ExprContext *exprCtxt)
 {
 	/* FIXME: code coverage = 0 !!! */
-	STOP;
 
 	node->status = SS_INIT;
 

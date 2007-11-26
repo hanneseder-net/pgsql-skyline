@@ -11,7 +11,7 @@ typedef enum
 
 typedef struct
 {
-	char			   *name;
+	const char		   *name;
 	SkylineOptionType	option_type;
 	SkylineMethod		skyline_method;
 } SkylineAnOption;
@@ -120,7 +120,7 @@ skyline_method_forced_by_options(SkylineClause *skyline_clause)
 				if (skyline_method != SM_UNKNOWN)
 				{
 					if (skyline_method == anoption->skyline_method)
-						elog(WARNING, "skyline method specified more than once", option->name);
+						elog(WARNING, "skyline method `%s' specified more than once", option->name);
 					else
 						elog(WARNING, "previous skyline method overwritten, now using `%s' for SKYLINE BY", option->name);
 				}

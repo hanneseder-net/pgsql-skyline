@@ -1612,6 +1612,7 @@ _copySkylineBy(SkylineBy *from)
 	SkylineBy  *newnode = makeNode(SkylineBy);
 
 	COPY_SCALAR_FIELD(tleSkylineRef);
+	COPY_SCALAR_FIELD(restype);
 	COPY_SCALAR_FIELD(sortop);
 	COPY_SCALAR_FIELD(nulls_first);
 	COPY_SCALAR_FIELD(skylineby_dir);

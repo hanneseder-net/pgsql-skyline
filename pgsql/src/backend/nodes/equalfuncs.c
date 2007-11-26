@@ -1898,6 +1898,18 @@ _equalSortClause(SortClause *a, SortClause *b)
 }
 
 static bool
+_equalSkylineBy(SkylineBy *a, SkylineBy *b)
+{
+	COMPARE_SCALAR_FIELD(tleSkylineRef);
+	COMPARE_SCALAR_FIELD(restype);
+	COMPARE_SCALAR_FIELD(sortop);
+	COMPARE_SCALAR_FIELD(nulls_first);
+	COMPARE_SCALAR_FIELD(skylineby_dir);
+
+	return true;
+}
+
+static bool
 _equalSkylineClause(SkylineClause *a, SkylineClause *b)
 {
 	COMPARE_SCALAR_FIELD(skyline_distinct);
@@ -2540,8 +2552,7 @@ equal(void *a, void *b)
 			retval = _equalSkylineClause(a, b);
 			break;
 		case T_SkylineBy:
-			/* SkylineBy is equivalent to SortClause */
-			retval = _equalSortClause(a, b);
+			retval = _equalSkylineBy(a, b);
 			break;
 		case T_RowMarkClause:
 			retval = _equalRowMarkClause(a, b);

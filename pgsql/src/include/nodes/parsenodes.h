@@ -731,6 +731,7 @@ typedef struct SkylineBy
 {
 	NodeTag			type;
 	Index			tleSkylineRef;	/* reference into targetlist */
+	Oid				restype;		/* type of the skyline expression */
 	Oid				sortop;			/* the ordering operator ('<' op) */
 	bool			nulls_first;	/* do NULLs come before normal values? */
 	SkylineByDir	skylineby_dir;

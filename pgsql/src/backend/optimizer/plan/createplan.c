@@ -2753,29 +2753,30 @@ make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause, SkylineMet
 	numskylinecols = 0;
 	foreach(l, skylinecls)
 	{
-		SkylineBy		   *skylinecl = (SkylineBy *) lfirst(l);
-		TargetEntry		   *tle = get_skylineclause_tle(skylinecl, sub_tlist);
+		SkylineBy		   *skylineby = (SkylineBy *) lfirst(l);
+		TargetEntry		   *tle = get_skylineclause_tle(skylineby, sub_tlist);
 		VariableStatData	vardata;
 
 		node->skylineColIdx[numskylinecols] = tle->resno;
-		node->skylinebyOperators[numskylinecols] = skylinecl->sortop;
-		node->nullsFirst[numskylinecols] = skylinecl->nulls_first;
-		node->skylineByDir[numskylinecols] = (int) skylinecl->skylineby_dir;
+		node->skylinebyOperators[numskylinecols] = skylineby->sortop;
+		node->nullsFirst[numskylinecols] = skylineby->nulls_first;
+		node->skylineByDir[numskylinecols] = (int) skylineby->skylineby_dir;
 	
+		/* HACK: examine stats */
 		examine_variable(root, (Node *)tle->expr, 0, &vardata);
 		if (vardata.statsTuple != NULL)
 		{
 			Datum	min;
 			Datum	max;
 
-			if(get_variable_range(root, &vardata, skylinecl->sortop,
+			if(get_variable_range(root, &vardata, skylineby->sortop,
 								  &min, &max))
 			{
 				char	   *min_value;
 				char	   *max_value;
 
-				min_value = datum_to_text(min, false, exprType((Node *) tle->expr));
-				max_value = datum_to_text(max, false, exprType((Node *) tle->expr));
+				min_value = datum_to_text(min, false, skylineby->restype);
+				max_value = datum_to_text(max, false, skylineby->restype);
 
 				elog(DEBUG1, "stats for column '%s': [%s,%s]", (tle->resname ? tle->resname : "?"), min_value, max_value);
 

@@ -241,6 +241,7 @@ _readSkylineBy(void)
 	READ_LOCALS(SkylineBy);
 
 	READ_UINT_FIELD(tleSkylineRef);
+	READ_OID_FIELD(restype);
 	READ_OID_FIELD(sortop);
 	READ_BOOL_FIELD(nulls_first);
 	READ_INT_FIELD(skylineby_dir);

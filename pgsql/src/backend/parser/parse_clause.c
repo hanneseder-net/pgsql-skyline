@@ -1835,33 +1835,34 @@ addTargetToSkylineList(ParseState *pstate, TargetEntry *tle,
 			break;
 	}
 
-	/* avoid making duplicate skyline list entries */
+	/* FIXME: avoid making duplicate skyline list entries */
 	if (!targetIsInSortList(tle, skylineop, skylinelist))
 	{
-		SkylineBy  *skylinecl = makeNode(SkylineBy);
+		SkylineBy  *skylineby = makeNode(SkylineBy);
 
-		skylinecl->tleSkylineRef = assignSortGroupRef(tle, targetlist);
-		skylinecl->sortop = skylineop;
-		skylinecl->skylineby_dir = skylineby_dir;
+		skylineby->tleSkylineRef = assignSortGroupRef(tle, targetlist);
+		skylineby->restype = restype;
+		skylineby->sortop = skylineop;
+		skylineby->skylineby_dir = skylineby_dir;
 
 		switch (skylineby_nulls)
 		{
 			case SKYLINEBY_NULLS_DEFAULT:
 				/* NULLS FIRST is default for DESC; other way for ASC */
-				skylinecl->nulls_first = reverse;
+				skylineby->nulls_first = reverse;
 				break;
 			case SKYLINEBY_NULLS_FIRST:
-				skylinecl->nulls_first = true;
+				skylineby->nulls_first = true;
 				break;
 			case SKYLINEBY_NULLS_LAST:
-				skylinecl->nulls_first = false;
+				skylineby->nulls_first = false;
 				break;
 			default:
 				elog(ERROR, "unrecognized skylineby_nulls: %d", skylineby_nulls);
 				break;
 		}
 
-		skylinelist = lappend(skylinelist, skylinecl);
+		skylinelist = lappend(skylinelist, skylineby);
 	}
 
 	return skylinelist;

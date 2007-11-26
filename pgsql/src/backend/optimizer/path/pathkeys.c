@@ -964,7 +964,7 @@ make_pathkeys_for_skylineclause(PlannerInfo *root,
 			sortkey = (Expr *) get_sortgroupclause_expr((SortClause *) skylineby, tlist);
 			pathkey = make_pathkey_from_sortinfo(root,
 												 sortkey,
-												 skylineby->sortop,
+												 skylineby->skylineop,
 												 skylineby->nulls_first,
 												 skylineby->tleSkylineRef,
 												 canonicalize);

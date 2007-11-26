@@ -1842,7 +1842,7 @@ addTargetToSkylineList(ParseState *pstate, TargetEntry *tle,
 
 		skylineby->tleSkylineRef = assignSortGroupRef(tle, targetlist);
 		skylineby->restype = restype;
-		skylineby->sortop = skylineop;
+		skylineby->skylineop = skylineop;
 		skylineby->skylineby_dir = skylineby_dir;
 
 		switch (skylineby_nulls)

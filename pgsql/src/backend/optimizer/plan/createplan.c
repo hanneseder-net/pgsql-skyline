@@ -2758,7 +2758,7 @@ make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause, SkylineMet
 		VariableStatData	vardata;
 
 		node->skylineColIdx[numskylinecols] = tle->resno;
-		node->skylinebyOperators[numskylinecols] = skylineby->sortop;
+		node->skylinebyOperators[numskylinecols] = skylineby->skylineop;
 		node->nullsFirst[numskylinecols] = skylineby->nulls_first;
 		node->skylineByDir[numskylinecols] = (int) skylineby->skylineby_dir;
 	
@@ -2769,7 +2769,7 @@ make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause, SkylineMet
 			Datum	min;
 			Datum	max;
 
-			if(get_variable_range(root, &vardata, skylineby->sortop,
+			if(get_variable_range(root, &vardata, skylineby->skylineop,
 								  &min, &max))
 			{
 				char	   *min_value;

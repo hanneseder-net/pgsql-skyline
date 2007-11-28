@@ -51,6 +51,7 @@
 /join.sql////*///
 /limit.sql////*///
 /lseg.sql////*///
+/money.sql////*///
 /mule_internal.sql////*///
 /name.sql////*///
 /namespace.sql////*///

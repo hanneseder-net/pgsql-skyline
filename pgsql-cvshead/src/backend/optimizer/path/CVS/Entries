@@ -1,8 +1,8 @@
 /Makefile/1.18/Sat Jan 20 20:45:38 2007//
 /allpaths.c/1.166/Mon Nov 19 11:52:42 2007//
-/clausesel.c/1.87/Wed Sep  5 06:36:58 2007//
+/clausesel.c/1.88/Wed Nov 28 09:47:15 2007//
 /costsize.c/1.189/Mon Nov 19 11:52:42 2007//
-/equivclass.c/1.6/Mon Nov 19 11:52:42 2007//
+/equivclass.c/1.7/Wed Nov 28 09:47:15 2007//
 /indxpath.c/1.225/Mon Nov 19 11:52:42 2007//
 /joinpath.c/1.113/Mon Nov 19 11:52:42 2007//
 /joinrels.c/1.89/Mon Nov 19 11:52:42 2007//

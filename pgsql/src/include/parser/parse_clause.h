@@ -48,5 +48,6 @@ extern List *addTargetToSortList(ParseState *pstate, TargetEntry *tle,
 					List *sortby_opname, bool resolveUnknown);
 extern Index assignSortGroupRef(TargetEntry *tle, List *tlist);
 extern bool targetIsInSortList(TargetEntry *tle, Oid sortop, List *sortList);
+extern bool targetIsInSkylineList(TargetEntry *tle, Oid skylineop, List *skylineList);
 
 #endif   /* PARSE_CLAUSE_H */

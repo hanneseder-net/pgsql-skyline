@@ -1836,7 +1836,7 @@ addTargetToSkylineList(ParseState *pstate, TargetEntry *tle,
 	}
 
 	/* FIXME: avoid making duplicate skyline list entries */
-	if (!targetIsInSortList(tle, skylineop, skylinelist))
+	if (!targetIsInSkylineList(tle, skylineop, skylinelist))
 	{
 		SkylineBy  *skylineby = makeNode(SkylineBy);
 
@@ -1934,6 +1934,34 @@ targetIsInSortList(TargetEntry *tle, Oid sortop, List *sortList)
 			(sortop == InvalidOid ||
 			 sortop == scl->sortop ||
 			 sortop == get_commutator(scl->sortop)))
+			return true;
+	}
+	return false;
+}
+
+/*
+ * targetIsInSkylineList
+ *
+ *	FIXME
+ */
+bool
+targetIsInSkylineList(TargetEntry *tle, Oid skylineop, List *skylineList)
+{
+	Index		ref = tle->ressortgroupref;
+	ListCell   *l;
+
+	/* no need to scan list if tle has no marker */
+	if (ref == 0)
+		return false;
+
+	foreach(l, skylineList)
+	{
+		SkylineBy *skylineby = (SkylineBy *) lfirst(l);
+
+		if (skylineby->tleSkylineRef == ref &&
+			(skylineop == InvalidOid ||
+			 skylineop == skylineby->skylineop ||
+			 skylineop == get_commutator(skylineby->skylineop)))
 			return true;
 	}
 	return false;

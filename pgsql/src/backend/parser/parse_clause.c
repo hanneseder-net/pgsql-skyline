@@ -31,6 +31,7 @@
 #include "parser/parse_oper.h"
 #include "parser/parse_relation.h"
 #include "parser/parse_target.h"
+#include "parser/parse_type.h"
 #include "rewrite/rewriteManip.h"
 #include "utils/guc.h"
 #include "utils/lsyscache.h"
@@ -1839,11 +1840,24 @@ addTargetToSkylineList(ParseState *pstate, TargetEntry *tle,
 	if (!targetIsInSkylineList(tle, skylineop, skylinelist))
 	{
 		SkylineBy  *skylineby = makeNode(SkylineBy);
+		Oid			targetType = FLOAT8OID;
 
 		skylineby->tleSortGroupRef = assignSortGroupRef(tle, targetlist);
 		skylineby->restype = restype;
 		skylineby->skylineop = skylineop;
 		skylineby->skylineby_dir = skylineby_dir;
+		skylineby->can_coerce = can_coerce_type(1, &restype, &targetType, COERCION_EXPLICIT);
+		if (skylineby->can_coerce)
+		{
+			skylineby->min = Float8GetDatum(0.0);
+			skylineby->max = Float8GetDatum(1.0);
+		}
+		else
+		{
+			skylineby->min = Float8GetDatum(0.0);
+			skylineby->max = Float8GetDatum(1.0);
+		}
+
 
 		switch (skylineby_nulls)
 		{

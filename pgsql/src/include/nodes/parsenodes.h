@@ -735,6 +735,10 @@ typedef struct SkylineBy
 	Oid				skylineop;		/* the ordering operator ('<' op) */
 	bool			nulls_first;	/* do NULLs come before normal values? */
 	SkylineByDir	skylineby_dir;
+
+	bool			can_coerce;
+	Datum			min;
+	Datum			max;
 } SkylineBy;
 
 /*

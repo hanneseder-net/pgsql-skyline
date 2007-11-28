@@ -1809,7 +1809,7 @@ _outSkylineBy(StringInfo str, SkylineBy *node)
 {
 	WRITE_NODE_TYPE("SKYLINEBY");
 
-	WRITE_UINT_FIELD(tleSkylineRef);
+	WRITE_UINT_FIELD(tleSortGroupRef);
 	WRITE_OID_FIELD(restype);
 	WRITE_OID_FIELD(skylineop);
 	WRITE_BOOL_FIELD(nulls_first);

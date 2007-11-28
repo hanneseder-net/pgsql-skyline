@@ -966,7 +966,7 @@ make_pathkeys_for_skylineclause(PlannerInfo *root,
 												 sortkey,
 												 skylineby->skylineop,
 												 skylineby->nulls_first,
-												 skylineby->tleSkylineRef,
+												 skylineby->tleSortGroupRef,
 												 canonicalize);
 
 			/* Canonical form eliminates redundant ordering keys */

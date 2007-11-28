@@ -1840,7 +1840,7 @@ addTargetToSkylineList(ParseState *pstate, TargetEntry *tle,
 	{
 		SkylineBy  *skylineby = makeNode(SkylineBy);
 
-		skylineby->tleSkylineRef = assignSortGroupRef(tle, targetlist);
+		skylineby->tleSortGroupRef = assignSortGroupRef(tle, targetlist);
 		skylineby->restype = restype;
 		skylineby->skylineop = skylineop;
 		skylineby->skylineby_dir = skylineby_dir;
@@ -1958,7 +1958,7 @@ targetIsInSkylineList(TargetEntry *tle, Oid skylineop, List *skylineList)
 	{
 		SkylineBy *skylineby = (SkylineBy *) lfirst(l);
 
-		if (skylineby->tleSkylineRef == ref &&
+		if (skylineby->tleSortGroupRef == ref &&
 			(skylineop == InvalidOid ||
 			 skylineop == skylineby->skylineop ||
 			 skylineop == get_commutator(skylineby->skylineop)))

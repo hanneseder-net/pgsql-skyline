@@ -1900,7 +1900,7 @@ _equalSortClause(SortClause *a, SortClause *b)
 static bool
 _equalSkylineBy(SkylineBy *a, SkylineBy *b)
 {
-	COMPARE_SCALAR_FIELD(tleSkylineRef);
+	COMPARE_SCALAR_FIELD(tleSortGroupRef);
 	COMPARE_SCALAR_FIELD(restype);
 	COMPARE_SCALAR_FIELD(skylineop);
 	COMPARE_SCALAR_FIELD(nulls_first);

@@ -240,7 +240,7 @@ _readSkylineBy(void)
 {
 	READ_LOCALS(SkylineBy);
 
-	READ_UINT_FIELD(tleSkylineRef);
+	READ_UINT_FIELD(tleSortGroupRef);
 	READ_OID_FIELD(restype);
 	READ_OID_FIELD(skylineop);
 	READ_BOOL_FIELD(nulls_first);

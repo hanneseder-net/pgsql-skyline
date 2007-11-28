@@ -158,7 +158,7 @@ TargetEntry *
 get_skylineclause_tle(SkylineBy *skylineBy,
 					  List *targetList)
 {
-	Index		refnumber = skylineBy->tleSkylineRef;
+	Index		refnumber = skylineBy->tleSortGroupRef;
 	ListCell   *l;
 
 	foreach(l, targetList)

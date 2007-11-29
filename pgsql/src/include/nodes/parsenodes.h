@@ -727,6 +727,11 @@ typedef struct SkylineClause
  *
  * FIXME
  */
+#define SKYLINE_FLAGS_NONE			0
+#define SKYLINE_FLAGS_FLOAT8		1
+#define SKYLINE_FLAGS_COERCE		2
+#define SKYLINE_FLAGS_HAVE_STATS	4
+
 typedef struct SkylineBy
 {
 	NodeTag			type;
@@ -735,10 +740,7 @@ typedef struct SkylineBy
 	Oid				skylineop;		/* the ordering operator ('<' op) */
 	bool			nulls_first;	/* do NULLs come before normal values? */
 	SkylineByDir	skylineby_dir;
-
-	bool			can_coerce;
-	Datum			min;
-	Datum			max;
+	int				flags;			/* see SKYLINE_FLAGS_* */
 } SkylineBy;
 
 /*

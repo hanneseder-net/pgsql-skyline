@@ -1905,6 +1905,7 @@ _equalSkylineBy(SkylineBy *a, SkylineBy *b)
 	COMPARE_SCALAR_FIELD(skylineop);
 	COMPARE_SCALAR_FIELD(nulls_first);
 	COMPARE_SCALAR_FIELD(skylineby_dir);
+	COMPARE_SCALAR_FIELD(flags);
 
 	return true;
 }

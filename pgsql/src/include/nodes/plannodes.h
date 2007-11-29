@@ -478,6 +478,9 @@ typedef struct Skyline
 	Oid		   *skylinebyOperators;
 	bool	   *nullsFirst;
 	int		   *skylineByDir;
+	int		   *colFlags;
+	float8	   *colMin;
+	float8	   *colRange;
 	List	   *skyline_by_options;
 	SkylineMethod skyline_method;
 } Skyline;

@@ -590,6 +590,18 @@ _outSkyline(StringInfo str, Skyline *node)
 	for (i = 0; i < node->numCols; ++i)
 		appendStringInfo(str, " %d", node->skylineByDir[i]);
 
+	appendStringInfo(str, " :colFlags");
+	for (i = 0; i < node->numCols; ++i)
+		appendStringInfo(str, " %d", node->colFlags[i]);
+
+	appendStringInfo(str, " :colMin");
+	for (i = 0; i < node->numCols; ++i)
+		appendStringInfo(str, " %e", node->colMin[i]);
+
+	appendStringInfo(str, " :colRange");
+	for (i = 0; i < node->numCols; ++i)
+		appendStringInfo(str, " %e", node->colRange[i]);
+
 	WRITE_NODE_FIELD(skyline_by_options);
 	WRITE_INT_FIELD(skyline_method);
 }
@@ -1814,6 +1826,7 @@ _outSkylineBy(StringInfo str, SkylineBy *node)
 	WRITE_OID_FIELD(skylineop);
 	WRITE_BOOL_FIELD(nulls_first);
 	WRITE_INT_FIELD(skylineby_dir);
+	WRITE_INT_FIELD(flags);
 }
 
 static void

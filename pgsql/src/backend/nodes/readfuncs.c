@@ -245,6 +245,7 @@ _readSkylineBy(void)
 	READ_OID_FIELD(skylineop);
 	READ_BOOL_FIELD(nulls_first);
 	READ_INT_FIELD(skylineby_dir);
+	READ_INT_FIELD(flags);
 
 	READ_DONE();
 }

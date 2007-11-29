@@ -2749,6 +2749,9 @@ make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause, SkylineMet
 	node->skylinebyOperators = (Oid *) palloc(numskylinecols * sizeof(Oid));
 	node->nullsFirst = (bool *) palloc(numskylinecols * sizeof(bool));
 	node->skylineByDir = (int *) palloc(numskylinecols * sizeof(int));
+	node->colFlags = (int *) palloc(numskylinecols * sizeof(int));
+	node->colMin = (float8 *) palloc(numskylinecols * sizeof(float8));
+	node->colRange = (float8 *) palloc(numskylinecols * sizeof(float8));
 
 	numskylinecols = 0;
 	foreach(l, skylinecls)
@@ -2762,31 +2765,45 @@ make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause, SkylineMet
 		node->nullsFirst[numskylinecols] = skylineby->nulls_first;
 		node->skylineByDir[numskylinecols] = (int) skylineby->skylineby_dir;
 	
-		/* HACK: examine stats */
-		examine_variable(root, (Node *)tle->expr, 0, &vardata);
-		if (vardata.statsTuple != NULL)
+		if (skylineby->flags & SKYLINE_FLAGS_COERCE)
 		{
-			Datum	min;
-			Datum	max;
-
-			if(get_variable_range(root, &vardata, skylineby->skylineop,
-								  &min, &max))
+			/* examine stats */
+			examine_variable(root, (Node *)tle->expr, 0, &vardata);
+			if (vardata.statsTuple != NULL)
 			{
-				char	   *min_value;
-				char	   *max_value;
+				Datum	min;
+				Datum	max;
 
-				min_value = datum_to_text(min, false, skylineby->restype);
-				max_value = datum_to_text(max, false, skylineby->restype);
+				if(get_variable_range(root, &vardata, skylineby->skylineop,
+									  &min, &max))
+				{
+					char	   *min_value;
+					char	   *max_value;
 
-				elog(DEBUG1, "stats for column '%s': [%s,%s]", (tle->resname ? tle->resname : "?"), min_value, max_value);
+					min_value = datum_to_text(min, false, skylineby->restype);
+					max_value = datum_to_text(max, false, skylineby->restype);
 
-				pfree(min_value);
-				pfree(max_value);
+					elog(DEBUG1, "stats for column '%s': [%s,%s]", (tle->resname ? tle->resname : "?"), min_value, max_value);
+
+					pfree(min_value);
+					pfree(max_value);
+
+					skylineby->flags |= SKYLINE_FLAGS_HAVE_STATS;
+
+				}
 			}
+			else
+				elog(DEBUG1, "no stats for column '%s'", (tle->resname ? tle->resname : "?"));
+			ReleaseVariableStats(vardata);
 		}
-		else
-			elog(DEBUG1, "no stats for column '%s'", (tle->resname ? tle->resname : "?"));
-		ReleaseVariableStats(vardata);
+
+		if (!(skylineby->flags & SKYLINE_FLAGS_HAVE_STATS))
+		{
+			/* just place some sane values there */
+			/* FIXME: we could try to estimate stats */
+			node->colMin[numskylinecols] = 0.0;
+			node->colRange[numskylinecols] = 1.0;
+		}
 
 		numskylinecols++;
 	}

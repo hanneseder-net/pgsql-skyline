@@ -14,7 +14,7 @@
 /alter_role.sgml/1.9/Wed Sep  5 06:36:56 2007//
 /alter_schema.sgml/1.9/Sat Sep 16 00:30:16 2006//
 /alter_sequence.sgml/1.19/Tue Oct 30 09:22:10 2007//
-/alter_table.sgml/1.97/Sat May 19 08:06:13 2007//
+/alter_table.sgml/1.98/Fri Nov 30 14:35:17 2007//
 /alter_tablespace.sgml/1.3/Sat Sep 16 00:30:16 2006//
 /alter_trigger.sgml/1.10/Sat Sep 16 00:30:16 2006//
 /alter_tsconfig.sgml/1.3/Wed Aug 22 06:26:32 2007//
@@ -45,7 +45,7 @@
 /create_index.sgml/1.66/Wed Nov 28 09:47:14 2007//
 /create_language.sgml/1.44/Mon Mar 26 16:58:38 2007//
 /create_opclass.sgml/1.20/Wed Jan 31 23:26:03 2007//
-/create_operator.sgml/1.48/Thu Feb  1 00:28:18 2007//
+/create_operator.sgml/1.49/Fri Nov 30 14:35:17 2007//
 /create_opfamily.sgml/1.3/Wed Feb 14 04:30:26 2007//
 /create_role.sgml/1.10/Thu Nov  8 22:04:03 2007//
 /create_rule.sgml/1.52/Thu Nov  8 22:04:04 2007//
@@ -67,7 +67,7 @@
 /createuser.sgml/1.50/Sat Jun 23 07:56:15 2007//
 /deallocate.sgml/1.10/Thu Apr 12 06:53:46 2007//
 /declare.sgml/1.42/Tue Oct 30 09:22:10 2007//
-/delete.sgml/1.31/Tue Jun 12 07:05:41 2007//
+/delete.sgml/1.32/Fri Nov 30 14:35:17 2007//
 /discard.sgml/1.2/Thu Apr 26 18:00:24 2007//
 /drop_aggregate.sgml/1.31/Tue May 15 21:22:53 2007//
 /drop_cast.sgml/1.8/Sat Sep 16 00:30:18 2006//
@@ -102,7 +102,7 @@
 /ecpg-ref.sgml/1.32/Wed Jan 31 23:26:03 2007//
 /end.sgml/1.14/Sat Sep 16 00:30:18 2006//
 /execute.sgml/1.15/Tue May 15 21:22:53 2007//
-/explain.sgml/1.40/Thu Apr 12 22:39:21 2007//
+/explain.sgml/1.41/Fri Nov 30 14:35:17 2007//
 /fetch.sgml/1.41/Tue Oct 30 09:22:11 2007//
 /grant.sgml/1.67/Thu Nov  8 22:04:04 2007//
 /initdb.sgml/1.43/Mon Mar 26 17:23:36 2007//
@@ -135,7 +135,7 @@
 /rollback_prepared.sgml/1.3/Sat Sep 16 00:30:20 2006//
 /rollback_to.sgml/1.9/Thu Feb  1 19:10:24 2007//
 /savepoint.sgml/1.5/Sat Sep 16 00:30:20 2006//
-/select.sgml/1.101/Sat Jun  9 11:02:29 2007//
+/select.sgml/1.102/Fri Nov 30 14:35:17 2007//
 /select_into.sgml/1.39/Tue Jan  9 02:14:10 2007//
 /set.sgml/1.91/Fri Sep 14 18:55:52 2007//
 /set_constraints.sgml/1.15/Sat Feb 10 20:43:59 2007//
@@ -146,7 +146,7 @@
 /start_transaction.sgml/1.16/Wed Jan 31 23:26:04 2007//
 /truncate.sgml/1.24/Sat May 12 09:16:11 2007//
 /unlisten.sgml/1.29/Wed Jan 31 23:26:04 2007//
-/update.sgml/1.44/Tue Jun 12 07:05:41 2007//
+/update.sgml/1.45/Fri Nov 30 14:35:17 2007//
 /vacuum.sgml/1.50/Wed Nov 28 09:47:14 2007//
 /vacuumdb.sgml/1.41/Mon Jun  4 20:00:12 2007//
 /values.sgml/1.4/Thu Feb  1 00:28:19 2007//

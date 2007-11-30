@@ -13,12 +13,12 @@
 /charset.sgml/2.84/Sun Sep 30 10:29:52 2007//
 /chkpass.sgml/1.1/Sat Nov 10 23:30:46 2007//
 /client-auth.sgml/1.104/Mon Nov 19 11:52:30 2007//
-/config.sgml/1.156/Mon Nov 19 11:52:30 2007//
+/config.sgml/1.157/Wed Nov 28 09:47:13 2007//
 /contacts.sgml/1.9/Fri Mar 10 19:10:47 2006//
 /contrib.sgml/1.4/Mon Nov 19 11:52:30 2007//
 /cube.sgml/1.2/Sun Nov 11 14:23:18 2007//
 /cvs.sgml/1.47/Mon Aug  6 09:10:16 2007//
-/datatype.sgml/1.217/Thu Nov 22 22:38:42 2007//
+/datatype.sgml/1.220/Wed Nov 28 09:47:13 2007//
 /datetime.sgml/2.56/Wed Jan 31 20:56:16 2007//
 /dblink.sgml/1.1/Sat Nov 10 23:30:46 2007//
 /ddl.sgml/1.76/Sat Jun 23 07:56:15 2007//
@@ -35,7 +35,7 @@
 /filelist.sgml/1.53/Mon Nov 19 11:52:30 2007//
 /fixrtf/2.3/Sat Mar 11 04:38:30 2006//
 /freespacemap.sgml/1.1/Sat Nov 10 23:30:46 2007//
-/func.sgml/1.411/Thu Nov  8 22:04:02 2007//
+/func.sgml/1.413/Wed Nov 28 09:47:14 2007//
 /fuzzystrmatch.sgml/1.1/Sat Nov 10 23:30:46 2007//
 /geqo.sgml/1.40/Wed Aug  1 09:00:45 2007//
 /gin.sgml/2.13/Mon Nov 19 11:52:30 2007//
@@ -99,7 +99,7 @@
 /standalone-install.sgml/2.6/Sat Nov 29 19:51:37 2003//
 /standby.sgml/1.1/Sat Nov 10 23:30:46 2007//
 /start.sgml/1.45/Sat Jun 23 07:56:15 2007//
-/storage.sgml/1.20/Mon Oct  1 20:16:03 2007//
+/storage.sgml/1.21/Wed Nov 28 09:47:14 2007//
 /stylesheet-common.xsl/1.1/Sun Dec 10 16:01:06 2006//
 /stylesheet-fo.xsl/1.1/Sun Dec 10 16:01:06 2006//
 /stylesheet-hh.xsl/1.2/Sun Dec 10 16:01:06 2006//
@@ -112,7 +112,7 @@
 /trgm.sgml/1.3/Mon Nov 19 11:52:31 2007//
 /trigger.sgml/1.50/Wed Feb 14 01:58:56 2007//
 /tsearch2.sgml/1.1/Wed Nov 14 01:09:50 2007//
-/typeconv.sgml/1.52/Wed Jun  6 16:05:49 2007//
+/typeconv.sgml/1.53/Wed Nov 28 09:47:14 2007//
 /user-manag.sgml/1.39/Thu Feb  1 00:28:18 2007//
 /uuid-ossp.sgml/1.1/Sat Nov 10 23:30:46 2007//
 /vacuumlo.sgml/1.1/Sat Nov 10 23:30:46 2007//

@@ -24,7 +24,7 @@
 /tablecmds.c/1.236/Mon Nov 19 11:52:38 2007//
 /tablespace.c/1.51/Mon Nov 19 11:52:38 2007//
 /trigger.c/1.224/Mon Nov 19 11:52:38 2007//
-/tsearchcmds.c/1.7/Mon Nov 19 11:52:38 2007//
+/tsearchcmds.c/1.8/Fri Nov 30 14:35:18 2007//
 /typecmds.c/1.112/Mon Nov 19 11:52:39 2007//
 /user.c/1.177/Wed Sep  5 06:36:58 2007//
 /vacuum.c/1.361/Mon Nov 19 11:52:39 2007//

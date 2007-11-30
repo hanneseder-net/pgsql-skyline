@@ -15,6 +15,7 @@ AC_CHECK_FUNCS([basename])
 AC_CHECK_FUNCS([getopt])
 AC_CHECK_FUNCS([snprintf])
 AC_CHECK_FUNCS([sqrt])
+AC_CHECK_LIB(m,sqrt)
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([Makefile src/Makefile])
 AC_OUTPUT

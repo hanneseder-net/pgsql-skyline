@@ -1,6 +1,4 @@
 /Makefile////*///
-/README.spi////*///
-/README.timetravel////*///
 /autoinc.c////*///
 /autoinc.example////*///
 /autoinc.sql.in////*///

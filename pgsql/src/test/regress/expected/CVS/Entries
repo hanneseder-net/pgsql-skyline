@@ -11,7 +11,7 @@
 /char_1.out/1.2/Thu Apr  7 01:51:40 2005//
 /circle.out/1.9/Tue Jan  9 02:14:16 2007//
 /cluster.out/1.20/Wed Sep  5 06:37:21 2007//
-/combocid.out/1.1/Fri Feb  9 03:35:35 2007//
+/combocid.out/1.2/Mon Dec  3 14:34:47 2007//
 /comments.out/1.3/Fri Jul 14 15:43:55 2000//
 /conversion.out/1.14/Mon Sep 24 20:20:35 2007//
 /copy2.out/1.25/Mon Feb 27 16:09:50 2006//
@@ -48,7 +48,7 @@
 /hash_index.out/1.6/Thu Apr  7 01:51:40 2005//
 /horology.out/1.66/Wed Aug  1 09:01:17 2007//
 /inet.out/1.23/Tue Jan  2 23:38:42 2007//
-/inherit.out/1.22/Wed Aug  1 09:01:17 2007//
+/inherit.out/1.23/Mon Dec  3 14:34:47 2007//
 /insert.out/1.8/Thu Aug  3 14:54:44 2006//
 /int2.out/1.13/Thu Apr  7 01:51:40 2005//
 /int4.out/1.15/Thu Apr  7 01:51:40 2005//
@@ -70,7 +70,7 @@
 /oidjoins.out/1.21/Wed Sep  5 06:37:21 2007//
 /opr_sanity.out/1.79/Wed Nov 28 09:47:33 2007//
 /path.out/1.6/Thu Sep 25 06:58:06 2003//
-/plancache.out/1.5/Tue Oct 16 08:26:51 2007//
+/plancache.out/1.6/Mon Dec  3 14:34:47 2007//
 /plpgsql.out/1.58/Wed Aug  1 09:01:17 2007//
 /point.out/1.17/Wed May 30 13:52:58 2007//
 /polygon.out/1.13/Sun Sep 10 00:29:35 2006//

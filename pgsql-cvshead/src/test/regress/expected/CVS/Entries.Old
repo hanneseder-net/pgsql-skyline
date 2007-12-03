@@ -26,7 +26,7 @@
 /date.out/1.6/Fri Aug 20 03:45:13 2004//
 /delete.out/1.2/Tue Mar 14 22:50:46 2006//
 /dependency.out/1.5/Tue Sep  5 21:08:36 2006//
-/domain.out/1.42/Tue Oct 30 09:22:36 2007//
+/domain.out/1.43/Wed Nov 28 09:47:33 2007//
 /drop_if_exists.out/1.2/Sat Feb  4 19:06:47 2006//
 /enum.out/1.1/Mon Apr  2 03:49:42 2007//
 /errors.out/1.53/Mon Nov 12 10:59:36 2007//
@@ -59,6 +59,7 @@
 /join_1.out/1.14/Wed Sep  5 06:37:21 2007//
 /limit.out/1.5/Sat May 19 08:06:22 2007//
 /lseg.out/1.9/Thu Sep 25 06:58:06 2003//
+/money.out/1.1/Sat Nov 24 19:49:23 2007//
 /mule_internal.out/1.5/Thu Mar 16 11:55:43 2000//
 /name.out/1.9/Thu Apr  7 01:51:40 2005//
 /namespace.out/1.3/Mon Aug 21 00:57:26 2006//
@@ -67,7 +68,7 @@
 /numerology.out/1.4/Wed Mar 15 23:31:06 2000//
 /oid.out/1.12/Thu Apr  7 01:51:40 2005//
 /oidjoins.out/1.21/Wed Sep  5 06:37:21 2007//
-/opr_sanity.out/1.78/Wed Sep  5 06:37:21 2007//
+/opr_sanity.out/1.79/Wed Nov 28 09:47:33 2007//
 /path.out/1.6/Thu Sep 25 06:58:06 2003//
 /plancache.out/1.5/Tue Oct 16 08:26:51 2007//
 /plpgsql.out/1.58/Wed Aug  1 09:01:17 2007//
@@ -85,7 +86,7 @@
 /returning.out/1.4/Fri Oct  6 17:14:01 2006//
 /rowtypes.out/1.11/Fri Apr  6 04:21:44 2007//
 /rules.out/1.135/Fri Sep 28 13:32:49 2007//
-/sanity_check.out/1.36/Wed Sep  5 06:37:21 2007//
+/sanity_check.out/1.37/Wed Nov 28 09:47:34 2007//
 /select.out/1.18/Mon Jul  9 10:06:13 2007//
 /select_1.out/1.1/Fri Nov  9 22:52:08 2007//
 /select_distinct.out/1.5/Sun Dec 11 10:54:28 2005//
@@ -115,7 +116,7 @@
 /triggers.out/1.24/Thu Feb  1 19:10:30 2007//
 /truncate.out/1.12/Thu Jun 29 16:07:29 2006//
 /tsdicts.out/1.4/Mon Nov 12 10:59:36 2007//
-/tsearch.out/1.9/Thu Nov 22 22:39:04 2007//
+/tsearch.out/1.10/Wed Nov 28 09:47:34 2007//
 /tstypes.out/1.3/Mon Nov 19 11:53:42 2007//
 /txid.out/1.1/Sat Oct 13 23:06:27 2007//
 /type_sanity.out/1.32/Tue Oct 16 08:26:51 2007//

@@ -8,7 +8,7 @@
 /index.c/1.288/Mon Nov 19 11:52:36 2007//
 /indexing.c/1.115/Fri Sep 21 18:07:24 2007//
 /information_schema.sql/1.42/Tue Feb 27 18:49:43 2007//
-/namespace.c/1.102/Wed Nov 28 09:47:14 2007//
+/namespace.c/1.103/Fri Nov 30 14:35:18 2007//
 /pg_aggregate.c/1.88/Mon Nov 19 11:52:36 2007//
 /pg_constraint.c/1.36/Mon Nov 19 11:52:36 2007//
 /pg_conversion.c/1.39/Mon Nov 19 11:52:36 2007//

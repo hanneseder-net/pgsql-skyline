@@ -1,9 +1,9 @@
 /Makefile/1.17/Fri Sep 21 18:07:23 2007//
 /README.HOT/1.2/Sun Sep 23 18:27:48 2007//
-/heapam.c/1.245/Mon Nov 19 11:52:34 2007//
+/heapam.c/1.246/Mon Dec  3 14:34:38 2007//
 /hio.c/1.67/Fri Sep 21 18:07:24 2007//
 /pruneheap.c/1.5/Mon Nov 19 11:52:34 2007//
 /rewriteheap.c/1.9/Mon Nov 19 11:52:34 2007//
 /syncscan.c/1.3/Mon Nov 19 11:52:34 2007//
-/tuptoaster.c/1.79/Mon Nov 19 11:52:34 2007//
+/tuptoaster.c/1.80/Mon Dec  3 14:34:38 2007//
 D

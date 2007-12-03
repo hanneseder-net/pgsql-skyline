@@ -8,7 +8,7 @@
  *
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/backend/commands/copy.c,v 1.288 2007/11/15 21:14:33 momjian Exp $
+ *	  $PostgreSQL: pgsql/src/backend/commands/copy.c,v 1.290 2007/12/03 00:03:05 tgl Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -1033,7 +1033,7 @@ DoCopy(const CopyStmt *stmt, const char *queryString)
 		 * which COPY can be invoked, I think it's OK, because the active
 		 * snapshot shouldn't be shared with anything else anyway.)
 		 */
-		ActiveSnapshot->curcid = GetCurrentCommandId();
+		ActiveSnapshot->curcid = GetCurrentCommandId(false);
 
 		/* Create dest receiver for COPY OUT */
 		dest = CreateDestReceiver(DestCopyOut, NULL);
@@ -1637,7 +1637,7 @@ CopyFrom(CopyState cstate)
 	ExprContext *econtext;		/* used for ExecEvalExpr for default atts */
 	MemoryContext oldcontext = CurrentMemoryContext;
 	ErrorContextCallback errcontext;
-	CommandId	mycid = GetCurrentCommandId();
+	CommandId	mycid = GetCurrentCommandId(true);
 	bool		use_wal = true; /* by default, use WAL logging */
 	bool		use_fsm = true; /* by default, use FSM for free space */
 
@@ -3102,27 +3102,43 @@ CopyAttributeOutText(CopyState cstate, char *string)
 			}
 			else if ((unsigned char) c < (unsigned char) 0x20)
 			{
+				/*
+				 * \r and \n must be escaped, the others are traditional.
+				 * We prefer to dump these using the C-like notation, rather
+				 * than a backslash and the literal character, because it
+				 * makes the dump file a bit more proof against Microsoftish
+				 * data mangling.
+				 */
 				switch (c)
 				{
-						/*
-						 * \r and \n must be escaped, the others are
-						 * traditional
-						 */
 					case '\b':
+						c = 'b';
+						break;
 					case '\f':
+						c = 'f';
+						break;
 					case '\n':
+						c = 'n';
+						break;
 					case '\r':
+						c = 'r';
+						break;
 					case '\t':
+						c = 't';
+						break;
 					case '\v':
-						DUMPSOFAR();
-						CopySendChar(cstate, '\\');
-						start = ptr++;	/* we include char in next run */
+						c = 'v';
 						break;
 					default:
 						/* All ASCII control chars are length 1 */
 						ptr++;
-						break;
+						continue;		/* fall to end of loop */
 				}
+				/* if we get here, we need to convert the control char */
+				DUMPSOFAR();
+				CopySendChar(cstate, '\\');
+				CopySendChar(cstate, c);
+				start = ++ptr;			/* do not include char in next run */
 			}
 			else if (IS_HIGHBIT_SET(c))
 				ptr += pg_encoding_mblen(cstate->client_encoding, ptr);
@@ -3143,27 +3159,43 @@ CopyAttributeOutText(CopyState cstate, char *string)
 			}
 			else if ((unsigned char) c < (unsigned char) 0x20)
 			{
+				/*
+				 * \r and \n must be escaped, the others are traditional.
+				 * We prefer to dump these using the C-like notation, rather
+				 * than a backslash and the literal character, because it
+				 * makes the dump file a bit more proof against Microsoftish
+				 * data mangling.
+				 */
 				switch (c)
 				{
-						/*
-						 * \r and \n must be escaped, the others are
-						 * traditional
-						 */
 					case '\b':
+						c = 'b';
+						break;
 					case '\f':
+						c = 'f';
+						break;
 					case '\n':
+						c = 'n';
+						break;
 					case '\r':
+						c = 'r';
+						break;
 					case '\t':
+						c = 't';
+						break;
 					case '\v':
-						DUMPSOFAR();
-						CopySendChar(cstate, '\\');
-						start = ptr++;	/* we include char in next run */
+						c = 'v';
 						break;
 					default:
 						/* All ASCII control chars are length 1 */
 						ptr++;
-						break;
+						continue;		/* fall to end of loop */
 				}
+				/* if we get here, we need to convert the control char */
+				DUMPSOFAR();
+				CopySendChar(cstate, '\\');
+				CopySendChar(cstate, c);
+				start = ++ptr;			/* do not include char in next run */
 			}
 			else
 				ptr++;

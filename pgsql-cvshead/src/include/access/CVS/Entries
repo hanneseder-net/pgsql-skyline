@@ -13,7 +13,7 @@
 /multixact.h/1.12/Fri Jan  5 22:19:51 2007//
 /nbtree.h/1.115/Mon Nov 19 11:53:05 2007//
 /printtup.h/1.35/Fri Jan  5 22:19:51 2007//
-/reloptions.h/1.3/Fri Jan  5 22:19:51 2007//
+/reloptions.h/1.4/Mon Dec  3 14:34:43 2007//
 /relscan.h/1.58/Mon Nov 19 11:53:05 2007//
 /rewriteheap.h/1.3/Mon Nov 19 11:53:05 2007//
 /rmgr.h/1.17/Sun Nov  5 22:42:10 2006//
@@ -28,7 +28,7 @@
 /twophase.h/1.9/Fri Jan  5 22:19:51 2007//
 /twophase_rmgr.h/1.5/Wed May 30 13:52:57 2007//
 /valid.h/1.39/Fri Jan  5 22:19:51 2007//
-/xact.h/1.91/Mon Nov 19 11:53:05 2007//
+/xact.h/1.92/Mon Dec  3 14:34:43 2007//
 /xlog.h/1.86/Mon Nov 19 11:53:05 2007//
 /xlog_internal.h/1.21/Mon May 21 06:28:46 2007//
 /xlogdefs.h/1.18/Mon Aug  6 09:10:24 2007//

@@ -45,11 +45,11 @@ ExecElimFilterInitTupleWindow(SkylineState *node, Skyline *sl)
 	 * Can be overrided by an option, otherwise use entire
 	 * work_mem.
 	 */
-	skyline_option_get_int(sl->skyline_by_options, "efwindow", &window_size) ||
-		skyline_option_get_int(sl->skyline_by_options, "efwindowsize", &window_size);
+	skyline_option_get_int(sl->skyline_of_options, "efwindow", &window_size) ||
+		skyline_option_get_int(sl->skyline_of_options, "efwindowsize", &window_size);
 
-	skyline_option_get_int(sl->skyline_by_options, "efslots", &window_slots) ||
-		skyline_option_get_int(sl->skyline_by_options, "efwindowslots", &window_slots);
+	skyline_option_get_int(sl->skyline_of_options, "efslots", &window_slots) ||
+		skyline_option_get_int(sl->skyline_of_options, "efwindowslots", &window_slots);
 
 	if (window_slots == 0)
 	{
@@ -83,7 +83,7 @@ ExecInitElimFilter(ElimFilter *node, EState *estate, int eflags)
 	state->status = SS_INIT;
 
 	state->flags = SL_FLAGS_ENTROPY;
-	if (skyline_option_get_int( node->skyline_by_options, "efentropy", &use_entropy))
+	if (skyline_option_get_int( node->skyline_of_options, "efentropy", &use_entropy))
 	{
 		state->flags |= SL_FLAGS_ENTROPY;
 	}

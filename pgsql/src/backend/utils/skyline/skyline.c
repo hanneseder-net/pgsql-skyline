@@ -60,11 +60,11 @@ skyline_lookup_option(const char *name)
 /*
  * skyline_option_get_int
  *
- *	Query the SKYLINE BY ... WITH param=xxx list for the param `name'
+ *	Query the SKYLINE OF ... WITH param=xxx list for the param `name'
  *	returns true if value is present.
  */
 bool
-skyline_option_get_int(List *skyline_by_options, char *name, int *value)
+skyline_option_get_int(List *skyline_of_options, char *name, int *value)
 {
 	ListCell   *l;
 
@@ -74,7 +74,7 @@ skyline_option_get_int(List *skyline_by_options, char *name, int *value)
 	/* ensure we only lookup known options */
 	Assert(skyline_lookup_option(name) != NULL);
 
-	foreach(l, skyline_by_options)
+	foreach(l, skyline_of_options)
 	{
 		SkylineOption *option = (SkylineOption *) lfirst(l);
 
@@ -108,7 +108,7 @@ skyline_method_forced_by_options(SkylineClause *skyline_clause)
 
 	ListCell   *l;
 
-	foreach(l, skyline_clause->skyline_by_options)
+	foreach(l, skyline_clause->skyline_of_options)
 	{
 		SkylineOption *option = (SkylineOption *) lfirst(l);
 		SkylineAnOption *anoption = skyline_lookup_option(option->name);
@@ -122,7 +122,7 @@ skyline_method_forced_by_options(SkylineClause *skyline_clause)
 					if (skyline_method == anoption->skyline_method)
 						elog(WARNING, "skyline method `%s' specified more than once", option->name);
 					else
-						elog(WARNING, "previous skyline method overwritten, now using `%s' for SKYLINE BY", option->name);
+						elog(WARNING, "previous skyline method overwritten, now using `%s' for SKYLINE OF", option->name);
 				}
 
 				skyline_method = anoption->skyline_method;
@@ -134,7 +134,7 @@ skyline_method_forced_by_options(SkylineClause *skyline_clause)
 		}
 		else
 		{
-			elog(WARNING, "unknown option `%s' for SKYLINE BY", option->name);
+			elog(WARNING, "unknown option `%s' for SKYLINE OF", option->name);
 		}
 	}
 
@@ -147,7 +147,7 @@ skyline_get_dim(SkylineClause *skyline_clause)
 	if (skyline_clause == NULL)
 		return 0;
 	else
-		return list_length(skyline_clause->skyline_by_list);
+		return list_length(skyline_clause->skyline_of_list);
 }
 
 SkylineMethod

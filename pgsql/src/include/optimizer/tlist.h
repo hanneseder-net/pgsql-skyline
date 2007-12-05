@@ -27,7 +27,7 @@ extern TargetEntry *get_sortgroupref_tle(Index sortref,
 					 List *targetList);
 extern TargetEntry *get_sortgroupclause_tle(SortClause *sortClause,
 						List *targetList);
-extern TargetEntry *get_skylineclause_tle(SkylineBy *skylineBy,
+extern TargetEntry *get_skylineclause_tle(SkylineOf *skylineOf,
 						List *targetList);
 extern Node *get_sortgroupclause_expr(SortClause *sortClause,
 						 List *targetList);

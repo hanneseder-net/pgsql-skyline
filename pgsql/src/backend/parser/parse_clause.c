@@ -42,7 +42,7 @@
 #define DISTINCT_ON_CLAUSE 2
 #define SKYLINE_CLAUSE 3
 
-static char *clauseText[] = {"ORDER BY", "GROUP BY", "DISTINCT ON", "SKYLINE BY"};
+static char *clauseText[] = {"ORDER BY", "GROUP BY", "DISTINCT ON", "SKYLINE OF"};
 
 static void extractRemainingColumns(List *common_colnames,
 						List *src_colnames, List *src_colvars,
@@ -1437,39 +1437,39 @@ transformGroupClause(ParseState *pstate, List *grouplist,
  */
 Node *
 transformSkylineClause(ParseState *pstate,
-					   Node *skylineByClause,
+					   Node *skylineOfClause,
 					   List **targetlist,
 					   bool resolveUnknown)
 {
-	if (skylineByClause == NULL)
+	if (skylineOfClause == NULL)
 		return NULL;
 
 	{
-		SkylineByClause *sbc = (SkylineByClause *) skylineByClause;
+		SkylineOfClause *sbc = (SkylineOfClause *) skylineOfClause;
 		List	   *resultlist = NIL;
 		ListCell   *slitem;
-		List	   *skylinelist = sbc->skyline_by_list;
+		List	   *skylinelist = sbc->skyline_of_list;
 		SkylineClause *node = makeNode(SkylineClause);
 
 		foreach(slitem, skylinelist)
 		{
-			SkylineByExpr *skylineby = lfirst(slitem);
+			SkylineOfExpr *skylineof = lfirst(slitem);
 			TargetEntry *tle;
 
-			tle = findTargetlistEntry(pstate, skylineby->node,
+			tle = findTargetlistEntry(pstate, skylineof->node,
 									  targetlist, SKYLINE_CLAUSE);
 
 			resultlist = addTargetToSkylineList(pstate, tle,
 												resultlist, *targetlist,
-												skylineby->skylineby_dir,
-												skylineby->skylineby_nulls,
-												skylineby->useOp,
+												skylineof->skylineof_dir,
+												skylineof->skylineof_nulls,
+												skylineof->useOp,
 												resolveUnknown);
 		}
 
 		node->skyline_distinct = sbc->skyline_distinct;
-		node->skyline_by_list = resultlist;
-		node->skyline_by_options = sbc->skyline_by_options;
+		node->skyline_of_list = resultlist;
+		node->skyline_of_options = sbc->skyline_of_options;
 
 		return (Node *) node;
 	}
@@ -1777,8 +1777,8 @@ addTargetToSortList(ParseState *pstate, TargetEntry *tle,
 List *
 addTargetToSkylineList(ParseState *pstate, TargetEntry *tle,
 					   List *skylinelist, List *targetlist,
-					   SkylineByDir skylineby_dir, SkylineByNulls skylineby_nulls,
-					   List *skylineby_opname, bool resolveUnknown)
+					   SkylineOfDir skylineof_dir, SkylineOfNulls skylineof_nulls,
+					   List *skylineof_opname, bool resolveUnknown)
 {
 	Oid			restype = exprType((Node *) tle->expr);
 	Oid			skylineop;
@@ -1796,22 +1796,22 @@ addTargetToSkylineList(ParseState *pstate, TargetEntry *tle,
 	}
 
 	/* determine the sortop */
-	switch (skylineby_dir)
+	switch (skylineof_dir)
 	{
-		case SKYLINEBY_DEFAULT:
-		case SKYLINEBY_MIN:
-		case SKYLINEBY_DIFF:
+		case SKYLINEOF_DEFAULT:
+		case SKYLINEOF_MIN:
+		case SKYLINEOF_DIFF:
 			/* skyline diff must be treated special later */
 			skylineop = ordering_oper_opid(restype);
 			reverse = false;
 			break;
-		case SKYLINEBY_MAX:
+		case SKYLINEOF_MAX:
 			skylineop = reverse_ordering_oper_opid(restype);
 			reverse = true;
 			break;
-		case SKYLINEBY_USING:
-			Assert(skylineby_opname != NIL);
-			skylineop = compatible_oper_opid(skylineby_opname,
+		case SKYLINEOF_USING:
+			Assert(skylineof_opname != NIL);
+			skylineop = compatible_oper_opid(skylineof_opname,
 											 restype,
 											 restype,
 											 false);
@@ -1825,12 +1825,12 @@ addTargetToSkylineList(ParseState *pstate, TargetEntry *tle,
 				ereport(ERROR,
 						(errcode(ERRCODE_WRONG_OBJECT_TYPE),
 					   errmsg("operator %s is not a valid ordering operator",
-							  strVal(llast(skylineby_opname))),
+							  strVal(llast(skylineof_opname))),
 						 errhint("Ordering operators must be \"<\" or \">\" members of btree operator families.")));
 
 			break;
 		default:
-			elog(ERROR, "unrecognized skylineby_dir: %d", skylineby_dir);
+			elog(ERROR, "unrecognized skylineof_dir: %d", skylineof_dir);
 			skylineop = InvalidOid;		/* keep compiler quiet */
 			reverse = false;
 			break;
@@ -1839,37 +1839,37 @@ addTargetToSkylineList(ParseState *pstate, TargetEntry *tle,
 	/* FIXME: avoid making duplicate skyline list entries */
 	if (!targetIsInSkylineList(tle, skylineop, skylinelist))
 	{
-		SkylineBy  *skylineby = makeNode(SkylineBy);
+		SkylineOf  *skylineof = makeNode(SkylineOf);
 		Oid			targetType = FLOAT8OID;
 
-		skylineby->tleSortGroupRef = assignSortGroupRef(tle, targetlist);
-		skylineby->restype = restype;
-		skylineby->skylineop = skylineop;
-		skylineby->skylineby_dir = skylineby_dir;
-		skylineby->flags = SKYLINE_FLAGS_NONE;
+		skylineof->tleSortGroupRef = assignSortGroupRef(tle, targetlist);
+		skylineof->restype = restype;
+		skylineof->skylineop = skylineop;
+		skylineof->skylineof_dir = skylineof_dir;
+		skylineof->flags = SKYLINE_FLAGS_NONE;
 		if (restype == FLOAT8OID)
-			skylineby->flags |= SKYLINE_FLAGS_FLOAT8 | SKYLINE_FLAGS_COERCE;
+			skylineof->flags |= SKYLINE_FLAGS_FLOAT8 | SKYLINE_FLAGS_COERCE;
 		if (can_coerce_type(1, &restype, &targetType, COERCION_EXPLICIT))
-			skylineby->flags |=  SKYLINE_FLAGS_COERCE;
+			skylineof->flags |=  SKYLINE_FLAGS_COERCE;
 
-		switch (skylineby_nulls)
+		switch (skylineof_nulls)
 		{
-			case SKYLINEBY_NULLS_DEFAULT:
+			case SKYLINEOF_NULLS_DEFAULT:
 				/* NULLS FIRST is default for DESC; other way for ASC */
-				skylineby->nulls_first = reverse;
+				skylineof->nulls_first = reverse;
 				break;
-			case SKYLINEBY_NULLS_FIRST:
-				skylineby->nulls_first = true;
+			case SKYLINEOF_NULLS_FIRST:
+				skylineof->nulls_first = true;
 				break;
-			case SKYLINEBY_NULLS_LAST:
-				skylineby->nulls_first = false;
+			case SKYLINEOF_NULLS_LAST:
+				skylineof->nulls_first = false;
 				break;
 			default:
-				elog(ERROR, "unrecognized skylineby_nulls: %d", skylineby_nulls);
+				elog(ERROR, "unrecognized skylineof_nulls: %d", skylineof_nulls);
 				break;
 		}
 
-		skylinelist = lappend(skylinelist, skylineby);
+		skylinelist = lappend(skylinelist, skylineof);
 	}
 
 	return skylinelist;
@@ -1963,12 +1963,12 @@ targetIsInSkylineList(TargetEntry *tle, Oid skylineop, List *skylineList)
 
 	foreach(l, skylineList)
 	{
-		SkylineBy *skylineby = (SkylineBy *) lfirst(l);
+		SkylineOf *skylineof = (SkylineOf *) lfirst(l);
 
-		if (skylineby->tleSortGroupRef == ref &&
+		if (skylineof->tleSortGroupRef == ref &&
 			(skylineop == InvalidOid ||
-			 skylineop == skylineby->skylineop ||
-			 skylineop == get_commutator(skylineby->skylineop)))
+			 skylineop == skylineof->skylineop ||
+			 skylineop == get_commutator(skylineof->skylineop)))
 			return true;
 	}
 	return false;

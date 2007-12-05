@@ -1,7 +1,7 @@
 /*-------------------------------------------------------------------------
  *
  * nodeSkyline.c
- *	  Routines to handle skyline nodes (used for queries with SKYLINE BY clause).
+ *	  Routines to handle skyline nodes (used for queries with SKYLINE OF clause).
  *
  * Portions Copyright (c) 2007, PostgreSQL Global Development Group
  *
@@ -172,12 +172,12 @@ ExecSkylineIsDominating(SkylineState *node, TupleTableSlot *inner_slot, TupleTab
 
 		cmp_all_eq &= (cmp == 0);
 
-		switch (sl->skylineByDir[i])
+		switch (sl->skylineOfDir[i])
 		{
-			case SKYLINEBY_DEFAULT:
-			case SKYLINEBY_MIN:
-			case SKYLINEBY_MAX:
-			case SKYLINEBY_USING:
+			case SKYLINEOF_DEFAULT:
+			case SKYLINEOF_MIN:
+			case SKYLINEOF_MAX:
+			case SKYLINEOF_USING:
 				if (cmp < 0)
 				{
 					cmp_lt = true;
@@ -192,7 +192,7 @@ ExecSkylineIsDominating(SkylineState *node, TupleTableSlot *inner_slot, TupleTab
 				}
 
 				break;
-			case SKYLINEBY_DIFF:
+			case SKYLINEOF_DIFF:
 				/*
 				 * FIXME: For SFS if we sort first on all the DIFF attrs
 				 * then we could flush the tuple window in this case.
@@ -205,7 +205,7 @@ ExecSkylineIsDominating(SkylineState *node, TupleTableSlot *inner_slot, TupleTab
 					return SKYLINE_CMP_INCOMPARABLE;
 				break;
 			default:
-				elog(ERROR, "unrecognized skylineby_dir: %d", sl->skylineByDir[i]);
+				elog(ERROR, "unrecognized skylineof_dir: %d", sl->skylineOfDir[i]);
 				break;
 		}
 	}
@@ -238,7 +238,7 @@ ExecSkylineCacheCompareFunctionInfo(SkylineState *slstate, Skyline *node)
 	for (i = 0; i < node->numCols; ++i)
 	{
 		Oid			compareFunction;
-		SelectSortFunction(node->skylinebyOperators[i], 
+		SelectSortFunction(node->skylineOfOperators[i], 
 						   node->nullsFirst[i], 
 						   &compareFunction,
 						   &slstate->compareFlags[i]);
@@ -291,11 +291,11 @@ ExecSkylineInitTupleWindow(SkylineState *node, Skyline *sl)
 		 * Can be overrided by an option, otherwise use entire
 		 * work_mem.
 		 */
-		skyline_option_get_int(sl->skyline_by_options, "window", &window_size) ||
-			skyline_option_get_int(sl->skyline_by_options, "windowsize", &window_size);
+		skyline_option_get_int(sl->skyline_of_options, "window", &window_size) ||
+			skyline_option_get_int(sl->skyline_of_options, "windowsize", &window_size);
 
-		skyline_option_get_int(sl->skyline_by_options, "slots", &window_slots) ||
-			skyline_option_get_int(sl->skyline_by_options, "windowslots", &window_slots);
+		skyline_option_get_int(sl->skyline_of_options, "slots", &window_slots) ||
+			skyline_option_get_int(sl->skyline_of_options, "windowslots", &window_slots);
 
 		if (window_slots == 0)
 		{
@@ -347,7 +347,7 @@ ExecInitSkyline(Skyline *node, EState *estate, int eflags)
 	slstate->pass_info = makeStringInfo();
 	slstate->flags = 0;
 
-	if (skyline_option_get_int( node->skyline_by_options, "entropy", &use_entropy))
+	if (skyline_option_get_int( node->skyline_of_options, "entropy", &use_entropy))
 	{
 		slstate->flags |= SL_FLAGS_ENTROPY;
 	}

@@ -955,18 +955,18 @@ make_pathkeys_for_skylineclause(PlannerInfo *root,
 
 	if (skylineclause != NULL)
 	{
-		foreach(l, skylineclause->skyline_by_list)
+		foreach(l, skylineclause->skyline_of_list)
 		{
-			SkylineBy  *skylineby = (SkylineBy *) lfirst(l);
+			SkylineOf  *skylineof = (SkylineOf *) lfirst(l);
 			Expr	   *sortkey;
 			PathKey    *pathkey;
 
-			sortkey = (Expr *) get_sortgroupclause_expr((SortClause *) skylineby, tlist);
+			sortkey = (Expr *) get_sortgroupclause_expr((SortClause *) skylineof, tlist);
 			pathkey = make_pathkey_from_sortinfo(root,
 												 sortkey,
-												 skylineby->skylineop,
-												 skylineby->nulls_first,
-												 skylineby->tleSortGroupRef,
+												 skylineof->skylineop,
+												 skylineof->nulls_first,
+												 skylineof->tleSortGroupRef,
 												 canonicalize);
 
 			/* Canonical form eliminates redundant ordering keys */

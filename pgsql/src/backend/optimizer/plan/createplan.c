@@ -2736,7 +2736,7 @@ make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause, SkylineMet
 	Plan	   *plan = &node->plan;
 	int			numskylinecols;
 	SkylineClause *sc = (SkylineClause *) skyline_clause;
-	List	   *skylinecls = sc->skyline_by_list;
+	List	   *skylinecls = sc->skyline_of_list;
 
 	plan->targetlist = outertree->targetlist;
 	plan->qual = NIL;
@@ -2746,9 +2746,9 @@ make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause, SkylineMet
 	numskylinecols = list_length(skylinecls);
 
 	node->skylineColIdx = (AttrNumber *) palloc(numskylinecols * sizeof(AttrNumber));
-	node->skylinebyOperators = (Oid *) palloc(numskylinecols * sizeof(Oid));
+	node->skylineOfOperators = (Oid *) palloc(numskylinecols * sizeof(Oid));
 	node->nullsFirst = (bool *) palloc(numskylinecols * sizeof(bool));
-	node->skylineByDir = (int *) palloc(numskylinecols * sizeof(int));
+	node->skylineOfDir = (int *) palloc(numskylinecols * sizeof(int));
 	node->colFlags = (int *) palloc(numskylinecols * sizeof(int));
 	node->colMin = (float8 *) palloc(numskylinecols * sizeof(float8));
 	node->colRange = (float8 *) palloc(numskylinecols * sizeof(float8));
@@ -2756,16 +2756,16 @@ make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause, SkylineMet
 	numskylinecols = 0;
 	foreach(l, skylinecls)
 	{
-		SkylineBy		   *skylineby = (SkylineBy *) lfirst(l);
-		TargetEntry		   *tle = get_skylineclause_tle(skylineby, sub_tlist);
+		SkylineOf		   *skylineof = (SkylineOf *) lfirst(l);
+		TargetEntry		   *tle = get_skylineclause_tle(skylineof, sub_tlist);
 		VariableStatData	vardata;
 
 		node->skylineColIdx[numskylinecols] = tle->resno;
-		node->skylinebyOperators[numskylinecols] = skylineby->skylineop;
-		node->nullsFirst[numskylinecols] = skylineby->nulls_first;
-		node->skylineByDir[numskylinecols] = (int) skylineby->skylineby_dir;
+		node->skylineOfOperators[numskylinecols] = skylineof->skylineop;
+		node->nullsFirst[numskylinecols] = skylineof->nulls_first;
+		node->skylineOfDir[numskylinecols] = (int) skylineof->skylineof_dir;
 	
-		if (skylineby->flags & SKYLINE_FLAGS_COERCE)
+		if (skylineof->flags & SKYLINE_FLAGS_COERCE)
 		{
 			/* examine stats */
 			examine_variable(root, (Node *)tle->expr, 0, &vardata);
@@ -2774,21 +2774,21 @@ make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause, SkylineMet
 				Datum	min;
 				Datum	max;
 
-				if(get_variable_range(root, &vardata, skylineby->skylineop,
+				if(get_variable_range(root, &vardata, skylineof->skylineop,
 									  &min, &max))
 				{
 					char	   *min_value;
 					char	   *max_value;
 
-					min_value = datum_to_text(min, false, skylineby->restype);
-					max_value = datum_to_text(max, false, skylineby->restype);
+					min_value = datum_to_text(min, false, skylineof->restype);
+					max_value = datum_to_text(max, false, skylineof->restype);
 
 					elog(DEBUG1, "stats for column '%s': [%s,%s]", (tle->resname ? tle->resname : "?"), min_value, max_value);
 
 					pfree(min_value);
 					pfree(max_value);
 
-					skylineby->flags |= SKYLINE_FLAGS_HAVE_STATS;
+					skylineof->flags |= SKYLINE_FLAGS_HAVE_STATS;
 
 				}
 			}
@@ -2797,7 +2797,7 @@ make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause, SkylineMet
 			ReleaseVariableStats(vardata);
 		}
 
-		if (!(skylineby->flags & SKYLINE_FLAGS_HAVE_STATS))
+		if (!(skylineof->flags & SKYLINE_FLAGS_HAVE_STATS))
 		{
 			/* just place some sane values there */
 			/* FIXME: we could try to estimate stats */
@@ -2829,7 +2829,7 @@ make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause, SkylineMet
 	}
 
 	node->skyline_distinct = sc->skyline_distinct;
-	node->skyline_by_options = sc->skyline_by_options;
+	node->skyline_of_options = sc->skyline_of_options;
 	node->skyline_method = skyline_method;
 
 	/* To disable use: return (Skyline *) lefttree; */

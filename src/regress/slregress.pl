@@ -93,7 +93,7 @@ sub skyline_query
   }
 
   my $skyline = join(", ", @sl);
-  my $query = "select $tlist from ($basequery) r skyline by $skyline $with $querysuffix;";
+  my $query = "select $tlist from ($basequery) r skyline of $skyline $with $querysuffix;";
 
   return $query;
 }

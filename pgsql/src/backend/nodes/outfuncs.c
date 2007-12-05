@@ -578,17 +578,17 @@ _outSkyline(StringInfo str, Skyline *node)
 	for (i = 0; i < node->numCols; ++i)
 		appendStringInfo(str, " %d", node->skylineColIdx[i]);
 
-	appendStringInfo(str, " :skylinebyOperators");
+	appendStringInfo(str, " :skylineOfOperators");
 	for (i = 0; i < node->numCols; ++i)
-		appendStringInfo(str, " %u", node->skylinebyOperators[i]);
+		appendStringInfo(str, " %u", node->skylineOfOperators[i]);
 
 	appendStringInfo(str, " :nullsFirst");
 	for (i = 0; i < node->numCols; ++i)
 		appendStringInfo(str, " %s", booltostr(node->nullsFirst[i]));
 
-	appendStringInfo(str, " :skylineByDir");
+	appendStringInfo(str, " :skylineOfDir");
 	for (i = 0; i < node->numCols; ++i)
-		appendStringInfo(str, " %d", node->skylineByDir[i]);
+		appendStringInfo(str, " %d", node->skylineOfDir[i]);
 
 	appendStringInfo(str, " :colFlags");
 	for (i = 0; i < node->numCols; ++i)
@@ -602,7 +602,7 @@ _outSkyline(StringInfo str, Skyline *node)
 	for (i = 0; i < node->numCols; ++i)
 		appendStringInfo(str, " %e", node->colRange[i]);
 
-	WRITE_NODE_FIELD(skyline_by_options);
+	WRITE_NODE_FIELD(skyline_of_options);
 	WRITE_INT_FIELD(skyline_method);
 }
 
@@ -1627,7 +1627,7 @@ _outSelectStmt(StringInfo str, SelectStmt *node)
 	WRITE_NODE_FIELD(whereClause);
 	WRITE_NODE_FIELD(groupClause);
 	WRITE_NODE_FIELD(havingClause);
-	WRITE_NODE_FIELD(skylineByClause);
+	WRITE_NODE_FIELD(skylineOfClause);
 	WRITE_NODE_FIELD(valuesLists);
 	WRITE_NODE_FIELD(sortClause);
 	WRITE_NODE_FIELD(limitOffset);
@@ -1811,20 +1811,20 @@ _outSkylineClause(StringInfo str, SkylineClause *node)
 	WRITE_NODE_TYPE("SKYLINECLAUSE");
 
 	WRITE_BOOL_FIELD(skyline_distinct);
-	WRITE_NODE_FIELD(skyline_by_list);
-	WRITE_NODE_FIELD(skyline_by_options);
+	WRITE_NODE_FIELD(skyline_of_list);
+	WRITE_NODE_FIELD(skyline_of_options);
 }
 
 static void
-_outSkylineBy(StringInfo str, SkylineBy *node)
+_outSkylineOf(StringInfo str, SkylineOf *node)
 {
-	WRITE_NODE_TYPE("SKYLINEBY");
+	WRITE_NODE_TYPE("SKYLINEOF");
 
 	WRITE_UINT_FIELD(tleSortGroupRef);
 	WRITE_OID_FIELD(restype);
 	WRITE_OID_FIELD(skylineop);
 	WRITE_BOOL_FIELD(nulls_first);
-	WRITE_INT_FIELD(skylineby_dir);
+	WRITE_INT_FIELD(skylineof_dir);
 	WRITE_INT_FIELD(flags);
 }
 
@@ -2463,8 +2463,8 @@ _outNode(StringInfo str, void *obj)
 			case T_SkylineClause:
 				_outSkylineClause(str, obj);
 				break;
-			case T_SkylineBy:
-				_outSkylineBy(str, obj);
+			case T_SkylineOf:
+				_outSkylineOf(str, obj);
 				break;
 			case T_SkylineOption:
 				_outSkylineOption(str, obj);

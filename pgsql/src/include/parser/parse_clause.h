@@ -28,7 +28,7 @@ extern Node *transformLimitClause(ParseState *pstate, Node *clause,
 					const char *constructName);
 extern List *transformGroupClause(ParseState *pstate, List *grouplist,
 					List **targetlist, List *sortClause);
-extern Node *transformSkylineClause(ParseState *pstate, Node *skylineByClause,
+extern Node *transformSkylineClause(ParseState *pstate, Node *skylineOfClause,
 					List **targetlist, bool resolveUnknown);
 extern List *transformSortClause(ParseState *pstate, List *orderlist,
 					List **targetlist, bool resolveUnknown);
@@ -40,8 +40,8 @@ extern List *addAllTargetsToSortList(ParseState *pstate,
 					bool resolveUnknown);
 extern List *addTargetToSkylineList(ParseState *pstate, TargetEntry *tle,
 					List *skylinelist, List *targetlist,
-					SkylineByDir skylineby_dir, SkylineByNulls skylineby_nulls,
-					List *skylineby_opname, bool resolveUnknown);
+					SkylineOfDir skylineof_dir, SkylineOfNulls skylineof_nulls,
+					List *skylineof_opname, bool resolveUnknown);
 extern List *addTargetToSortList(ParseState *pstate, TargetEntry *tle,
 					List *sortlist, List *targetlist,
 					SortByDir sortby_dir, SortByNulls sortby_nulls,

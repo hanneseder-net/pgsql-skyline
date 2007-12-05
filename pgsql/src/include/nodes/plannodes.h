@@ -475,13 +475,13 @@ typedef struct Skyline
 	bool		skyline_distinct;
 	int			numCols;
 	AttrNumber *skylineColIdx;
-	Oid		   *skylinebyOperators;
+	Oid		   *skylineOfOperators;
 	bool	   *nullsFirst;
-	int		   *skylineByDir;
+	int		   *skylineOfDir;
 	int		   *colFlags;
 	float8	   *colMin;
 	float8	   *colRange;
-	List	   *skyline_by_options;
+	List	   *skyline_of_options;
 	SkylineMethod skyline_method;
 } Skyline;
 

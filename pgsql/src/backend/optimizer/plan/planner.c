@@ -1175,7 +1175,7 @@ grouping_planner(PlannerInfo *root, double tuple_fraction)
 		{
 			int	use_elim_filter = 0;
 
-			if (skyline_option_get_int(((SkylineClause *) parse->skylineClause)->skyline_by_options, "ef", &use_elim_filter))
+			if (skyline_option_get_int(((SkylineClause *) parse->skylineClause)->skyline_of_options, "ef", &use_elim_filter))
 			{
 				result_plan = (Plan *) make_elimfilter(root, result_plan, parse->skylineClause, limit_tuples);
 			}

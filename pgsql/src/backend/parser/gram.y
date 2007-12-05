@@ -135,7 +135,7 @@ static Node *makeXmlExpr(XmlExprOp op, char *name, List *named_args, List *args)
 	FuncWithArgs		*funwithargs;
 	DefElem				*defelt;
 	SortBy				*sortby;
-	SkylineByExpr		*skyline_by_expr;
+	SkylineOfExpr		*skyline_of_expr;
 	SkylineOption		*slopt;
 	JoinExpr			*jexpr;
 	IndexElem			*ielem;
@@ -241,7 +241,7 @@ static Node *makeXmlExpr(XmlExprOp op, char *name, List *named_args, List *args)
 				sort_clause opt_sort_clause sortby_list index_params
 				name_list from_clause from_list opt_array_bounds
 				qualified_name_list any_name any_name_list
-				any_operator expr_list skyline_by_list attrs
+				any_operator expr_list skyline_of_list attrs
 				target_list insert_column_list set_target_list
 				set_clause_list set_clause multiple_set_clause
 				ctext_expr_list ctext_row def_list indirection opt_indirection
@@ -316,7 +316,7 @@ static Node *makeXmlExpr(XmlExprOp op, char *name, List *named_args, List *args)
 %type <value>	NumericOnly FloatOnly IntegerOnly
 %type <alias>	alias_clause
 %type <sortby>	sortby
-%type <skyline_by_expr>	skyline_by_expr
+%type <skyline_of_expr>	skyline_of_expr
 %type <ielem>	index_elem
 %type <node>	table_ref
 %type <jexpr>	joined_table
@@ -6226,7 +6226,7 @@ simple_select:
 					n->whereClause = $6;
 					n->groupClause = $7;
 					n->havingClause = $8;
-					n->skylineByClause = $9;
+					n->skylineOfClause = $9;
 					$$ = (Node *)n;
 				}
 			| values_clause							{ $$ = $1; }
@@ -6408,31 +6408,31 @@ having_clause:
 		;
 
 skyline_clause:
-			SKYLINE	OF skyline_by_list opt_skyline_options
+			SKYLINE	OF skyline_of_list opt_skyline_options
 				{
-					SkylineByClause *n = makeNode(SkylineByClause);
-					n->skyline_by_list = $3; 
+					SkylineOfClause *n = makeNode(SkylineOfClause);
+					n->skyline_of_list = $3; 
 					n->skyline_distinct = false;
-					n->skyline_by_options = $4;
+					n->skyline_of_options = $4;
 					$$ = (Node *)n;
 				}
-			| SKYLINE OF DISTINCT skyline_by_list opt_skyline_options
+			| SKYLINE OF DISTINCT skyline_of_list opt_skyline_options
 				{
-					SkylineByClause *n = makeNode(SkylineByClause);
-					n->skyline_by_list = $4;
+					SkylineOfClause *n = makeNode(SkylineOfClause);
+					n->skyline_of_list = $4;
 					n->skyline_distinct = true;
-					n->skyline_by_options = $5;
+					n->skyline_of_options = $5;
 					$$ = (Node *)n;
 				}
 			| /*EMPTY*/								{ $$ = NULL; }
 		;
 
-skyline_by_list:
-			skyline_by_expr
+skyline_of_list:
+			skyline_of_expr
 				{
 					$$ = list_make1($1);
 				}
-			| skyline_by_list ',' skyline_by_expr
+			| skyline_of_list ',' skyline_of_expr
 				{
 					$$ = lappend($1, $3);
 				}
@@ -6442,29 +6442,29 @@ skyline_by_list:
  * FIMXE: skyline attr is a restricted to c_expr instead of a_expr
  * to avoid shift/reduce conflicts.
  */
-skyline_by_expr: 
+skyline_of_expr: 
 			c_expr IDENT opt_nulls_order
 				{
-					$$ = makeNode(SkylineByExpr);
+					$$ = makeNode(SkylineOfExpr);
 					$$->node = $1;
 					if (strcmp($2, "min") == 0)
-						$$->skylineby_dir = SKYLINEBY_MIN;
+						$$->skylineof_dir = SKYLINEOF_MIN;
 					else if (strcmp($2, "max") == 0)
-						$$->skylineby_dir = SKYLINEBY_MAX;
+						$$->skylineof_dir = SKYLINEOF_MAX;
 					else if (strcmp($2, "diff") == 0)
-						$$->skylineby_dir = SKYLINEBY_DIFF;
+						$$->skylineof_dir = SKYLINEOF_DIFF;
 					else
 						yyerror("syntax error");
 					$$->useOp = NIL;
-					$$->skylineby_nulls = $3;
+					$$->skylineof_nulls = $3;
 				}
 			| c_expr USING qual_all_Op opt_nulls_order
 				{
-					$$ = makeNode(SkylineByExpr);
+					$$ = makeNode(SkylineOfExpr);
 					$$->node = $1;
-					$$->skylineby_dir = SKYLINEBY_USING;
+					$$->skylineof_dir = SKYLINEOF_USING;
 					$$->useOp = $3;
-					$$->skylineby_nulls = $4;
+					$$->skylineof_nulls = $4;
 				}
 		;
 

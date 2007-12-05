@@ -155,10 +155,10 @@ get_sortgroupref_tle(Index sortref, List *targetList)
 }
 
 TargetEntry *
-get_skylineclause_tle(SkylineBy *skylineBy,
+get_skylineclause_tle(SkylineOf *skylineOf,
 					  List *targetList)
 {
-	Index		refnumber = skylineBy->tleSortGroupRef;
+	Index		refnumber = skylineOf->tleSortGroupRef;
 	ListCell   *l;
 
 	foreach(l, targetList)
@@ -169,7 +169,7 @@ get_skylineclause_tle(SkylineBy *skylineBy,
 			return tle;
 	}
 
-	elog(ERROR, "ORDER/GROUP BY/SKYLINE BY expression not found in targetlist");
+	elog(ERROR, "ORDER/GROUP BY/SKYLINE OF expression not found in targetlist");
 	return NULL;				/* keep compiler quiet */
 }
 

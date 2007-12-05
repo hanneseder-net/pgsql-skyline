@@ -226,25 +226,25 @@ _readSkylineClause(void)
 	READ_LOCALS(SkylineClause);
 
 	READ_BOOL_FIELD(skyline_distinct);
-	READ_NODE_FIELD(skyline_by_list);
-	READ_NODE_FIELD(skyline_by_options);
+	READ_NODE_FIELD(skyline_of_list);
+	READ_NODE_FIELD(skyline_of_options);
 
 	READ_DONE();
 }
 
 /*
- * _readSkylineBy
+ * _readSkylineOf
  */
-static SkylineBy *
-_readSkylineBy(void)
+static SkylineOf *
+_readSkylineOf(void)
 {
-	READ_LOCALS(SkylineBy);
+	READ_LOCALS(SkylineOf);
 
 	READ_UINT_FIELD(tleSortGroupRef);
 	READ_OID_FIELD(restype);
 	READ_OID_FIELD(skylineop);
 	READ_BOOL_FIELD(nulls_first);
-	READ_INT_FIELD(skylineby_dir);
+	READ_INT_FIELD(skylineof_dir);
 	READ_INT_FIELD(flags);
 
 	READ_DONE();
@@ -1084,8 +1084,8 @@ parseNodeString(void)
 		return_value = _readGroupClause();
 	else if (MATCH("SKYLINECLAUSE", 13))
 		return_value = _readSkylineClause();
-	else if (MATCH("SKYLINEBY", 9))
-		return_value = _readSkylineBy();
+	else if (MATCH("SKYLINEOF", 9))
+		return_value = _readSkylineOf();
 	else if (MATCH("SKYLINEOPTION", 13))
 		return_value = _readSkylineOption();
 	else if (MATCH("ROWMARKCLAUSE", 13))

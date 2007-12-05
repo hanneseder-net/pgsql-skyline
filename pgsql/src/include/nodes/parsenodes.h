@@ -48,24 +48,24 @@ typedef enum SortByNulls
  *
  * FIXME
  */
-typedef enum SkylineByDir
+typedef enum SkylineOfDir
 {
-	SKYLINEBY_DEFAULT,
-	SKYLINEBY_MIN,
-	SKYLINEBY_MAX,
-	SKYLINEBY_DIFF,
-	SKYLINEBY_USING
-} SkylineByDir;
+	SKYLINEOF_DEFAULT,
+	SKYLINEOF_MIN,
+	SKYLINEOF_MAX,
+	SKYLINEOF_DIFF,
+	SKYLINEOF_USING
+} SkylineOfDir;
 
 /*
  * FIXME
  */
-typedef enum SkylineByNulls
+typedef enum SkylineOfNulls
 {
-	SKYLINEBY_NULLS_DEFAULT	= SORTBY_NULLS_DEFAULT,
-	SKYLINEBY_NULLS_FIRST	= SORTBY_NULLS_FIRST,
-	SKYLINEBY_NULLS_LAST	= SORTBY_NULLS_LAST
-} SkylineByNulls;
+	SKYLINEOF_NULLS_DEFAULT	= SORTBY_NULLS_DEFAULT,
+	SKYLINEOF_NULLS_FIRST	= SORTBY_NULLS_FIRST,
+	SKYLINEOF_NULLS_LAST	= SORTBY_NULLS_LAST
+} SkylineOfNulls;
 
 /*
  * Grantable rights are encoded so that we can OR them together in a bitmask.
@@ -369,31 +369,31 @@ typedef struct SortBy
 } SortBy;
 
 /*
- * SkylineByExpr - for SKYLINE BY clause
+ * SkylineOfExpr - for SKYLINE OF clause
  *
  * FIXME
  */
-typedef struct SkylineByExpr
+typedef struct SkylineOfExpr
 {
 	NodeTag			type;
-	SkylineByDir	skylineby_dir;		/* MIN/MAX/DIFF/USING */
-	SkylineByNulls	skylineby_nulls;	/* NULLS FIRST/LAST */
-	List		   *useOp;				/* name of op to use, if SKYLINEBY_USING */
-	Node		   *node;				/* the expression to skyline by */
-} SkylineByExpr;
+	SkylineOfDir	skylineof_dir;		/* MIN/MAX/DIFF/USING */
+	SkylineOfNulls	skylineof_nulls;	/* NULLS FIRST/LAST */
+	List		   *useOp;				/* name of op to use, if SKYLINEOF_USING */
+	Node		   *node;				/* the expression to skyline of */
+} SkylineOfExpr;
 
 /*
- * SkylineByClause - returned by the Parser for SKYLINE BY clause
+ * SkylineOfClause - returned by the Parser for SKYLINE OF clause
  *
  * FIXME
  */
-typedef struct SkylineByClause
+typedef struct SkylineOfClause
 {
 	NodeTag		type;
-	bool		skyline_distinct;		/* SKYLINE BY _DISTINCT_ */
-	List	   *skyline_by_list;		/* a list of SkylineByExpr */
-	List	   *skyline_by_options;		/* a list of SkylineOption */
-} SkylineByClause;
+	bool		skyline_distinct;		/* SKYLINE OF _DISTINCT_ */
+	List	   *skyline_of_list;		/* a list of SkylineOfExpr */
+	List	   *skyline_of_options;		/* a list of SkylineOption */
+} SkylineOfClause;
 
 /*
  * RangeSubselect - subquery appearing in a FROM clause
@@ -709,8 +709,8 @@ typedef struct SkylineOption
 /*
  * SkylineClause
  *
- * The analyzer transforms a SkylineByClause into SkylineClause.
- * While the skyline_by_list is transformed from SkylineByExpr into SkylineBy
+ * The analyzer transforms a SkylineOfClause into SkylineClause.
+ * While the skyline_of_list is transformed from SkylineOfExpr into SkylineOf
  *
  * FIXME
  */
@@ -718,12 +718,12 @@ typedef struct SkylineClause
 {
 	NodeTag		type;
 	bool		skyline_distinct;
-	List	   *skyline_by_list;	/* list of SkylineBy's */
-	List	   *skyline_by_options;
+	List	   *skyline_of_list;	/* list of SkylineOf's */
+	List	   *skyline_of_options;
 } SkylineClause;
 
 /*
- * SkylineBy
+ * SkylineOf
  *
  * FIXME
  */
@@ -732,16 +732,16 @@ typedef struct SkylineClause
 #define SKYLINE_FLAGS_COERCE		2
 #define SKYLINE_FLAGS_HAVE_STATS	4
 
-typedef struct SkylineBy
+typedef struct SkylineOf
 {
 	NodeTag			type;
 	Index			tleSortGroupRef;	/* reference into targetlist */
 	Oid				restype;		/* type of the skyline expression */
 	Oid				skylineop;		/* the ordering operator ('<' op) */
 	bool			nulls_first;	/* do NULLs come before normal values? */
-	SkylineByDir	skylineby_dir;
+	SkylineOfDir	skylineof_dir;
 	int				flags;			/* see SKYLINE_FLAGS_* */
-} SkylineBy;
+} SkylineOf;
 
 /*
  * RowMarkClause -
@@ -841,7 +841,7 @@ typedef struct SelectStmt
 	Node	   *whereClause;	/* WHERE qualification */
 	List	   *groupClause;	/* GROUP BY clauses */
 	Node	   *havingClause;	/* HAVING conditional-expression */
-	Node	   *skylineByClause;	/* SKYLINE BY clause */
+	Node	   *skylineOfClause;	/* SKYLINE OF clause */
 
 	/*
 	 * In a "leaf" node representing a VALUES list, the above fields are all

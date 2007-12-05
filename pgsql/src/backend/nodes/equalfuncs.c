@@ -817,7 +817,7 @@ _equalSelectStmt(SelectStmt *a, SelectStmt *b)
 	COMPARE_NODE_FIELD(whereClause);
 	COMPARE_NODE_FIELD(groupClause);
 	COMPARE_NODE_FIELD(havingClause);
-	COMPARE_NODE_FIELD(skylineByClause);
+	COMPARE_NODE_FIELD(skylineOfClause);
 	COMPARE_NODE_FIELD(valuesLists);
 	COMPARE_NODE_FIELD(sortClause);
 	COMPARE_NODE_FIELD(limitOffset);
@@ -1756,20 +1756,20 @@ _equalSortBy(SortBy *a, SortBy *b)
 }
 
 static bool
-_equalSkylineByClause(SkylineByClause *a, SkylineByClause *b)
+_equalSkylineOfClause(SkylineOfClause *a, SkylineOfClause *b)
 {
 	COMPARE_SCALAR_FIELD(skyline_distinct);
-	COMPARE_NODE_FIELD(skyline_by_list);
-	COMPARE_NODE_FIELD(skyline_by_options);
+	COMPARE_NODE_FIELD(skyline_of_list);
+	COMPARE_NODE_FIELD(skyline_of_options);
 
 	return true;
 }
 
 static bool
-_equalSkylineByExpr(SkylineByExpr *a, SkylineByExpr *b)
+_equalSkylineOfExpr(SkylineOfExpr *a, SkylineOfExpr *b)
 {
-	COMPARE_SCALAR_FIELD(skylineby_dir);
-	COMPARE_SCALAR_FIELD(skylineby_nulls);
+	COMPARE_SCALAR_FIELD(skylineof_dir);
+	COMPARE_SCALAR_FIELD(skylineof_nulls);
 	COMPARE_NODE_FIELD(useOp);
 	COMPARE_NODE_FIELD(node);
 
@@ -1897,13 +1897,13 @@ _equalSortClause(SortClause *a, SortClause *b)
 }
 
 static bool
-_equalSkylineBy(SkylineBy *a, SkylineBy *b)
+_equalSkylineOf(SkylineOf *a, SkylineOf *b)
 {
 	COMPARE_SCALAR_FIELD(tleSortGroupRef);
 	COMPARE_SCALAR_FIELD(restype);
 	COMPARE_SCALAR_FIELD(skylineop);
 	COMPARE_SCALAR_FIELD(nulls_first);
-	COMPARE_SCALAR_FIELD(skylineby_dir);
+	COMPARE_SCALAR_FIELD(skylineof_dir);
 	COMPARE_SCALAR_FIELD(flags);
 
 	return true;
@@ -1913,8 +1913,8 @@ static bool
 _equalSkylineClause(SkylineClause *a, SkylineClause *b)
 {
 	COMPARE_SCALAR_FIELD(skyline_distinct);
-	COMPARE_NODE_FIELD(skyline_by_list);
-	COMPARE_NODE_FIELD(skyline_by_options);
+	COMPARE_NODE_FIELD(skyline_of_list);
+	COMPARE_NODE_FIELD(skyline_of_options);
 
 	return true;
 }
@@ -2505,11 +2505,11 @@ equal(void *a, void *b)
 		case T_SortBy:
 			retval = _equalSortBy(a, b);
 			break;
-		case T_SkylineByClause:
-			retval = _equalSkylineByClause(a, b);
+		case T_SkylineOfClause:
+			retval = _equalSkylineOfClause(a, b);
 			break;
-		case T_SkylineByExpr:
-			retval = _equalSkylineByExpr(a, b);
+		case T_SkylineOfExpr:
+			retval = _equalSkylineOfExpr(a, b);
 			break;
 		case T_SkylineOption:
 			retval = _eqaulSkylineOption(a, b);
@@ -2551,8 +2551,8 @@ equal(void *a, void *b)
 		case T_SkylineClause:
 			retval = _equalSkylineClause(a, b);
 			break;
-		case T_SkylineBy:
-			retval = _equalSkylineBy(a, b);
+		case T_SkylineOf:
+			retval = _equalSkylineOf(a, b);
 			break;
 		case T_RowMarkClause:
 			retval = _equalRowMarkClause(a, b);

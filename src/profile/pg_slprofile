@@ -52,7 +52,7 @@ for ($i=1; $i<=$dim; ++$i)
     push @skydim, "d${i} min";
 }
 
-$query = "select * from rds${maxdim}d('${dist}', ${rows}, ${seed}) skyline by " . join(", ", @skydim) . " with ${method}" . (defined($windowslots) ? " slots=${windowslots}" : "");
+$query = "select * from rds${maxdim}d('${dist}', ${rows}, ${seed}) skyline of " . join(", ", @skydim) . " with ${method}" . (defined($windowslots) ? " slots=${windowslots}" : "");
 $sql = "explain analyze $query;";
 
 $res = `$program $args 2>&1 <<EOF

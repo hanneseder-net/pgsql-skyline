@@ -1,5 +1,8 @@
 #!/bin/bash
 
+
+
+
 for dist in anti indep corr; do
 for dim in 2 3 5 8 10 12 15; do
 for n in 100 1000 10000 25000 50000 100000; do
@@ -7,13 +10,10 @@ for method in bnl sfs; do
 #for rep in 1 2 3 4 5 6; do # as it doesn't vary very much
 for rep in 1 2 3; do
 
-./pg_slprofile --maxdim=15 --dim=$dim --dist=$dist --rows=$n --method=$method --run="$method.$dist.$dim.$n.$rep"
+./pg_slprofile --maxdim=15 --dim=$dim --dist=$dist --rows=$n --method=$method --run="$method.$dist.$dim.$n.$rep.s30" --slots=30 
 
 done
 done
 done
 done
 done
-
-
-#./pg_slprofile -n 100000 -d 4 --method=bnl  -run="sd.12"

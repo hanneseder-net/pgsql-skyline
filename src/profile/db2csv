@@ -5,7 +5,7 @@
 for method in bnl sfs; do
 for disttype in indep corr anti; do
 
-psql >$method-$disttype.csv <<EOF
+psql >$1-$method-$disttype.csv <<EOF
 copy
 (select dim, rows, avg(total)
 from profile

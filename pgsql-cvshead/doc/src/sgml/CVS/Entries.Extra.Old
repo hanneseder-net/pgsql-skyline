@@ -8,13 +8,13 @@
 /biblio.sgml////*///
 /bki.sgml////*///
 /btree-gist.sgml////*///
-/buffercache.sgml////*///
 /catalogs.sgml////*///
 /charset.sgml////*///
 /chkpass.sgml////*///
 /client-auth.sgml////*///
 /config.sgml////*///
 /contacts.sgml////*///
+/contrib-spi.sgml////*///
 /contrib.sgml////*///
 /cube.sgml////*///
 /cvs.sgml////*///
@@ -23,6 +23,8 @@
 /dblink.sgml////*///
 /ddl.sgml////*///
 /dfunc.sgml////*///
+/dict-int.sgml////*///
+/dict-xsyn.sgml////*///
 /diskusage.sgml////*///
 /dml.sgml////*///
 /docguide.sgml////*///
@@ -34,7 +36,6 @@
 /features.sgml////*///
 /filelist.sgml////*///
 /fixrtf////*///
-/freespacemap.sgml////*///
 /func.sgml////*///
 /fuzzystrmatch.sgml////*///
 /geqo.sgml////*///
@@ -70,9 +71,13 @@
 /pageinspect.sgml////*///
 /perform.sgml////*///
 /pgbench.sgml////*///
+/pgbuffercache.sgml////*///
 /pgcrypto.sgml////*///
+/pgfreespacemap.sgml////*///
 /pgrowlocks.sgml////*///
+/pgstandby.sgml////*///
 /pgstattuple.sgml////*///
+/pgtrgm.sgml////*///
 /planstats.sgml////*///
 /plhandler.sgml////*///
 /plperl.sgml////*///
@@ -97,7 +102,6 @@
 /sql.sgml////*///
 /sslinfo.sgml////*///
 /standalone-install.sgml////*///
-/standby.sgml////*///
 /start.sgml////*///
 /storage.sgml////*///
 /stylesheet-common.xsl////*///
@@ -108,8 +112,8 @@
 /stylesheet.xsl////*///
 /syntax.sgml////*///
 /tablefunc.sgml////*///
+/test-parser.sgml////*///
 /textsearch.sgml////*///
-/trgm.sgml////*///
 /trigger.sgml////*///
 /tsearch2.sgml////*///
 /typeconv.sgml////*///

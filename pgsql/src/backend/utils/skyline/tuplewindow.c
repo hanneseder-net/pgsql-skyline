@@ -145,11 +145,13 @@ tuplewindow_removeslot(TupleWindowState *state,
 					   TupleWindowSlot *slot,
 					   bool freetuple)
 {
-	TupleWindowSlot *next = slot->next;
+	TupleWindowSlot *next;
 
 	AssertArg(state != NULL);
 	AssertArg(slot != NULL);
 	Assert(slot != state->nil);
+
+	next = slot->next;
 
 	/* remove from linked list */
 	slot->prev->next = slot->next;

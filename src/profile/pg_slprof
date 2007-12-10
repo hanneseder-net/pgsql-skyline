@@ -10,7 +10,7 @@ for method in bnl sfs; do
 #for rep in 1 2 3 4 5 6; do # as it doesn't vary very much
 for rep in 1 2 3; do
 
-./pg_slprofile --maxdim=15 --dim=$dim --dist=$dist --rows=$n --method=$method --run="$method.$dist.$dim.$n.$rep.s30" --slots=30 
+./pg_slprofile --window=16 --maxdim=15 --dim=$dim --dist=$dist --rows=$n --method=$method --run="$method.$dist.$dim.$n.$rep"
 
 done
 done

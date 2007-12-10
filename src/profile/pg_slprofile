@@ -12,6 +12,7 @@ my $dim = 2;
 my $maxdim = 15;
 my $method = "bnl";
 my $windowslots = undef;
+my $window = undef;
 my $dist = "indep";
 my $rows = 1000;
 my $seed = 0;
@@ -21,6 +22,7 @@ $result = GetOptions("runid=s" => \$runid,
 		     "maxdim|md=i" => \$maxdim,
 		     "method|m=s" => \$method,
 		     "slots=i" => \$windowslots,
+		     "window=i" => \$window,
 		     "dist=s" => \$dist,
 		     "rows|vectors|n=i" => \$rows,
 		     "seed|s=i" => \$seed);
@@ -52,7 +54,7 @@ for ($i=1; $i<=$dim; ++$i)
     push @skydim, "d${i} min";
 }
 
-$query = "select * from rds${maxdim}d('${dist}', ${rows}, ${seed}) skyline of " . join(", ", @skydim) . " with ${method}" . (defined($windowslots) ? " slots=${windowslots}" : "");
+$query = "select * from rds${maxdim}d('${dist}', ${rows}, ${seed}) skyline of " . join(", ", @skydim) . " with ${method}" . (defined($windowslots) ? " slots=${windowslots}" : "") . (defined($window) ? " window=${window}" : "");
 $sql = "explain analyze $query;";
 
 $res = `$program $args 2>&1 <<EOF

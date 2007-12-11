@@ -1,5 +1,5 @@
 /Genbki.pm/1.2/Sat Mar 17 13:54:34 2007//
-/Install.pm/1.25/Tue Oct 30 09:22:37 2007//
+/Install.pm/1.26/Thu Dec  6 12:12:22 2007//
 /Mkvcbuild.pm/1.24/Mon Nov 19 11:53:43 2007//
 /Project.pm/1.14/Wed Sep  5 06:37:23 2007//
 /README/1.6/Mon Jul  9 10:06:14 2007//
@@ -8,7 +8,7 @@
 /build.pl/1.1/Sun Sep 23 21:52:56 2007//
 /builddoc.bat/1.5/Wed Sep 19 20:52:27 2007//
 /clean.bat/1.8/Mon Nov 19 11:53:43 2007//
-/config.pl/1.6/Thu Mar 29 15:30:52 2007//
+/config.pl/1.7/Thu Dec  6 12:12:22 2007//
 /ecpg_regression.proj/1.4/Thu Oct  4 20:22:53 2007//
 /gendef.pl/1.6/Thu May  3 14:04:03 2007//
 /install.bat/1.2/Wed Sep 19 20:52:27 2007//

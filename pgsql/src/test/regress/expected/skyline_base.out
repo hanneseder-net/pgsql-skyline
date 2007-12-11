@@ -1,0 +1,43 @@
+--
+-- NOTE: the table contains 1000 rows, as only with at least
+-- this size, real bugs have been found during development
+--
+DROP TABLE IF EXISTS "a2d1000";
+NOTICE:  table "a2d1000" does not exist, skipping
+CREATE TABLE "a2d1000" (id int, d1 float, d2 float);
+COPY "a2d1000" (id, d1, d2) FROM STDIN DELIMITERS ',' CSV QUOTE '''';
+                        
+SELECT ID FROM "a2d1000" SKYLINE OF d1 MIN, d2 MIN ORDER BY ID;
+ id  
+-----
+  37
+  63
+  93
+ 152
+ 157
+ 169
+ 258
+ 266
+ 277
+ 282
+ 385
+ 401
+ 410
+ 468
+ 533
+ 534
+ 587
+ 606
+ 616
+ 704
+ 711
+ 779
+ 796
+ 872
+ 894
+ 906
+ 914
+ 930
+(28 rows)
+
+DROP TABLE IF EXISTS "a2d1000";

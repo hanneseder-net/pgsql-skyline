@@ -90,3 +90,8 @@ test: stats
 
 # run tablespace by itself
 test: tablespace
+
+# ----------
+# Another group of parallel tests
+# ----------
+test: skyline_base

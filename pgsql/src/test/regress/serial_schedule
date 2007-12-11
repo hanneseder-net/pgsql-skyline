@@ -115,3 +115,4 @@ test: largeobject
 test: xml
 test: stats
 test: tablespace
+test: skyline_base

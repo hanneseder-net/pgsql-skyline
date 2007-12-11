@@ -1,4 +1,4 @@
-<!-- $PostgreSQL: pgsql/doc/src/sgml/release.sgml,v 1.559 2007/12/03 23:49:50 tgl Exp $ -->
+<!-- $PostgreSQL: pgsql/doc/src/sgml/release.sgml,v 1.568 2007/12/10 23:38:43 momjian Exp $ -->
 <!--
 
 Typical markup:
@@ -34,6 +34,37 @@ do it for earlier branch release files.
 
 <appendix id="release">
  <title>Release Notes</title>
+
+ <sect1 id="release-introduction">
+  <title>Introduction</title>
+
+  <para>
+   The release notes contain the significant changes in each PostgreSQL
+   release, with major features and migration issues often listed at the
+   top.  The release notes do not contain changes that affect only a few
+   users or changes that are internal and therefore not user-visible.  For
+   example, the optimizer is improved in almost every release, but the
+   improvements are usually observed by users as simply faster queries.
+  </para>
+
+  <para>
+   A complete list of changes for each release can be obtained by
+   viewing the <link linkend="cvs">CVS</> logs for each release.  The <ulink
+   url="http://archives.postgresql.org/pgsql-committers/">committers email
+   list</ulink> contains all source code changes as well.   There is also
+   a <ulink url="http://developer.postgresql.org/cvsweb.cgi/pgsql/">web
+   interface</ulink> that shows changes to specific files.
+   <!-- we need a file containing the CVS logs for each release, and something
+   like the SVN web interface that groups commits but has branches -->
+  </para>
+
+  <para>
+   The name appearing next to each item represents the major developer for
+   that item.  Of course all changes involve community discussion and patch
+   review so each item is truly a community effort.
+  </para>
+
+ </sect1>
 
  <sect1 id="release-8-3">
   <title>Release 8.3</title>
@@ -165,14 +196,15 @@ do it for earlier branch release files.
 
     <listitem>
      <para>
-      Distributed checkpoints prevent checkpoint I/O spikes
+      Checkpoint writes can be spread over a longer time period to smooth
+      the I/O spike during each checkpoint
      </para>
     </listitem>
 
     <listitem>
      <para>
       Heap-Only Tuples (<acronym>HOT</>) accelerate space reuse for
-      <command>UPDATE</>s
+      most <command>UPDATE</>s
      </para>
     </listitem>
 
@@ -216,6 +248,10 @@ do it for earlier branch release files.
     </listitem>
 
    </itemizedlist>
+
+   <para>
+    The above items are explained in more detail in the sections below.
+   </para>
 
   </sect2>
 
@@ -682,8 +718,9 @@ current_date &lt; 2017-11-17
 
      <listitem>
       <para>
-       Distributed checkpoints prevent checkpoint I/O spikes (Itagaki
-       Takahiro and Heikki Linnakangas)
+       Checkpoint writes can be spread over a longer time period to smooth
+       the I/O spike during each checkpoint (Itagaki Takahiro and Heikki
+       Linnakangas)
       </para>
 
       <para>
@@ -698,18 +735,18 @@ current_date &lt; 2017-11-17
 
      <listitem>
       <para>
-       Heap-Only Tuples (<acronym>HOT</>) accelerate space reuse for
+       Heap-Only Tuples (<acronym>HOT</>) accelerate space reuse for most
        <command>UPDATE</>s (Pavan Deolasee, with ideas from many others)
       </para>
 
       <para>
-       <command>UPDATE</>s and <command>DELETE</>s leave dead tuples behind,
-       as do failed <command>INSERT</>s.  Previously only
+       <command>UPDATE</>s and <command>DELETE</>s leave dead tuples
+       behind, as do failed <command>INSERT</>s.  Previously only
        <command>VACUUM</> could reclaim space taken by dead tuples. With
        <acronym>HOT</> dead tuple space can be reclaimed at the time of
-       <command>UPDATE</> or <command>INSERT</>.  This allows for more
-       consistent performance.  Also, <acronym>HOT</> avoids making duplicate
-       index entries when an <command>UPDATE</> changes no indexed columns.
+       <command>UPDATE</> or <command>INSERT</> if no changes are made to
+       indexed columns.  This allows for more consistent performance.
+       Also, <acronym>HOT</> avoids adding duplicate index entries.
       </para>
      </listitem>
 
@@ -2180,8 +2217,9 @@ current_date &lt; 2017-11-17
 
      <listitem>
       <para>
-       Add <function>PQconnectionUsedPassword()</function> that returns
-       true if the server required a password (Joe Conway)
+       Add <function>PQconnectionNeedsPassword()</function> that returns
+       true if the server required a password but none was supplied
+       (Joe Conway, Tom)
       </para>
 
       <para>
@@ -2190,6 +2228,19 @@ current_date &lt; 2017-11-17
        applications have had to check for a specific error message string to
        decide whether a password is needed; that approach is now
        deprecated.
+      </para>
+     </listitem>
+
+     <listitem>
+      <para>
+       Add <function>PQconnectionUsedPassword()</function> that returns
+       true if the supplied password was actually used
+       (Joe Conway, Tom)
+      </para>
+
+      <para>
+       This is useful in some security contexts where it is important
+       to know whether a user-supplied password is actually valid.
       </para>
      </listitem>
 

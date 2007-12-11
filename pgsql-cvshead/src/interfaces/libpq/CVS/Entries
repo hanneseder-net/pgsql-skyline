@@ -2,10 +2,10 @@
 /Makefile/1.157/Mon Dec  3 14:34:46 2007//
 /README/1.1.1.1/Tue Jul  9 06:22:17 1996//
 /bcc32.mak/1.28/Thu Nov 22 22:39:02 2007//
-/exports.txt/1.17/Tue Oct 16 08:26:49 2007//
-/fe-auth.c/1.134/Thu Dec  6 12:12:21 2007//
+/exports.txt/1.18/Tue Dec 11 12:50:17 2007//
+/fe-auth.c/1.135/Tue Dec 11 12:50:17 2007//
 /fe-auth.h/1.28/Mon Nov 19 11:53:17 2007//
-/fe-connect.c/1.353/Mon Nov 19 11:53:17 2007//
+/fe-connect.c/1.354/Tue Dec 11 12:50:17 2007//
 /fe-exec.c/1.193/Tue Oct 16 08:26:49 2007//
 /fe-lobj.c/1.63/Mon Nov 19 11:53:17 2007//
 /fe-misc.c/1.132/Tue Oct 16 08:26:49 2007//
@@ -13,8 +13,8 @@
 /fe-protocol2.c/1.27/Fri Jan  5 22:20:01 2007//
 /fe-protocol3.c/1.30/Fri Jan  5 22:20:01 2007//
 /fe-secure.c/1.100/Mon Nov 19 11:53:17 2007//
-/libpq-fe.h/1.139/Tue Oct 16 08:26:49 2007//
-/libpq-int.h/1.127/Mon Nov 19 11:53:17 2007//
+/libpq-fe.h/1.140/Tue Dec 11 12:50:17 2007//
+/libpq-int.h/1.128/Tue Dec 11 12:50:17 2007//
 /libpq.rc.in/1.6/Thu Oct  4 20:22:49 2007//
 /nls.mk/1.21/Tue Oct 30 09:22:34 2007//
 /pg_service.conf.sample/1.4/Fri Sep 14 18:56:14 2007//

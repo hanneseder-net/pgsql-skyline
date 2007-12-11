@@ -32,6 +32,8 @@ ExecElimFilterInitTupleWindow(SkylineState *node, Skyline *sl)
 {
 	int			window_size = BLCKSZ / 1024;	/* allocate a page */
 	int			window_slots = -1;
+	int			use_entropy;
+	TupleWindowPolicy	window_policy = TUP_WIN_POLICY_APPEND;
 
 	Assert(node != NULL);
 
@@ -51,6 +53,9 @@ ExecElimFilterInitTupleWindow(SkylineState *node, Skyline *sl)
 	skyline_option_get_int(sl->skyline_of_options, "efslots", &window_slots) ||
 		skyline_option_get_int(sl->skyline_of_options, "efwindowslots", &window_slots);
 
+	if (skyline_option_get_int(sl->skyline_of_options, "efentropy", &use_entropy))
+		window_policy = TUP_WIN_POLICY_RANKED;
+
 	if (window_slots == 0)
 	{
 		/*
@@ -60,7 +65,7 @@ ExecElimFilterInitTupleWindow(SkylineState *node, Skyline *sl)
 		elog(ERROR, "tuple window must have at least one slot");
 	}
 
-	node->window = tuplewindow_begin(window_size, window_slots);
+	node->window = tuplewindow_begin(window_size, window_slots, window_policy);
 
 	node->windowsize = window_size;
 	node->windowslots = window_slots;
@@ -82,8 +87,8 @@ ExecInitElimFilter(ElimFilter *node, EState *estate, int eflags)
 	state->ss.ps.state = estate;
 	state->status = SS_INIT;
 
-	state->flags = SL_FLAGS_ENTROPY;
-	if (skyline_option_get_int( node->skyline_of_options, "efentropy", &use_entropy))
+	state->flags = SL_FLAGS_NONE;
+	if (skyline_option_get_int(node->skyline_of_options, "efentropy", &use_entropy))
 	{
 		state->flags |= SL_FLAGS_ENTROPY;
 	}
@@ -220,10 +225,7 @@ ExecElimFilter(ElimFilterState *node)
 
 					if (tuplewindow_ateof(window))
 					{
-						if (node->flags & SL_FLAGS_ENTROPY)
-							tuplewindow_puttupleslot_ranked(window, slot, 0);
-						else if (tuplewindow_has_freespace(window))
-							tuplewindow_puttupleslot(window, slot, 0);
+						tuplewindow_puttupleslot(window, slot, 0, true);
 
 						return slot;
 					}

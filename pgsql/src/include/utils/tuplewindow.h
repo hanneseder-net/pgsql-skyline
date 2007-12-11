@@ -5,9 +5,17 @@
 
 typedef struct TupleWindowState TupleWindowState;
 
-extern TupleWindowState *tuplewindow_begin(int maxKBytes, int maxSlots);
+typedef enum TupleWindowPolicy
+{
+	TUP_WIN_POLICY_APPEND,
+	TUP_WIN_POLICY_PREPEND,
+	TUP_WIN_POLICY_RANKED
+} TupleWindowPolicy;
+
+extern TupleWindowState *tuplewindow_begin(int maxKBytes, int maxSlots, TupleWindowPolicy policy);
 extern bool tuplewindow_has_freespace(TupleWindowState *state);
-extern void tuplewindow_puttupleslot(TupleWindowState *state, TupleTableSlot *slot, int64 timestamp);
+extern void tuplewindow_setinsertrank(TupleWindowState *state, double rank);
+extern void tuplewindow_puttupleslot(TupleWindowState *state, TupleTableSlot *slot, int64 timestamp, bool forced);
 extern void tuplewindow_rewind(TupleWindowState *state);
 extern bool tuplewindow_ateof(TupleWindowState *state);
 extern void tuplewindow_movenext(TupleWindowState *state);
@@ -16,8 +24,6 @@ extern bool tuplewindow_gettupleslot(TupleWindowState *state, TupleTableSlot *sl
 extern void tuplewindow_removecurrent(TupleWindowState *state);
 extern void tuplewindow_clean(TupleWindowState *state);
 extern void tuplewindow_end(TupleWindowState *state);
-extern void tuplewindow_setinsertrank(TupleWindowState *state, double rank);
-extern void tuplewindow_puttupleslotatinsertrank(TupleWindowState *state, TupleTableSlot *slot, int64 timestamp);
-extern void tuplewindow_puttupleslot_ranked(TupleWindowState *state, TupleTableSlot *slot, int64 timestamp);
+
 
 #endif   /* TUPLEWINDOW_H */

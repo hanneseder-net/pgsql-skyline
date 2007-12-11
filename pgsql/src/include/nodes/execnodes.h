@@ -1363,7 +1363,8 @@ typedef enum
 	SS_TEMP
 } SkylineSource;
 
-#define SL_FLAGS_ENTROPY 1
+#define SL_FLAGS_NONE		0x0000
+#define SL_FLAGS_ENTROPY	0x0001
 
 typedef struct SkylineState
 {

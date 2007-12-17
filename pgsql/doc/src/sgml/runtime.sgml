@@ -1,4 +1,4 @@
-<!-- $PostgreSQL: pgsql/doc/src/sgml/runtime.sgml,v 1.386 2007/11/28 15:42:31 petere Exp $ -->
+<!-- $PostgreSQL: pgsql/doc/src/sgml/runtime.sgml,v 1.389 2007/12/16 11:24:25 momjian Exp $ -->
 
 <chapter Id="runtime">
  <title>Operating System Environment</title>
@@ -1258,8 +1258,11 @@ Out of Memory: Killed process 12345 (postgres).
     kernel's behavior so that it will not <quote>overcommit</> memory.
     Although this setting will not prevent the OOM killer from
     invoking altogether, it will lower the chances significantly and
-    will therefore lead to more robust system behavior.  This is done
-    by selecting strict overcommit mode via <command>sysctl</command>:
+    will therefore lead to more robust system behavior.  (It might also
+    cause fork() to fail when the machine appears to have available memory
+    because of other applications with careless memory allocation.) This
+    is done by selecting strict overcommit mode via
+    <command>sysctl</command>:
 <programlisting>
 sysctl -w vm.overcommit_memory=2
 </programlisting>
@@ -1350,7 +1353,8 @@ sysctl -w vm.overcommit_memory=2
   </para>
 
   <para>
-   Alternatively, you can send the signal directly using <command>kill</>.
+   Alternatively, you can send the signal directly using <command>kill</>
+   (or <command>pg_ctl kill TERM [process id]</> on <productname>Windows</>).
    The <acronym>PID</> of the <command>postgres</command> process can be
    found using the <command>ps</command> program, or from the file
    <filename>postmaster.pid</filename> in the data directory. For

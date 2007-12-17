@@ -2,7 +2,7 @@
 #
 # PostgreSQL documentation makefile
 #
-# $PostgreSQL: pgsql/doc/src/sgml/Makefile,v 1.102 2007/12/05 10:06:08 petere Exp $
+# $PostgreSQL: pgsql/doc/src/sgml/Makefile,v 1.105 2007/12/15 10:28:21 momjian Exp $
 #
 #----------------------------------------------------------------------------
 
@@ -161,9 +161,15 @@ JADE.tex.call = $(JADE) $(JADEFLAGS) $(SGMLINCLUDE) $(CATALOG) -d $(srcdir)/styl
 	jadetex $<
 
 # PostScript from TeX
+postgres.ps:
+	$(error Invalid target;  use postgres-A4.ps or postgres-US.ps as targets)
+	
 %.ps: %.dvi
 	dvips -o $@ $<
 
+postgres.pdf:
+	$(error Invalid target;  use postgres-A4.pdf or postgres-US.pdf as targets)
+	
 %.pdf: %.tex-pdf
 	@rm -f $*.aux $*.log $*.out
 # multiple runs are necessary to create proper intra-document links

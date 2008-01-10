@@ -1,16 +1,16 @@
 /Makefile/1.19/Sat Jan 20 17:16:11 2007//
-/geqo_copy.c/1.17/Fri Jan  5 22:19:30 2007//
+/geqo_copy.c/1.18/Thu Jan 10 10:17:22 2008//
 /geqo_cx.c/1.10/Sat Nov 29 22:39:49 2003//
 /geqo_erx.c/1.20/Sat Oct 15 02:49:19 2005//
-/geqo_eval.c/1.86/Mon Nov 19 11:52:42 2007//
-/geqo_main.c/1.54/Fri Jan  5 22:19:30 2007//
-/geqo_misc.c/1.47/Fri Jan  5 22:19:30 2007//
+/geqo_eval.c/1.87/Thu Jan 10 10:17:22 2008//
+/geqo_main.c/1.55/Thu Jan 10 10:17:23 2008//
+/geqo_misc.c/1.48/Thu Jan 10 10:17:23 2008//
 /geqo_mutation.c/1.9/Sat Nov 29 22:39:49 2003//
 /geqo_ox1.c/1.9/Sat Nov 29 22:39:49 2003//
 /geqo_ox2.c/1.10/Thu Oct  7 15:21:52 2004//
 /geqo_pmx.c/1.10/Sat Nov 29 22:39:49 2003//
-/geqo_pool.c/1.31/Fri Jan  5 22:19:30 2007//
+/geqo_pool.c/1.32/Thu Jan 10 10:17:23 2008//
 /geqo_px.c/1.10/Sat Nov 29 22:39:49 2003//
 /geqo_recombination.c/1.15/Sat Oct 15 02:49:19 2005//
-/geqo_selection.c/1.22/Fri Jan  5 22:19:30 2007//
+/geqo_selection.c/1.23/Thu Jan 10 10:17:23 2008//
 D

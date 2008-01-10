@@ -1,5 +1,4 @@
 /Makefile////*///
-/README.dict_xsyn////*///
 /dict_xsyn.c////*///
 /dict_xsyn.sql.in////*///
 /uninstall_dict_xsyn.sql////*///

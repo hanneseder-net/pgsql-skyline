@@ -8,7 +8,7 @@ our $config = {
     nls=>undef,				# --enable-nls=<path>
 #    tcl=>'c:\tcl',		# --with-tls=<path>
     perl=>'c:\perl', 			# --with-perl
-    python=>'c:\python25', # --with-python=<path>
+#    python=>'c:\python25', # --with-python=<path>
 #    krb5=>'c:\pgsql\depend\krb5', # --with-krb5=<path>
 #    ldap=>1,			# --with-ldap
     openssl=>'c:\openssl', # --with-ssl=<path>

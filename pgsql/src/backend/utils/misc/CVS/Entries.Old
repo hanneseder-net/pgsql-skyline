@@ -6,7 +6,7 @@
 /guc.c/1.426/Mon Nov 19 11:52:59 2007//
 /help_config.c/1.18/Fri Jan  5 22:19:46 2007//
 /pg_rusage.c/1.5/Fri Jan  5 22:19:46 2007//
-/postgresql.conf.sample/1.232/Mon Nov 12 10:59:22 2007//
+/postgresql.conf.sample/1.233/Tue Dec 11 12:50:13 2007//
 /ps_status.c/1.36/Mon Nov 19 11:52:59 2007//
 /superuser.c/1.36/Fri Jan  5 22:19:46 2007//
 /tzparser.c/1.5/Sun Jun  3 10:06:18 2007//

@@ -4,10 +4,10 @@
  *	  POSTGRES process array definitions.
  *
  *
- * Portions Copyright (c) 1996-2007, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2008, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
- * $PostgreSQL: pgsql/src/include/storage/procarray.h,v 1.18 2007/11/15 21:14:44 momjian Exp $
+ * $PostgreSQL: pgsql/src/include/storage/procarray.h,v 1.20 2008/01/09 21:52:36 tgl Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -37,7 +37,7 @@ extern int	BackendXidGetPid(TransactionId xid);
 extern bool IsBackendPid(int pid);
 
 extern VirtualTransactionId *GetCurrentVirtualXIDs(TransactionId limitXmin,
-					  bool allDbs);
+					  bool allDbs, int excludeVacuum);
 extern int	CountActiveBackends(void);
 extern int	CountDBBackends(Oid databaseid);
 extern int	CountUserBackends(Oid roleid);

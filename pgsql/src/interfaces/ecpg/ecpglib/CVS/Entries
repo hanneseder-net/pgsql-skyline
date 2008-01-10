@@ -1,5 +1,5 @@
 /.cvsignore/1.1/Fri Oct  5 01:35:55 2007//
-/Makefile/1.53/Tue Oct  9 17:25:16 2007//
+/Makefile/1.54/Thu Jan 10 10:18:05 2008//
 /connect.c/1.48/Mon Nov 19 11:53:12 2007//
 /data.c/1.40/Mon Nov 19 11:53:12 2007//
 /descriptor.c/1.28/Mon Nov 19 11:53:12 2007//
@@ -9,7 +9,7 @@
 /extern.h/1.32/Mon Nov 19 11:53:12 2007//
 /memory.c/1.12/Mon Nov 19 11:53:12 2007//
 /misc.c/1.41/Mon Nov 19 11:53:12 2007//
-/pg_type.h/1.7/Fri Jan  5 22:20:00 2007//
+/pg_type.h/1.8/Thu Jan 10 10:18:05 2008//
 /prepare.c/1.25/Mon Nov 19 11:53:12 2007//
 /typename.c/1.14/Mon Nov 19 11:53:12 2007//
 D

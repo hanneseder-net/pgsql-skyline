@@ -8,10 +8,7 @@ FILES=\
 	01-titlepage-en.tex 01-titlepage-de.tex \
 	02-acknowledgement.tex \
 	03-abstract-en.tex 03-abstract-de.tex \
-	07-results.tex \
-	07-01-railroad-diagrams.tex \
-	04-introduction.tex \
-	08-summary.tex
+	04-body.tex
 
 TMPFILES=*.aux *.log *.toc *.lot *.lof *.bbl *.blg *.ind *.ilg *.idx *.out
 TRASHFILES=*~ *.*~
@@ -41,14 +38,14 @@ REVISION := $(shell svn info | perl -n -e 'if ($$_ =~ m/^Revision:\s*(\d+)/) { p
 TEXIFYFLAGS=--tex-option="-c-style-errors -halt-on-error"
 
 # [NOTE] this is first, because we want `make` just build the draft
-draft: 00-thesis-draft.dvi
+draft: prereq 00-thesis-draft.dvi
 	echo $(BIBINPUTS)
 
 all: dvi pdf
 
 dvi: draft final
 
-final: 00-thesis-final.dvi
+final: prereq 00-thesis-final.dvi
 
 pdf: draft-pdf final-pdf
 
@@ -107,3 +104,15 @@ clean:
 
 distclean: clean
 	rm -rf $(TARGETFILES)
+
+
+prereq: heder.sty rail.sty skyline.bib
+
+heder.sty: ../tex/heder/heder.sty
+	cp $< $@
+
+rail.sty: ../tex/rail/rail.sty
+	cp $< $@
+
+skyline.bib: ../bibtex/bib/skyline/skyline.bib
+	cp $< $@

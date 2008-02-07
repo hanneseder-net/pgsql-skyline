@@ -1,8 +1,47 @@
 %%%
-%%% Railroad Diagrams.
+%%% Introduction.
 %%%
 
 \svnInfo $Id$
+
+\chapter{Introduction\revision}
+\label{chap:Introduction}
+
+
+The skyline operator \citep{Borzsonyi2001} filters out the \emph{interesting} points from a potentially large set of data points.
+
+
+The skyline operator returns the pareto optiomal\index{pareto optimal} elements of a set. This is also know as maximum vector problem \citep{Borzsonyi2001}.
+
+
+\subsection{Mathematical Defintion of Skyline}
+
+Let $R$ by a $n$-ary relation and $<_i$ with $i \in \{1, \ldots, n\}$
+a strict order on each dimension of $R$.
+We define $x \prec y := S(x, y) \subseteq R \times R$
+
+$\skyline_\prec(R) := \{ r \in R | \nexists s \in R : s \prec r \}$
+
+\subsection{Related Problems}
+Convex hull\index{convex hull} is a related problem.
+
+
+\section{Preliminaris}
+\section{Existing Methods and Related Works}
+\section{Skyline Algorithms}
+\subsection{BNL}
+\subsection{SFS}
+\subsection{LESS}
+
+\section{Implementation}
+pseudo code
+
+\subsection{Sampling}
+
+sampling --> min / max  ---> (0,1) --> ln   --> sum
+
+\subsection{Cardinality and Cost Estimation}
+
 
 \section{SQL Extension}
 
@@ -65,4 +104,14 @@ to be parsed as \\
 We did so because we believe the \inlinesql{SKYLINE} clause is closer
 related to the \inlinesql{GROUP BY} clause than to the \inlinesql{ORDER BY}
 clause, therefore we parse it in the same way.
+
+\chapter{Results\revision}
+\label{chap:Results}
+
+\section{Experiments}
+
+\chapter*{Summary\revision}
+\addcontentsline{toc}{chapter}{Summary\revision}
+
+
 

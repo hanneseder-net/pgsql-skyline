@@ -1,6 +1,6 @@
-/.cvsignore/1.1/Mon Jan 17 04:35:21 2000//
-/Makefile/1.35/Sat Jan 20 17:16:11 2007//
-/bootparse.y/1.91/Thu Jan 10 10:17:14 2008//
-/bootscanner.l/1.45/Thu Jan 10 10:17:14 2008//
-/bootstrap.c/1.238/Thu Jan 10 10:17:15 2008//
+/.cvsignore/1.1/Mon Jan 17 04:35:21 2000//TREL8_3_0
+/Makefile/1.35/Sat Jan 20 17:16:11 2007//TREL8_3_0
+/bootparse.y/1.91/Thu Jan 10 10:17:14 2008//TREL8_3_0
+/bootscanner.l/1.45/Thu Jan 10 10:17:14 2008//TREL8_3_0
+/bootstrap.c/1.238/Thu Jan 10 10:17:15 2008//TREL8_3_0
 D

@@ -1,8 +1,8 @@
-/Makefile/1.15/Mon Nov 12 10:59:01 2007//TREL8_3_0
-/dblink.c/1.69/Fri Feb  8 08:33:10 2008//TREL8_3_0
-/dblink.h/1.19/Thu Jan 10 10:17:04 2008//TREL8_3_0
-/dblink.sql.in/1.14/Mon Nov 19 11:52:19 2007//TREL8_3_0
-/uninstall_dblink.sql/1.5/Mon Nov 19 11:52:19 2007//TREL8_3_0
+/Makefile/1.15/Mon Nov 12 10:59:01 2007//
+/dblink.c/1.69/Fri Feb  8 08:33:10 2008//
+/dblink.h/1.19/Thu Jan 10 10:17:04 2008//
+/dblink.sql.in/1.14/Mon Nov 19 11:52:19 2007//
+/uninstall_dblink.sql/1.5/Mon Nov 19 11:52:19 2007//
 D/doc////
 D/expected////
 D/sql////

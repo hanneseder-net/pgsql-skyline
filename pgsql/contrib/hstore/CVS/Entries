@@ -1,13 +1,13 @@
-/Makefile/1.6/Mon Nov 12 10:59:02 2007//TREL8_3_0
-/crc32.c/1.2/Wed Aug  1 09:00:38 2007//TREL8_3_0
-/crc32.h/1.1/Tue Sep  5 18:00:57 2006//TREL8_3_0
-/hstore.h/1.5/Mon Nov 19 11:52:20 2007//TREL8_3_0
-/hstore.sql.in/1.8/Mon Nov 19 11:52:20 2007//TREL8_3_0
-/hstore_gin.c/1.2/Mon Nov 19 11:52:20 2007//TREL8_3_0
-/hstore_gist.c/1.7/Mon Nov 19 11:52:20 2007//TREL8_3_0
-/hstore_io.c/1.7/Wed Feb 28 22:44:38 2007//TREL8_3_0
-/hstore_op.c/1.8/Mon Nov 19 11:52:20 2007//TREL8_3_0
-/uninstall_hstore.sql/1.6/Mon Nov 19 11:52:20 2007//TREL8_3_0
+/Makefile/1.6/Mon Nov 12 10:59:02 2007//
+/crc32.c/1.2/Wed Aug  1 09:00:38 2007//
+/crc32.h/1.1/Tue Sep  5 18:00:57 2006//
+/hstore.h/1.5/Mon Nov 19 11:52:20 2007//
+/hstore.sql.in/1.8/Mon Nov 19 11:52:20 2007//
+/hstore_gin.c/1.2/Mon Nov 19 11:52:20 2007//
+/hstore_gist.c/1.7/Mon Nov 19 11:52:20 2007//
+/hstore_io.c/1.7/Wed Feb 28 22:44:38 2007//
+/hstore_op.c/1.8/Mon Nov 19 11:52:20 2007//
+/uninstall_hstore.sql/1.6/Mon Nov 19 11:52:20 2007//
 D/data////
 D/expected////
 D/sql////

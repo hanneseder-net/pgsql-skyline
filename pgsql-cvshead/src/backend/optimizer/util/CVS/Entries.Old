@@ -1,11 +1,11 @@
-/Makefile/1.17/Sat Jan 20 17:16:11 2007//
-/clauses.c/1.253/Thu Jan 10 10:17:25 2008//
-/joininfo.c/1.50/Thu Jan 10 10:17:25 2008//
-/pathnode.c/1.142/Thu Jan 10 10:17:25 2008//
-/plancat.c/1.139/Thu Jan 10 10:17:25 2008//
-/predtest.c/1.18/Thu Jan 10 10:17:25 2008//
-/relnode.c/1.89/Thu Jan 10 10:17:25 2008//
-/restrictinfo.c/1.55/Thu Jan 10 10:17:26 2008//
-/tlist.c/1.78/Thu Jan 10 10:17:26 2008//
-/var.c/1.73/Thu Jan 10 10:17:26 2008//
+/Makefile/1.17/Sat Jan 20 17:16:11 2007//TREL8_3_0
+/clauses.c/1.254/Fri Feb  8 08:33:17 2008//TREL8_3_0
+/joininfo.c/1.50/Thu Jan 10 10:17:25 2008//TREL8_3_0
+/pathnode.c/1.142/Thu Jan 10 10:17:25 2008//TREL8_3_0
+/plancat.c/1.140/Fri Feb  8 08:33:18 2008//TREL8_3_0
+/predtest.c/1.19/Fri Feb  8 08:33:18 2008//TREL8_3_0
+/relnode.c/1.89/Thu Jan 10 10:17:25 2008//TREL8_3_0
+/restrictinfo.c/1.55/Thu Jan 10 10:17:26 2008//TREL8_3_0
+/tlist.c/1.78/Thu Jan 10 10:17:26 2008//TREL8_3_0
+/var.c/1.73/Thu Jan 10 10:17:26 2008//TREL8_3_0
 D

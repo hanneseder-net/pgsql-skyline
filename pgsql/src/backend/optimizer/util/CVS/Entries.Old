@@ -1,11 +1,11 @@
 /Makefile/1.17/Sat Jan 20 17:16:11 2007//
-/clauses.c/1.252/Thu Nov 22 22:38:44 2007//
-/joininfo.c/1.49/Mon Nov 19 11:52:43 2007//
-/pathnode.c/1.141/Mon Nov 19 11:52:43 2007//
-/plancat.c/1.138/Mon Nov 19 11:52:43 2007//
-/predtest.c/1.17/Mon Nov 19 11:52:43 2007//
-/relnode.c/1.88/Mon Nov 19 11:52:44 2007//
-/restrictinfo.c/1.54/Mon Nov 19 11:52:44 2007//
-/tlist.c/1.77/Mon Nov 19 11:52:44 2007//
-/var.c/1.72/Mon Nov 19 11:52:44 2007//
+/clauses.c/1.253/Thu Jan 10 10:17:25 2008//
+/joininfo.c/1.50/Thu Jan 10 10:17:25 2008//
+/pathnode.c/1.142/Thu Jan 10 10:17:25 2008//
+/plancat.c/1.139/Thu Jan 10 10:17:25 2008//
+/predtest.c/1.18/Thu Jan 10 10:17:25 2008//
+/relnode.c/1.89/Thu Jan 10 10:17:25 2008//
+/restrictinfo.c/1.55/Thu Jan 10 10:17:26 2008//
+/tlist.c/1.78/Thu Jan 10 10:17:26 2008//
+/var.c/1.73/Thu Jan 10 10:17:26 2008//
 D

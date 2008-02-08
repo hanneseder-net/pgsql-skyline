@@ -1,9 +1,9 @@
 /Makefile/1.23/Sat Jan 20 17:16:13 2007//
 /README/1.5/Sat Feb 18 16:15:22 2006//
-/conv.c/1.65/Mon Nov 19 11:52:56 2007//
+/conv.c/1.66/Thu Jan 10 10:17:41 2008//
 /encnames.c/1.37/Mon Nov 19 11:52:56 2007//
 /iso.c/1.4/Sat Nov 29 22:39:59 2003//
-/mbutils.c/1.68/Mon Nov 19 11:52:56 2007//
+/mbutils.c/1.69/Thu Jan 10 10:17:41 2008//
 /wchar.c/1.66/Mon Nov 19 11:52:56 2007//
 /win1251.c/1.2/Sat Nov 29 22:39:59 2003//
 /win866.c/1.1/Mon Mar  7 04:30:52 2005//

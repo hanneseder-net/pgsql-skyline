@@ -8,7 +8,7 @@
  *
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/backend/catalog/index.c,v 1.290 2008/01/03 21:23:15 tgl Exp $
+ *	  $PostgreSQL: pgsql/src/backend/catalog/index.c,v 1.292 2008/01/30 19:46:48 tgl Exp $
  *
  *
  * INTERFACE ROUTINES
@@ -33,11 +33,13 @@
 #include "catalog/heap.h"
 #include "catalog/index.h"
 #include "catalog/indexing.h"
+#include "catalog/namespace.h"
 #include "catalog/pg_constraint.h"
 #include "catalog/pg_operator.h"
 #include "catalog/pg_opclass.h"
 #include "catalog/pg_tablespace.h"
 #include "catalog/pg_type.h"
+#include "commands/tablecmds.h"
 #include "executor/executor.h"
 #include "miscadmin.h"
 #include "optimizer/clauses.h"
@@ -2004,12 +2006,16 @@ validate_index_heapscan(Relation heapRelation,
 
 	/*
 	 * Prepare for scan of the base relation.  We need just those tuples
-	 * satisfying the passed-in reference snapshot.
+	 * satisfying the passed-in reference snapshot.  We must disable syncscan
+	 * here, because it's critical that we read from block zero forward to
+	 * match the sorted TIDs.
 	 */
-	scan = heap_beginscan(heapRelation, /* relation */
-						  snapshot,		/* seeself */
-						  0,	/* number of keys */
-						  NULL);	/* scan key */
+	scan = heap_beginscan_strat(heapRelation,	/* relation */
+								snapshot,		/* snapshot */
+								0,				/* number of keys */
+								NULL,			/* scan key */
+								true,			/* buffer access strategy OK */
+								false);			/* syncscan not OK */
 
 	/*
 	 * Scan all tuples matching the snapshot.
@@ -2214,6 +2220,21 @@ reindex_index(Oid indexId)
 	 * ensure that no one else is touching this particular index.
 	 */
 	iRel = index_open(indexId, AccessExclusiveLock);
+
+	/*
+	 * Don't allow reindex on temp tables of other backends ... their local
+	 * buffer manager is not going to cope.
+	 */
+	if (isOtherTempNamespace(RelationGetNamespace(iRel)))
+		ereport(ERROR,
+				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+				 errmsg("cannot reindex temporary tables of other sessions")));
+
+	/*
+	 * Also check for active uses of the index in the current transaction;
+	 * we don't want to reindex underneath an open indexscan.
+	 */
+	CheckTableNotInUse(iRel, "REINDEX INDEX");
 
 	/*
 	 * If it's a shared index, we must do inplace processing (because we have

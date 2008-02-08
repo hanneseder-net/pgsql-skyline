@@ -1,11 +1,11 @@
 /Makefile/1.17/Sat Jan 20 17:16:10 2007//
 /README/1.3/Fri Sep 16 14:40:54 2005//
-/gist.c/1.148/Mon Nov 19 11:52:33 2007//
-/gistget.c/1.68/Mon Nov 19 11:52:33 2007//
-/gistproc.c/1.12/Mon Nov 19 11:52:33 2007//
-/gistscan.c/1.67/Sat Jan 20 18:43:35 2007//
-/gistsplit.c/1.4/Fri Jan  5 22:19:22 2007//
-/gistutil.c/1.24/Fri Sep 21 18:07:23 2007//
-/gistvacuum.c/1.33/Mon Nov 19 11:52:33 2007//
-/gistxlog.c/1.26/Thu Feb  1 19:10:25 2007//
+/gist.c/1.149/Thu Jan 10 10:17:12 2008//
+/gistget.c/1.69/Thu Jan 10 10:17:12 2008//
+/gistproc.c/1.13/Thu Jan 10 10:17:12 2008//
+/gistscan.c/1.68/Thu Jan 10 10:17:12 2008//
+/gistsplit.c/1.5/Thu Jan 10 10:17:12 2008//
+/gistutil.c/1.25/Thu Jan 10 10:17:12 2008//
+/gistvacuum.c/1.34/Thu Jan 10 10:17:12 2008//
+/gistxlog.c/1.27/Thu Jan 10 10:17:12 2008//
 D

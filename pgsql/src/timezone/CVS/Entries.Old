@@ -2,8 +2,8 @@
 /README/1.5/Tue Jul 25 03:51:22 2006//
 /ialloc.c/1.9/Tue Oct 30 09:22:37 2007//
 /localtime.c/1.19/Mon Nov 19 11:53:42 2007//
-/pgtz.c/1.56/Mon Nov 19 11:53:42 2007//
-/pgtz.h/1.20/Mon Nov 19 11:53:42 2007//
+/pgtz.c/1.57/Thu Jan 10 10:18:11 2008//
+/pgtz.h/1.21/Thu Jan 10 10:18:11 2008//
 /private.h/1.11/Wed Feb 23 04:34:21 2005//
 /scheck.c/1.8/Tue Oct 30 09:22:37 2007//
 /strftime.c/1.11/Fri Jul 14 14:52:27 2006//

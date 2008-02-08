@@ -22,7 +22,7 @@
 /compat_informix-test_informix2.stderr/1.8/Thu Oct  4 20:22:44 2007//
 /compat_informix-test_informix2.stdout/1.1/Wed Aug  2 14:14:02 2006//
 /connect-test1-minGW32.stderr/1.2/Fri Jan 12 11:27:28 2007//
-/connect-test1.c.in/1.4/Fri Aug 17 09:41:08 2007//
+/connect-test1.c.in/1.5/Thu Jan 10 10:18:06 2008//
 /connect-test1.stderr/1.9/Thu Oct  4 20:22:44 2007//
 /connect-test1.stdout/1.3/Thu Jan 11 15:47:33 2007//
 /connect-test2.c/1.13/Fri Aug 17 09:41:08 2007//
@@ -34,8 +34,8 @@
 /connect-test4.c/1.10/Sat Mar 17 19:25:23 2007//
 /connect-test4.stderr/1.1/Wed Aug  2 14:14:03 2006//
 /connect-test4.stdout/1.1/Wed Aug  2 14:14:03 2006//
-/connect-test5.c/1.10/Fri Aug 17 09:41:08 2007//
-/connect-test5.stderr/1.4/Thu Oct  4 20:22:44 2007//
+/connect-test5.c/1.11/Thu Jan 10 10:18:06 2008//
+/connect-test5.stderr/1.5/Thu Jan 10 10:18:06 2008//
 /connect-test5.stdout/1.1/Sun Aug 27 16:15:42 2006//
 /pgtypeslib-dt_test.c/1.16/Fri Aug 17 09:41:08 2007//
 /pgtypeslib-dt_test.stderr/1.8/Thu Oct  4 20:22:44 2007//

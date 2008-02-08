@@ -414,8 +414,8 @@
 #check_function_bodies = on
 #default_transaction_isolation = 'read committed'
 #default_transaction_read_only = off
+#session_replication_role = 'origin'
 #statement_timeout = 0			# 0 is disabled
-#session_replication_role = "origin"
 #vacuum_freeze_min_age = 100000000
 #xmlbinary = 'base64'
 #xmloption = 'content'
@@ -476,9 +476,10 @@
 #backslash_quote = safe_encoding	# on, off, or safe_encoding
 #default_with_oids = off
 #escape_string_warning = on
-#standard_conforming_strings = off
 #regex_flavor = advanced		# advanced, extended, or basic
 #sql_inheritance = on
+#standard_conforming_strings = off
+#synchronize_seqscans = on
 
 # - Other Platforms and Clients -
 

@@ -10,7 +10,7 @@
  * Written by Peter Eisentraut <peter_e@gmx.net>.
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/backend/utils/misc/guc.c,v 1.429 2008/01/01 19:45:54 momjian Exp $
+ *	  $PostgreSQL: pgsql/src/backend/utils/misc/guc.c,v 1.432 2008/01/30 18:35:55 tgl Exp $
  *
  *--------------------------------------------------------------------
  */
@@ -110,6 +110,7 @@ extern int	CommitDelay;
 extern int	CommitSiblings;
 extern char *default_tablespace;
 extern char *temp_tablespaces;
+extern bool synchronize_seqscans;
 extern bool fullPageWrites;
 
 #ifdef TRACE_SORT
@@ -1050,6 +1051,15 @@ static struct config_bool ConfigureNamesBool[] =
 		},
 		&standard_conforming_strings,
 		false, NULL, NULL
+	},
+
+	{
+		{"synchronize_seqscans", PGC_USERSET, COMPAT_OPTIONS_PREVIOUS,
+			gettext_noop("Enable synchronized sequential scans."),
+			NULL
+		},
+		&synchronize_seqscans,
+		true, NULL, NULL
 	},
 
 	{
@@ -2022,7 +2032,7 @@ static struct config_string ConfigureNamesString[] =
 
 	{
 		{"session_replication_role", PGC_SUSET, CLIENT_CONN_STATEMENT,
-			gettext_noop("Sets the sessions behavior for triggers and rewrite rules."),
+			gettext_noop("Sets the session's behavior for triggers and rewrite rules."),
 			gettext_noop("Each session can be either"
 						 " \"origin\", \"replica\", or \"local\".")
 		},
@@ -4828,6 +4838,16 @@ GUC_complaint_elevel(GucSource source)
 		 * about problems with the config file.
 		 */
 		elevel = IsUnderPostmaster ? DEBUG3 : LOG;
+	}
+	else if (source == PGC_S_OVERRIDE)
+	{
+		/*
+		 * If we're a postmaster child, this is probably "undo" during
+		 * transaction abort, so we don't want to clutter the log.  There's
+		 * a small chance of a real problem with an OVERRIDE setting,
+		 * though, so suppressing the message entirely wouldn't be desirable.
+		 */
+		elevel = IsUnderPostmaster ? DEBUG5 : LOG;
 	}
 	else if (source < PGC_S_INTERACTIVE)
 		elevel = LOG;

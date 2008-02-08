@@ -1,7 +1,7 @@
 PostgreSQL TODO List
 ====================
 Current maintainer:	Bruce Momjian (bruce@momjian.us)
-Last updated:		Fri Jan  4 10:58:16 EST 2008
+Last updated:		Thu Jan 31 21:41:04 EST 2008
 
 The most recent version of this document can be viewed at
 http://www.postgresql.org/docs/faqs.TODO.html.
@@ -143,7 +143,6 @@ Administration
 
 	  o %Create dump tool for write-ahead logs for use in determining
 	    transaction id for point-in-time recovery
-	  o Allow the PITR process to be debugged and data examined
 	  o Allow recovery.conf to support the same syntax as
 	    postgresql.conf, including quoting
 
@@ -272,11 +271,11 @@ Data Types
 
 * Binary Data
 
-	o Improve vacuum of large objects, like /contrib/vacuumlo?
+	o Improve vacuum of large objects, like contrib/vacuumlo?
 	o Add security checking for large objects
 	o Auto-delete large objects when referencing row is deleted
 
-          /contrib/lo offers this functionality.
+          contrib/lo offers this functionality.
 
 	o Allow read/write into TOAST values like large objects
 
@@ -431,6 +430,15 @@ Views / Rules
   rules, such as for partitioning setups
 
   http://archives.postgresql.org/pgsql-hackers/2007-09/msg00577.php
+
+* Add the ability to automatically create materialized views
+
+  Right now materialized views require the user to create triggers on the
+  main table to keep the summary table current.  SQL syntax should be able
+  to manager the triggers and summary table automatically.  A more
+  sophisticated implementation would automatically retrieve from the
+  summary table when the main table is referenced, if possible.
+
 
 
 SQL Commands
@@ -895,6 +903,9 @@ Triggers
 
   http://archives.postgresql.org/pgsql-general/2007-02/msg01466.php
 
+* Add ability to trigger on TRUNCATE
+
+  http://archives.postgresql.org/pgsql-sql/2008-01/msg00050.php
 
 
 
@@ -1133,6 +1144,13 @@ Locking
 * Add idle_in_transaction_timeout GUC so locks are not held for long
   periods of time
 
+* Improve deadlock detection when a page cleaning lock conflicts
+  with a shared buffer that is pinned
+
+  http://archives.postgresql.org/pgsql-bugs/2008-01/msg00138.php
+  http://archives.postgresql.org/pgsql-hackers/2008-01/msg00873.php
+  http://archives.postgresql.org/pgsql-committers/2008-01/msg00365.php
+
 
 
 Startup Time Improvements
@@ -1300,7 +1318,7 @@ Source Code
 ===========
 
 * Add use of 'const' for variables in source tree
-* Move some things from /contrib into main tree
+* Move some things from contrib into main tree
 * %Remove warnings created by -Wcast-align
 * Move platform-specific ps status display info from ps_status.c to ports
 * Add optional CRC checksum to heap and index pages
@@ -1309,7 +1327,7 @@ Source Code
 * Acquire lock on a relation before building a relcache entry for it
 * Allow cross-compiling by generating the zic database on the target system
 * Improve NLS maintenance of libpgport messages linked onto applications
-* Clean up casting in /contrib/isn
+* Clean up casting in contrib/isn
 
   http://archives.postgresql.org/pgsql-hackers/2006-11/msg00245.php
 
@@ -1386,19 +1404,24 @@ Exotic Features
 * Allow plug-in modules to emulate features from other databases
 * Add Oracle-style packages  (Pavel)
 
-	  A package would be a schema with session-local variables,
-	  public/private functions, and initialization functions.  It
-	  is also possible to implement these capabilities
-	  in any schema and not use a separate "packages"
-	  syntax at all.
+  A package would be a schema with session-local variables,
+  public/private functions, and initialization functions.  It
+  is also possible to implement these capabilities
+  in any schema and not use a separate "packages"
+  syntax at all.
 
-	  http://archives.postgresql.org/pgsql-hackers/2006-08/msg00384.php
+  http://archives.postgresql.org/pgsql-hackers/2006-08/msg00384.php
 
 * Consider allowing control of upper/lower case folding of unquoted
   identifiers
 
   http://archives.postgresql.org/pgsql-hackers/2004-04/msg00818.php
   http://archives.postgresql.org/pgsql-hackers/2006-10/msg01527.php
+
+* Add autonomous transactions
+
+  http://archives.postgresql.org/pgsql-hackers/2008-01/msg00893.php
+
 
 
 Features We Do _Not_ Want

@@ -8,7 +8,8 @@ FILES=\
 	01-titlepage-en.tex 01-titlepage-de.tex \
 	02-acknowledgement.tex \
 	03-abstract-en.tex 03-abstract-de.tex \
-	04-body.tex
+	04-body.tex \
+	heder.sty
 
 TMPFILES=*.aux *.log *.toc *.lot *.lof *.bbl *.blg *.ind *.ilg *.idx *.out
 TRASHFILES=*~ *.*~

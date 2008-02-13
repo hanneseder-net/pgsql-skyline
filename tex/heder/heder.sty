@@ -23,6 +23,8 @@
 
 \usepackage{amssymb}
 
+\usepackage{amsthm}
+
 \usepackage{makeidx}
 
 \usepackage[dvipsnames,svgnames]{xcolor}
@@ -52,10 +54,9 @@
         }
 }
 
-% TODO: use marginal notes for fixme and todo's
-% TODO: use color for fixme and todo's
-\newcommand\fixme[1]{\marginpar{\textcolor{Crimson}{\footnotesize {\textsc FIXME:} #1}}\colorbox{Yellow}{#1}}
-\newcommand\todo[1]{\marginpar{\textcolor{DarkGreen}{\footnotesize {\textsc TODO:} #1}}\textcolor{DarkGreen}{#1}}
+%
+\newcommand\fixme[2]{\marginpar{\textcolor{Crimson}{\begin{flushleft}\footnotesize {\textsc FIXME:} #2\end{flushleft}}}\colorbox{Yellow}{#1}}
+\newcommand\todo[2]{\marginpar{\textcolor{DarkGreen}{\begin{flushleft}\footnotesize {\textsc TODO:} #2\end{flushleft}}}\textcolor{DarkGreen}{#1}}
 
 \newcommand\skylinebibliography[0]{\bibliographystyle{plainnat}\bibliography{skyline}}
 
@@ -63,6 +64,34 @@
 
 \newif\ifshowrevisions
 \newcommand{\revision}[0]{{\ifshowrevisions{\small\textcolor{lightgray}{\ rev:\svnInfoRevision}}\fi}}
+
+
+%\newtheoremstyle{sql}% name
+%     {\topsep}%      Space above
+%     {\topsep}%      Space below
+%     {\ttseries}%         Body font
+%     {}%         Indent amount (empty = no indent, \parindent = para indent)
+%     {\bfseries}% Thm head font
+%     {}%        Punctuation after thm head
+%     {\newline}%     Space after thm head: " " = normal interword space;
+%           %       \newline = linebreak
+%     {...}%         Thm head spec (can be left empty, meaning `normal')
+%\newtheorem{sql}{SQL}[subsection]
+
+%\newtheormstyle{sql}{\topsep}{\topsep}{
+\newenvironment{sql}{%
+ \list{}{%
+    \listparindent 0\p@
+    \itemindent\listparindent
+    \leftmargin15\p@
+    \rightmargin15\p@
+    \parsep \z@ \@plus\p@
+    \tt
+ }%
+ \item[]%
+}{%
+ \endlist
+}%
 
 \DeclareOption{revisions}{\showrevisionstrue}
 \DeclareOption{norevisions}{\showrevisionsfalse}

@@ -4,27 +4,66 @@
 
 \svnInfo $Id$
 
+\newcommand\schema[1]{\ensuremath{\mathcal{#1}}}
+\newcommand\relation[1]{\ensuremath{\textnormal{\bf\textsf{#1}}}}
+
+\newcommand\imp{\Rightarrow}
+
+\newcommand\inlinesql[1]{{\tt #1}}
+\newcommand\srcref[1]{{\tt #1}}
+\newcommand\postgresdocu[2]{\href{http://www.postgresql.org/docs/8.3/static/#1}{#2}}
+\newtheorem{definition}{Definition}
+
 \chapter{Introduction\revision}
 \label{chap:Introduction}
 
+\todo{}{take some parts from the research planning intro}
+The skyline operator \citep{Borzsonyi2001} filters out the \emph{interesting} points from a potentially large set of data points. The skyline operator returns the pareto optimal\index{pareto optimal} elements of a set. This is also know as maximum vector problem\index{maximum vector problem}.
 
-The skyline operator \citep{Borzsonyi2001} filters out the \emph{interesting} points from a potentially large set of data points.
+Although we continously merging \texttt{CSV HEAD} of the \fixme{PostgreSQL source repository}{ref} 
+into our main development branch, we decided to base this paper on branch \texttt{REL8\_3\_0}, 
+in order to have a more stable and reproducibly setting, i.e. all experiments in this paper are based on version 8.3.0 of PostgreSQL with our patch for the skyline operator applied.
+
+\section{Related Problems}
+Convex hull\index{convex hull} is a related problem.
 
 
-The skyline operator returns the pareto optiomal\index{pareto optimal} elements of a set. This is also know as maximum vector problem \citep{Borzsonyi2001}.
+\section{Basic notations}
+\todo{}{rewrite}
+We are using a notation similar to the one used in \citep{Chomicki2002, Chomicki2003a}, as we are working in the context of the relational model\index{relational model} of data as well. Therefore we assume two infinite domains: $D$ (uninterpreted constants) and $N$ (numbers). No distinction are made between different numeric domains, since it is not necessary for this paper. Furthermore as we aim at an implementation of the skyline operator into a relational database management system (RDBMS)\index{RDBMS} we restrict to finite database\index{finite database} instances.
 
+\subsection{Basic definitions}
+Let \schema{R} be a schema with the attributes $a_1, \ldots, a_n$. 
+Let the domains of the $a_i$'s either be $D$ or $N$.
+Let \relation{R} be a relation of schema \schema{R}.
 
-\subsection{Mathematical Defintion of Skyline}
+We define a binary \emph{preference relation}\index{preference relation} as follows:
+\begin{definition}
+$\prec \subseteq \schema{R}\times\schema{R} \iff f$
+\end{definition}
 
-Let $R$ by a $n$-ary relation and $<_i$ with $i \in \{1, \ldots, n\}$
-a strict order on each dimension of $R$.
-We define $x \prec y := S(x, y) \subseteq R \times R$
+\begin{itemize}
+\item \emph{irreflexivity:} $\forall x: x \not\prec x$
+\item \emph{asymmetry:} $\forall x, y: x \prec y \imp y \not\prec x$
+\item \emph{transitivity:} $\forall x, y, z: (x \prec y \land y \prec z) \imp x \prec z$
+\end{itemize}
+
+Let $R$ by a $n$-ary relation and $<_i$ a strict order on each dimension of $R$ with $i \in \{1, \ldots, n\}$.
+We define the \emph{domination relation}\index{domination relation} $\prec$ as:
+
+\[x \prec y := S(x, y) \subseteq R \times R\]
 
 $\skyline_\prec(R) := \{ r \in R | \nexists s \in R : s \prec r \}$
 
-\subsection{Related Problems}
-Convex hull\index{convex hull} is a related problem.
 
+Our implementation of the \inlinesql{SKYLINE OF} clause is actually a bit more flexible than the mathematical definition given above. With our implementation the skyline operator is not restricted to attributes with a numerical domain, it can be applied to any attribute, as long as a \emph{sort function} is defined for the domain in question, i.e.\/ any expression valid in a SQL \inlinesql{ORDER BY} clause is valid as an expression in a \inlinesql{SKYLINE OF} clause.
+
+This gives the opportunity to include expressions of almost any data type in a skyline query, even user defined ones. For more information on user defined data types see PostgreSQL documentation on \postgresdocu{xtypes.html}{User-Defined Types} and \postgresdocu{xindex.html\#XINDEX-OPFAMILY}{Operator Classes and Operator Families}
+
+Anyway it is somewhat questionable what it is good for the include a e.g. \inlinesql{VARCHAR} column in a skyline query, still it is possible.
+
+\subsection{Monoton vs. linear scoring functions}
+see \citep{Chomicki2002a} page 5, Theorem 4
 
 \section{Preliminaris}
 \section{Existing Methods and Related Works}
@@ -82,26 +121,20 @@ windowoptions : ( 'SLOTS' '=' slots ) | (('WINDOW' | 'WINDOWSIZE') '=' windowsiz
 \end{rail}
 
 
-\newcommand\inlinesql[1]{{\tt #1}}
-\newcommand\sql[1]{\inlinesql{#1}}
-\newcommand\srcref[1]{{\tt #1}}
-
-In fact the grammar is a defined a bit differnt, this is because SQL92
-\fixme{ref:SQL92} requries
-\sql{SELECT foo UNION SELECT bar ORDER BY baz}
+In fact we defined the grammar a bit different\footnote{see \srcref{src/backend/parser/gram.y} for details}, this is because \fixme{SQL92}{ref:SQL92} requires the following statement:
+\begin{sql}SELECT foo UNION SELECT bar ORDER BY baz\end{sql}
 to be parsed as 
-\sql{(SELECT foo UNION SELECT bar) ORDER BY)}
+\begin{sql}(SELECT foo UNION SELECT bar) ORDER BY baz\end{sql}
 and not as
-\sql{SELECT foo UNION (SELECT bar ORDER BY baz)}
-see \srcref{src/backend/parser/gram.y} for details.
+\begin{sql}SELECT foo UNION (SELECT bar ORDER BY baz)\end{sql}
 
-For the \inlinesql{SKYLINE} clause we decided that the it should be left
-assoziative, i.e. \\
-\sql{SELECT * FROM foo UNION SELECT * FROM bar SKYLINE BY baz} \\
-to be parsed as \\
-\sql{SELECT * FROM foo UNION (SELECT * FROM bar SKYLINE BY baz)}. 
+\noindent{}For the \inlinesql{SKYLINE OF} clause we decided that the it should be left
+assoziative, i.e. 
+\begin{sql}SELECT * FROM foo UNION SELECT * FROM bar SKYLINE OF baz\end{sql}
+will be parsed as 
+\begin{sql}SELECT * FROM foo UNION (SELECT * FROM bar SKYLINE0 OF baz)\end{sql}
 
-We did so because we believe the \inlinesql{SKYLINE} clause is closer
+\noindent{}We did so, because we believe the \inlinesql{SKYLINE OF} clause is closer
 related to the \inlinesql{GROUP BY} clause than to the \inlinesql{ORDER BY}
 clause, therefore we parse it in the same way.
 

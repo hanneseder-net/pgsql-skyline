@@ -9,7 +9,7 @@ FILES=\
 	02-acknowledgement.tex \
 	03-abstract-en.tex 03-abstract-de.tex \
 	04-body.tex \
-	heder.sty
+	heder.sty skyline.bib
 
 TMPFILES=*.aux *.log *.toc *.lot *.lof *.bbl *.blg *.ind *.ilg *.idx *.out
 TRASHFILES=*~ *.*~

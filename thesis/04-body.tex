@@ -12,7 +12,9 @@
 \newcommand\inlinesql[1]{{\tt #1}}
 \newcommand\srcref[1]{{\tt #1}}
 \newcommand\postgresdocu[2]{\href{http://www.postgresql.org/docs/8.3/static/#1}{#2}}
+
 \newtheorem{definition}{Definition}
+\newtheorem{lemma}{Lemma}
 
 \chapter{Introduction\revision}
 \label{chap:Introduction}
@@ -28,33 +30,50 @@ in order to have a more stable and reproducibly setting, i.e. all experiments in
 Convex hull\index{convex hull} is a related problem.
 
 
-\section{Basic notations}
-\todo{}{rewrite}
-We are using a notation similar to the one used in \citep{Chomicki2002, Chomicki2003a}, as we are working in the context of the relational model\index{relational model} of data as well. Therefore we assume two infinite domains: $D$ (uninterpreted constants) and $N$ (numbers). No distinction are made between different numeric domains, since it is not necessary for this paper. Furthermore as we aim at an implementation of the skyline operator into a relational database management system (RDBMS)\index{RDBMS} we restrict to finite database\index{finite database} instances.
 
-\subsection{Basic definitions}
-Let \schema{R} be a schema with the attributes $a_1, \ldots, a_n$. 
-Let the domains of the $a_i$'s either be $D$ or $N$.
-Let \relation{R} be a relation of schema \schema{R}.
+\newcommand\dominates{\ensuremath{\succ}\xspace}
 
-We define a binary \emph{preference relation}\index{preference relation} as follows:
-\begin{definition}
-$\prec \subseteq \schema{R}\times\schema{R} \iff f$
+\clearpage 
+\fixme{}{no clearpage}
+\section{Basic definitions}
+\todo{We are in the context of relational model\index{relational model} of data}{\citep{Chomicki2002, Chomicki2003a}?}. As we aim at an implementation of the skyline operator into a relational database management system (RDBMS)\index{RDBMS} we restrict to finite database\index{finite database} instances.
+
+We assume two infinite domains: $N$ (numbers) and $D$ (uninterpreted constants). The domain $D$ will be used for attributes which are not subject to skyline computation, i.e. for the travelling example we will not compute the skyline over the name of the airline, therefore $D$ will be used as domain for this attribute.
+For attributes or expressions which are subject to skyline computation we use the domain $N$. No distinction is made between different numeric domains, since it is not necessary for this paper. For $N$ we require that equality ($=$), inequality ($\not=$), and the binary relations $<$ (strictly less than), $\le$ (less than or equal), $\ge$ (greater than or equal), and $>$ (strictly greater than) are defined with the usual properties.
+
+\begin{definition}[Schema]
+Given the domains $U_i, 1 \le i \le n$, such that $U_i$ is either equal to $D$ or $N$, we define the $n$-ary schema $\schema{R}$ as the cartesian product of the $U_i$'s, i.e. $\schema{R} = U_1 \times U_2 \times \ldots \times U_n$. The attributes of schema \schema{R} will be refered as $a_1, \ldots, a_n$.
 \end{definition}
 
+Preferences will be defined in terms of \emph{binary preference relations}\index{preference relation}.
+\begin{definition}[Preference relation]
+Let \schema{R} be a $n$-ary schema, a relation \dominates is a preference relation over \schema{R} if it is a subset of $\schema{R} \times \schema{R}$.
+\end{definition}
+
+To give an intuition, \dominates will be a binary relation between pairs of tuples from the same (database) relation, we say $r$ \emph{dominates} $s$ in \dominates iff $(r, s) \in \dominates$ (or in infix notation $r \dominates s$).
+
+We require the relation \dominates to be a \emph{strict partial order}\index{strict partial order}, i.e. \dominates is irreflexive, asymmetric and transitive. These properties are formalized as usual:
+
 \begin{itemize}
-\item \emph{irreflexivity:} $\forall x: x \not\prec x$
-\item \emph{asymmetry:} $\forall x, y: x \prec y \imp y \not\prec x$
-\item \emph{transitivity:} $\forall x, y, z: (x \prec y \land y \prec z) \imp x \prec z$
+\item \emph{irreflexivity:} $\forall x: x \not\dominates x$
+\item \emph{asymmetry:} $\forall x, y: x \dominates y \imp y \not\dominates x$
+\item \emph{transitivity:} $\forall x, y, z: (x \dominates y \land y \dominates z) \imp x \dominates z$
 \end{itemize}
 
-Let $R$ by a $n$-ary relation and $<_i$ a strict order on each dimension of $R$ with $i \in \{1, \ldots, n\}$.
-We define the \emph{domination relation}\index{domination relation} $\prec$ as:
+Non-transitive\index{non-transitive} preferences can be compute with the \todo{Best}{special font for algo names?} algorithm (\citep{Torlone2002, Ciaccia2004}), we will not study this approach in this paper.
 
-\[x \prec y := S(x, y) \subseteq R \times R\]
+\begin{definition}
+\todo{}{}Let \relation{R} be a relation of schema \schema{R}.
+\end{definition}
 
-$\skyline_\prec(R) := \{ r \in R | \nexists s \in R : s \prec r \}$
+\begin{definition}[Skyline]
+The skyline of a relation \relation{R} with respect to the preference relation \dominates is the set of tuples $r \in \relation{R}$ which are not dominate by any other tuple $s \in \relation{R}$, formally $\skyline_\dominates(\relation{R}) := \{ r \in \relation{R} | \nexists s \in \relation{R} : s \dominates r \}$
+\end{definition}
 
+\begin{lemma}
+\todo{}{this is more or less theorem 2 from \citep{Chomicki2002}}
+Given the relation $\relation{R} \not= \emptyset$ and \dominates a strict parial order over \schema{R}, where \schema{R} is the schema for \relation{R}, the skyline is non empty, i.e. $\skyline_\dominates(\relation{R}) \not= \emptyset$ holds.
+\end{lemma}
 
 Our implementation of the \inlinesql{SKYLINE OF} clause is actually a bit more flexible than the mathematical definition given above. With our implementation the skyline operator is not restricted to attributes with a numerical domain, it can be applied to any attribute, as long as a \emph{sort function} is defined for the domain in question, i.e.\/ any expression valid in a SQL \inlinesql{ORDER BY} clause is valid as an expression in a \inlinesql{SKYLINE OF} clause.
 
@@ -142,6 +161,8 @@ clause, therefore we parse it in the same way.
 \label{chap:Results}
 
 \section{Experiments}
+
+\subsection{Random Dataset Generator}
 
 \chapter*{Summary\revision}
 \addcontentsline{toc}{chapter}{Summary\revision}

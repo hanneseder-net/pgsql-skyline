@@ -1,1 +1,0 @@
-in case of 1 dim skyline and the presence of an usable index, the fact that the index scan could be cancled early is not explored.

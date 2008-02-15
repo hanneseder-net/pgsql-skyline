@@ -8,6 +8,8 @@
 \newcommand\relation[1]{\ensuremath{\textnormal{\bf\textsf{#1}}}}
 
 \newcommand\imp{\Rightarrow}
+\newcommand\bigland{\bigwedge}
+\newcommand\biglor{\bigvee}
 
 \newcommand\inlinesql[1]{{\tt #1}}
 \newcommand\srcref[1]{{\tt #1}}
@@ -15,9 +17,44 @@
 
 \newtheorem{definition}{Definition}
 \newtheorem{lemma}{Lemma}
+\newtheorem{theorem}{Theorem}
 
 \chapter{Introduction\revision}
 \label{chap:Introduction}
+
+
+\subsection{motivation}
+motivation: green computing: less cpu time, less computers, less energy --> safe the planet
+
+stocks: risk vs. costs (--> streaming skyline see [Tao2006])
+
+example of skyline
+
+when travelling by plan: time vs. costs
+
+TODO: more dim: \#stops, total dist
+travel by bus: \#of visited cities
+
+it is shown on some website. which?
+
+Credit To: Ali (room mate)
+
+employee (salary, revenue, years in the company)
+
+\subsection{consider only bnl and sfs}
+
+In this paper, our focus is on algorithms that can be
+directly implemented in today's commercial database systems
+without the addition of new access methods (which
+would require addressing the associated challenges of maintenance
+with updates, concurrency control, etc.). Specifically,
+we consider the Block-nested-loop Algorithm [15],
+and the Block-nested-loop with Presorting [5]. There are
+other algorithms that include Bitmap and Index[16], NN
+[7] and BBS [12] which use specialized data structures like
+extensions of B-trees and R$^*$-trees. We leave the cost analysis
+of these algorithms and indexes for future work.
+
 
 \todo{}{take some parts from the research planning intro}
 The skyline operator \citep{Borzsonyi2001} filters out the \emph{interesting} points from a potentially large set of data points. The skyline operator returns the pareto optimal\index{pareto optimal} elements of a set. This is also know as maximum vector problem\index{maximum vector problem}.
@@ -75,11 +112,45 @@ The skyline of a relation \relation{R} with respect to the preference relation \
 Given the relation $\relation{R} \not= \emptyset$ and \dominates a strict parial order over \schema{R}, where \schema{R} is the schema for \relation{R}, the skyline is non empty, i.e. $\skyline_\dominates(\relation{R}) \not= \emptyset$ holds.
 \end{lemma}
 
+
+In a skyline query with the following skyline clause:
+\[
+\texttt{SKYLINE OF} a_1 \texttt{MIN}, \ldots, a_k \texttt{MIN}, a_{k+1} \texttt{MAX}, \ldots, a_l \texttt{MAX}, a_{l+1} \texttt{DIFF}, \ldots, a_m \texttt{DIFF}
+\]
+a tuple 
+$r = (r_1, \ldots, r_k, r_{k+1}, \ldots, r_l, r_{l+1}, \ldots, r_m, r_{m+1}, \ldots, r_n)$
+dominates a tuple
+$s = (r_1, \ldots, r_k, r_{k+1}, \ldots, r_l, r_{l+1}, \ldots, r_m, r_{m+1}, \ldots, r_n)$
+iff the following condition holds
+\begin{equation}\label{equ:skylinepf}
+\left( \bigland_{1 \le i \le k} r_i \le s_i \right) \land
+\left( \bigland_{k+1 \le i \le l} r_i \ge s_i \right) \land
+\left( \bigland_{l+1 \le i \le m} r_i = s_i \right) \\
+\land
+\left( \left( \biglor_{1 \le i \le k} r_i < s_i \right) \lor
+       \left( \biglor_{k+1 \le i \le l} r_i > s_i \right) \right).
+\end{equation}
+
+Please note that the following subformula of the upper formula induces an equality relation on \relation{R}, i.e. \relation{R} is partitioned into groups where the attributes $a_{l+1}, \ldots, a_m$ are equal:
+\[
+\bigland_{l+1 \le i \le m} r_i = s_i.
+\]
+
+As noted in \citep{Chomicki2003}, the \inlinesql{DIFF} directive works as a group by within the skyline, and the skyline for each group of diff attributes' values is found.
+
+This property can be exploited, if an ordered index on any subset of the attributes $a_{l+1}, \ldots, a_m$ exists, since the tuple window can be flushed each time the group is changed.
+
+%\subsection{Skyline as special case of winnow}
+The skyline operator is a special case of the \emph{winnow operator}\index{winnow operator} \citep{Chomicki2002}, where the preference formula has exactly the form of formula (\ref{equ:skylinepf}).
+
 Our implementation of the \inlinesql{SKYLINE OF} clause is actually a bit more flexible than the mathematical definition given above. With our implementation the skyline operator is not restricted to attributes with a numerical domain, it can be applied to any attribute, as long as a \emph{sort function} is defined for the domain in question, i.e.\/ any expression valid in a SQL \inlinesql{ORDER BY} clause is valid as an expression in a \inlinesql{SKYLINE OF} clause.
 
 This gives the opportunity to include expressions of almost any data type in a skyline query, even user defined ones. For more information on user defined data types see PostgreSQL documentation on \postgresdocu{xtypes.html}{User-Defined Types} and \postgresdocu{xindex.html\#XINDEX-OPFAMILY}{Operator Classes and Operator Families}
 
 Anyway it is somewhat questionable what it is good for the include a e.g. \inlinesql{VARCHAR} column in a skyline query, still it is possible.
+
+Furthermore our implementation allows arbitrary expressions instead of a single attribute.
+
 
 \subsection{Monoton vs. linear scoring functions}
 see \citep{Chomicki2002a} page 5, Theorem 4
@@ -91,22 +162,23 @@ see \citep{Chomicki2002a} page 5, Theorem 4
 \subsection{SFS}
 \subsection{LESS}
 
-\section{Implementation}
-pseudo code
-
-\subsection{Sampling}
-
-sampling --> min / max  ---> (0,1) --> ln   --> sum
-
-\subsection{Cardinality and Cost Estimation}
-
-
+\chapter{Implementation}
 \section{SQL Extension}
 
-In this section we explain the syntax and the semantics of the SQL
-extension we implemened in order to support the skyline operator. The
-extended query syntax resembles the syntax proposed in
-\citep{Borzsonyi2001}.
+In \citep{Borzsonyi2001} the following extension to the SQL's \inlinesql{SELECT} statement with an optional \inlinesql{SKYLINE OF} clause is proposed:
+\begin{sql}
+SELECT ... FROM ... WHERE ... \\
+GROUP BY ... HAVING ...       \\
+SKYLINE OF \textnormal{[} DISTINCT \textnormal{]} $a_1$ \textnormal{[} MIN \textnormal{|} MAX \textnormal{|} DIFF \textnormal{]}, ..., $a_m$ \textnormal{[} MIN \textnormal{|} MAX \textnormal{|} DIFF \textnormal{]} \\
+ORDER BY ...
+\end{sql}
+
+We extended the above syntax a bit further, so we additionally provide syntax to specify
+\begin{itemize}
+\item treatment of NULL values (\inlinesql{NULLS FIRST} and \inlinesql{NULLS LAST})
+\item usage of user defined order on attribute (\inlinesql{USING \emph{Op}}) and
+\item operational aspects of skyline computation, such as \emph{algorithm} (BNL, SFS, \ldots), \emph{tuple window size and policy}, and more.
+\end{itemize}
 
 To describe the syntax we use 
 \subsection{Railroad Diagrams}
@@ -132,7 +204,7 @@ To describe the syntax we use
 \begin{rail}
 
 selectclause : 'SELECT' 'DISTINCT'? targetlist intoclause ? fromclause \\ whereclause ? ( groupclause havingclause ? ) ? \\ skylineclause ? sortclause ? ';';
-skylineclause : 'SKYLINE' ( 'BY' | 'ON' ) 'DISTINCT' ? ( skylineexpr + ',' ) skylineoptions ?;
+skylineclause : 'SKYLINE OF' 'DISTINCT' ? ( skylineexpr + ',' ) skylineoptions ?;
 skylineexpr: cexpr ( 'MIN' | 'MAX' | 'DIFF' | 'USING' qualOp ) (() | 'NULLS FIRST' | 'NULLS LAST') ;
 skylineoptions : 'WITH' ('EF' (('EFSLOTS' '=' slots) | (('EFWINDOW' | 'EFWINDOWSIZE') '=' windowsize ) ) ?) ? \\ ( (('BNL' | 'SFS') windowoptions ?) | 'PRESORT') ? ;
 windowoptions : ( 'SLOTS' '=' slots ) | (('WINDOW' | 'WINDOWSIZE') '=' windowsize ) ;
@@ -140,7 +212,7 @@ windowoptions : ( 'SLOTS' '=' slots ) | (('WINDOW' | 'WINDOWSIZE') '=' windowsiz
 \end{rail}
 
 
-In fact we defined the grammar a bit different\footnote{see \srcref{src/backend/parser/gram.y} for details}, this is because \fixme{SQL92}{ref:SQL92} requires the following statement:
+In fact we defined the grammar a little bit different\footnote{see \srcref{src/backend/parser/gram.y} for details} but only in the aspect of the assozitivity of the entire \inlinesql{SKLYINE OF} clause, this is because \fixme{SQL92}{ref:SQL92} requires the following statement:
 \begin{sql}SELECT foo UNION SELECT bar ORDER BY baz\end{sql}
 to be parsed as 
 \begin{sql}(SELECT foo UNION SELECT bar) ORDER BY baz\end{sql}
@@ -151,11 +223,139 @@ and not as
 assoziative, i.e. 
 \begin{sql}SELECT * FROM foo UNION SELECT * FROM bar SKYLINE OF baz\end{sql}
 will be parsed as 
-\begin{sql}SELECT * FROM foo UNION (SELECT * FROM bar SKYLINE0 OF baz)\end{sql}
+\begin{sql}SELECT * FROM foo UNION (SELECT * FROM bar SKYLINE OF baz)\end{sql}
 
 \noindent{}We did so, because we believe the \inlinesql{SKYLINE OF} clause is closer
 related to the \inlinesql{GROUP BY} clause than to the \inlinesql{ORDER BY}
 clause, therefore we parse it in the same way.
+
+\subsection{Reserved Keywords}
+
+
+\begin{verbatim}
+> CREATE DATABASE SKYLINE;
+
+ERROR:  syntax error at or near "SKYLINE"
+LINE 1: CREATE DATABASE SKYLINE;
+                        ^
+\end{verbatim}
+The solution is easy and the same for every reserved word, just quote it:
+\begin{verbatim}
+> CREATE DATABASE "SKYLINE";
+\end{verbatim}
+
+\section{Semantics}
+
+\subsection{One dimensional \inlinesql{SKYLINE OF} is different to SQL \inlinesql{MIN}/\inlinesql{MAX}}
+skyline 1d min neq sql min:
+
+sql min, max, distinct != skyline min, max, distinct
+
+wenn mehr als ein column in der result list ist
+
+\subsection{Skyline in the presents of NULL values}
+\begin{verbatim}
+skyline by nulls first / nulls last
+
+Hannes=# select * from foo skyline by (price) nulls first;
+
+ id | price | dist
+----+-------+------
+  5 |       |    3
+
+Hannes=# select * from foo skyline by distinct (price) max;
+
+ id | price | dist
+----+-------+------
+  5 |       |    3
+(1 row)
+
+Hannes=# select * from foo skyline by distinct (price) max nulls last;
+
+ id | price | dist
+----+-------+------
+  1 |    10 |    1
+
+should in case of max nulls last be the default? on sorting it's not.
+\end{verbatim}
+
+\subsection{\inlinesql{SKYLINE OF} and \inlinesql{GROUP BY}}
+\begin{verbatim}
+skyline and group by
+
+select year, count(*)
+from logfile
+group by year
+skyline by month min;
+
+
+select year, count(*)
+from logfile
+group by year
+skyline by year min;
+
+==>
+
+select year, count(*), month
+from logfile
+group by year, month
+skyline by month min
+
+hm? i.e. the skyline expr has to be added to the group by.
+the result might be a bit unexpected if the skyline expr
+is not part of the result nor of the group by clause
+
+
+01 2000
+02 2000
+01 2001
+01 2001
+
+select year, count(*) from logfile group by year
+
+2000 2
+2001 2
+
+
+select year, count(*), month from logfile group by year, month
+
+
+2000 1 01
+2000 1 02
+2001 2 01
+
+skyline by month min
+
+2000 1 01
+2001 2 01
+
+
+
+skyline
+  aggrate
+     scan
+
+
+Eder=# select id, count(*) from e2d100 group by id skyline by (d1) min;
+ERROR:  column "e2d100.d1" must appear in the GROUP BY clause or be used in an aggregate function
+\end{verbatim}
+
+\subsection{\inlinesql{SKYLINE OF} is different to SQL:2003 \inlinesql{WINDOW} clause}
+
+\todo{}{explain more}
+
+\section{Pseudo Code}
+
+\section{Sampling}
+
+sampling --> min / max  ---> (0,1) --> ln   --> sum
+
+\section{Cardinality and Cost Estimation}
+
+\section{Usage of indizes}
+skyline 1dim with index: in case of 1 dim skyline and the presence of an usable index, the fact that the index scan could be cancled early is not explored.
+
+
 
 \chapter{Results\revision}
 \label{chap:Results}
@@ -163,6 +363,26 @@ clause, therefore we parse it in the same way.
 \section{Experiments}
 
 \subsection{Random Dataset Generator}
+
+N(0,1) in kossmann generator.txt
+
+http://de.wikipedia.org/wiki/Normalverteilung\#Box-Muller-Methode
+
+die zwölfer regel scheint problematisch,
+
+ein mal spektrum analysieren
+
+ev. erf verwenden \#include <math.h>
+
+\subsection{window size}
+assumtions on windowsize:
+
+the assumtion that at no time more than output\_tuples will be in the window can not be hold.
+
+larger window and and less passes do not always mean better runtime
+
+infact there is a break even point
+
 
 \chapter*{Summary\revision}
 \addcontentsline{toc}{chapter}{Summary\revision}

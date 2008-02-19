@@ -7,9 +7,18 @@
 \newcommand\schema[1]{\ensuremath{\mathcal{#1}}}
 \newcommand\relation[1]{\ensuremath{\textnormal{\bf\textsf{#1}}}}
 
+\makeatletter
+\newcommand\skyline{\mathop{\operator@font skyline}\nolimits}
+\makeatother
+
 \newcommand\imp{\Rightarrow}
 \newcommand\bigland{\bigwedge}
 \newcommand\biglor{\bigvee}
+\newcommand\union{\cup}
+\newcommand\bigunion{\bigcup}
+\newcommand\intersection{\cap}
+\newcommand\difference{\backslash}
+\newcommand\euros{\$} \fixme{}{euro sign}
 
 \newcommand\inlinesql[1]{{\tt #1}}
 \newcommand\srcref[1]{{\tt #1}}
@@ -43,17 +52,15 @@ employee (salary, revenue, years in the company)
 
 \subsection{consider only bnl and sfs}
 
+from \citep{Chaudhuri2006}:
+
 In this paper, our focus is on algorithms that can be
 directly implemented in today's commercial database systems
 without the addition of new access methods (which
 would require addressing the associated challenges of maintenance
 with updates, concurrency control, etc.). Specifically,
 we consider the Block-nested-loop Algorithm [15],
-and the Block-nested-loop with Presorting [5]. There are
-other algorithms that include Bitmap and Index[16], NN
-[7] and BBS [12] which use specialized data structures like
-extensions of B-trees and R$^*$-trees. We leave the cost analysis
-of these algorithms and indexes for future work.
+and the Block-nested-loop with Presorting [5].
 
 
 \todo{}{take some parts from the research planning intro}
@@ -114,6 +121,7 @@ Given the relation $\relation{R} \not= \emptyset$ and \dominates a strict parial
 
 
 In a skyline query with the following skyline clause:
+\todo{}{add space between dim and direction}
 \[
 \texttt{SKYLINE OF} a_1 \texttt{MIN}, \ldots, a_k \texttt{MIN}, a_{k+1} \texttt{MAX}, \ldots, a_l \texttt{MAX}, a_{l+1} \texttt{DIFF}, \ldots, a_m \texttt{DIFF}
 \]
@@ -122,14 +130,16 @@ $r = (r_1, \ldots, r_k, r_{k+1}, \ldots, r_l, r_{l+1}, \ldots, r_m, r_{m+1}, \ld
 dominates a tuple
 $s = (r_1, \ldots, r_k, r_{k+1}, \ldots, r_l, r_{l+1}, \ldots, r_m, r_{m+1}, \ldots, r_n)$
 iff the following condition holds
-\begin{equation}\label{equ:skylinepf}
+\begin{eqnarray}\label{equ:skylinepf}
 \left( \bigland_{1 \le i \le k} r_i \le s_i \right) \land
 \left( \bigland_{k+1 \le i \le l} r_i \ge s_i \right) \land
-\left( \bigland_{l+1 \le i \le m} r_i = s_i \right) \\
+\left( \bigland_{l+1 \le i \le m} r_i = s_i \right) \land \nonumber\\
 \land
 \left( \left( \biglor_{1 \le i \le k} r_i < s_i \right) \lor
        \left( \biglor_{k+1 \le i \le l} r_i > s_i \right) \right).
-\end{equation}
+\end{eqnarray}
+
+To state in an informal way, a tuple $r$ dominates a tuple $s$ if it is equal in all \inlinesql{DIFF} dimensions, at least as good in all \inlinesql{MIN}/\inlinesql{MAX} dimensions and better than in at least one of the \inlinesql{MIN}/\inlinesql{MAX} dimensions.
 
 Please note that the following subformula of the upper formula induces an equality relation on \relation{R}, i.e. \relation{R} is partitioned into groups where the attributes $a_{l+1}, \ldots, a_m$ are equal:
 \[
@@ -140,9 +150,19 @@ As noted in \citep{Chomicki2003}, the \inlinesql{DIFF} directive works as a grou
 
 This property can be exploited, if an ordered index on any subset of the attributes $a_{l+1}, \ldots, a_m$ exists, since the tuple window can be flushed each time the group is changed.
 
-%\subsection{Skyline as special case of winnow}
+\subsection{Skyline as special case of winnow}
 The skyline operator is a special case of the \emph{winnow operator}\index{winnow operator} \citep{Chomicki2002}, where the preference formula has exactly the form of formula (\ref{equ:skylinepf}).
 
+Since the preference relation induced by the skyline criteria is a strict partial order, the following theorem (a special case of a theorem in \citep{Chomicki2002}) holds:
+
+\begin{theorem}\label{theorem:nonempty}
+For every finite, nonempty instance \relation{R} of \schema{R}, $\skyline_C(\relation{R})$ is nonempty.
+\end{theorem}
+\todo{}{the criteria C must be clearly defined}
+If the relation \relation{R} fails to be finite, it may happen that $\skyline_C(\relation{R}) = \emptyset$, for example if \relation{R} contains all natural numbers and the standard ordering $<$ is used.
+
+
+\subsection{How our implmenetation differs from the mathematical model}
 Our implementation of the \inlinesql{SKYLINE OF} clause is actually a bit more flexible than the mathematical definition given above. With our implementation the skyline operator is not restricted to attributes with a numerical domain, it can be applied to any attribute, as long as a \emph{sort function} is defined for the domain in question, i.e.\/ any expression valid in a SQL \inlinesql{ORDER BY} clause is valid as an expression in a \inlinesql{SKYLINE OF} clause.
 
 This gives the opportunity to include expressions of almost any data type in a skyline query, even user defined ones. For more information on user defined data types see PostgreSQL documentation on \postgresdocu{xtypes.html}{User-Defined Types} and \postgresdocu{xindex.html\#XINDEX-OPFAMILY}{Operator Classes and Operator Families}
@@ -151,8 +171,67 @@ Anyway it is somewhat questionable what it is good for the include a e.g. \inlin
 
 Furthermore our implementation allows arbitrary expressions instead of a single attribute.
 
+\subsection{Composition of Skyline Operator}
+In this section, we study serveral ways of composing the skyline operator. (see \citep{Chomicki2002} 4.1)
+We assume two finite instances \relation{R}, \relation{S} of schema \schema{R}, ...
 
-\subsection{Monoton vs. linear scoring functions}
+\[
+\skyline(\relation{R} \intersection \relation{S}) = \skyline(\relation{R}) \intersection \skyline(\relation{S})
+\]
+
+this identity could be exploitet in the query optimizer. \todo{}{further work?}
+is it really worth? what direction of the identity is actually iteresseting?
+
+
+\[
+\skyline(\relation{R} \union \relation{S}) \not= \skyline(\relation{R}) \union \skyline(\relation{S})
+\]
+
+if the last property would hold, easy decompose, but due to theorem (\ref{theorem:nonempty}) $skyline(\{t_1\}) = \{t_1\}$ would yield $\forall \relation{R} : \skyline(\relation{R}) = \relation{R}$ if decompossied to singletons.
+
+\[
+\skyline(\relation{R} \difference \relation{S}) \not= \skyline(\relation{R}) \difference \skyline(\relation{S})
+\]
+
+\todo{}{make this plausible}
+
+\todo{transitive closure}{4.2}
+well all skyline query are transitive, so there is no need to investigate this here. But e.g. I prefer to eat Tafelspitz than to eat Schnitzel, and Schnitzel over Foobar. Thus, I also prefer to eat Tafelspitz than to eat Foobar.
+
+\todo{skyline and joins, cross products, selections, projects, top k}{}
+
+$\sigma_{Price<\euros20}(\skyline_{C_1}(\relation{R}))=\skyline_{C_1}(\sigma_{Price<\euros20}(\relation{R}))$
+according to Theorem 3 (\citep{Chomicki2002}).
+Such identies are not in our implementation.\todo{}{further work}
+
+NOTE: $\sigma_{Price>\euros20}$ does not commute with $\skyline$.
+
+
+\texttt{TOP $k$} are realized with \inlinesql{LIMIT}
+
+\subsection{Preference hierarchies}
+(see 4.3 \citep{Chomicki2002}) ... I generally prefer red wine, but for fish I prefer white wine.
+\todo{}{I think this can not be formulated using skyline}
+
+
+\subsection{Intrinsic vs. extrinsic}
+According to the defintion in 5.2 \citep{Chomicki2002} the skyline operator is \emph{intrinsic} as the preference relation between two tuples purles on the basis of the values occurring in those tuples. \todo{In contrast \emph{extrinsic} preference formulas may refer not noly to build-in predicats but also to other constracts, e.g., database relations.}{rephrase or cite}.
+
+\subsection{Skyline Stratum}
+In the context of \emph{winnow} operator this is references as \emph{ranking}\index{ranking}, we prefer to use the term \emph{stratum}\index{stratum}, as we reserve the term ranking for scoring functions (see \ref{subsec:scoring}).
+
+The $n$th skyline startum $\skyline_C^n$ is recursifly defined as:
+
+\begin{eqnarray}
+\skyline_C^1(\relation{R}) & := & \skyline_C(\relation{R}) \\
+\skyline_C^{n+1}(\relation{R}) & := & \skyline_C(\relation{R} \difference \bigunion_{1 \le i \le n} \skyline_C^i(\relation{R}))
+\end{eqnarray}
+
+To give an example, the query $\skyline_C^2(\relation{R})$ computes the set of ``second-best'' tuples.\todo{}{rephrase or cite}
+
+An interessing combination of \inlinesql{SKYLINE OF} and \inlinesql{TOP $k$} is given by the Top $k$ skyline operator \todo{\citep{Brando2007, Goncalves2005a, Goncalves2005}}{check citation}, where as many skyline startum are computed till at least $k$ tuples are found, or the entire relation is returned.
+
+\subsection{Monoton vs. linear scoring functions}\label{subsec:scoring}
 see \citep{Chomicki2002a} page 5, Theorem 4
 
 \section{Preliminaris}
@@ -161,6 +240,13 @@ see \citep{Chomicki2002a} page 5, Theorem 4
 \subsection{BNL}
 \subsection{SFS}
 \subsection{LESS}
+
+\subsection{Related Works}
+from \citep{Chaudhuri2006}: 
+ There are other algorithms that include Bitmap and Index[16], NN
+[7] and BBS [12] which use specialized data structures like
+extensions of B-trees and R$^*$-trees. We leave the cost analysis
+of these algorithms and indexes for future work.
 
 \chapter{Implementation}
 \section{SQL Extension}
@@ -355,10 +441,13 @@ sampling --> min / max  ---> (0,1) --> ln   --> sum
 \section{Usage of indizes}
 skyline 1dim with index: in case of 1 dim skyline and the presence of an usable index, the fact that the index scan could be cancled early is not explored.
 
+\section{\inlinesql{LIMIT} / \inlinesql{TOP $k$}}
+how top k interacts with skyline, no special measures have to be taken as the upper node will stop fetching tuples. only in cost estimation.
+
 
 \section{Development}
 \subsection{Debugging PostgreSQL}
-Turing development it was very helpful to run the PostgreSQL backend in \texttt{--single} mode. A single backend, enter the query directly, edit & continue in msvc.
+Turing development it was very helpful to run the PostgreSQL backend in \texttt{--single} mode. A single backend, enter the query directly, edit \& continue in msvc.
 
 
 \chapter{Results\revision}
@@ -389,6 +478,7 @@ infact there is a break even point
 
 
 \chapter*{Summary\revision}
+\section{Futher work}
 \addcontentsline{toc}{chapter}{Summary\revision}
 
 

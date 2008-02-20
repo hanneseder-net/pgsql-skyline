@@ -9,6 +9,7 @@
 
 \makeatletter
 \newcommand\skyline{\mathop{\operator@font skyline}\nolimits}
+\newcommand\skyband{\mathop{\operator@font skyband}\nolimits}
 \makeatother
 
 \newcommand\imp{\Rightarrow}
@@ -19,6 +20,8 @@
 \newcommand\intersection{\cap}
 \newcommand\difference{\backslash}
 \newcommand\euros{\$} \fixme{}{euro sign}
+\newcommand\dominates{\ensuremath{\succ}\xspace}
+\newcommand\weakdominates{\ensuremath{\succeq}\xspace}
 
 \newcommand\inlinesql[1]{{\tt #1}}
 \newcommand\srcref[1]{{\tt #1}}
@@ -62,6 +65,7 @@ with updates, concurrency control, etc.). Specifically,
 we consider the Block-nested-loop Algorithm [15],
 and the Block-nested-loop with Presorting [5].
 
+Special algorithms have been proposed for the case the whole relation fits into main memory \citep{Preparata1985}, nevertheless we do not take them into account as memory is always a short resource in a database scenaria, either due to the large number of concurrent users or if the database is running on a handheld device.
 
 \todo{}{take some parts from the research planning intro}
 The skyline operator \citep{Borzsonyi2001} filters out the \emph{interesting} points from a potentially large set of data points. The skyline operator returns the pareto optimal\index{pareto optimal} elements of a set. This is also know as maximum vector problem\index{maximum vector problem}.
@@ -71,11 +75,13 @@ into our main development branch, we decided to base this paper on branch \textt
 in order to have a more stable and reproducibly setting, i.e. all experiments in this paper are based on version 8.3.0 of PostgreSQL with our patch for the skyline operator applied.
 
 \section{Related Problems}
-Convex hull\index{convex hull} is a related problem.
+Convex hull, \emph{top-K} queries, and nearest-neighbor search
+
+In particlar, the convex hull contains the subset of skyline points that may be optimal only for linear preference functions (as opposed to any monotone function).\todo{from \citep{Papadias2005}}{rephrase}
 
 
 
-\newcommand\dominates{\ensuremath{\succ}\xspace}
+
 
 \clearpage 
 \fixme{}{no clearpage}
@@ -141,6 +147,14 @@ iff the following condition holds
 
 To state in an informal way, a tuple $r$ dominates a tuple $s$ if it is equal in all \inlinesql{DIFF} dimensions, at least as good in all \inlinesql{MIN}/\inlinesql{MAX} dimensions and better than in at least one of the \inlinesql{MIN}/\inlinesql{MAX} dimensions.
 
+\todo{make \dominates equal to (\ref{equ:skylinepf}) and \weakdominates equal to just the $\le$ part, use $r \sim s := r \weakdominates s \land s \weakdominates r = \forall i \in \{1, \ldots, m\}: r_i = s_i$, i.e. equal on all skyline dimensions}{}
+
+
+If $\forall i \in \{1, \ldots, m\}: r_i = s_i$ holds, $r$ and $s$ are \todo{\emph{incomparable}}{use an other term for this special case of incomparability}, if \inlinesql{DISTINCT} is specified it is left up to the implementation to include either $r$ or $s$ in the skyline, if \inlinesql{DISTINCT} is not specified $r$ and $s$ are included. 
+
+
+In case condition (\ref{equ:skylinepf}) does not hold $r$ and $s$ are \emph{incomparable} and may both be part of the skyline if not dominated by any other tuple from \relation{R}.
+
 Please note that the following subformula of the upper formula induces an equality relation on \relation{R}, i.e. \relation{R} is partitioned into groups where the attributes $a_{l+1}, \ldots, a_m$ are equal:
 \[
 \bigland_{l+1 \le i \le m} r_i = s_i.
@@ -161,6 +175,14 @@ For every finite, nonempty instance \relation{R} of \schema{R}, $\skyline_C(\rel
 \todo{}{the criteria C must be clearly defined}
 If the relation \relation{R} fails to be finite, it may happen that $\skyline_C(\relation{R}) = \emptyset$, for example if \relation{R} contains all natural numbers and the standard ordering $<$ is used.
 
+
+\begin{lemma}
+Let $\relation{S} = \skyline_C(\relation{R})$, it is clear that condition (\ref{equ:skylinepf}) does not for any two tuples in \relation{S}.
+\end{lemma}
+
+
+\subsection{Further notions}
+dominance, anti dominance region
 
 \subsection{How our implmenetation differs from the mathematical model}
 Our implementation of the \inlinesql{SKYLINE OF} clause is actually a bit more flexible than the mathematical definition given above. With our implementation the skyline operator is not restricted to attributes with a numerical domain, it can be applied to any attribute, as long as a \emph{sort function} is defined for the domain in question, i.e.\/ any expression valid in a SQL \inlinesql{ORDER BY} clause is valid as an expression in a \inlinesql{SKYLINE OF} clause.
@@ -218,6 +240,8 @@ NOTE: $\sigma_{Price>\euros20}$ does not commute with $\skyline$.
 According to the defintion in 5.2 \citep{Chomicki2002} the skyline operator is \emph{intrinsic} as the preference relation between two tuples purles on the basis of the values occurring in those tuples. \todo{In contrast \emph{extrinsic} preference formulas may refer not noly to build-in predicats but also to other constracts, e.g., database relations.}{rephrase or cite}.
 
 \subsection{Skyline Stratum}
+\todo{draw a nice diagram}{}
+
 In the context of \emph{winnow} operator this is references as \emph{ranking}\index{ranking}, we prefer to use the term \emph{stratum}\index{stratum}, as we reserve the term ranking for scoring functions (see \ref{subsec:scoring}).
 
 The $n$th skyline startum $\skyline_C^n$ is recursifly defined as:
@@ -229,10 +253,53 @@ The $n$th skyline startum $\skyline_C^n$ is recursifly defined as:
 
 To give an example, the query $\skyline_C^2(\relation{R})$ computes the set of ``second-best'' tuples.\todo{}{rephrase or cite}
 
+The startum are of interesset especially if there is a single or very few dominating tuples. In the context of the relation \emph{Hotel(Price, Distance to beach)}, a hut on the beach might be cheaper and closer to the beach than any other \todo{Unterkunft}{translate}, but might to meet our standards. \todo{restaurat, close, good, tiered of eating there}{}
+
+A \emph{$K$-skyband}\index{$K$-skyband} query, introduced by \citet{Papadias2005}, is a simlar concept as skyline stratum. A $K$-skyband query reports all tuples which are dominated by at most $K$ points.
+
+\fixme{It is easy to see, that the following identities hold}{thats wrong}
+        x3
+  x1  
+ 
+    x2
+
+x1, x2 are in stratum 1, x3 is in stratum 1 but while x1 and x2 are in 0-skyband, x3 is not is 1-skyband because it is dominiated by x1 and x2 so it is in 2-skyband. Hence no general relation can be established between skyband and skyline stratum.
+
+The skyband rank of a point $p$ can be computed by counting the points in the anti-dominace region of $p$.
+
+\begin{eqnarray}
+\skyband_C^0(\relation{R}) &=& \skyline_C^1(\relation{R}) \label{equ:skyband} \\
+\skyband_C^n(\relation{R}) &\not=& \bigunion_{1 \le i \le n+1} \skyline_C^i(\relation{R}) \quad \textnormal{for}\ n \ge 0\label{equ:skybandgeneral} \\
+\skyline_C^n(\relation{R}) &\not=& \skyband_C^{n+1}(\relation{R}) \difference \skyband_C^n(\relation{R}) \quad \textnormal{for}\ n \ge 1
+\end{eqnarray}
+
+The branch-and-bound-skyline (BBS) \citep{Papadias2005} supports the computation of $K$-skyband queries, alghough state in \citep{Papadias2005} it is not clear how BNL and SFS can be used to computer $K$-skybands\todo{}{think about it}.
+
+
 An interessing combination of \inlinesql{SKYLINE OF} and \inlinesql{TOP $k$} is given by the Top $k$ skyline operator \todo{\citep{Brando2007, Goncalves2005a, Goncalves2005}}{check citation}, where as many skyline startum are computed till at least $k$ tuples are found, or the entire relation is returned.
+
 
 \subsection{Monoton vs. linear scoring functions}\label{subsec:scoring}
 see \citep{Chomicki2002a} page 5, Theorem 4
+
+\subsection{Properties of Skyline Algorithms}
+
+\todo{\citet{Kossmann2002} suggested a set of criteria for evaluating skyline algorithms:}{rephrase}
+
+\begin{enumerate}
+\item \emph{Progressiveness}: the first results should be reported to the user almost instantly and the output size should gradually increase.
+
+\item \emph{Absence of false misses}: given enough time, the algorithm should generate the entire skyline.
+
+\item \emph{Absence of false hits}: the algorithm should not discover temporary skyline points that will be later replaced.
+
+\item \emph{Fairness}: the algorithm should not favor points that are particularly good in one dimension.
+
+\item \emph{Incorporation of preferences}: the users should be able to determine the order according to which skyline points are reported.
+
+\item \emph{Universality}: the algorithm should be applicable to any dataset distribution and dimensionality, using some standard index structure.
+\end{enumerate}
+
 
 \section{Preliminaris}
 \section{Existing Methods and Related Works}
@@ -337,7 +404,12 @@ skyline 1d min neq sql min:
 
 sql min, max, distinct != skyline min, max, distinct
 
+select d1 from a2d100 skyline distinct d1 min = select min(d1) from a2d100;
+
+
 wenn mehr als ein column in der result list ist
+
+
 
 \subsection{Skyline in the presents of NULL values}
 \begin{verbatim}
@@ -432,11 +504,37 @@ ERROR:  column "e2d100.d1" must appear in the GROUP BY clause or be used in an a
 
 \section{Pseudo Code}
 
+\subsection{The stages of a query}
+
+\subsection{The iterator model in the executor}
+
+\subsection{Special case: one dimensional}
+use is limited
+
+
+\subsection{Special case: two dimensional with presort}
+in case a suitable access path, no sort is needed,
+
+brauchbar, da es unserer vermutung nach ein ein gut anzuwendender fall ist, aber d=2 macht skyline sinn.
+
+
+\subsection{Tuple Window interface}
+
+\subsection{BNL}
+
+\subsection{SFS}
+
+\subsection{Elimination Window EF and LESS}
+
+\subsection{EF and BNL}
+
 \section{Sampling}
 
 sampling --> min / max  ---> (0,1) --> ln   --> sum
 
 \section{Cardinality and Cost Estimation}
+
+cite \citep{Buchta1989}
 
 \section{Usage of indizes}
 skyline 1dim with index: in case of 1 dim skyline and the presence of an usable index, the fact that the index scan could be cancled early is not explored.
@@ -457,6 +555,8 @@ Turing development it was very helpful to run the PostgreSQL backend in \texttt{
 
 \subsection{Random Dataset Generator}
 
+Based on the code from \citep{Borzsonyi2001}\footnote{special thanks to Donald Kossmann, for providing the source code} wedeveloped two versions of the random dataset generator, a command line utility, and a PostgreSQL module (see \cite{Eder2007a}).
+
 N(0,1) in kossmann generator.txt
 
 http://de.wikipedia.org/wiki/Normalverteilung\#Box-Muller-Methode
@@ -466,6 +566,127 @@ die zwölfer regel scheint problematisch,
 ein mal spektrum analysieren
 
 ev. erf verwenden \#include <math.h>
+
+\subsubsection{As command line utility}
+
+The usage message explains, how to use the command line utility
+\begin{verbatim}
+Test data generator for Skyline Operator Evaluation
+usage: randdataset (-i|-c|-a) -d DIM -n COUNT [-s SEED] [-p] [-S] [-h|-?]
+
+Options:
+       -i       independent (dim >= 1)
+       -c       correlated (dim >= 2)
+       -a       anti-correlated (dim >= 2)
+
+       -d DIM   dimensions >=1
+       -n COUNT number of vectors
+       -I       unique id for every vector
+       -p PAD   add a padding field, PAD characters long
+
+       -C       generate SQL COPY statement
+       -R       generate SQL CREATE TABLE statement
+       -T NAME  use NAME instead of default table name
+
+       -s SEED  set random generator seed to SEED
+
+       -S       output stats to stderr
+
+       -h -?    display this help message and exit
+
+Examples:
+       randdataset -i -d 3 -n 10 -I -R
+       randdataset -a -d 2 -n 100 -S
+\end{verbatim}
+
+An invocation of \texttt{randdataset} suitable to pipe it directly into \texttt{psql}, i.e. load it into database, could look like: 
+\todo{}{using listings package}
+\begin{verbatim}
+> randdataset -i -d 3 -n 10 -I -R
+
+DROP TABLE IF EXISTS "i3d10";
+CREATE TABLE "i3d10" (id int, d1 float, d2 float, d3 float);
+COPY "i3d10" (id, d1, d2, d3) FROM STDIN DELIMITERS ',' CSV QUOTE '''';
+1,0.000000000000000e+00,6.900010321708401e-01,5.054183972559023e-01
+2,5.914905399975788e-01,5.547849133400177e-01,3.784288188342139e-01
+...
+10,8.585111004572880e-01,9.898449857671955e-02,8.770675234855467e-01
+\.
+\end{verbatim}
+
+\subsubsection{PostgreSQL Random Dataset Generator Function}
+
+To test drive this PostgreSQL 'contrib' module (see \srcref(contrib/randdataset)), without installing it, even with installing PostgreSQL visit our webinterface at \url{http://skyline.dbai.tuwien.ac.at/}. To install it onto your PostgreSQL installation follow the instructions \srcref{contrib/randdataset/README.randdataset}. Once installed the function can be used as follows:
+
+\begin{verbatim}
+select * from pg_rand_dataset('indep', 2, 10, 0) ds(id int, d1 float, d2 float);
+
+select * from pg_rand_dataset('corr', 3, 10, 0) ds(id int, d1 float, d2 float, d3 float);
+
+select * from pg_rand_dataset('anti', 3, 20, 0) ds(id int, d1 float, d2 float, d3 float);
+\end{verbatim}
+
+The general signatur for \inlinesql{pg\_rand\_dataset} is:
+\begin{verbatim}
+FUNCTION pg_rand_dataset(disttype text, dim int, rows int, seed int) RETURNS setof record
+\end{verbatim}
+
+Where the arguments have following meaning:
+\begin{itemize}
+\item \texttt{disttype} specifies the distribution type (see section \ref{sec:corr-anti-indep}), allowed values are \texttt{'indep'}, \texttt{'corr'}, and \texttt{'anti'}
+
+\item \texttt{dim} specifies the number of dimensions, allowed values are 1 upto 20 
+
+\item \texttt{rows} specifies the number of tuples that should be returned, and 
+
+\item \texttt{seed} is the seed for the random generator
+\end{itemize}
+
+We ensured that calling \inlinesql{pg\_rand\_dataset} with the same arguments will always return the same result set.
+
+To make the usage more comfortable we defined set wrapper functions \texttt{rds$k$d} for the dimenions $k$ 1 upto 20, they allow you to issue the same queries as above as follows (see \srcref{contrib/randdataset/randdataset.sql.in}):
+
+\begin{verbatim}
+select * from rds2d('indep', 10, 0);
+
+select * from rds3d('corr', 10, 0);
+
+select * from rds3d('anti', 20, 0);
+\end{verbatim}
+
+\subsubsection{Correlated, Anti-Correlated and Independant Datasets}\label{sec:corr-anti-indep}
+
+\todo{from \citep{Borzsonyi2001}}{rephrase, or cite?}
+
+\begin{itemize}
+\item \emph{indep}: for this type of database, all attribute values are generated independently using a uniform distribution.
+Figure 10 shows such an independent database with 1000 points and d = 2. Points which are
+part of the Skyline are marked as bold circles. In Figure 10, twelve points are part of the Skyline.
+
+\item \emph{corr}: a correlated database represents an environment in which points which are good in one dimension
+are also good in the other dimensions. For instance, students which have a good publication record
+typically also do well in their preliminaries. We generate a random point in the correlated database as
+follows. First we select a plane perpendicular to the line from (0, . . . , 0) to (1, . . . , 1) using a normal
+distribution; the new point will be in that plane. We use a normal distribution to select the plane so
+that more points are in the middle than at the ends. Within the plane, the individual attribute values
+are again generated using a normal distribution; this makes sure that most points are located close to
+the line from (0, . . . 0) to (1, . . . 1). Figure 11 shows a correlated database with 1000 points for d = 2.
+The Skyline of this database contains four points.
+
+\item \emph{anti}: an anti-correlated database represents an environment in which points which are good in one dimension
+are bad in one or all of the other dimensions; hotels seem to fall into this category. As for a
+correlated database, we generate a point by first selecting a plane perpendicular to the line from (0,
+. . . , 0) to (1, . . . , 1) using a normal distribution. We use a normal distribution with very small variance
+so that all points are placed into planes which are close to the plane through the point (0.5, . . . , 0.5).
+Within the plane, the individual attribute values are generated using a uniform distribution. Figure 12
+shows an anti-correlated database with 1000 points for d = 2. The Skyline of this database contains
+36 points.
+\end{itemize}
+
+\subsubsection{Buffer for Set returning function}
+we patched PostgreSQL, to avoid swapping of our intermediate result to disk
+
+\todo{}{append patch here? why not it's short}
 
 \subsection{window size}
 assumtions on windowsize:
@@ -479,6 +700,17 @@ infact there is a break even point
 
 \chapter*{Summary\revision}
 \section{Futher work}
+
+use special algorithms if we deal with domains with small cardinalites, \citep{Preisinger2006, Preisinger2007, Morse2007}
+
+use seperate windows for each skyline group? or use hashing to reduce the number of comparisons?
+
+hashing seams to be promissing for skyline groups.
+
+
+
+
+
 \addcontentsline{toc}{chapter}{Summary\revision}
 
 

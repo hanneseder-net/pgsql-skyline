@@ -31,9 +31,21 @@
 \newtheorem{lemma}{Lemma}
 \newtheorem{theorem}{Theorem}
 
+\section{TODO}
+\begin{itemize}
+\item \todo{casing of section headings?}{}
+\item \todo{ask ali, which website for travelling by airplane uses skyline}{}
+\end{itemize}
+\clearpage
+
+
 \chapter{Introduction\revision}
 \label{chap:Introduction}
 
+\section{General Introduction}
+\todo{}{take some parts from the research planning intro}
+
+give the intuition.
 
 \subsection{motivation}
 motivation: green computing: less cpu time, less computers, less energy --> safe the planet
@@ -42,7 +54,7 @@ stocks: risk vs. costs (--> streaming skyline see [Tao2006])
 
 example of skyline
 
-when travelling by plan: time vs. costs
+when travelling by airplane: time vs. costs
 
 TODO: more dim: \#stops, total dist
 travel by bus: \#of visited cities
@@ -65,17 +77,12 @@ with updates, concurrency control, etc.). Specifically,
 we consider the Block-nested-loop Algorithm [15],
 and the Block-nested-loop with Presorting [5].
 
-Special algorithms have been proposed for the case the whole relation fits into main memory \citep{Preparata1985}, nevertheless we do not take them into account as memory is always a short resource in a database scenaria, either due to the large number of concurrent users or if the database is running on a handheld device.
+Special algorithms have been proposed for the case the whole relation fits into main memory \citep{Preparata1985}, nevertheless we do not take them into account as memory is always a short resource in a database scenario, either due to the number of concurrent users or limited total main memory, e.g. on a handheld device.
 
-\todo{}{take some parts from the research planning intro}
 The skyline operator \citep{Borzsonyi2001} filters out the \emph{interesting} points from a potentially large set of data points. The skyline operator returns the pareto optimal\index{pareto optimal} elements of a set. This is also know as maximum vector problem\index{maximum vector problem}.
 
-Although we continously merging \texttt{CSV HEAD} of the \fixme{PostgreSQL source repository}{ref} 
-into our main development branch, we decided to base this paper on branch \texttt{REL8\_3\_0}, 
-in order to have a more stable and reproducibly setting, i.e. all experiments in this paper are based on version 8.3.0 of PostgreSQL with our patch for the skyline operator applied.
-
 \section{Related Problems}
-Convex hull, \emph{top-K} queries, and nearest-neighbor search
+Convex hull, \emph{top-K} queries, and nearest-neighbor search (especially in the context of spacial skylines ``give me the next good restaurant'')
 
 In particlar, the convex hull contains the subset of skyline points that may be optimal only for linear preference functions (as opposed to any monotone function).\todo{from \citep{Papadias2005}}{rephrase}
 
@@ -88,7 +95,7 @@ In particlar, the convex hull contains the subset of skyline points that may be 
 \section{Basic definitions}
 \todo{We are in the context of relational model\index{relational model} of data}{\citep{Chomicki2002, Chomicki2003a}?}. As we aim at an implementation of the skyline operator into a relational database management system (RDBMS)\index{RDBMS} we restrict to finite database\index{finite database} instances.
 
-We assume two infinite domains: $N$ (numbers) and $D$ (uninterpreted constants). The domain $D$ will be used for attributes which are not subject to skyline computation, i.e. for the travelling example we will not compute the skyline over the name of the airline, therefore $D$ will be used as domain for this attribute.
+We assume two \todo{infinite}{hm? although in a real computer is everything finte} domains: $N$ (numbers) and $D$ (uninterpreted constants). The domain $D$ will be used for attributes which are not subject to skyline computation, i.e. for the travelling example we will not use the name of the airline as a skyline criterion, therefore $D$ will be used as domain for this attribute.
 For attributes or expressions which are subject to skyline computation we use the domain $N$. No distinction is made between different numeric domains, since it is not necessary for this paper. For $N$ we require that equality ($=$), inequality ($\not=$), and the binary relations $<$ (strictly less than), $\le$ (less than or equal), $\ge$ (greater than or equal), and $>$ (strictly greater than) are defined with the usual properties.
 
 \begin{definition}[Schema]
@@ -155,14 +162,16 @@ If $\forall i \in \{1, \ldots, m\}: r_i = s_i$ holds, $r$ and $s$ are \todo{\emp
 
 In case condition (\ref{equ:skylinepf}) does not hold $r$ and $s$ are \emph{incomparable} and may both be part of the skyline if not dominated by any other tuple from \relation{R}.
 
-Please note that the following subformula of the upper formula induces an equality relation on \relation{R}, i.e. \relation{R} is partitioned into groups where the attributes $a_{l+1}, \ldots, a_m$ are equal:
-\[
+Please note that the following subformula (\ref{equ:skylinepfdiff}) of formula (\ref{equ:skylinepf}) induces an equality relation on \relation{R}, i.e. \relation{R} is partitioned into groups where the attributes $a_{l+1}, \ldots, a_m$ are equal:
+\begin{equation}\label{equ:skylinepfdiff}
 \bigland_{l+1 \le i \le m} r_i = s_i.
-\]
+\end{equation}
 
-As noted in \citep{Chomicki2003}, the \inlinesql{DIFF} directive works as a group by within the skyline, and the skyline for each group of diff attributes' values is found.
+\todo{As noted in \citep{Chomicki2003}, the \inlinesql{DIFF} directive works as a group by within the skyline, and the skyline for each group of diff attributes' values is found.}{rephrase}
 
 This property can be exploited, if an ordered index on any subset of the attributes $a_{l+1}, \ldots, a_m$ exists, since the tuple window can be flushed each time the group is changed.
+
+\todo{or in SFS due to the sort phase}{}, \todo{give an example with an table}{}
 
 \subsection{Skyline as special case of winnow}
 The skyline operator is a special case of the \emph{winnow operator}\index{winnow operator} \citep{Chomicki2002}, where the preference formula has exactly the form of formula (\ref{equ:skylinepf}).
@@ -184,36 +193,65 @@ Let $\relation{S} = \skyline_C(\relation{R})$, it is clear that condition (\ref{
 \subsection{Further notions}
 dominance, anti dominance region
 
-\subsection{How our implmenetation differs from the mathematical model}
+\subsection{How our implementation differs from the mathematical model}
 Our implementation of the \inlinesql{SKYLINE OF} clause is actually a bit more flexible than the mathematical definition given above. With our implementation the skyline operator is not restricted to attributes with a numerical domain, it can be applied to any attribute, as long as a \emph{sort function} is defined for the domain in question, i.e.\/ any expression valid in a SQL \inlinesql{ORDER BY} clause is valid as an expression in a \inlinesql{SKYLINE OF} clause.
 
-This gives the opportunity to include expressions of almost any data type in a skyline query, even user defined ones. For more information on user defined data types see PostgreSQL documentation on \postgresdocu{xtypes.html}{User-Defined Types} and \postgresdocu{xindex.html\#XINDEX-OPFAMILY}{Operator Classes and Operator Families}
+This gives the opportunity to include expressions of almost any data type in a skyline query, even user defined ones, since it is possible to user define fullfledged data types in PostgreSQL. For more information on user defined data types see PostgreSQL documentation on \postgresdocu{xtypes.html}{User-Defined Types} and \postgresdocu{xindex.html\#XINDEX-OPFAMILY}{Operator Classes and Operator Families}
 
 Anyway it is somewhat questionable what it is good for the include a e.g. \inlinesql{VARCHAR} column in a skyline query, still it is possible.
 
-Furthermore our implementation allows arbitrary expressions instead of a single attribute.
+Furthermore our implementation allows arbitrary expressions instead of a single attribute, e.g.
+
+\begin{sql}
+SELECT * FROM nba.players \\
+SKYLINE OF (h\_feet * 12 + h\_inches) MAX NULLS LAST, weight MAX NULLS LAST
+\end{sql}
+
+\subsection{Skyline Operator is Idempotent}
+We first proof a more general statement:
+\begin{theorem}\label{the:skyline-idempotent}
+The winnow operator is idempotent, i.e. $\omega_C(\relation R)=\omega_C(\omega_C(\relation R))$.
+\end{theorem}
+\begin{proof}
+\todo{no na}{}
+Let $\succ$ be the preference relation induced by $C$, then the result of the winnow operator is $\omega_C(\relation R) := \{r \in \relation R | \nexists s \in \relation{R} : s \succ r \}$, so $\omega_C(\relation R)$ already contains only the maximal elements according $\succ$, \todo{...}{complete}
+\end{proof}
+Since the skyline operator is a special case of \emph{winnow} operator, theorem \ref{the:skyline-idempotent} holds as well.
 
 \subsection{Composition of Skyline Operator}
+\todo{For means of simplicity we assume set semantics?}{} \todo{The proofs are for the non \inlinesql{SKYLINE OF DISTINCT} case}{?}.
+
+
 In this section, we study serveral ways of composing the skyline operator. (see \citep{Chomicki2002} 4.1)
 We assume two finite instances \relation{R}, \relation{S} of schema \schema{R}, ...
 
-\[
+\begin{equation}
 \skyline(\relation{R} \intersection \relation{S}) = \skyline(\relation{R}) \intersection \skyline(\relation{S})
-\]
+\end{equation}
 
 this identity could be exploitet in the query optimizer. \todo{}{further work?}
 is it really worth? what direction of the identity is actually iteresseting?
 
-
-\[
+\begin{equation}\label{equ:skyline-composition-union}
 \skyline(\relation{R} \union \relation{S}) \not= \skyline(\relation{R}) \union \skyline(\relation{S})
-\]
+\end{equation}
+It is easy to see that an equality in (\ref{equ:skyline-composition-union}) would not hold, as e.g. a single tuple $r_1$ could dominate the entire relation \relation{S}.
 
-if the last property would hold, easy decompose, but due to theorem (\ref{theorem:nonempty}) $skyline(\{t_1\}) = \{t_1\}$ would yield $\forall \relation{R} : \skyline(\relation{R}) = \relation{R}$ if decompossied to singletons.
+If the last property would hold, easy decompose, but due to theorem (\ref{theorem:nonempty}) $skyline(\{t_1\}) = \{t_1\}$ would yield $\forall \relation{R} : \skyline(\relation{R}) = \relation{R}$ if decompossied to singletons.
 
-\[
+\begin{equation}\label{equ:skyline-decompose}
+\skyline(\relation{R} \union \relation{S}) = \skyline(\skyline(\relation R) \union \skyline(\relation S))
+\end{equation}
+\begin{proof}
+\todo{copy proof from manuscript}{}
+\end{proof}
+
+This property could be of interest in a distributed setting to reduce data transfer between servers.
+
+
+\begin{equation}
 \skyline(\relation{R} \difference \relation{S}) \not= \skyline(\relation{R}) \difference \skyline(\relation{S})
-\]
+\end{equation}
 
 \todo{}{make this plausible}
 
@@ -237,9 +275,9 @@ NOTE: $\sigma_{Price>\euros20}$ does not commute with $\skyline$.
 
 
 \subsection{Intrinsic vs. extrinsic}
-According to the defintion in 5.2 \citep{Chomicki2002} the skyline operator is \emph{intrinsic} as the preference relation between two tuples purles on the basis of the values occurring in those tuples. \todo{In contrast \emph{extrinsic} preference formulas may refer not noly to build-in predicats but also to other constracts, e.g., database relations.}{rephrase or cite}.
+According to the defintion in 5.2 \citep{Chomicki2002} the skyline operator is \emph{intrinsic} as the preference relation between two tuples purles on the basis of the values occurring in those tuples. \todo{In contrast \emph{extrinsic} preference formulas may refer not noly to build-in predicats but also to other constructs, e.g., database relations.}{rephrase or cite}.
 
-\subsection{Skyline Stratum}
+\subsection{Skyline Stratum and $K$-Skyband}
 \todo{draw a nice diagram}{}
 
 In the context of \emph{winnow} operator this is references as \emph{ranking}\index{ranking}, we prefer to use the term \emph{stratum}\index{stratum}, as we reserve the term ranking for scoring functions (see \ref{subsec:scoring}).
@@ -263,7 +301,7 @@ A \emph{$K$-skyband}\index{$K$-skyband} query, introduced by \citet{Papadias2005
  
     x2
 
-x1, x2 are in stratum 1, x3 is in stratum 1 but while x1 and x2 are in 0-skyband, x3 is not is 1-skyband because it is dominiated by x1 and x2 so it is in 2-skyband. Hence no general relation can be established between skyband and skyline stratum.
+x1, x2 are in stratum 1, x3 is in stratum 1 but while x1 and x2 are in 0-skyband, x3 is not is 1-skyband because it is dominiated by x1 and x2 so it is in 2-skyband. Hence no general relation can be established between K-skyband and skyline stratum.
 
 The skyband rank of a point $p$ can be computed by counting the points in the anti-dominace region of $p$.
 
@@ -273,10 +311,10 @@ The skyband rank of a point $p$ can be computed by counting the points in the an
 \skyline_C^n(\relation{R}) &\not=& \skyband_C^{n+1}(\relation{R}) \difference \skyband_C^n(\relation{R}) \quad \textnormal{for}\ n \ge 1
 \end{eqnarray}
 
-The branch-and-bound-skyline (BBS) \citep{Papadias2005} supports the computation of $K$-skyband queries, alghough state in \citep{Papadias2005} it is not clear how BNL and SFS can be used to computer $K$-skybands\todo{}{think about it}.
+The branch-and-bound-skyline (BBS) \citep{Papadias2005} supports the computation of $K$-skyband queries, as stated by \citet{Papadias2005}, BNL and SFS can compute $K$-skybands, this can be easly done by maintaining a the number of tuples that dominate a tuple in the tuple window. Increase the number by one each time a tuple in the tuple window is dominated by the current tuple and once this count is greater than $K$ drop the tuple from the tuple window.
 
 
-An interessing combination of \inlinesql{SKYLINE OF} and \inlinesql{TOP $k$} is given by the Top $k$ skyline operator \todo{\citep{Brando2007, Goncalves2005a, Goncalves2005}}{check citation}, where as many skyline startum are computed till at least $k$ tuples are found, or the entire relation is returned.
+An interessing combination of \inlinesql{SKYLINE OF} and \inlinesql{TOP $k$} is given by the \emph{top-$k$-skyline}\index{top-k-skyline} operator \todo{\citep{Brando2007, Goncalves2005a, Goncalves2005}}{check citation}, where as many skyline startum are computed till at least $k$ tuples are found, or the entire relation is returned.
 
 
 \subsection{Monoton vs. linear scoring functions}\label{subsec:scoring}
@@ -301,7 +339,7 @@ see \citep{Chomicki2002a} page 5, Theorem 4
 \end{enumerate}
 
 
-\section{Preliminaris}
+\section{Preliminaries}
 \section{Existing Methods and Related Works}
 \section{Skyline Algorithms}
 \subsection{BNL}
@@ -312,29 +350,28 @@ see \citep{Chomicki2002a} page 5, Theorem 4
 from \citep{Chaudhuri2006}: 
  There are other algorithms that include Bitmap and Index[16], NN
 [7] and BBS [12] which use specialized data structures like
-extensions of B-trees and R$^*$-trees. We leave the cost analysis
-of these algorithms and indexes for future work.
+extensions of B-trees and R$^*$-trees.
 
 \chapter{Implementation}
 \section{SQL Extension}
 
-In \citep{Borzsonyi2001} the following extension to the SQL's \inlinesql{SELECT} statement with an optional \inlinesql{SKYLINE OF} clause is proposed:
+\citet{Borzsonyi2001} proposed the following extension to the SQL's \inlinesql{SELECT} statement with an optional \inlinesql{SKYLINE OF} clause is proposed:
 \begin{sql}
 SELECT ... FROM ... WHERE ... \\
 GROUP BY ... HAVING ...       \\
-SKYLINE OF \textnormal{[} DISTINCT \textnormal{]} $a_1$ \textnormal{[} MIN \textnormal{|} MAX \textnormal{|} DIFF \textnormal{]}, ..., $a_m$ \textnormal{[} MIN \textnormal{|} MAX \textnormal{|} DIFF \textnormal{]} \\
+SKYLINE OF \textnormal{[}DISTINCT\textnormal{]} $a_1$ \textnormal{[}MIN$|$MAX$|$DIFF\textnormal{]}, ..., $a_m$ \textnormal{[}MIN$|$MAX$|$DIFF\textnormal{]} \\
 ORDER BY ...
 \end{sql}
 
 We extended the above syntax a bit further, so we additionally provide syntax to specify
 \begin{itemize}
 \item treatment of NULL values (\inlinesql{NULLS FIRST} and \inlinesql{NULLS LAST})
-\item usage of user defined order on attribute (\inlinesql{USING \emph{Op}}) and
+\item usage of other order functions than $<$ and $>$ (\inlinesql{USING \emph{Op}}) and
 \item operational aspects of skyline computation, such as \emph{algorithm} (BNL, SFS, \ldots), \emph{tuple window size and policy}, and more.
 \end{itemize}
 
 To describe the syntax we use 
-\subsection{Railroad Diagrams}
+\subsection{Syntax (Railroad Diagrams)}
 
 \railalias{selectclause}{select\_clause}
 \railalias{targetlist}{target\_list}
@@ -383,7 +420,7 @@ related to the \inlinesql{GROUP BY} clause than to the \inlinesql{ORDER BY}
 clause, therefore we parse it in the same way.
 
 \subsection{Reserved Keywords}
-
+\todo{check if we defined some other reserved keywords}{}
 
 \begin{verbatim}
 > CREATE DATABASE SKYLINE;
@@ -396,6 +433,8 @@ The solution is easy and the same for every reserved word, just quote it:
 \begin{verbatim}
 > CREATE DATABASE "SKYLINE";
 \end{verbatim}
+
+We not define \inlinesql{MIN}, \inlinesql{MAX}, and \inlinesql{DIFF} as reserved keywords, because the SQL aggregate functions \inlinesql{MIN} and \inlinesql{MAX} are in PostgreSQL implemented as functions and are lookuped up at runtime and not directly hardcoded into the query parser.
 
 \section{Semantics}
 
@@ -551,7 +590,13 @@ Turing development it was very helpful to run the PostgreSQL backend in \texttt{
 \chapter{Results\revision}
 \label{chap:Results}
 
+
 \section{Experiments}
+
+Although we continously merging \texttt{CSV HEAD} of \fixme{PostgreSQL source repository}{ref} 
+into our main development branch, we decided to base this paper on branch \texttt{REL8\_3\_0}, 
+in order to have a more stable and reproducibly setting, i.e. all experiments in this paper are based on version 8.3.0 of PostgreSQL with our patch for the skyline operator applied.
+
 
 \subsection{Random Dataset Generator}
 
@@ -707,6 +752,7 @@ use seperate windows for each skyline group? or use hashing to reduce the number
 
 hashing seams to be promissing for skyline groups.
 
+implement $K$-skyband (maintaine dominance count in tuple window) do so for BNL and SFS.
 
 
 

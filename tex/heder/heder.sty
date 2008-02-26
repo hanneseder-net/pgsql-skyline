@@ -57,8 +57,8 @@
 }
 
 %
-\newcommand\fixme[2]{\marginpar{\textcolor{Crimson}{\begin{flushleft}\footnotesize {\textsc FIXME:} #2\end{flushleft}}}\colorbox{Yellow}{#1}}
-\newcommand\todo[2]{\marginpar{\textcolor{DarkGreen}{\begin{flushleft}\footnotesize {\textsc TODO:} #2\end{flushleft}}}\textcolor{DarkGreen}{#1}}
+\newcommand\fixme[2]{\colorbox{Yellow}{#1}\marginpar{\textcolor{Crimson}{\begin{flushleft}\footnotesize {\textsc FIXME:} #2\end{flushleft}}}}
+\newcommand\todo[2]{\textcolor{DarkGreen}{#1}\marginpar{\textcolor{DarkGreen}{\begin{flushleft}\footnotesize {\textsc TODO:} #2\end{flushleft}}}}
 
 \newcommand\skylinebibliography[0]{\bibliographystyle{plainnat}\bibliography{skyline}}
 

@@ -1,8 +1,8 @@
-/Makefile/1.18/Sat Jan 20 17:16:12 2007//TREL8_3_0
-/README/1.12/Thu May 31 10:06:53 2007//TREL8_3_0
-/buf_init.c/1.80/Thu Jan 10 10:17:32 2008//TREL8_3_0
-/buf_table.c/1.49/Thu Jan 10 10:17:32 2008//TREL8_3_0
-/bufmgr.c/1.228/Thu Jan 10 10:17:32 2008//TREL8_3_0
-/freelist.c/1.64/Thu Jan 10 10:17:32 2008//TREL8_3_0
-/localbuf.c/1.79/Thu Jan 10 10:17:32 2008//TREL8_3_0
+/Makefile/1.18/Sat Jan 20 17:16:12 2007//
+/README/1.12/Thu May 31 10:06:53 2007//
+/buf_init.c/1.80/Thu Jan 10 10:17:32 2008//
+/buf_table.c/1.49/Thu Jan 10 10:17:32 2008//
+/bufmgr.c/1.228/Thu Jan 10 10:17:32 2008//
+/freelist.c/1.64/Thu Jan 10 10:17:32 2008//
+/localbuf.c/1.79/Thu Jan 10 10:17:32 2008//
 D

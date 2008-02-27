@@ -1,7 +1,7 @@
-/Makefile/1.11/Tue Oct 30 09:22:20 2007//
-/mingwcompat.c/1.4/Thu Jan 10 10:17:29 2008//
-/security.c/1.13/Thu Jan 10 10:17:29 2008//
-/signal.c/1.20/Thu Jan 10 10:17:29 2008//
-/socket.c/1.20/Thu Jan 10 10:17:30 2008//
-/timer.c/1.15/Thu Jan 10 10:17:30 2008//
+/Makefile/1.11/Tue Oct 30 09:22:20 2007//TREL8_3_STABLE
+/mingwcompat.c/1.4/Thu Jan 10 10:17:29 2008//TREL8_3_STABLE
+/security.c/1.13/Thu Jan 10 10:17:29 2008//TREL8_3_STABLE
+/signal.c/1.20/Thu Jan 10 10:17:29 2008//TREL8_3_STABLE
+/socket.c/1.20/Thu Jan 10 10:17:30 2008//TREL8_3_STABLE
+/timer.c/1.15/Thu Jan 10 10:17:30 2008//TREL8_3_STABLE
 D

@@ -1,10 +1,10 @@
-/Makefile/1.22/Sat Jan 20 17:16:13 2007//
-/README/1.22/Tue Oct 30 09:22:20 2007//
-/deadlock.c/1.51/Thu Jan 10 10:17:33 2008//
-/lmgr.c/1.96/Thu Jan 10 10:17:33 2008//
-/lock.c/1.181/Fri Feb  8 09:40:01 2008//
-/lwlock.c/1.50/Thu Jan 10 10:17:33 2008//
-/proc.c/1.199/Fri Feb  8 08:33:28 2008//
-/s_lock.c/1.49/Thu Jan 10 10:17:34 2008//
-/spin.c/1.23/Thu Jan 10 10:17:34 2008//
+/Makefile/1.22/Sat Jan 20 17:16:13 2007//TREL8_3_STABLE
+/README/1.22/Tue Oct 30 09:22:20 2007//TREL8_3_STABLE
+/deadlock.c/1.51/Thu Jan 10 10:17:33 2008//TREL8_3_STABLE
+/lmgr.c/1.96/Thu Jan 10 10:17:33 2008//TREL8_3_STABLE
+/lock.c/1.181/Fri Feb  8 09:40:01 2008//TREL8_3_STABLE
+/lwlock.c/1.50/Thu Jan 10 10:17:33 2008//TREL8_3_STABLE
+/proc.c/1.199/Fri Feb  8 08:33:28 2008//TREL8_3_STABLE
+/s_lock.c/1.49/Thu Jan 10 10:17:34 2008//TREL8_3_STABLE
+/spin.c/1.23/Thu Jan 10 10:17:34 2008//TREL8_3_STABLE
 D

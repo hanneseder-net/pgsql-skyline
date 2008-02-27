@@ -1,13 +1,13 @@
-/auth.h/1.35/Thu Jan 10 10:17:58 2008//
-/be-fsstubs.h/1.30/Thu Jan 10 10:17:58 2008//
-/crypt.h/1.37/Thu Jan 10 10:17:58 2008//
-/hba.h/1.47/Wed Aug  1 09:00:59 2007//
-/ip.h/1.20/Thu Jan 10 10:17:58 2008//
-/libpq-be.h/1.65/Thu Jan 10 10:17:58 2008//
-/libpq-fs.h/1.23/Thu Jan 10 10:17:58 2008//
-/libpq.h/1.69/Thu Jan 10 10:17:58 2008//
-/md5.h/1.5/Thu Jan 10 10:17:58 2008//
-/pqcomm.h/1.108/Thu Jan 10 10:17:58 2008//
-/pqformat.h/1.26/Thu Jan 10 10:17:58 2008//
-/pqsignal.h/1.32/Thu Jan 10 10:17:58 2008//
+/auth.h/1.35/Thu Jan 10 10:17:58 2008//TREL8_3_STABLE
+/be-fsstubs.h/1.30/Thu Jan 10 10:17:58 2008//TREL8_3_STABLE
+/crypt.h/1.37/Thu Jan 10 10:17:58 2008//TREL8_3_STABLE
+/hba.h/1.47/Wed Aug  1 09:00:59 2007//TREL8_3_STABLE
+/ip.h/1.20/Thu Jan 10 10:17:58 2008//TREL8_3_STABLE
+/libpq-be.h/1.65/Thu Jan 10 10:17:58 2008//TREL8_3_STABLE
+/libpq-fs.h/1.23/Thu Jan 10 10:17:58 2008//TREL8_3_STABLE
+/libpq.h/1.69/Thu Jan 10 10:17:58 2008//TREL8_3_STABLE
+/md5.h/1.5/Thu Jan 10 10:17:58 2008//TREL8_3_STABLE
+/pqcomm.h/1.108/Thu Jan 10 10:17:58 2008//TREL8_3_STABLE
+/pqformat.h/1.26/Thu Jan 10 10:17:58 2008//TREL8_3_STABLE
+/pqsignal.h/1.32/Thu Jan 10 10:17:58 2008//TREL8_3_STABLE
 D

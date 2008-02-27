@@ -1,7 +1,7 @@
-/Makefile/1.20/Mon Nov 19 11:52:28 2007//TREL8_3_0
-/tsearch2.c/1.5/Thu Jan 10 10:17:07 2008//TREL8_3_0
-/tsearch2.sql.in/1.4/Fri Nov 30 14:35:15 2007//TREL8_3_0
-/uninstall_tsearch2.sql/1.2/Fri Nov 16 00:34:54 2007//TREL8_3_0
+/Makefile/1.20/Mon Nov 19 11:52:28 2007//
+/tsearch2.c/1.5/Thu Jan 10 10:17:07 2008//
+/tsearch2.sql.in/1.4/Fri Nov 30 14:35:15 2007//
+/uninstall_tsearch2.sql/1.2/Fri Nov 16 00:34:54 2007//
 D/data////
 D/docs////
 D/expected////

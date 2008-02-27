@@ -1,7 +1,7 @@
-/Makefile/1.4/Tue Oct 30 09:22:20 2007//
-/README/1.1/Tue Aug 21 01:11:16 2007//
-/dict_snowball.c/1.6/Thu Jan 10 10:17:31 2008//
-/snowball.sql.in/1.6/Tue Oct 30 09:22:20 2007//
-/snowball_func.sql.in/1.2/Mon Sep  3 02:30:43 2007//
+/Makefile/1.4/Tue Oct 30 09:22:20 2007//TREL8_3_STABLE
+/README/1.1/Tue Aug 21 01:11:16 2007//TREL8_3_STABLE
+/dict_snowball.c/1.6/Thu Jan 10 10:17:31 2008//TREL8_3_STABLE
+/snowball.sql.in/1.6/Tue Oct 30 09:22:20 2007//TREL8_3_STABLE
+/snowball_func.sql.in/1.2/Mon Sep  3 02:30:43 2007//TREL8_3_STABLE
 D/libstemmer////
 D/stopwords////

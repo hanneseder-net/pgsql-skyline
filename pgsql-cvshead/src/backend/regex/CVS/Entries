@@ -1,14 +1,14 @@
-/COPYRIGHT/1.2/Wed Feb  5 17:41:32 2003//
-/Makefile/1.21/Sat Nov 29 19:51:55 2003//
-/re_syntax.n/1.1/Wed Feb  5 17:41:32 2003//
-/regc_color.c/1.8/Thu Jan 10 10:17:31 2008//
-/regc_cvec.c/1.5/Sat Oct 15 02:49:24 2005//
-/regc_lex.c/1.7/Thu Jan 10 10:17:31 2008//
-/regc_locale.c/1.8/Tue Nov 22 18:17:19 2005//
-/regc_nfa.c/1.5/Thu Jan 10 10:17:31 2008//
-/regcomp.c/1.45/Tue Oct  9 17:25:00 2007//
-/rege_dfa.c/1.8/Tue Oct  9 17:25:00 2007//
-/regerror.c/1.27/Sat Nov 29 19:51:55 2003//
-/regexec.c/1.27/Sat Oct 15 02:49:24 2005//
-/regfree.c/1.18/Sat Nov 29 19:51:55 2003//
+/COPYRIGHT/1.2/Wed Feb  5 17:41:32 2003//TREL8_3_STABLE
+/Makefile/1.21/Sat Nov 29 19:51:55 2003//TREL8_3_STABLE
+/re_syntax.n/1.1/Wed Feb  5 17:41:32 2003//TREL8_3_STABLE
+/regc_color.c/1.8/Thu Jan 10 10:17:31 2008//TREL8_3_STABLE
+/regc_cvec.c/1.5/Sat Oct 15 02:49:24 2005//TREL8_3_STABLE
+/regc_lex.c/1.7/Thu Jan 10 10:17:31 2008//TREL8_3_STABLE
+/regc_locale.c/1.8/Tue Nov 22 18:17:19 2005//TREL8_3_STABLE
+/regc_nfa.c/1.5/Thu Jan 10 10:17:31 2008//TREL8_3_STABLE
+/regcomp.c/1.45/Tue Oct  9 17:25:00 2007//TREL8_3_STABLE
+/rege_dfa.c/1.8/Tue Oct  9 17:25:00 2007//TREL8_3_STABLE
+/regerror.c/1.27/Sat Nov 29 19:51:55 2003//TREL8_3_STABLE
+/regexec.c/1.27/Sat Oct 15 02:49:24 2005//TREL8_3_STABLE
+/regfree.c/1.18/Sat Nov 29 19:51:55 2003//TREL8_3_STABLE
 D

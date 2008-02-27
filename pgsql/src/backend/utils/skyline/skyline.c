@@ -22,12 +22,11 @@ skyline_options[] = {
 	{ "blocknestedloop"			, SOT_METHOD, SM_BLOCKNESTEDLOOP },
 	{ "bnl"						, SOT_METHOD, SM_BLOCKNESTEDLOOP } ,
 	{ "ef"						, SOT_PARAM , SM_UNKNOWN },
-	{ "efentropy"				, SOT_PARAM	, SM_UNKNOWN },
 	{ "efslots"					, SOT_PARAM , SM_UNKNOWN },
 	{ "efwindow"				, SOT_PARAM , SM_UNKNOWN },
+	{ "efwindowpolicy"			, SOT_PARAM	, SM_UNKNOWN },
 	{ "efwindowsize"			, SOT_PARAM , SM_UNKNOWN },
 	{ "efwindowslots"			, SOT_PARAM , SM_UNKNOWN },
-	{ "entropy"					, SOT_PARAM , SM_UNKNOWN },
 	{ "materializednestedloop"	, SOT_METHOD, SM_MATERIALIZEDNESTEDLOOP },
 	{ "mnl"						, SOT_METHOD, SM_MATERIALIZEDNESTEDLOOP },
 	{ "noindex"					, SOT_PARAM	, SM_UNKNOWN },
@@ -62,7 +61,8 @@ skyline_lookup_option(const char *name)
 /*
  * skyline_option_get_int
  *
- *	Query the SKYLINE OF ... WITH param=xxx list for the param `name'
+ *	Query the SKYLINE OF ... WITH param=xxx list for the param `name' with
+ *  data type T_Integer
  *	returns true if value is present.
  */
 bool
@@ -106,8 +106,9 @@ skyline_option_get_int(List *skyline_of_options, char *name, int *value)
 /*
  * skyline_option_get_string
  *
- * Query the SKYLINE OF ... WITH param=xxx list for the param `name'
- * returns true if value is present.
+ *  Query the SKYLINE OF ... WITH param=xxx list for the param `name' with
+ *  data type T_String
+ *  returns true if value is present.
  */
 bool
 skyline_option_get_string(List *skyline_of_options, char *name, char **value)
@@ -145,6 +146,41 @@ skyline_option_get_string(List *skyline_of_options, char *name, char **value)
 	}
 
 	return false;
+}
+
+/*
+ * skyline_option_get_int
+ *
+ *	Query the SKYLINE OF ... WITH param=xxx list for the param `name' with
+ *  data type T_String, return it as "window policy"
+ *	returns true if value is present.
+ */
+bool
+skyline_option_get_window_policy(List *skyline_of_options, char *name, TupleWindowPolicy *window_policy)
+{
+	char	   *window_policy_name;
+
+	if (skyline_option_get_string(skyline_of_options, "windowpolicy", &window_policy_name))
+	{
+		if (strcmp(window_policy_name, "append") == 0)
+			*window_policy = TUP_WIN_POLICY_APPEND;
+		else if (strcmp(window_policy_name, "prepend") == 0)
+			*window_policy = TUP_WIN_POLICY_PREPEND;
+		else if (strcmp(window_policy_name, "ranked") == 0
+				|| strcmp(window_policy_name, "entropy") == 0)
+			*window_policy = TUP_WIN_POLICY_RANKED;
+		else
+			ereport(ERROR,
+				(errcode(ERRCODE_SYNTAX_ERROR),
+				 errmsg("unsupported value for \"%s\" \"%s\"",
+						name, window_policy_name),
+				 errhint("Use \"append\", \"prepend\" or \"entropy\"=\"ranked\".")));
+			/* note that ereport(ERROR, ...) does not return */
+
+		return true;
+	}
+	else
+		return false;
 }
 
 

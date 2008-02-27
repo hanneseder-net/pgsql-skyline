@@ -275,8 +275,6 @@ ExecSkylineInitTupleWindow(SkylineState *node, Skyline *sl)
 {
 	int			window_size = work_mem;
 	int			window_slots = -1;
-	int			use_entropy;
-	char	   *window_policy_name;
 	TupleWindowPolicy	window_policy = TUP_WIN_POLICY_APPEND;
 
 	Assert(node != NULL);
@@ -300,26 +298,10 @@ ExecSkylineInitTupleWindow(SkylineState *node, Skyline *sl)
 		skyline_option_get_int(sl->skyline_of_options, "slots", &window_slots) ||
 			skyline_option_get_int(sl->skyline_of_options, "windowslots", &window_slots);
 
-		if (skyline_option_get_int(sl->skyline_of_options, "entropy", &use_entropy))
-			window_policy = TUP_WIN_POLICY_RANKED;
+		skyline_option_get_window_policy(sl->skyline_of_options, "windowpolicy", &window_policy);
 
-		if (skyline_option_get_string(sl->skyline_of_options, "windowpolicy", &window_policy_name))
-		{
-			
-			if (strcmp(window_policy_name, "append") == 0)
-				window_policy = TUP_WIN_POLICY_APPEND;
-			else if (strcmp(window_policy_name, "prepend") == 0)
-				window_policy = TUP_WIN_POLICY_PREPEND;
-			else if (strcmp(window_policy_name, "ranked") == 0
-					|| strcmp(window_policy_name, "entropy") == 0)
-				window_policy = TUP_WIN_POLICY_RANKED;
-			else
-				ereport(ERROR,
-					(errcode(ERRCODE_SYNTAX_ERROR),
-					 errmsg("unsupported window policy \"%s\"",
-							window_policy_name),
-					 errhint("Use window policy \"append\", \"prepend\" or \"entropy\"=\"ranked\".")));
-		}
+		if (window_policy == TUP_WIN_POLICY_RANKED)
+			node->flags |= SL_FLAGS_ENTROPY;
 
 		if (window_slots == 0)
 		{
@@ -352,7 +334,6 @@ ExecInitSkyline(Skyline *node, EState *estate, int eflags)
 {
 	SkylineState   *slstate;
 	bool			need_extra_slot = ExecSkylineNeedExtraSlot(node);
-	int				use_entropy;
 
 	/* check for unsupported flags */
 	Assert(!(eflags & (EXEC_FLAG_BACKWARD | EXEC_FLAG_MARK)));
@@ -370,11 +351,6 @@ ExecInitSkyline(Skyline *node, EState *estate, int eflags)
 	slstate->cmps_fields = 0;
 	slstate->pass_info = makeStringInfo();
 	slstate->flags = SL_FLAGS_NONE;
-
-	if (skyline_option_get_int(node->skyline_of_options, "entropy", &use_entropy))
-	{
-		slstate->flags |= SL_FLAGS_ENTROPY;
-	}
 
 	ExecSkylineInitTupleWindow(slstate, node);
 

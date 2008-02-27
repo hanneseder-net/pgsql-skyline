@@ -32,7 +32,6 @@ ExecElimFilterInitTupleWindow(SkylineState *node, Skyline *sl)
 {
 	int			window_size = BLCKSZ / 1024;	/* allocate a page */
 	int			window_slots = -1;
-	int			use_entropy;
 	TupleWindowPolicy	window_policy = TUP_WIN_POLICY_APPEND;
 
 	Assert(node != NULL);
@@ -53,8 +52,10 @@ ExecElimFilterInitTupleWindow(SkylineState *node, Skyline *sl)
 	skyline_option_get_int(sl->skyline_of_options, "efslots", &window_slots) ||
 		skyline_option_get_int(sl->skyline_of_options, "efwindowslots", &window_slots);
 
-	if (skyline_option_get_int(sl->skyline_of_options, "efentropy", &use_entropy))
-		window_policy = TUP_WIN_POLICY_RANKED;
+	skyline_option_get_window_policy(sl->skyline_of_options, "efwindowpolicy", &window_policy);
+
+	if (window_policy == TUP_WIN_POLICY_RANKED)
+		node->flags |= SL_FLAGS_ENTROPY;
 
 	if (window_slots == 0)
 	{
@@ -86,12 +87,7 @@ ExecInitElimFilter(ElimFilter *node, EState *estate, int eflags)
 	state->ss.ps.plan = (Plan *) node;
 	state->ss.ps.state = estate;
 	state->status = SS_INIT;
-
 	state->flags = SL_FLAGS_NONE;
-	if (skyline_option_get_int(node->skyline_of_options, "efentropy", &use_entropy))
-	{
-		state->flags |= SL_FLAGS_ENTROPY;
-	}
 
 #define ELIMFILTER_NSLOTS 2
 

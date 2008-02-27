@@ -276,6 +276,7 @@ ExecSkylineInitTupleWindow(SkylineState *node, Skyline *sl)
 	int			window_size = work_mem;
 	int			window_slots = -1;
 	int			use_entropy;
+	char	   *window_policy_name;
 	TupleWindowPolicy	window_policy = TUP_WIN_POLICY_APPEND;
 
 	Assert(node != NULL);
@@ -302,6 +303,23 @@ ExecSkylineInitTupleWindow(SkylineState *node, Skyline *sl)
 		if (skyline_option_get_int(sl->skyline_of_options, "entropy", &use_entropy))
 			window_policy = TUP_WIN_POLICY_RANKED;
 
+		if (skyline_option_get_string(sl->skyline_of_options, "windowpolicy", &window_policy_name))
+		{
+			
+			if (strcmp(window_policy_name, "append") == 0)
+				window_policy = TUP_WIN_POLICY_APPEND;
+			else if (strcmp(window_policy_name, "prepend") == 0)
+				window_policy = TUP_WIN_POLICY_PREPEND;
+			else if (strcmp(window_policy_name, "ranked") == 0
+					|| strcmp(window_policy_name, "entropy") == 0)
+				window_policy = TUP_WIN_POLICY_RANKED;
+			else
+				ereport(ERROR,
+					(errcode(ERRCODE_SYNTAX_ERROR),
+					 errmsg("unsupported window policy \"%s\"",
+							window_policy_name),
+					 errhint("Use window policy \"append\", \"prepend\" or \"entropy\"=\"ranked\".")));
+		}
 
 		if (window_slots == 0)
 		{

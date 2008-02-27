@@ -30,11 +30,13 @@ skyline_options[] = {
 	{ "entropy"					, SOT_PARAM , SM_UNKNOWN },
 	{ "materializednestedloop"	, SOT_METHOD, SM_MATERIALIZEDNESTEDLOOP },
 	{ "mnl"						, SOT_METHOD, SM_MATERIALIZEDNESTEDLOOP },
+	{ "noindex"					, SOT_PARAM	, SM_UNKNOWN },
 	{ "presort"					, SOT_METHOD, SM_2DIM_PRESORT },
 	{ "ps"						, SOT_METHOD, SM_2DIM_PRESORT },
 	{ "sfs"						, SOT_METHOD, SM_SFS },
 	{ "slots"					, SOT_PARAM	, SM_UNKNOWN },
 	{ "window"					, SOT_PARAM	, SM_UNKNOWN },
+	{ "windowpolicy"			, SOT_PARAM , SM_UNKNOWN },
 	{ "windowsize"				, SOT_PARAM	, SM_UNKNOWN },
 	{ "windowslots"				, SOT_PARAM	, SM_UNKNOWN },
 };
@@ -100,6 +102,51 @@ skyline_option_get_int(List *skyline_of_options, char *name, int *value)
 
 	return false;
 }
+
+/*
+ * skyline_option_get_string
+ *
+ * Query the SKYLINE OF ... WITH param=xxx list for the param `name'
+ * returns true if value is present.
+ */
+bool
+skyline_option_get_string(List *skyline_of_options, char *name, char **value)
+{
+	ListCell   *l;
+
+	AssertArg(name != NULL);
+	AssertArg(value != NULL);
+
+	/* ensure we only lookup known options */
+	Assert(skyline_lookup_option(name) != NULL);
+
+	foreach(l, skyline_of_options)
+	{
+		SkylineOption *option = (SkylineOption *) lfirst(l);
+
+		if (strcmp(option->name, name) == 0)
+		{
+			A_Const    *arg = (A_Const *) option->value;
+
+			if (!IsA(arg, A_Const))
+				elog(ERROR, "unrecognized node type: %d", (int) nodeTag(arg));
+
+			switch (nodeTag(&arg->val))
+			{
+				case T_String:
+					*value = strVal(&arg->val);
+					return true;
+
+				default:
+					elog(ERROR, "only strings for option `%s' allowed", name);
+					return false;
+			}
+		}
+	}
+
+	return false;
+}
+
 
 SkylineMethod
 skyline_method_forced_by_options(SkylineClause *skyline_clause)

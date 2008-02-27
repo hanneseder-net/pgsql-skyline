@@ -35,6 +35,9 @@
 \begin{itemize}
 \item \todo{casing of section headings?}{}
 \item \todo{ask ali, which website for travelling by airplane uses skyline}{}
+\item \todo{using hashing for diff groups}{}
+\item \todo{EF+SFS=LESS (check this again)}{}
+\item \todo{has the order in which the skyline dimensions are checked an effect?}{}
 \end{itemize}
 \clearpage
 
@@ -587,6 +590,10 @@ how top k interacts with skyline, no special measures have to be taken as the up
 Turing development it was very helpful to run the PostgreSQL backend in \texttt{--single} mode. A single backend, enter the query directly, edit \& continue in msvc.
 
 
+\subsection{Regression Testing}
+\todo{see \srcref{test/....}}{}
+\todo{see more extensive see perl script}{}
+
 \chapter{Results\revision}
 \label{chap:Results}
 
@@ -741,6 +748,56 @@ the assumtion that at no time more than output\_tuples will be in the window can
 larger window and and less passes do not always mean better runtime
 
 infact there is a break even point
+
+
+\clearpage % \todo{remove clearpage}{}
+
+\section{Benchmarking}
+\todo{see \citep{Gray1993}}{}
+
+There is a large number of parameters that can be varied:
+
+\begin{itemize}
+\item \emph{size of dataset} (100?, 1000?, 10000, 100000, 1000000)
+\item \emph{number of dimensions} (1-15, or even 10 is enough)
+\item \emph{data distribution} (indep, corr, anti)
+\item \emph{data source} (disk, set returning function)
+
+in case the data are stored on disk
+\begin{itemize}
+\item \emph{sequencial scan vs. index scan} SFS can benefit from index scan (ommit sort phase), BNL and SFS could benefit from a index scan if DIFF groups are used.
+\item \emph{sequence of tuples in tuple stream} (random, high entropy first/last) for BNL and EF if a very good tuple is very early in the tuple stream it will eliminate a lot of tuples in a very early stage
+\end{itemize}
+\item \emph{methods}
+
+\begin{itemize}
+\item as SQL statement
+\item special case 1 dim distinct
+\item special case 1 dim 
+\item special case 2 dim (needs sort presort or access path)
+\item BNL
+\item SFS
+\item EF+SFS=LESS
+\item EF+BNL
+\end{itemize}
+
+\item window size
+\item window policy (prepend, append, entropy)
+\item entropy needs stats for scaling to (0,1)
+
+\end{itemize}
+
+Todo's
+
+\begin{itemize}
+\item use 90\% percentile (\citep{Gray1993}[page 315]) vs, average / variance (box-plots?)
+\item describe software (operating system: Windows XP + SP 2, Microsoft Visual Studio 2005 + SP1, based on PostgreSQL 8.3.0) and hardware (CPU, RAM, Disk config, File System) used for benchmarking
+
+\item describe the configuration of PostgreSQL (flags used for \texttt{configure --enable-asserts --enable-checks, ...}, it is recommended to turn asserts and co. off for benchmarking
+
+\item \todo{maybe run all the tests on dmdb2.bda.local = Dell OptiPlex XXX, to have a off the shelf hardware}{}
+\end{itemize}
+
 
 
 \chapter*{Summary\revision}

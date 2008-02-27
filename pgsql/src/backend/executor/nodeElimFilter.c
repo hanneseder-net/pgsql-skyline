@@ -81,7 +81,6 @@ ElimFilterState *
 ExecInitElimFilter(ElimFilter *node, EState *estate, int eflags)
 {
 	ElimFilterState	   *state;
-	int					use_entropy;
 
 	state = makeNode(ElimFilterState);
 	state->ss.ps.plan = (Plan *) node;

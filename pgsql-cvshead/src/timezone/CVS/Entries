@@ -1,13 +1,13 @@
-/Makefile/1.28/Wed Sep  5 06:37:23 2007//TREL8_3_STABLE
-/README/1.5/Tue Jul 25 03:51:22 2006//TREL8_3_STABLE
-/ialloc.c/1.9/Tue Oct 30 09:22:37 2007//TREL8_3_STABLE
-/localtime.c/1.19/Mon Nov 19 11:53:42 2007//TREL8_3_STABLE
-/pgtz.c/1.58/Wed Feb 27 22:14:33 2008//TREL8_3_STABLE
-/pgtz.h/1.21/Thu Jan 10 10:18:11 2008//TREL8_3_STABLE
-/private.h/1.11/Wed Feb 23 04:34:21 2005//TREL8_3_STABLE
-/scheck.c/1.8/Tue Oct 30 09:22:37 2007//TREL8_3_STABLE
-/strftime.c/1.11/Fri Jul 14 14:52:27 2006//TREL8_3_STABLE
-/tzfile.h/1.6/Sat Oct 15 02:49:51 2005//TREL8_3_STABLE
-/zic.c/1.22/Tue Oct 30 09:22:37 2007//TREL8_3_STABLE
+/Makefile/1.28/Wed Sep  5 06:37:23 2007//
+/README/1.5/Tue Jul 25 03:51:22 2006//
+/ialloc.c/1.9/Tue Oct 30 09:22:37 2007//
+/localtime.c/1.19/Mon Nov 19 11:53:42 2007//
+/pgtz.c/1.57/Thu Jan 10 10:18:11 2008//
+/pgtz.h/1.21/Thu Jan 10 10:18:11 2008//
+/private.h/1.11/Wed Feb 23 04:34:21 2005//
+/scheck.c/1.8/Tue Oct 30 09:22:37 2007//
+/strftime.c/1.11/Fri Jul 14 14:52:27 2006//
+/tzfile.h/1.6/Sat Oct 15 02:49:51 2005//
+/zic.c/1.22/Tue Oct 30 09:22:37 2007//
 D/data////
 D/tznames////

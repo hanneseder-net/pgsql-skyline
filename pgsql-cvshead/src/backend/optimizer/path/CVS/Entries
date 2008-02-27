@@ -1,12 +1,12 @@
-/Makefile/1.18/Sat Jan 20 20:45:38 2007//TREL8_3_STABLE
-/allpaths.c/1.168/Fri Feb  8 08:33:17 2008//TREL8_3_STABLE
-/clausesel.c/1.90/Fri Feb  8 08:33:17 2008//TREL8_3_STABLE
-/costsize.c/1.191/Thu Jan 10 10:17:23 2008//TREL8_3_STABLE
-/equivclass.c/1.9/Thu Jan 10 10:17:23 2008//TREL8_3_STABLE
-/indxpath.c/1.227/Fri Feb  8 09:40:00 2008//TREL8_3_STABLE
-/joinpath.c/1.115/Thu Jan 10 10:17:23 2008//TREL8_3_STABLE
-/joinrels.c/1.91/Fri Feb  8 08:33:17 2008//TREL8_3_STABLE
-/orindxpath.c/1.84/Thu Jan 10 10:17:23 2008//TREL8_3_STABLE
-/pathkeys.c/1.93/Thu Jan 10 10:17:24 2008//TREL8_3_STABLE
-/tidpath.c/1.31/Thu Jan 10 10:17:24 2008//TREL8_3_STABLE
+/Makefile/1.18/Sat Jan 20 20:45:38 2007//
+/allpaths.c/1.168/Fri Feb  8 08:33:17 2008//
+/clausesel.c/1.90/Fri Feb  8 08:33:17 2008//
+/costsize.c/1.191/Thu Jan 10 10:17:23 2008//
+/equivclass.c/1.9/Thu Jan 10 10:17:23 2008//
+/indxpath.c/1.227/Fri Feb  8 09:40:00 2008//
+/joinpath.c/1.115/Thu Jan 10 10:17:23 2008//
+/joinrels.c/1.91/Fri Feb  8 08:33:17 2008//
+/orindxpath.c/1.84/Thu Jan 10 10:17:23 2008//
+/pathkeys.c/1.93/Thu Jan 10 10:17:24 2008//
+/tidpath.c/1.31/Thu Jan 10 10:17:24 2008//
 D

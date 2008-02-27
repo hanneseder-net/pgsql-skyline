@@ -1,7 +1,7 @@
-/Makefile/1.9/Mon Nov 12 10:59:06 2007//TREL8_3_STABLE
-/README.pgstattuple.euc_jp/1.9/Thu Jun  7 10:42:31 2007//TREL8_3_STABLE
-/pgstatindex.c/1.8/Mon Nov 19 11:52:25 2007//TREL8_3_STABLE
-/pgstattuple.c/1.32/Fri Feb  8 08:33:11 2008//TREL8_3_STABLE
-/pgstattuple.sql.in/1.15/Mon Nov 19 11:52:25 2007//TREL8_3_STABLE
-/uninstall_pgstattuple.sql/1.6/Mon Nov 19 11:52:25 2007//TREL8_3_STABLE
+/Makefile/1.9/Mon Nov 12 10:59:06 2007//
+/README.pgstattuple.euc_jp/1.9/Thu Jun  7 10:42:31 2007//
+/pgstatindex.c/1.8/Mon Nov 19 11:52:25 2007//
+/pgstattuple.c/1.32/Fri Feb  8 08:33:11 2008//
+/pgstattuple.sql.in/1.15/Mon Nov 19 11:52:25 2007//
+/uninstall_pgstattuple.sql/1.6/Mon Nov 19 11:52:25 2007//
 D

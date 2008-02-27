@@ -1,11 +1,11 @@
-/Makefile/1.20/Sat Jan 20 17:16:12 2007//TREL8_3_STABLE
-/README/1.4/Sat Nov 29 19:51:56 2003//TREL8_3_STABLE
-/ipc.c/1.100/Thu Jan 10 10:17:33 2008//TREL8_3_STABLE
-/ipci.c/1.94/Thu Jan 10 10:17:33 2008//TREL8_3_STABLE
-/pmsignal.c/1.25/Thu Jan 10 10:17:33 2008//TREL8_3_STABLE
-/procarray.c/1.40/Thu Jan 10 10:17:33 2008//TREL8_3_STABLE
-/shmem.c/1.100/Thu Jan 10 10:17:33 2008//TREL8_3_STABLE
-/shmqueue.c/1.31/Thu Jan 10 10:17:33 2008//TREL8_3_STABLE
-/sinval.c/1.83/Thu Jan 10 10:17:33 2008//TREL8_3_STABLE
-/sinvaladt.c/1.66/Thu Jan 10 10:17:33 2008//TREL8_3_STABLE
+/Makefile/1.20/Sat Jan 20 17:16:12 2007//
+/README/1.4/Sat Nov 29 19:51:56 2003//
+/ipc.c/1.100/Thu Jan 10 10:17:33 2008//
+/ipci.c/1.94/Thu Jan 10 10:17:33 2008//
+/pmsignal.c/1.25/Thu Jan 10 10:17:33 2008//
+/procarray.c/1.40/Thu Jan 10 10:17:33 2008//
+/shmem.c/1.100/Thu Jan 10 10:17:33 2008//
+/shmqueue.c/1.31/Thu Jan 10 10:17:33 2008//
+/sinval.c/1.83/Thu Jan 10 10:17:33 2008//
+/sinvaladt.c/1.66/Thu Jan 10 10:17:33 2008//
 D

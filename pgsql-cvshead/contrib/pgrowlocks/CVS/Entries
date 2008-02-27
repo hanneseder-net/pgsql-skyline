@@ -1,6 +1,6 @@
-/Makefile/1.5/Mon Nov 12 10:59:06 2007//TREL8_3_STABLE
-/README.pgrowlocks.euc_jp/1.1/Sun Apr 23 01:12:58 2006//TREL8_3_STABLE
-/pgrowlocks.c/1.8/Mon Dec  3 14:34:35 2007//TREL8_3_STABLE
-/pgrowlocks.sql.in/1.3/Mon Nov 19 11:52:25 2007//TREL8_3_STABLE
-/uninstall_pgrowlocks.sql/1.4/Mon Nov 19 11:52:25 2007//TREL8_3_STABLE
+/Makefile/1.5/Mon Nov 12 10:59:06 2007//
+/README.pgrowlocks.euc_jp/1.1/Sun Apr 23 01:12:58 2006//
+/pgrowlocks.c/1.8/Mon Dec  3 14:34:35 2007//
+/pgrowlocks.sql.in/1.3/Mon Nov 19 11:52:25 2007//
+/uninstall_pgrowlocks.sql/1.4/Mon Nov 19 11:52:25 2007//
 D

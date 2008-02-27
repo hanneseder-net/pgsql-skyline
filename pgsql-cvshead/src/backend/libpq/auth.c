@@ -8,7 +8,7 @@
  *
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/backend/libpq/auth.c,v 1.164 2008/02/08 17:58:46 tgl Exp $
+ *	  $PostgreSQL: pgsql/src/backend/libpq/auth.c,v 1.163 2008/01/30 04:11:19 tgl Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -307,12 +307,11 @@ pg_krb5_recvauth(Port *port)
 }
 #endif   /* KRB5 */
 
+#ifdef ENABLE_GSS
 /*----------------------------------------------------------------
  * GSSAPI authentication system
  *----------------------------------------------------------------
  */
-
-#ifdef ENABLE_GSS
 
 #if defined(HAVE_GSSAPI_H)
 #include <gssapi.h>
@@ -389,19 +388,6 @@ pg_GSS_recvauth(Port *port)
 	int			ret;
 	StringInfoData buf;
 	gss_buffer_desc gbuf;
-
-	/*
-	 * GSS auth is not supported for protocol versions before 3, because it
-	 * relies on the overall message length word to determine the GSS payload
-	 * size in AuthenticationGSSContinue and PasswordMessage messages.
-	 * (This is, in fact, a design error in our GSS support, because protocol
-	 * messages are supposed to be parsable without relying on the length
-	 * word; but it's not worth changing it now.)
-	 */
-	if (PG_PROTOCOL_MAJOR(FrontendProtocol) < 3)
-		ereport(FATAL,
-				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-				 errmsg("GSSAPI is not supported in protocol version 2")));
 
 	if (pg_krb_server_keyfile && strlen(pg_krb_server_keyfile) > 0)
 	{
@@ -608,9 +594,7 @@ pg_GSS_recvauth(Port *port)
 
 	return STATUS_OK;
 }
-
 #else							/* no ENABLE_GSS */
-
 static int
 pg_GSS_recvauth(Port *port)
 {
@@ -619,20 +603,9 @@ pg_GSS_recvauth(Port *port)
 			 errmsg("GSSAPI not implemented on this server")));
 	return STATUS_ERROR;
 }
-
 #endif   /* ENABLE_GSS */
 
-/*----------------------------------------------------------------
- * SSPI authentication system
- *----------------------------------------------------------------
- */
-
 #ifdef ENABLE_SSPI
-
-typedef		SECURITY_STATUS
-			(WINAPI * QUERY_SECURITY_CONTEXT_TOKEN_FN) (
-													   PCtxtHandle, void **);
-
 static void
 pg_SSPI_error(int severity, char *errmsg, SECURITY_STATUS r)
 {
@@ -647,6 +620,10 @@ pg_SSPI_error(int severity, char *errmsg, SECURITY_STATUS r)
 				(errmsg_internal("%s", errmsg),
 				 errdetail("%s (%x)", sysmsg, (unsigned int) r)));
 }
+
+typedef		SECURITY_STATUS
+			(WINAPI * QUERY_SECURITY_CONTEXT_TOKEN_FN) (
+													   PCtxtHandle, void **);
 
 static int
 pg_SSPI_recvauth(Port *port)
@@ -674,18 +651,6 @@ pg_SSPI_recvauth(Port *port)
 	HMODULE		secur32;
 	QUERY_SECURITY_CONTEXT_TOKEN_FN _QuerySecurityContextToken;
 
-	/*
-	 * SSPI auth is not supported for protocol versions before 3, because it
-	 * relies on the overall message length word to determine the SSPI payload
-	 * size in AuthenticationGSSContinue and PasswordMessage messages.
-	 * (This is, in fact, a design error in our SSPI support, because protocol
-	 * messages are supposed to be parsable without relying on the length
-	 * word; but it's not worth changing it now.)
-	 */
-	if (PG_PROTOCOL_MAJOR(FrontendProtocol) < 3)
-		ereport(FATAL,
-				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-				 errmsg("SSPI is not supported in protocol version 2")));
 
 	/*
 	 * Acquire a handle to the server credentials.
@@ -913,9 +878,7 @@ pg_SSPI_recvauth(Port *port)
 
 	return STATUS_OK;
 }
-
 #else							/* no ENABLE_SSPI */
-
 static int
 pg_SSPI_recvauth(Port *port)
 {
@@ -924,7 +887,6 @@ pg_SSPI_recvauth(Port *port)
 			 errmsg("SSPI not implemented on this server")));
 	return STATUS_ERROR;
 }
-
 #endif   /* ENABLE_SSPI */
 
 

@@ -1,13 +1,13 @@
-/GNUmakefile/1.71/Thu Jan 10 10:18:10 2008//TREL8_3_STABLE
-/Makefile/1.15/Sat Jan 20 17:16:17 2007//TREL8_3_STABLE
-/parallel_schedule/1.46/Wed Nov 28 09:47:33 2007//TREL8_3_STABLE
-/pg_regress.c/1.41/Fri Feb  8 08:33:39 2008//TREL8_3_STABLE
-/pg_regress.h/1.3/Thu Jan 10 10:18:10 2008//TREL8_3_STABLE
-/pg_regress_main.c/1.3/Thu Jan 10 10:18:10 2008//TREL8_3_STABLE
-/regress.c/1.70/Thu Mar 15 23:12:07 2007//TREL8_3_STABLE
-/regressplans.sh/1.3/Mon Dec 18 02:45:47 2000//TREL8_3_STABLE
-/resultmap/1.85/Thu Jun 14 07:08:52 2007//TREL8_3_STABLE
-/serial_schedule/1.43/Wed Nov 28 09:47:33 2007//TREL8_3_STABLE
+/GNUmakefile/1.71/Thu Jan 10 10:18:10 2008//
+/Makefile/1.15/Sat Jan 20 17:16:17 2007//
+/parallel_schedule/1.46/Wed Nov 28 09:47:33 2007//
+/pg_regress.c/1.41/Fri Feb  8 08:33:39 2008//
+/pg_regress.h/1.3/Thu Jan 10 10:18:10 2008//
+/pg_regress_main.c/1.3/Thu Jan 10 10:18:10 2008//
+/regress.c/1.70/Thu Mar 15 23:12:07 2007//
+/regressplans.sh/1.3/Mon Dec 18 02:45:47 2000//
+/resultmap/1.85/Thu Jun 14 07:08:52 2007//
+/serial_schedule/1.43/Wed Nov 28 09:47:33 2007//
 D/data////
 D/expected////
 D/input////

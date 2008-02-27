@@ -1,9 +1,9 @@
-/Makefile/1.17/Fri Sep 21 18:07:23 2007//TREL8_3_STABLE
-/README.HOT/1.2/Sun Sep 23 18:27:48 2007//TREL8_3_STABLE
-/heapam.c/1.249/Fri Feb  8 08:33:16 2008//TREL8_3_STABLE
-/hio.c/1.68/Thu Jan 10 10:17:13 2008//TREL8_3_STABLE
-/pruneheap.c/1.6/Thu Jan 10 10:17:13 2008//TREL8_3_STABLE
-/rewriteheap.c/1.10/Thu Jan 10 10:17:13 2008//TREL8_3_STABLE
-/syncscan.c/1.4/Thu Jan 10 10:17:13 2008//TREL8_3_STABLE
-/tuptoaster.c/1.81.2.1/Wed Feb 27 22:14:16 2008//TREL8_3_STABLE
+/Makefile/1.17/Fri Sep 21 18:07:23 2007//
+/README.HOT/1.2/Sun Sep 23 18:27:48 2007//
+/heapam.c/1.249/Fri Feb  8 08:33:16 2008//
+/hio.c/1.68/Thu Jan 10 10:17:13 2008//
+/pruneheap.c/1.6/Thu Jan 10 10:17:13 2008//
+/rewriteheap.c/1.10/Thu Jan 10 10:17:13 2008//
+/syncscan.c/1.4/Thu Jan 10 10:17:13 2008//
+/tuptoaster.c/1.81/Thu Jan 10 10:17:13 2008//
 D

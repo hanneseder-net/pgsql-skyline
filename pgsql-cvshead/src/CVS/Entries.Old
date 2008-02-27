@@ -1,10 +1,10 @@
-/DEVELOPERS/1.5/Mon Jul 10 15:50:02 2006//TREL8_3_STABLE
-/Makefile.global.in/1.240/Mon Nov 19 11:52:32 2007//TREL8_3_STABLE
-/Makefile.shlib/1.109/Tue Feb 20 22:45:57 2007//TREL8_3_STABLE
-/Makefile/1.42/Wed Sep  5 06:36:57 2007//TREL8_3_STABLE
-/bcc32.mak/1.5/Mon Mar  5 14:18:38 2007//TREL8_3_STABLE
-/nls-global.mk/1.12/Wed Apr  5 13:40:15 2006//TREL8_3_STABLE
-/win32.mak/1.16/Mon Aug  6 09:10:16 2007//TREL8_3_STABLE
+/DEVELOPERS/1.5/Mon Jul 10 15:50:02 2006//
+/Makefile.global.in/1.240/Mon Nov 19 11:52:32 2007//
+/Makefile.shlib/1.109/Tue Feb 20 22:45:57 2007//
+/Makefile/1.42/Wed Sep  5 06:36:57 2007//
+/bcc32.mak/1.5/Mon Mar  5 14:18:38 2007//
+/nls-global.mk/1.12/Wed Apr  5 13:40:15 2006//
+/win32.mak/1.16/Mon Aug  6 09:10:16 2007//
 D/backend////
 D/bin////
 D/corba////

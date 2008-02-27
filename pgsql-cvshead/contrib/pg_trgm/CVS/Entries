@@ -1,10 +1,10 @@
-/Makefile/1.9/Mon Nov 12 10:59:06 2007//TREL8_3_STABLE
-/pg_trgm.sql.in/1.7/Tue Dec 11 12:50:08 2007//TREL8_3_STABLE
-/trgm.h/1.8/Mon Nov 19 11:52:23 2007//TREL8_3_STABLE
-/trgm_gin.c/1.2/Mon Nov 19 11:52:23 2007//TREL8_3_STABLE
-/trgm_gist.c/1.12/Mon Nov 19 11:52:23 2007//TREL8_3_STABLE
-/trgm_op.c/1.9/Wed Aug  1 09:00:41 2007//TREL8_3_STABLE
-/uninstall_pg_trgm.sql/1.5/Mon Nov 19 11:52:23 2007//TREL8_3_STABLE
+/Makefile/1.9/Mon Nov 12 10:59:06 2007//
+/pg_trgm.sql.in/1.7/Tue Dec 11 12:50:08 2007//
+/trgm.h/1.8/Mon Nov 19 11:52:23 2007//
+/trgm_gin.c/1.2/Mon Nov 19 11:52:23 2007//
+/trgm_gist.c/1.12/Mon Nov 19 11:52:23 2007//
+/trgm_op.c/1.9/Wed Aug  1 09:00:41 2007//
+/uninstall_pg_trgm.sql/1.5/Mon Nov 19 11:52:23 2007//
 D/data////
 D/expected////
 D/sql////

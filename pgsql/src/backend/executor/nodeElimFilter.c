@@ -55,7 +55,7 @@ ExecElimFilterInitTupleWindow(SkylineState *node, Skyline *sl)
 	skyline_option_get_window_policy(sl->skyline_of_options, "efwindowpolicy", &window_policy);
 
 	if (window_policy == TUP_WIN_POLICY_RANKED)
-		node->flags |= SL_FLAGS_ENTROPY;
+		node->flags |= SL_FLAGS_RANKED;
 
 	if (window_slots == 0)
 	{
@@ -212,7 +212,7 @@ ExecElimFilter(ElimFilterState *node)
 				}
 
 				tuplewindow_rewind(window);
-				if (node->flags & SL_FLAGS_ENTROPY)
+				if (node->flags & SL_FLAGS_RANKED)
 					tuplewindow_setinsertrank(window, ExecSkylineRank(node, slot));
 				for (;;)
 				{

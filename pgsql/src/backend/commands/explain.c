@@ -1221,13 +1221,18 @@ show_skyline_info(SkylineState *skylinestate,
 				appendStringInfo(str, "  ");
 			
 			appendStringInfo(str, "  Skyline Stats: passes=%lld", skylinestate->pass);
+			appendStringInfo(str, " rows=%s", skylinestate->pass_info->data);
+			appendStringInfo(str, "\n");
+
+			for (i = 0; i < indent; i++)
+				appendStringInfo(str, "  ");
+
+			appendStringInfo(str, "  Skyline Window:");
 			if (skylinestate->windowsize != -1)
-				appendStringInfo(str, " window=%dk", skylinestate->windowsize);
+				appendStringInfo(str, " size=%dk", skylinestate->windowsize);
 			if (skylinestate->windowslots != -1)
 				appendStringInfo(str, " slots=%d", skylinestate->windowslots);
-
-			appendStringInfo(str, " rows=%s", skylinestate->pass_info->data);
-
+			appendStringInfo(str, " policy=%s", skyline_window_policy_name(skylinestate->window_policy));
 			appendStringInfo(str, "\n");
 		}
 

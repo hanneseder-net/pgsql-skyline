@@ -149,7 +149,7 @@ skyline_option_get_string(List *skyline_of_options, char *name, char **value)
 }
 
 /*
- * skyline_option_get_int
+ * skyline_option_window_policy
  *
  *	Query the SKYLINE OF ... WITH param=xxx list for the param `name' with
  *  data type T_String, return it as "window policy"
@@ -183,6 +183,27 @@ skyline_option_get_window_policy(List *skyline_of_options, char *name, TupleWind
 		return false;
 }
 
+/*
+ * skyline_window_policy_name
+ *
+ *  FIXME
+ */
+const char *
+skyline_window_policy_name(TupleWindowPolicy window_policy)
+{
+	switch (window_policy)
+	{
+	case TUP_WIN_POLICY_APPEND:
+		return "append";
+	case TUP_WIN_POLICY_PREPEND:
+		return "prepend";
+	case TUP_WIN_POLICY_RANKED:
+		return "ranked";
+	default:
+		elog(WARNING, "FIXME: skyline window policy `%d' unknown at %s:%d", window_policy, __FILE__, __LINE__);
+		return "?";
+	}
+}
 
 SkylineMethod
 skyline_method_forced_by_options(SkylineClause *skyline_clause)
@@ -329,6 +350,7 @@ skyline_method_name(SkylineMethod skyline_method)
 			return "unknown";
 		case SM_1DIM:
 			return "1dim";
+		case SM_1DIM_DISTINCT:
 			/*
 			 * The term "distinct" should be added by the caller, since 
 			 * other all methods can handle distinct as well.

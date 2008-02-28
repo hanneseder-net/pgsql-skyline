@@ -19,6 +19,7 @@ extern bool skyline_option_get_int(List *skyline_of_options, char *name, int *va
 extern bool skyline_option_get_string(List *skyline_of_options, char *name, char **value);
 extern bool skyline_option_get_window_policy(List *skyline_of_options, char *name, TupleWindowPolicy *window_policy);
 extern const char *skyline_method_name(SkylineMethod skyline_method);
+extern const char *skyline_window_policy_name(TupleWindowPolicy window_policy);
 extern bool skyline_methode_can_use_limit(SkylineMethod skyline_method);
 
 /* from backend/executor/nodeSkyline.c */

@@ -298,7 +298,6 @@ ExecSkylineInitTupleWindow(SkylineState *node, Skyline *sl)
 {
 	int			window_size = work_mem;
 	int			window_slots = -1;
-	TupleWindowPolicy	window_policy = TUP_WIN_POLICY_APPEND;
 
 	Assert(node != NULL);
 
@@ -321,11 +320,6 @@ ExecSkylineInitTupleWindow(SkylineState *node, Skyline *sl)
 		skyline_option_get_int(sl->skyline_of_options, "slots", &window_slots) ||
 			skyline_option_get_int(sl->skyline_of_options, "windowslots", &window_slots);
 
-		skyline_option_get_window_policy(sl->skyline_of_options, "windowpolicy", &window_policy);
-
-		if (window_policy == TUP_WIN_POLICY_RANKED)
-			node->flags |= SL_FLAGS_ENTROPY;
-
 		if (window_slots == 0)
 		{
 			/*
@@ -335,7 +329,7 @@ ExecSkylineInitTupleWindow(SkylineState *node, Skyline *sl)
 			elog(ERROR, "tuple window must have at least one slot");
 		}
 
-		node->window = tuplewindow_begin(window_size, window_slots, window_policy);
+		node->window = tuplewindow_begin(window_size, window_slots, node->window_policy);
 
 		node->windowsize = window_size;
 		node->windowslots = window_slots;
@@ -374,6 +368,12 @@ ExecInitSkyline(Skyline *node, EState *estate, int eflags)
 	slstate->cmps_fields = 0;
 	slstate->pass_info = makeStringInfo();
 	slstate->flags = SL_FLAGS_NONE;
+	slstate->window_policy = TUP_WIN_POLICY_APPEND;
+
+	skyline_option_get_window_policy(node->skyline_of_options, "windowpolicy", &slstate->window_policy);
+
+	if (slstate->window_policy == TUP_WIN_POLICY_RANKED)
+		slstate->flags |= SL_FLAGS_RANKED;
 
 	ExecSkylineInitTupleWindow(slstate, node);
 
@@ -891,7 +891,7 @@ ExecSkyline_BlockNestedLoop(SkylineState *node, Skyline *sl)
 					node->timestampIn++;
 
 					tuplewindow_rewind(window);
-					if (node->flags & SL_FLAGS_ENTROPY)
+					if (node->flags & SL_FLAGS_RANKED)
 						tuplewindow_setinsertrank(window, ExecSkylineRank(node, slot));
 					for (;;)
 					{
@@ -1116,7 +1116,7 @@ ExecSkyline_SortFilterSkyline(SkylineState *node, Skyline *sl)
 					node->timestampIn++;
 
 					tuplewindow_rewind(window);
-					if (node->flags & SL_FLAGS_ENTROPY)
+					if (node->flags & SL_FLAGS_RANKED)
 						tuplewindow_setinsertrank(window, ExecSkylineRank(node, slot));
 					for (;;)
 					{

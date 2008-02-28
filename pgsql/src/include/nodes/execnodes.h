@@ -1364,7 +1364,7 @@ typedef enum
 } SkylineSource;
 
 #define SL_FLAGS_NONE		0x0000
-#define SL_FLAGS_ENTROPY	0x0001
+#define SL_FLAGS_RANKED		0x0001
 
 typedef struct SkylineState
 {
@@ -1385,6 +1385,8 @@ typedef struct SkylineState
 	TupleTableSlot	   *extraSlot;
 
 	int64				pass;
+
+	TupleWindowPolicy	window_policy;
 	int					windowsize;
 	int					windowslots;
 

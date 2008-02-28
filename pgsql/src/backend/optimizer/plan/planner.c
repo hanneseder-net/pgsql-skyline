@@ -880,6 +880,7 @@ grouping_planner(PlannerInfo *root, double tuple_fraction)
 			count_agg_clauses(parse->havingQual, &agg_counts);
 		}
 
+		/* FIXME: update comment */
 		/*
 		 * Figure out whether we need a sorted result from query_planner.
 		 *
@@ -910,6 +911,15 @@ grouping_planner(PlannerInfo *root, double tuple_fraction)
 
 		group_pathkeys = root->group_pathkeys;
 		skyline_pathkeys = root->skyline_pathkeys;
+		/* on "SKYLINE OF ... WITH NOINDEX" drop skyline_pathkeys */
+		{
+			int		no_index;
+			if (skyline_option_get_int(((SkylineClause *) parse->skylineClause)->skyline_of_options, "noindex", &no_index))
+			{
+				skyline_path = NULL;
+				skyline_pathkeys = NULL;
+			}
+		}
 		sort_pathkeys = root->sort_pathkeys;
 
 		/*

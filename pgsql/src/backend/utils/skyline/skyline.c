@@ -307,7 +307,9 @@ skyline_method_preserves_tuple_order(SkylineMethod skyline_method)
 			 * The order of the tuples is not changed by the Sort Filter
 			 * Skyline method, so the current_pathkeys can be kept.
 			 */
-			return true;
+
+			/* FIXME tuple order is only preserved if window policy "append" is used */
+			return false;
 		default:
 			/* 
 			 * We drop it on default.

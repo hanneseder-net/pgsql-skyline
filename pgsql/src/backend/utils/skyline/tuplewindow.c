@@ -98,8 +98,9 @@ tuplewindow_begin(int maxKBytes, int maxSlots, TupleWindowPolicy policy)
 	state->nil = (TupleWindowSlot *) palloc(sizeof(TupleWindowSlot));
 	state->nil->next = state->nil;
 	state->nil->prev = state->nil;
+	state->nil->tuple = NULL;
 	state->nil->timestamp = 0;
-	state->nil->rank = DBL_MIN;
+	state->nil->rank = DBL_MAX;
 
 	/*
 	 * Set cursor (current) to sentinel.
@@ -109,7 +110,7 @@ tuplewindow_begin(int maxKBytes, int maxSlots, TupleWindowPolicy policy)
 	/*
 	 * Set rank cursor
 	 */
-	state->insertrank = DBL_MIN;
+	state->insertrank = -DBL_MAX;
 	state->rankinsert = state->nil;
 
 	return state;
@@ -235,7 +236,7 @@ tuplewindow_movenext(TupleWindowState *state)
 		if (state->policy == TUP_WIN_POLICY_RANKED 
 			&& state->current == state->rankinsert)
 		{
-			if (state->current->rank <= state->insertrank)
+			if (state->current->rank >= state->insertrank)
 				state->rankinsert = state->current->next;
 		}
 
@@ -472,7 +473,7 @@ tuplewindow_puttupleslot(TupleWindowState *state,
 			 * We only insert if there is still space in the window.
 			 */
 			if (tuplewindow_has_freespace(state))
-				tuplewindow_puttupleslot_impl(state, slot, timestamp, state->nil, DBL_MIN);
+				tuplewindow_puttupleslot_impl(state, slot, timestamp, state->nil, -DBL_MAX);
 		}
 		else
 		{
@@ -481,7 +482,7 @@ tuplewindow_puttupleslot(TupleWindowState *state,
 			 * the tuple window.
 			 */
 			AssertState(tuplewindow_has_freespace(state));
-			tuplewindow_puttupleslot_impl(state, slot, timestamp, state->nil, DBL_MIN);
+			tuplewindow_puttupleslot_impl(state, slot, timestamp, state->nil, -DBL_MAX);
 		}
 		break;
 
@@ -492,7 +493,7 @@ tuplewindow_puttupleslot(TupleWindowState *state,
 			 * We only insert if there is still space in the window.
 			 */
 			if (tuplewindow_has_freespace(state))
-				tuplewindow_puttupleslot_impl(state, slot, timestamp, state->nil->next, DBL_MIN);
+				tuplewindow_puttupleslot_impl(state, slot, timestamp, state->nil->next, -DBL_MAX);
 		}
 		else
 		{
@@ -500,7 +501,7 @@ tuplewindow_puttupleslot(TupleWindowState *state,
 			 * We insert at the begining of the list.
 			 */
 			AssertState(tuplewindow_has_freespace(state));
-			tuplewindow_puttupleslot_impl(state, slot, timestamp, state->nil->next, DBL_MIN);
+			tuplewindow_puttupleslot_impl(state, slot, timestamp, state->nil->next, -DBL_MAX);
 		}
 		break;
 
@@ -521,6 +522,20 @@ tuplewindow_puttupleslot(TupleWindowState *state,
 		 */
 		AssertState(tuplewindow_has_freespace(state));
 		tuplewindow_puttupleslot_impl(state, slot, timestamp, state->rankinsert, state->insertrank);
+		
+		/* checking that the tuples in the window are ordered rank desc (\infty .. -\infty) */
+		/*
+		{
+			double		rank = state->nil->rank;
+			TupleWindowSlot *next = state->nil->next;
+			while (next != state->nil)
+			{
+				Assert(next->rank <= rank);
+				rank = next->rank;
+				next = next->next;
+			}
+		}
+		*/
 		break;
 
 	default:

@@ -103,6 +103,10 @@ inlineApplyCompareFunction(FmgrInfo *compFunction, int sk_flags,
  *  FIXME
  *  HACK: this needs to depand on the stats of the columns in question
  */
+#define RANK_EPSILON	(1e-6)
+#define RANK_BOUND_MIN	(0+RANK_EPSILON)
+#define RANK_BOUND_MAX	(1-RANK_EPSILON)
+
 double
 ExecSkylineRank(SkylineState *node, TupleTableSlot *slot)
 {
@@ -115,22 +119,39 @@ ExecSkylineRank(SkylineState *node, TupleTableSlot *slot)
 		Datum		datum;
 		double		value;
 		bool		isnull;
-		int			attnum = sl->skylineColIdx[i];
+		int			attnum;
+		int			sk_flags;
+
+		/* DIFF does not count for ranking */
+		if (sl->skylineOfDir[i] == SKYLINEOF_DIFF)
+			continue;
+
+		attnum =  sl->skylineColIdx[i];
+		sk_flags = node->compareFlags[i];
 
 		datum = slot_getattr(slot, attnum, &isnull);
 
-		/* HACK */
 		if (isnull)
-			return DBL_MAX;
+		{
+			if (sk_flags & SK_BT_NULLS_FIRST)
+				value = RANK_BOUND_MIN;
+			else
+				value = RANK_BOUND_MAX;
+		}
+		else
+		{
+			value = DatumGetFloat8(datum);
 
-		value = DatumGetFloat8(datum);
+			if (value <= RANK_BOUND_MIN)
+				value = RANK_BOUND_MIN;
+			else if (value >= RANK_BOUND_MAX)
+				value = RANK_BOUND_MAX;
+		}
 
-		if (value <= 1e-6)
-			value = 1e-6;
-		else if (value >= 1-1e-6)
-			value = 1-1e-6;
+		if (sk_flags & SK_BT_DESC)
+			value = RANK_BOUND_MAX - value;
 
-		res += log(value);
+		res -= log(value);
 	}
 
 	return res;

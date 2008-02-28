@@ -19,7 +19,6 @@
 \newcommand\bigunion{\bigcup}
 \newcommand\intersection{\cap}
 \newcommand\difference{\backslash}
-\newcommand\euros{\$} \fixme{}{euro sign}
 \newcommand\dominates{\ensuremath{\succ}\xspace}
 \newcommand\weakdominates{\ensuremath{\succeq}\xspace}
 
@@ -30,6 +29,14 @@
 \newtheorem{definition}{Definition}
 \newtheorem{lemma}{Lemma}
 \newtheorem{theorem}{Theorem}
+
+
+\makeatletter
+\newenvironment{shellscript}
+{\begingroup\list{}{\listparindent 0\p@\itemindent\listparindent\leftmargin15\p@\rightmargin15\p@}\item[]\begin{alltt}}{\end{alltt}\endlist\endgroup}
+\makeatother
+
+\newcommand\cmd[1]{\textcolor{blue}{> #1}} \fixme{}{fix command prompt}
 
 \section{TODO}
 \begin{itemize}
@@ -263,11 +270,11 @@ well all skyline query are transitive, so there is no need to investigate this h
 
 \todo{skyline and joins, cross products, selections, projects, top k}{}
 
-$\sigma_{Price<\euros20}(\skyline_{C_1}(\relation{R}))=\skyline_{C_1}(\sigma_{Price<\euros20}(\relation{R}))$
+$\sigma_{Price<\textnormal{\euro}20}(\skyline_{C_1}(\relation{R}))=\skyline_{C_1}(\sigma_{Price<\textnormal{\euro}20}(\relation{R}))$
 according to Theorem 3 (\citep{Chomicki2002}).
 Such identies are not in our implementation.\todo{}{further work}
 
-NOTE: $\sigma_{Price>\euros20}$ does not commute with $\skyline$.
+NOTE: $\sigma_{Price>\textnormal{\euro}20}$ does not commute with $\skyline$.
 
 
 \texttt{TOP $k$} are realized with \inlinesql{LIMIT}
@@ -622,9 +629,11 @@ ev. erf verwenden \#include <math.h>
 \subsubsection{As command line utility}
 
 The usage message explains, how to use the command line utility
-\begin{verbatim}
-Test data generator for Skyline Operator Evaluation
-usage: randdataset (-i|-c|-a) -d DIM -n COUNT [-s SEED] [-p] [-S] [-h|-?]
+\begin{shellscript}
+\cmd{randdataset -?}
+
+Test Data Generator for Skyline Operator Evaluation
+Usage: randdataset (-i|-c|-a) -d DIM -n COUNT [-s SEED] [-p] [-S] [-h|-?]
 
 Options:
        -i       independent (dim >= 1)
@@ -649,12 +658,12 @@ Options:
 Examples:
        randdataset -i -d 3 -n 10 -I -R
        randdataset -a -d 2 -n 100 -S
-\end{verbatim}
+\end{shellscript}
 
 An invocation of \texttt{randdataset} suitable to pipe it directly into \texttt{psql}, i.e. load it into database, could look like: 
-\todo{}{using listings package}
-\begin{verbatim}
-> randdataset -i -d 3 -n 10 -I -R
+
+\begin{shellscript}
+\cmd{randdataset -i -d 3 -n 10 -I -R}
 
 DROP TABLE IF EXISTS "i3d10";
 CREATE TABLE "i3d10" (id int, d1 float, d2 float, d3 float);
@@ -663,8 +672,9 @@ COPY "i3d10" (id, d1, d2, d3) FROM STDIN DELIMITERS ',' CSV QUOTE '''';
 2,5.914905399975788e-01,5.547849133400177e-01,3.784288188342139e-01
 ...
 10,8.585111004572880e-01,9.898449857671955e-02,8.770675234855467e-01
-\.
-\end{verbatim}
+\textbackslash.
+\end{shellscript}
+\fixme{}{backslash is not in a monospaced font}
 
 \subsubsection{PostgreSQL Random Dataset Generator Function}
 

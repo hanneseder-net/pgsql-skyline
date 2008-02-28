@@ -98,66 +98,6 @@ inlineApplyCompareFunction(FmgrInfo *compFunction, int sk_flags,
 }
 
 /*
- * ExecSkylineRank
- *
- *  FIXME
- *  HACK: this needs to depand on the stats of the columns in question
- */
-#define RANK_EPSILON	(1e-6)
-#define RANK_BOUND_MIN	(0+RANK_EPSILON)
-#define RANK_BOUND_MAX	(1-RANK_EPSILON)
-
-double
-ExecSkylineRank(SkylineState *node, TupleTableSlot *slot)
-{
-	Skyline    *sl = (Skyline *) node->ss.ps.plan;
-	double		res = 0.0;
-	int			i;
-
-	for (i = 0; i < sl->numCols; ++i)
-	{
-		Datum		datum;
-		double		value;
-		bool		isnull;
-		int			attnum;
-		int			sk_flags;
-
-		/* DIFF does not count for ranking */
-		if (sl->skylineOfDir[i] == SKYLINEOF_DIFF)
-			continue;
-
-		attnum =  sl->skylineColIdx[i];
-		sk_flags = node->compareFlags[i];
-
-		datum = slot_getattr(slot, attnum, &isnull);
-
-		if (isnull)
-		{
-			if (sk_flags & SK_BT_NULLS_FIRST)
-				value = RANK_BOUND_MIN;
-			else
-				value = RANK_BOUND_MAX;
-		}
-		else
-		{
-			value = DatumGetFloat8(datum);
-
-			if (value <= RANK_BOUND_MIN)
-				value = RANK_BOUND_MIN;
-			else if (value >= RANK_BOUND_MAX)
-				value = RANK_BOUND_MAX;
-		}
-
-		if (sk_flags & SK_BT_DESC)
-			value = RANK_BOUND_MAX - value;
-
-		res -= log(value);
-	}
-
-	return res;
-}
-
-/*
  * ExecSkylineIsDominating
  *
  *	FIXME
@@ -241,6 +181,66 @@ ExecSkylineIsDominating(SkylineState *node, TupleTableSlot *inner_slot, TupleTab
 		return SYKLINE_CMP_SECOND_DOMINATES;
 
 	return SKYLINE_CMP_INCOMPARABLE;
+}
+
+/*
+ * ExecSkylineRank
+ *
+ *  FIXME
+ *  HACK: this needs to depand on the stats of the columns in question
+ */
+#define RANK_EPSILON	(1e-6)
+#define RANK_BOUND_MIN	(0+RANK_EPSILON)
+#define RANK_BOUND_MAX	(1-RANK_EPSILON)
+
+double
+ExecSkylineRank(SkylineState *node, TupleTableSlot *slot)
+{
+	Skyline    *sl = (Skyline *) node->ss.ps.plan;
+	double		res = 0.0;
+	int			i;
+
+	for (i = 0; i < sl->numCols; ++i)
+	{
+		Datum		datum;
+		double		value;
+		bool		isnull;
+		int			attnum;
+		int			sk_flags;
+
+		/* DIFF does not count for ranking */
+		if (sl->skylineOfDir[i] == SKYLINEOF_DIFF)
+			continue;
+
+		attnum =  sl->skylineColIdx[i];
+		sk_flags = node->compareFlags[i];
+
+		datum = slot_getattr(slot, attnum, &isnull);
+
+		if (isnull)
+		{
+			if (sk_flags & SK_BT_NULLS_FIRST)
+				value = RANK_BOUND_MIN;
+			else
+				value = RANK_BOUND_MAX;
+		}
+		else
+		{
+			value = DatumGetFloat8(datum);
+
+			if (value <= RANK_BOUND_MIN)
+				value = RANK_BOUND_MIN;
+			else if (value >= RANK_BOUND_MAX)
+				value = RANK_BOUND_MAX;
+		}
+
+		if (sk_flags & SK_BT_DESC)
+			value = RANK_BOUND_MAX - value;
+
+		res -= log(value);
+	}
+
+	return res;
 }
 
 /*

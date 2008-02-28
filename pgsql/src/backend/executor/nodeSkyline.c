@@ -226,7 +226,9 @@ ExecSkylineRank(SkylineState *node, TupleTableSlot *slot)
 		}
 		else
 		{
+			/* FIXME: coerce type if needed */
 			value = DatumGetFloat8(datum);
+			/* FIXME: scale value int stats bounds */
 
 			if (value <= RANK_BOUND_MIN)
 				value = RANK_BOUND_MIN;

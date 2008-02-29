@@ -36,7 +36,7 @@ UPLOADDIR=./output
 REVISION := $(shell svn info | perl -n -e 'if ($$_ =~ m/^Revision:\s*(\d+)/) { print "$$1"; }')
 
 # tools options
-TEXIFYFLAGS=--tex-option="-c-style-errors -halt-on-error"
+TEXIFYFLAGS=--src-specials --tex-option="-c-style-errors -halt-on-error"
 
 # [NOTE] this is first, because we want `make` just build the draft
 draft: prereq 00-thesis-draft.dvi

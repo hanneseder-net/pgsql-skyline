@@ -365,7 +365,7 @@ extensions of B-trees and R$^*$-trees.
 \chapter{Implementation}
 \section{SQL Extension}
 
-\citet{Borzsonyi2001} proposed the following extension to the SQL's \inlinesql{SELECT} statement with an optional \inlinesql{SKYLINE OF} clause is proposed:
+\citet{Borzsonyi2001} proposed the following extension to the SQL's \inlinesql{SELECT} statement with an optional \inlinesql{SKYLINE OF}:
 \begin{sql}
 SELECT ... FROM ... WHERE ... \\
 GROUP BY ... HAVING ...       \\
@@ -377,7 +377,16 @@ We extended the above syntax a bit further, so we additionally provide syntax to
 \begin{itemize}
 \item treatment of NULL values (\inlinesql{NULLS FIRST} and \inlinesql{NULLS LAST})
 \item usage of other order functions than $<$ and $>$ (\inlinesql{USING \emph{Op}}) and
-\item operational aspects of skyline computation, such as \emph{algorithm} (BNL, SFS, \ldots), \emph{tuple window size and policy}, and more.
+\item operational aspects of skyline computation, such as 
+
+\begin{itemize}
+\item \emph{method} (BNL, SFS, MNL, PRESORT (2 dim only))
+\item \emph{tuple window size} in terms of memory and/or number of slots
+\item \emph{tuple window policy} (append, prepend, ranked/entropy)
+\item \emph{usage of indizies} (\texttt{noindex})
+\item \emph{usage of elimination filter (EF)}
+\end{itemize}
+
 \end{itemize}
 
 To describe the syntax we use 
@@ -608,7 +617,7 @@ Turing development it was very helpful to run the PostgreSQL backend in \texttt{
 \section{Experiments}
 
 Although we continously merging \texttt{CSV HEAD} of \fixme{PostgreSQL source repository}{ref} 
-into our main development branch, we decided to base this paper on branch \texttt{REL8\_3\_0}, 
+into our main development branch, we decided to base this paper on branch \texttt{REL8\_3\_STABLE}, 
 in order to have a more stable and reproducibly setting, i.e. all experiments in this paper are based on version 8.3.0 of PostgreSQL with our patch for the skyline operator applied.
 
 

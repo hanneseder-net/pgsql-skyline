@@ -912,6 +912,7 @@ grouping_planner(PlannerInfo *root, double tuple_fraction)
 		group_pathkeys = root->group_pathkeys;
 		skyline_pathkeys = root->skyline_pathkeys;
 		/* on "SKYLINE OF ... WITH NOINDEX" drop skyline_pathkeys */
+		if (parse->skylineClause != NULL)
 		{
 			int		no_index;
 			if (skyline_option_get_int(((SkylineClause *) parse->skylineClause)->skyline_of_options, "noindex", &no_index))

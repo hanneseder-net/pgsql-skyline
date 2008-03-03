@@ -474,16 +474,23 @@ typedef struct Skyline
 	Plan		plan;
 	bool		skyline_distinct;
 	int			numCols;
+	int			flags;
 	AttrNumber *skylineColIdx;
 	Oid		   *skylineOfOperators;
 	bool	   *nullsFirst;
 	int		   *skylineOfDir;
 	int		   *colFlags;
 	float8	   *colMin;
-	float8	   *colRange;
+	float8	   *colScale;
+	Oid		   *colCoerceFunc;
 	List	   *skyline_of_options;
 	SkylineMethod skyline_method;
 } Skyline;
+
+#define SKYLINE_RANK_EPSILON	(1e-6)
+#define SKYLINE_RANK_BOUND_MIN	(0+SKYLINE_RANK_EPSILON)
+#define SKYLINE_RANK_BOUND_MAX	(1-SKYLINE_RANK_EPSILON)
+#define SKYLINE_RANK_RANGE		(SKYLINE_RANK_BOUND_MAX-SKYLINE_RANK_BOUND_MIN)
 
 /* ----------------
  *		elimination filter node

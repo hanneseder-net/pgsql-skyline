@@ -1927,7 +1927,6 @@ _equalSkylineOf(SkylineOf *a, SkylineOf *b)
 	COMPARE_SCALAR_FIELD(skylineop);
 	COMPARE_SCALAR_FIELD(nulls_first);
 	COMPARE_SCALAR_FIELD(skylineof_dir);
-	COMPARE_SCALAR_FIELD(flags);
 
 	return true;
 }

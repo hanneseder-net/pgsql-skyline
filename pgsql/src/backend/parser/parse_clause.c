@@ -1846,11 +1846,6 @@ addTargetToSkylineList(ParseState *pstate, TargetEntry *tle,
 		skylineof->restype = restype;
 		skylineof->skylineop = skylineop;
 		skylineof->skylineof_dir = skylineof_dir;
-		skylineof->flags = SKYLINE_FLAGS_NONE;
-		if (restype == FLOAT8OID)
-			skylineof->flags |= SKYLINE_FLAGS_FLOAT8 | SKYLINE_FLAGS_COERCE;
-		if (can_coerce_type(1, &restype, &targetType, COERCION_EXPLICIT))
-			skylineof->flags |=  SKYLINE_FLAGS_COERCE;
 
 		switch (skylineof_nulls)
 		{

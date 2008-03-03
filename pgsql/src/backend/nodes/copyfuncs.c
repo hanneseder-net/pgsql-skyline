@@ -571,13 +571,15 @@ _copySkyline(Skyline *from)
 
 	COPY_SCALAR_FIELD(skyline_distinct);
 	COPY_SCALAR_FIELD(numCols);
+	COPY_SCALAR_FIELD(flags);
 	COPY_POINTER_FIELD(skylineColIdx, from->numCols * sizeof(AttrNumber));
 	COPY_POINTER_FIELD(skylineOfOperators, from->numCols * sizeof(Oid));
 	COPY_POINTER_FIELD(nullsFirst, from->numCols * sizeof(bool));
 	COPY_POINTER_FIELD(skylineOfDir, from->numCols * sizeof(int));
 	COPY_POINTER_FIELD(colFlags, from->numCols * sizeof(int));
 	COPY_POINTER_FIELD(colMin, from->numCols * sizeof(float8));
-	COPY_POINTER_FIELD(colRange, from->numCols * sizeof(float8));
+	COPY_POINTER_FIELD(colScale, from->numCols * sizeof(float8));
+	COPY_POINTER_FIELD(colCoerceFunc, from->numCols * sizeof(Oid));
 	COPY_NODE_FIELD(skyline_of_options);
 	COPY_SCALAR_FIELD(skyline_method);
 
@@ -1619,7 +1621,6 @@ _copySkylineOf(SkylineOf *from)
 	COPY_SCALAR_FIELD(skylineop);
 	COPY_SCALAR_FIELD(nulls_first);
 	COPY_SCALAR_FIELD(skylineof_dir);
-	COPY_SCALAR_FIELD(flags);
 
 	return newnode;
 }

@@ -28,34 +28,29 @@
  *	FIXME
  */
 static void
-ExecElimFilterInitTupleWindow(SkylineState *node, Skyline *sl)
+ExecElimFilterInitTupleWindow(SkylineState *state, Skyline *node)
 {
 	int			window_size = BLCKSZ / 1024;	/* allocate a page */
 	int			window_slots = -1;
 	TupleWindowPolicy	window_policy = TUP_WIN_POLICY_APPEND;
 
-	Assert(node != NULL);
+	Assert(state != NULL);
 
-	if (node->window != NULL)
+	if (state->window != NULL)
 	{
-		tuplewindow_end(node->window);
-		node->window = NULL;
+		tuplewindow_end(state->window);
+		state->window = NULL;
 	}
 
 	/*
 	 * Can be overrided by an option, otherwise use entire
 	 * work_mem.
 	 */
-	skyline_option_get_int(sl->skyline_of_options, "efwindow", &window_size) ||
-		skyline_option_get_int(sl->skyline_of_options, "efwindowsize", &window_size);
+	skyline_option_get_int(node->skyline_of_options, "efwindow", &window_size) ||
+		skyline_option_get_int(node->skyline_of_options, "efwindowsize", &window_size);
 
-	skyline_option_get_int(sl->skyline_of_options, "efslots", &window_slots) ||
-		skyline_option_get_int(sl->skyline_of_options, "efwindowslots", &window_slots);
-
-	skyline_option_get_window_policy(sl->skyline_of_options, "efwindowpolicy", &window_policy);
-
-	if (window_policy == TUP_WIN_POLICY_RANKED)
-		node->flags |= SL_FLAGS_RANKED;
+	skyline_option_get_int(node->skyline_of_options, "efslots", &window_slots) ||
+		skyline_option_get_int(node->skyline_of_options, "efwindowslots", &window_slots);
 
 	if (window_slots == 0)
 	{
@@ -66,10 +61,10 @@ ExecElimFilterInitTupleWindow(SkylineState *node, Skyline *sl)
 		elog(ERROR, "tuple window must have at least one slot");
 	}
 
-	node->window = tuplewindow_begin(window_size, window_slots, window_policy);
+	state->window = tuplewindow_begin(window_size, window_slots, state->window_policy);
 
-	node->windowsize = window_size;
-	node->windowslots = window_slots;
+	state->windowsize = window_size;
+	state->windowslots = window_slots;
 }
 
 /*
@@ -87,6 +82,23 @@ ExecInitElimFilter(ElimFilter *node, EState *estate, int eflags)
 	state->ss.ps.state = estate;
 	state->status = SS_INIT;
 	state->flags = SL_FLAGS_NONE;
+
+	skyline_option_get_window_policy(node->skyline_of_options, "efwindowpolicy", &state->window_policy);
+
+	/*
+	 * If we do not have stats for at least one column, fall back from
+	 * window policy "ranked" back to "append".
+	 */
+	if (state->window_policy == TUP_WIN_POLICY_RANKED && !(node->flags & SKYLINE_FLAGS_HAVE_STATS))
+	{
+		state->window_policy = TUP_WIN_POLICY_APPEND;
+		elog(INFO, "no stats for skyline expressions available, falling back to window policy \"append\"");
+	}
+
+	if (state->window_policy == TUP_WIN_POLICY_RANKED)
+		node->flags |= SL_FLAGS_RANKED;
+
+	ExecElimFilterInitTupleWindow(state, node);
 
 #define ELIMFILTER_NSLOTS 2
 
@@ -119,8 +131,7 @@ ExecInitElimFilter(ElimFilter *node, EState *estate, int eflags)
 	ExecAssignProjectionInfo(&state->ss.ps, NULL);
 	
 	ExecSkylineCacheCompareFunctionInfo(state, node);
-
-	ExecElimFilterInitTupleWindow(state, node);
+	ExecSkylineCacheCoerceFunctionInfo(state, node);
 
 	return state;
 }
@@ -142,18 +153,18 @@ ExecCountSlotsElimFilter(ElimFilter *node)
  *	FIXME
  */
 void
-ExecEndElimFilter(ElimFilterState *node)
+ExecEndElimFilter(ElimFilterState *state)
 {
 	/*
 	 * clean out the tuple table
 	 */
-	ExecClearTuple(node->ss.ss_ScanTupleSlot);
-	ExecClearTuple(node->ss.ps.ps_ResultTupleSlot);
+	ExecClearTuple(state->ss.ss_ScanTupleSlot);
+	ExecClearTuple(state->ss.ps.ps_ResultTupleSlot);
 
 	/*
 	 * shut down the subplan
 	 */
-	ExecEndNode(outerPlanState(node));
+	ExecEndNode(outerPlanState(state));
 }
 
 /*
@@ -162,21 +173,21 @@ ExecEndElimFilter(ElimFilterState *node)
  *	FIXME
  */
 void
-ExecReScanElimFilter(ElimFilterState *node, ExprContext *exprCtxt)
+ExecReScanElimFilter(ElimFilterState *state, ExprContext *exprCtxt)
 {
 	/* FIXME: code coverage = 0 !!! */
 
-	node->status = SS_INIT;
+	state->status = SS_INIT;
 
 	/* must clear first tuple */
-	ExecClearTuple(node->ss.ss_ScanTupleSlot);
+	ExecClearTuple(state->ss.ss_ScanTupleSlot);
 
-	if (((PlanState *) node)->lefttree &&
-		((PlanState *) node)->lefttree->chgParam == NULL)
-		ExecReScan(((PlanState *) node)->lefttree, exprCtxt);
+	if (((PlanState *) state)->lefttree &&
+		((PlanState *) state)->lefttree->chgParam == NULL)
+		ExecReScan(((PlanState *) state)->lefttree, exprCtxt);
 
 	/* reinit tuple window */
-	ExecElimFilterInitTupleWindow(node, (Skyline *) node->ss.ps.plan);
+	ExecElimFilterInitTupleWindow(state, (Skyline *) state->ss.ps.plan);
 
 	/* FIXME: there is maybe more that need to be done here */
 }
@@ -187,33 +198,33 @@ ExecReScanElimFilter(ElimFilterState *node, ExprContext *exprCtxt)
  *	FIXME
  */
 TupleTableSlot *
-ExecElimFilter(ElimFilterState *node)
+ExecElimFilter(ElimFilterState *state)
 {
-	TupleWindowState   *window = node->window;
-	TupleTableSlot	   *inner_slot = node->ss.ps.ps_ResultTupleSlot;
+	TupleWindowState   *window = state->window;
+	TupleTableSlot	   *inner_slot = state->ss.ps.ps_ResultTupleSlot;
 	TupleTableSlot	   *slot;
-	ElimFilter		   *plan = (ElimFilter *) node->ss.ps.plan;
+	ElimFilter		   *plan = (ElimFilter *) state->ss.ps.plan;
 
 	for (;;)
 	{
-		switch (node->status)
+		switch (state->status)
 		{
 			case SS_INIT:
-				node->status = SS_PROCESS;
+				state->status = SS_PROCESS;
 				break;
 
 			case SS_PROCESS:
-				slot = ExecProcNode(outerPlanState(node));
+				slot = ExecProcNode(outerPlanState(state));
 
 				if (TupIsNull(slot))
 				{
-					node->status = SS_DONE;
+					state->status = SS_DONE;
 					return NULL;
 				}
 
 				tuplewindow_rewind(window);
-				if (node->flags & SL_FLAGS_RANKED)
-					tuplewindow_setinsertrank(window, ExecSkylineRank(node, slot));
+				if (state->flags & SL_FLAGS_RANKED)
+					tuplewindow_setinsertrank(window, ExecSkylineRank(state, slot));
 				for (;;)
 				{
 					int cmp;
@@ -227,7 +238,7 @@ ExecElimFilter(ElimFilterState *node)
 
 					tuplewindow_gettupleslot(window, inner_slot, false);
 
-					cmp = ExecSkylineIsDominating(node, inner_slot, slot);
+					cmp = ExecSkylineIsDominating(state, inner_slot, slot);
 
 					/*
 					 * The tuple in slot is dominated by a inner_slot in

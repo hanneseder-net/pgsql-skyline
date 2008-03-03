@@ -21,6 +21,7 @@
 
 #include "access/skey.h"
 #include "access/printtup.h"
+#include "catalog/pg_type.h"
 #include "nodes/makefuncs.h"
 #include "optimizer/clauses.h"
 #include "optimizer/cost.h"
@@ -31,6 +32,7 @@
 #include "optimizer/tlist.h"
 #include "optimizer/var.h"
 #include "parser/parse_clause.h"
+#include "parser/parse_coerce.h"
 #include "parser/parse_expr.h"
 #include "parser/parsetree.h"
 #include "utils/lsyscache.h"
@@ -2737,6 +2739,7 @@ make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause, SkylineMet
 	int			numskylinecols;
 	SkylineClause *sc = (SkylineClause *) skyline_clause;
 	List	   *skylinecls = sc->skyline_of_list;
+	bool		have_stats = false;
 
 	plan->targetlist = outertree->targetlist;
 	plan->qual = NIL;
@@ -2745,28 +2748,37 @@ make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause, SkylineMet
 
 	numskylinecols = list_length(skylinecls);
 
+	node->flags = 0;
 	node->skylineColIdx = (AttrNumber *) palloc(numskylinecols * sizeof(AttrNumber));
 	node->skylineOfOperators = (Oid *) palloc(numskylinecols * sizeof(Oid));
 	node->nullsFirst = (bool *) palloc(numskylinecols * sizeof(bool));
 	node->skylineOfDir = (int *) palloc(numskylinecols * sizeof(int));
 	node->colFlags = (int *) palloc(numskylinecols * sizeof(int));
 	node->colMin = (float8 *) palloc(numskylinecols * sizeof(float8));
-	node->colRange = (float8 *) palloc(numskylinecols * sizeof(float8));
+	node->colScale = (float8 *) palloc(numskylinecols * sizeof(float8));
+	node->colCoerceFunc = (Oid *) palloc(numskylinecols * sizeof(Oid));
 
 	numskylinecols = 0;
 	foreach(l, skylinecls)
 	{
 		SkylineOf		   *skylineof = (SkylineOf *) lfirst(l);
 		TargetEntry		   *tle = get_skylineclause_tle(skylineof, sub_tlist);
-		VariableStatData	vardata;
+		Oid					coerce_func = InvalidOid;
+		CoercionPathType	pathtype = find_coercion_pathway(FLOAT8OID, skylineof->restype, COERCION_IMPLICIT, &coerce_func);
 
 		node->skylineColIdx[numskylinecols] = tle->resno;
 		node->skylineOfOperators[numskylinecols] = skylineof->skylineop;
 		node->nullsFirst[numskylinecols] = skylineof->nulls_first;
 		node->skylineOfDir[numskylinecols] = (int) skylineof->skylineof_dir;
+		node->colFlags[numskylinecols] = SKYLINE_FLAGS_NONE;
+		node->colCoerceFunc[numskylinecols] = InvalidOid;
 	
-		if (skylineof->flags & SKYLINE_FLAGS_COERCE)
+		if (pathtype != COERCION_PATH_NONE)
 		{
+			VariableStatData	vardata;
+
+			node->colFlags[numskylinecols] |= SKYLINE_FLAGS_COERCE;
+
 			/* examine stats */
 			examine_variable(root, (Node *)tle->expr, 0, &vardata);
 			if (vardata.statsTuple != NULL)
@@ -2779,17 +2791,51 @@ make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause, SkylineMet
 				{
 					char	   *min_value;
 					char	   *max_value;
+					double		min_as_double;
+					double		max_as_double;
+					double		range;
 
+					/* for debugging */
 					min_value = datum_to_text(min, false, skylineof->restype);
 					max_value = datum_to_text(max, false, skylineof->restype);
-
 					elog(DEBUG1, "stats for column '%s': [%s,%s]", (tle->resname ? tle->resname : "?"), min_value, max_value);
-
 					pfree(min_value);
 					pfree(max_value);
 
-					skylineof->flags |= SKYLINE_FLAGS_HAVE_STATS;
+					switch (pathtype)
+					{
+					case COERCION_PATH_FUNC:		/* apply the specified coercion function */
+						min = OidFunctionCall1(coerce_func, min);
+						max = OidFunctionCall1(coerce_func, max);
 
+						node->colCoerceFunc[numskylinecols] = coerce_func;
+						node->colFlags[numskylinecols] |= SKYLINE_FLAGS_COERCE_FUNC;
+						/* fall throught */
+
+					case COERCION_PATH_RELABELTYPE:	/* binary-compatible cast, no function */
+						min_as_double = DatumGetFloat8(min);
+						max_as_double = DatumGetFloat8(max);
+
+						range = max_as_double - min_as_double;
+
+						if (range < SKYLINE_RANK_EPSILON)
+							range = SKYLINE_RANK_EPSILON;
+
+						node->colMin[numskylinecols] = min_as_double - SKYLINE_RANK_BOUND_MIN;
+						node->colScale[numskylinecols] = SKYLINE_RANK_RANGE / range;
+
+						node->colFlags[numskylinecols] |= SKYLINE_FLAGS_HAVE_STATS;
+
+						have_stats = true;
+						break;
+						
+					case COERCION_PATH_ARRAYCOERCE:	/* need an ArrayCoerceExpr node */
+					case COERCION_PATH_COERCEVIAIO:	/* need a CoerceViaIO node */
+					case COERCION_PATH_NONE:		/* failed to find any coercion pathway */
+					default:
+						/* do nothing */
+						break;
+					}
 				}
 			}
 			else
@@ -2797,18 +2843,20 @@ make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause, SkylineMet
 			ReleaseVariableStats(vardata);
 		}
 
-		if (!(skylineof->flags & SKYLINE_FLAGS_HAVE_STATS))
+		if (!(node->colFlags[numskylinecols] & SKYLINE_FLAGS_HAVE_STATS))
 		{
 			/* just place some sane values there */
-			/* FIXME: we could try to estimate stats */
-			node->colMin[numskylinecols] = 0.0;
-			node->colRange[numskylinecols] = 1.0;
+			node->colMin[numskylinecols] = 0.0 - SKYLINE_RANK_BOUND_MIN;
+			node->colScale[numskylinecols] = SKYLINE_RANK_RANGE;
 		}
 
 		numskylinecols++;
 	}
 
 	node->numCols = numskylinecols;
+
+	if (have_stats)
+		node->flags |= SKYLINE_FLAGS_HAVE_STATS;
 
 	/* only care about copying size */
 	copy_plan_costsize(plan, outertree);

@@ -728,9 +728,9 @@ typedef struct SkylineClause
  * FIXME
  */
 #define SKYLINE_FLAGS_NONE			0
-#define SKYLINE_FLAGS_FLOAT8		1
-#define SKYLINE_FLAGS_COERCE		2
-#define SKYLINE_FLAGS_HAVE_STATS	4
+#define SKYLINE_FLAGS_COERCE		1
+#define SKYLINE_FLAGS_HAVE_STATS	2
+#define SKYLINE_FLAGS_COERCE_FUNC	4
 
 typedef struct SkylineOf
 {
@@ -740,7 +740,6 @@ typedef struct SkylineOf
 	Oid				skylineop;		/* the ordering operator ('<' op) */
 	bool			nulls_first;	/* do NULLs come before normal values? */
 	SkylineOfDir	skylineof_dir;
-	int				flags;			/* see SKYLINE_FLAGS_* */
 } SkylineOf;
 
 /*

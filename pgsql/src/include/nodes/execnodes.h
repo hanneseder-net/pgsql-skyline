@@ -1374,6 +1374,7 @@ typedef struct SkylineState
 	int					flags;
 	FmgrInfo		   *compareOpFn;		/* compare funtions */
 	int				   *compareFlags;
+	FmgrInfo		   *coerceFn;
 	int64				sl_pos;				/* for MNL */
 	Tuplestorestate	   *tuplestorestate;	/* used for 1d distinct */
 	TupleWindowState   *window;				/* for BNL and SFS */

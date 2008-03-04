@@ -1,4 +1,4 @@
-AC_INIT([randdataset],[1.0.1],[Hannes@HannesEder.net])
+AC_INIT([randdataset],[1.1.0],[Hannes@HannesEder.net])
 AC_PREREQ([2.60])
 AC_CONFIG_SRCDIR([src/randdataset.c])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])

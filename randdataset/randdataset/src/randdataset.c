@@ -1,11 +1,11 @@
 /*
- *	sldg.c
+ *	randdataset.c
  *
  *	DESCRIPTION:
  *		Random dataset generator for SKYLINE operator evaluation.
  *
  *	AUTHOR:
- *		based on the work by the authors of based [Borzsonyi2001]
+ *		based on the work by the authors of [Borzsonyi2001]
  *		modified by Hannes Eder <Hannes@HannesEder.net>
  *		thanks to Donald Kossmann for providing the source code
  *		of the original implementation
@@ -72,6 +72,8 @@ static void usage();
 
 static int id = 0;
 static int opt_id = 0;
+static int opt_use_seed = 0;
+static int opt_seed = 0;
 static int opt_pad = 0;
 static int opt_copy = 0;
 static int opt_create = 0;
@@ -151,7 +153,9 @@ main(int argc, char **argv)
 			break;
 
 		case 's':
-			srand(atoi(optarg));
+			opt_use_seed = 1;
+			opt_seed = atoi(optarg);
+			srand(opt_seed);
 			break;
 
 		case 'h':
@@ -214,10 +218,21 @@ main(int argc, char **argv)
 		}
 		else
 		{
+			char buffer[32];
+
+			snprintf(table_name, sizeof(table_name), "%c%dd%d", dist, dim, count);
+			
+			if (opt_use_seed)
+			{
+				snprintf(buffer, sizeof(buffer), "s%d", opt_seed);
+				strncat(table_name, buffer, sizeof(table_name));
+			}
+
 			if (opt_pad)
-				snprintf(table_name, sizeof(table_name), "%c%dd%dp%d", dist, dim, count, opt_pad);
-			else
-				snprintf(table_name, sizeof(table_name), "%c%dd%d", dist, dim, count);
+			{
+				snprintf(buffer, sizeof(buffer), "p%d", opt_pad);
+				strncat(table_name, buffer, sizeof(table_name));
+			}
 		}
 
 		fprintf(stdout, "DROP TABLE IF EXISTS \"%s\";\n", table_name);
@@ -628,7 +643,7 @@ usage()
 {
 	fprintf(stderr, 
 "\
-Test data generator for Skyline Operator Evaluation\n\
+Test Data Generator for Skyline Operator Evaluation\n\
 usage: %s (-i|-c|-a) -d DIM -n COUNT [-s SEED] [-p] [-S] [-h|-?]\n\
 \n\
 Options:\n\

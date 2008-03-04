@@ -208,32 +208,32 @@ main(int argc, char **argv)
 	padding_init();
 	stats_init(dim);
 
+	if (user_table_name)
+	{
+		strncpy(table_name, user_table_name, sizeof(table_name));
+	}
+	else
+	{
+		char buffer[32];
+
+		snprintf(table_name, sizeof(table_name), "%c%dd%d", dist, dim, count);
+		
+		if (opt_use_seed)
+		{
+			snprintf(buffer, sizeof(buffer), "s%d", opt_seed);
+			strncat(table_name, buffer, sizeof(table_name));
+		}
+
+		if (opt_pad)
+		{
+			snprintf(buffer, sizeof(buffer), "p%d", opt_pad);
+			strncat(table_name, buffer, sizeof(table_name));
+		}
+	}
+
 	if (opt_create)
 	{
 		int		i;
-
-		if (user_table_name)
-		{
-			strncpy(table_name, user_table_name, sizeof(table_name));
-		}
-		else
-		{
-			char buffer[32];
-
-			snprintf(table_name, sizeof(table_name), "%c%dd%d", dist, dim, count);
-			
-			if (opt_use_seed)
-			{
-				snprintf(buffer, sizeof(buffer), "s%d", opt_seed);
-				strncat(table_name, buffer, sizeof(table_name));
-			}
-
-			if (opt_pad)
-			{
-				snprintf(buffer, sizeof(buffer), "p%d", opt_pad);
-				strncat(table_name, buffer, sizeof(table_name));
-			}
-		}
 
 		fprintf(stdout, "DROP TABLE IF EXISTS \"%s\";\n", table_name);
 		fprintf(stdout, "CREATE TABLE \"%s\" (", table_name);

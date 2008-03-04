@@ -347,8 +347,8 @@ ExecSkylineInitTupleWindow(SkylineState *state, Skyline *node)
 
 	Assert(state != NULL);
 
-	if (state->skyline_method == SM_BLOCKNESTEDLOOP ||
-		state->skyline_method == SM_SFS)
+	if (state->skyline_method == SM_BLOCKNESTEDLOOP
+		|| state->skyline_method == SM_SFS)
 	{
 		if (state->window != NULL)
 		{

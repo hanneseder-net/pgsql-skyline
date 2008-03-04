@@ -2887,12 +2887,11 @@ make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause, SkylineMet
 ElimFilter *
 make_elimfilter(PlannerInfo *root, Plan *lefttree, Node *skyline_clause, int limit_tuples)
 {
-	/* FIXME: HACK */
+	ElimFilter *node = (ElimFilter *) make_skyline(root, lefttree, skyline_clause, SM_ELIMFILTER, limit_tuples);
 	/*
-	 * As the Elimination Filter scans over the table just once as 
-	 * SM_2_DIM_PRESORT, we use this method for cost estimation
+	 * This is bit of a hack, we change the node type for T_Skyline to 
+	 * T_ElimFilter.
 	 */
-	ElimFilter *node = (ElimFilter *) make_skyline(root, lefttree, skyline_clause, SM_2DIM_PRESORT, limit_tuples);
 	node->plan.type = T_ElimFilter;
 
 	return node;

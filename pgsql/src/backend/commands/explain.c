@@ -69,9 +69,9 @@ static void show_upper_qual(List *qual, const char *qlabel, Plan *plan,
 static void show_sort_keys(Plan *sortplan, int nkeys, AttrNumber *keycols,
 			   const char *qlabel,
 			   StringInfo str, int indent, ExplainState *es);
-static void show_skyline_details(Skyline *skyline,
+static void show_skyline_details(Skyline *skyline, char *nodename,
 			   StringInfo str, int indent, ExplainState *es);
-static void show_skyline_info(SkylineState *skylinestate,
+static void show_skyline_info(SkylineState *skylinestate, char *nodename,
 			   StringInfo str, int indent, ExplainState *es);
 static void show_sort_info(SortState *sortstate,
 			   StringInfo str, int indent, ExplainState *es);
@@ -865,9 +865,20 @@ explain_outNode(StringInfo str,
 						   ((Skyline *) plan)->skylineColIdx,
 						   "Skyline Attr",
 						   str, indent, es);
-			show_skyline_details((Skyline *) plan,
+			show_skyline_details((Skyline *) plan, "Skyline",
 								 str, indent, es);
-			show_skyline_info((SkylineState *) planstate,
+			show_skyline_info((SkylineState *) planstate, "Skyline",
+							  str, indent, es);
+			break;
+		case T_ElimFilter:
+			show_sort_keys(plan,
+						   ((Skyline *) plan)->numCols,
+						   ((Skyline *) plan)->skylineColIdx,
+						   "Elim Filter Attr",
+						   str, indent, es);
+			show_skyline_details((Skyline *) plan, "Elim Filter",
+								 str, indent, es);
+			show_skyline_info((SkylineState *) planstate, "Elim Filter",
 							  str, indent, es);
 			break;
 		case T_Sort:
@@ -1188,7 +1199,7 @@ show_sort_keys(Plan *sortplan, int nkeys, AttrNumber *keycols,
  * Show the method details for a Skyline node.
  */
 static void
-show_skyline_details(Skyline *skyline,
+show_skyline_details(Skyline *skyline, char *nodename,
 					 StringInfo str, int indent, ExplainState *es)
 {
 	int			i;
@@ -1196,7 +1207,8 @@ show_skyline_details(Skyline *skyline,
 	for (i = 0; i < indent; i++)
 		appendStringInfo(str, "  ");
 
-	appendStringInfo(str, "  Skyline Method: %s%s %d dim\n",
+	appendStringInfo(str, "  %s Method: %s%s %d dim\n",
+		nodename,
 		skyline_method_name(skyline->skyline_method), 
 		skyline->skyline_distinct ? " distinct" : "",
 		skyline->numCols);
@@ -1206,43 +1218,47 @@ show_skyline_details(Skyline *skyline,
  * If it's EXPLAIN ANALYZE, show skyline explain info for the skyline node
  */
 static void
-show_skyline_info(SkylineState *skylinestate,
+show_skyline_info(SkylineState *skylinestate, char *nodename,
 				  StringInfo str, int indent, ExplainState *es)
 {
-	Assert(IsA(skylinestate, SkylineState));
+	Assert(IsA(skylinestate, SkylineState) || IsA(skylinestate, ElimFilterState));
 	if (es->printAnalyze && skylinestate->status == SS_DONE)
 	{
 		int			i;
 		
-		if (skylinestate->skyline_method == SM_BLOCKNESTEDLOOP ||
-			skylinestate->skyline_method == SM_SFS)
+		if (skylinestate->skyline_method == SM_BLOCKNESTEDLOOP
+			|| skylinestate->skyline_method == SM_SFS
+			|| skylinestate->skyline_method == SM_ELIMFILTER)
 		{
 			for (i = 0; i < indent; i++)
 				appendStringInfo(str, "  ");
 			
-			appendStringInfo(str, "  Skyline Stats: passes=%lld", skylinestate->pass);
+			appendStringInfo(str, "  %s Stats: passes=%lld", 
+							 nodename, 
+							 skylinestate->pass);
 			appendStringInfo(str, " rows=%s", skylinestate->pass_info->data);
 			appendStringInfo(str, "\n");
 
 			for (i = 0; i < indent; i++)
 				appendStringInfo(str, "  ");
 
-			appendStringInfo(str, "  Skyline Window:");
+			appendStringInfo(str, "  %s Window:", nodename);
 			if (skylinestate->windowsize != -1)
 				appendStringInfo(str, " size=%dk", skylinestate->windowsize);
 			if (skylinestate->windowslots != -1)
 				appendStringInfo(str, " slots=%d", skylinestate->windowslots);
-			appendStringInfo(str, " policy=%s", skyline_window_policy_name(skylinestate->window_policy));
+			appendStringInfo(str, " policy=%s", 
+							 skyline_window_policy_name(skylinestate->window_policy));
 			appendStringInfo(str, "\n");
 		}
 
 		for (i = 0; i < indent; i++)
 			appendStringInfo(str, "  ");
 
-		appendStringInfo(str, "  Skyline Cmps: tuples=%lld fields=%lld\n", 
+		appendStringInfo(str, "  %s Cmps: tuples=%lld fields=%lld\n",
+						 nodename,
 						 skylinestate->cmps_tuples,
 						 skylinestate->cmps_fields);
-		
 	}
 }
 

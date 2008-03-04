@@ -466,7 +466,8 @@ typedef enum SkylineMethod
 	SM_2DIM_PRESORT,
 	SM_MATERIALIZEDNESTEDLOOP,
 	SM_BLOCKNESTEDLOOP,
-	SM_SFS
+	SM_SFS,
+	SM_ELIMFILTER
 } SkylineMethod;
 
 typedef struct Skyline

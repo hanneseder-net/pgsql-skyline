@@ -27,6 +27,11 @@ skyline_options[] = {
 	{ "efwindowpolicy"			, SOT_PARAM	, SM_UNKNOWN },
 	{ "efwindowsize"			, SOT_PARAM , SM_UNKNOWN },
 	{ "efwindowslots"			, SOT_PARAM , SM_UNKNOWN },
+/*
+ * "elimfilter" can not be selected as method on its own, it is the
+ * method used for elimination filter nodes.
+ */
+/*  { "elimfilter"				, SOT_METHOD, SM_ELIMFILTER }, */ 
 	{ "materializednestedloop"	, SOT_METHOD, SM_MATERIALIZEDNESTEDLOOP },
 	{ "mnl"						, SOT_METHOD, SM_MATERIALIZEDNESTEDLOOP },
 	{ "noindex"					, SOT_PARAM	, SM_UNKNOWN },
@@ -331,6 +336,14 @@ skyline_method_preserves_tuple_order(SkylineMethod skyline_method)
 
 			/* FIXME tuple order is only preserved if window policy "append" is used */
 			return false;
+		case SM_ELIMFILTER:
+			/* 
+			 * No matter what tuple window policy is used by the elimination
+			 * filter, the relative tuple order is preserved, as the tuple 
+			 * is read, compared against the tuples in then window, if it
+			 * survives this test, it is passed on.
+			 */
+			return true;
 		default:
 			/* 
 			 * We drop it on default.
@@ -364,6 +377,8 @@ skyline_method_name(SkylineMethod skyline_method)
 			return "bnl";
 		case SM_SFS:
 			return "sfs";
+		case SM_ELIMFILTER:
+			return "elimfilter";
 		default:
 			return "?";
 	}
@@ -404,6 +419,12 @@ skyline_methode_can_use_limit(SkylineMethod skyline_method)
 			/*
 			 * We can return a tuple if it is not dominated by one in the
 			 * tuple window.
+			 */
+			return true;
+
+		case SM_ELIMFILTER:
+			/*
+			 * FIXME: comment this?
 			 */
 			return true;
 

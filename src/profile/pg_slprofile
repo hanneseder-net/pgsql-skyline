@@ -1,11 +1,14 @@
-#!/bin/perl
+#!/bin/perl -w
 # -*- Perl -*-
 
+use strict;
 use FileHandle;
 use Getopt::Long;
 
-$program = "c:/pgsql/bin/psql";
-$args = "";
+my $program = "c:/pgsql/bin/psql";
+my $args = "";
+my $prefix;
+my $i;
 
 my $runid = "1";
 my $dim = 2;
@@ -16,8 +19,9 @@ my $window = undef;
 my $dist = "indep";
 my $rows = 1000;
 my $seed = 0;
+my $with = undef;
 
-$result = GetOptions("runid=s" => \$runid,
+my $result = GetOptions("runid=s" => \$runid,
 		     "dim|d=i" => \$dim,
 		     "maxdim|md=i" => \$maxdim,
 		     "method|m=s" => \$method,
@@ -25,7 +29,21 @@ $result = GetOptions("runid=s" => \$runid,
 		     "window=i" => \$window,
 		     "dist=s" => \$dist,
 		     "rows|vectors|n=i" => \$rows,
-		     "seed|s=i" => \$seed);
+		     "seed|s=i" => \$seed,
+		     "with=s" => \$with);
+
+
+
+my %nodenamet = ("Skyline" => "skyline",
+		 "Elim Filter" => "elimfilter",
+		 "Elimination Filter" => "elimfilter");
+
+sub nodename {
+    my $name = shift;
+    my $value = $nodenamet{$name};
+    return $value if (defined($value));
+    return $name;
+}
 
 # TODO: check $result
 
@@ -47,112 +65,131 @@ sub plog_cost {
   plog($name . ".total", $total);
 }
 
+sub print_comment {
+    print "#", join("\n#", split(/\n/, shift));
+}
 
-@skydim = ();
+print "#\n# RUN $runid\n#\n";
+
+my @skydim = ();
 for ($i=1; $i<=$dim; ++$i)
 {
     push @skydim, "d${i} min";
 }
 
-$query = "select * from rds${maxdim}d('${dist}', ${rows}, ${seed}) skyline of " . join(", ", @skydim) . " with ${method}" . (defined($windowslots) ? " slots=${windowslots}" : "") . (defined($window) ? " window=${window}" : "");
-$sql = "explain analyze $query;";
+my $query = "select * from rds${maxdim}d('${dist}', ${rows}, ${seed}) skyline of " . join(", ", @skydim) . " with ${method}" . (defined($windowslots) ? " slots=${windowslots}" : "") . (defined($window) ? " window=${window}" : "") . (defined($with) ? " $with" : "");
+my $sql = "explain analyze $query;";
 
-$res = `$program $args 2>&1 <<EOF
+my $res = `$program $args 2>&1 <<EOF
 $sql
 EOF`;
 
-$res =~ s/^\s+QUERY PLAN\s+-*//;
+$res =~ s/^\s+QUERY PLAN\s+-+\s+//;
 
 plog("query", "$query");
 
-if ($res =~ m/Skyline Method: ([^ ]+)\s*( distinct)?\s+([0-9]+) dim/m) {
-  plog("skyline.method", $1);
-  plog("skyline.distinct", $2 ne "" ? "1" : "0");
-  plog("skyline.dim", $3);
-}
 
-if ($res =~ m/Skyline Attr:\s*([^\r\n]+)/m) {
-  plog("skyline.attr", $1);
-}
+LOOP:
+{
+    redo LOOP if ($res =~ m/\G->/gmc);
+    redo LOOP if ($res =~ m/\G\s+/mgc);
+    redo LOOP if ($res =~ m/\G^\(\d+\s+rows\)\s*$/gmc);
 
-if ($res =~ m/Skyline\s*\(cost=([0-9.]+\.\.[0-9.]+)\s+rows=([0-9]+)\s+width=([0-9]+)\)\s+\(actual time=([0-9.]+\.\.[0-9.]+)\s+rows=([0-9]+)\s+loops=([0-9]+)\)/m) {
+    if ($res =~ m/\G(Skyline|Elim Filter) Method: ([^ ]+)\s*( distinct)?\s+([0-9]+) dim/mgc) {
+	$prefix = nodename($1);
+	plog("$prefix.method", $2);
+	plog("$prefix.distinct", defined($3) ? "1" : "0");
+	plog("$prefix.dim", $4);
+	redo LOOP;
+    }
 
-  plog_cost("skyline.est.cost", $1);
-  plog("skyline.est.rows", $2);
-  plog("skyline.width", $3);
-  plog_cost("skyline.cost", $4);
-  plog("skyline.rows", $5);
-#  plog("skyline.loops", $6);
-}
-    
-
-if ($res =~ m/Skyline Stats: passes=(\d+)(\s+window=(\d+)k)?(\s+slots=(\d+))?(\s+rows=(\d+(, \d+)*))?/m) {
-  plog("skyline.passes", $1);
-  plog("skyline.window", $3) if ($2 ne "");
-  plog("skyline.slots", $5) if ($4 ne "");
-  plog("skyline.passes.rows", $7) if ($6 ne "");
-}
-
-if ($res =~ m/Skyline Cmps: tuples=(\d+) fields=(\d+)/m) {
-    plog("skyline.cmps.tuples", $1);
-    plog("skyline.cmps.fields", $2);
-    plog("skyline.cmps.ratio", $2 / $1);
-}
-
-
-if ($res =~ m/Seq Scan on ([^ ]+)\s*\(cost=([0-9.]+\.\.[0-9.]+)\s+rows=([0-9]+)\s+width=([0-9]+)\)\s+\(actual time=([0-9.]+\.\.[0-9.]+)\s+rows=([0-9]+)\s+loops=([0-9]+)\)/m) {
-  $seq_table = $1;
-  $seq_rows = $6;
-
-  plog("seqscan.table", $1);
-  plog_cost("seqscan.cost", $5);
-  plog("seqscan.rows", $6);
-}
-
-if ($res =~ m/Sort\s+\(cost=([0-9.]+\.\.[0-9.]+)\s+rows=([0-9]+)\s+width=([0-9]+)\)\s+\(actual time=([0-9.]+\.\.[0-9.]+)\s+rows=([0-9]+)\s+loops=([0-9]+)\)/m) {
-  $sort_cost = $4;
-
-  plog_cost("sort.cost", $4);
-
-  if ($res =~ m/Sort Method:\s*([^\n\r]+)/m) {
-    $sort_method = "\"$1\"";
-
-    plog("sort.method", $1);
-  }
-}
-
-if ($res =~ m/Index Scan using ([^ ]+) on ([^ ]+)\s*\(cost=([0-9.]+\.\.[0-9.]+)\s+rows=([0-9]+)\s+width=([0-9]+)\)\s+\(actual time=([0-9.]+\.\.[0-9.]+)\s+rows=([0-9]+)\s+loops=([0-9]+)\)/m) {
-  $idx_name = $1;
-  $idx_table = $2;
-  $idx_cost = $6;
-  $idx_rows = $7;
-
-  plog("idxscan.idx", $1);
-  plog("idxscan.table", $2);
-  plog_cost("idxscan.cost", $6);
-  plog("idxscan.rows", $7);
-}
+    if ($res =~ m/\G(Skyline|Elim Filter) Attr:\s*([^\r\n]+)/mgc) {
+	$prefix = nodename($1);
+	plog("$prefix.attr", $2);
+	redo LOOP;
+    }
 
 #   ->  Function Scan on rds15d  (cost=0.00..260.00 rows=1000 width=124) (actual time=760.596..802.940 rows=100000 loops=1)
-if ($res =~ m/Function Scan on ([^ ]+)\s*\(cost=([0-9.]+\.\.[0-9.]+)\s+rows=([0-9]+)\s+width=([0-9]+)\)\s+\(actual time=([0-9.]+\.\.[0-9.]+)\s+rows=([0-9]+)\s+loops=([0-9]+)\)/m) {
+    if ($res =~ m/\GFunction Scan on ([^ ]+)\s*\(cost=([0-9.]+\.\.[0-9.]+)\s+rows=([0-9]+)\s+width=([0-9]+)\)\s+\(actual time=([0-9.]+\.\.[0-9.]+)\s+rows=([0-9]+)\s+loops=([0-9]+)\)/mgc) {
+	plog("funcscan.on", $1);
+	plog("funcscan.width", $4);
+	plog_cost("funcscan.cost", $5);
+	plog("funcscan.rows", $6);
+	redo LOOP;
+    }
 
-  plog("funcscan.on", $1);
-  plog("funcscan.width", $4);
-  plog_cost("funcscan.cost", $5);
-  plog("funcscan.rows", $6);
+    if ($res =~ m/\G(Skyline|Elim Filter) Stats: passes=(\d+)(\s+rows=(\d+(, \d+)*))?/mgc) {
+	$prefix = nodename($1);
+	plog("$prefix.passes", $2);
+	plog("$prefix.passes.rows", $4) if ($3 ne "");
+	redo LOOP;
+    }
+
+    if ($res =~ m/\G(Skyline|Elim Filter) Window:(\s+size=(\d+)k)?(\s+slots=(\d+))?(\s+policy=(\w+))?/mgc) {
+	$prefix = nodename($1);
+	plog("$prefix.windowsize", $3) if ($2 ne "");
+	plog("$prefix.windowslots", $5) if ($4 ne "");
+	plog("$prefix.windowpolicy", $7) if ($6 ne "");
+	redo LOOP;
+    }
+
+    if ($res =~ m/\G(Skyline|Elim Filter) Cmps: tuples=(\d+) fields=(\d+)/mgc) {
+	$prefix = nodename($1);
+	plog("$prefix.cmps.tuples", $2);
+	plog("$prefix.cmps.fields", $3);
+	plog("$prefix.cmps.ratio", $3 / $2);
+	redo LOOP;
+    }
+
+    if ($res =~ m/\GSeq Scan on ([^ ]+)\s*\(cost=([0-9.]+\.\.[0-9.]+)\s+rows=([0-9]+)\s+width=([0-9]+)\)\s+\(actual time=([0-9.]+\.\.[0-9.]+)\s+rows=([0-9]+)\s+loops=([0-9]+)\)/mgc) {
+	plog("seqscan.table", $1);
+	plog_cost("seqscan.cost", $5);
+	plog("seqscan.rows", $6);
+	redo LOOP;
+    }
+
+    if ($res =~ m/\GSort\s+\(cost=([0-9.]+\.\.[0-9.]+)\s+rows=([0-9]+)\s+width=([0-9]+)\)\s+\(actual time=([0-9.]+\.\.[0-9.]+)\s+rows=([0-9]+)\s+loops=([0-9]+)\)/mgc) {
+	plog_cost("sort.cost", $4);
+	redo LOOP;
+    }
+
+    if ($res =~ m/\GSort Method:\s*([^\n\r]+)/mgc) {
+	plog("sort.method", $1);
+	redo LOOP;
+    }
+
+    if ($res =~ m/\GIndex Scan using ([^ ]+) on ([^ ]+)\s*\(cost=([0-9.]+\.\.[0-9.]+)\s+rows=([0-9]+)\s+width=([0-9]+)\)\s+\(actual time=([0-9.]+\.\.[0-9.]+)\s+rows=([0-9]+)\s+loops=([0-9]+)\)/mgc) {
+	plog("idxscan.idx", $1);
+	plog("idxscan.table", $2);
+	plog_cost("idxscan.cost", $6);
+	plog("idxscan.rows", $7);
+	redo LOOP;
+    }
+
+    # keep this below all specific regex for a node
+    if ($res =~ m/\G([^([:cntrl:]]*?)\s*\(cost=([0-9.]+\.\.[0-9.]+)\s+rows=([0-9]+)\s+width=([0-9]+)\)\s+\(actual time=([0-9.]+\.\.[0-9.]+)\s+rows=([0-9]+)\s+loops=([0-9]+)\)/mgc) {
+	$prefix = nodename($1);
+	plog_cost("$prefix.est.cost", $2);
+	plog("$prefix.est.rows", $3);
+	plog("$prefix.width", $4);
+	plog_cost("$prefix.cost", $5);
+	plog("$prefix.rows", $6);
+	plog("$prefix.loops", $7);
+	redo LOOP;
+    }
+
+    if ($res =~ m/\GTotal runtime: ([0-9.]+) ms/mgc) {
+	plog("total", $1);
+	redo LOOP;
+    }
 }
 
-
-
-if ($res =~ m/Total runtime: ([0-9.]+) ms/m) {
-  plog("total", $1);
+if ($res =~ m/\G(.+)/mgc) {
+    print "#<unmatched>\n";
+    print_comment($1);
+    print "#</unmatched>\n";
 }
 
-
-
-
-# print $res;
-# print "skyline $sl_method $sl_distinct $sl_dim $sl_est_cost $sl_est_rows $sl_width $sl_cost $sl_rows $sl_loops\n";
-# print "sort $sort_method $sort_cost $sort_rows\n";
-# print "seqscan $seq_table $seq_cost $seq_rows\n";
-# print "idxscan $idx_name $idx_table $idx_cost $idx_rows\n";
+print "#<queryplan>\n";
+print_comment($res);
+print "#</queryplan>\n";

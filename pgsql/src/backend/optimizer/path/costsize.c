@@ -1067,6 +1067,11 @@ cost_skyline(Path *path, PlannerInfo *root, Cost input_cost,
 			startup_cost += cmps * cpu_operator_cost * input_tuples * 0.5 * (limit_is_useful ? limit_tuples : output_tuples);
 			break;
 
+		case SM_ELIMFILTER:
+			/* FIXME */
+			startup_cost += cmps * cpu_operator_cost * input_tuples * 0.5 * output_tuples;
+			break;
+
 		default:
 			elog(WARNING, "FIXME: skyline method `%d' unknown at %s:%d", skyline_method, __FILE__, __LINE__);
 			break;

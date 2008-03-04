@@ -80,8 +80,16 @@ ExecInitElimFilter(ElimFilter *node, EState *estate, int eflags)
 	state = makeNode(ElimFilterState);
 	state->ss.ps.plan = (Plan *) node;
 	state->ss.ps.state = estate;
+
 	state->status = SS_INIT;
+	state->skyline_method = node->skyline_method;
+	state->pass = 1;
+
+	state->cmps_tuples = 0;
+	state->cmps_fields = 0;
+	state->pass_info = makeStringInfo();
 	state->flags = SL_FLAGS_NONE;
+	state->window_policy = TUP_WIN_POLICY_APPEND;
 
 	skyline_option_get_window_policy(node->skyline_of_options, "efwindowpolicy", &state->window_policy);
 

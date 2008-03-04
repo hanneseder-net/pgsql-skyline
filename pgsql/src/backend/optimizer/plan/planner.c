@@ -1189,6 +1189,10 @@ grouping_planner(PlannerInfo *root, double tuple_fraction)
 			if (skyline_option_get_int(((SkylineClause *) parse->skylineClause)->skyline_of_options, "ef", &use_elim_filter))
 			{
 				result_plan = (Plan *) make_elimfilter(root, result_plan, parse->skylineClause, limit_tuples);
+
+				/*
+				 * Note that the relative tuple order is preserved by the elimination filter.
+				 */
 			}
 		}
 

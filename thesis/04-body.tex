@@ -45,6 +45,8 @@
 \item \todo{using hashing for diff groups}{}
 \item \todo{EF+SFS=LESS (check this again)}{}
 \item \todo{has the order in which the skyline dimensions are checked an effect?}{}
+\item \todo{show how Preference SQL ABOUT can be emulated}{}
+\item \todo{PostgreSQL as of 8.3 does not derive the stats for subselect like \inlinesql{explain analyze select * from (select * from i15d1000000s0 limit 1000) as a skyline of d1 min, d2 min with windowpolicy=ranked;}}{}
 \end{itemize}
 \clearpage
 
@@ -458,9 +460,14 @@ We not define \inlinesql{MIN}, \inlinesql{MAX}, and \inlinesql{DIFF} as reserved
 \section{Semantics}
 
 \subsection{One dimensional \inlinesql{SKYLINE OF} is different to SQL \inlinesql{MIN}/\inlinesql{MAX}}
+\todo{for 1 dim distinct use FIRST as supported by Microsoft SQL Server, PostgreSQL does not have this, but it could be built in}{}
+\todo{for 1 dim distinct use subselect/self-join and limit 1}{}
+
 skyline 1d min neq sql min:
 
 sql min, max, distinct != skyline min, max, distinct
+
+\todo{1 dim with out distinct can be emulated with a subselect or a self-join}{}
 
 select d1 from a2d100 skyline distinct d1 min = select min(d1) from a2d100;
 
@@ -620,6 +627,13 @@ Although we continously merging \texttt{CSV HEAD} of \fixme{PostgreSQL source re
 into our main development branch, we decided to base this paper on branch \texttt{REL8\_3\_STABLE}, 
 in order to have a more stable and reproducibly setting, i.e. all experiments in this paper are based on version 8.3.0 of PostgreSQL with our patch for the skyline operator applied.
 
+\todo{disable: screen savers
+disable: power saving / standby options
+disable: windows update
+disable: google updater
+}{}
+
+\todo{postgres.conf: shared\_buffers = XXX, see \url{http://www.postgresql.org/docs/8.3/interactive/runtime-config-resource.html}}{}
 
 \subsection{Random Dataset Generator}
 

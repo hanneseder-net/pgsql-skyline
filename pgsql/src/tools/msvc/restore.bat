@@ -1,1 +1,1 @@
-bash restore.sh
+perl restore.pl

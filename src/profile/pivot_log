@@ -1,5 +1,5 @@
 #!/bin/perl -w
-# -*- Perl -*- t~ell emacs it's a perl file
+# -*- Perl -*- tell emacs it's a perl file
 
 # Author: Hannes Eder <Hannes@HannesEder.net>
 
@@ -21,7 +21,7 @@ my $runid;
 my $name;
 my $value;
 
-my $csv = Text::CSV->new();
+my $csv = Text::CSV->new({always_quote => 1});
 
 my %values = ();
 
@@ -43,6 +43,8 @@ sub output()
 
 while (defined($line = <>)) {
     chomp $line;
+    next if ($line =~ m/^#/);
+
     if ($csv->parse($line)) {
 	my @fields = $csv->fields;
 

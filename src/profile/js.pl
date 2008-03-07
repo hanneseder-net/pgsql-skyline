@@ -10,7 +10,7 @@ my $pid = $ENV{'HOSTNAME'};
 my $delay = 10;
 
 mkdir($pid) if (! -d $pid);
-mkdir($pid . ".done")  if (! -d ($pid . ".done"));
+mkdir("done")  if (! -d ("done"));
 mkdir("log") if (! -d "log");
 
 sub lock {
@@ -52,10 +52,10 @@ while (1) {
 	else {
 	    unlock();
 	    print "INFO: fine, start working in job...\n";
-	    my $joblog = "log/" . $job . $pid . ".log";
+	    my $joblog = "log/" . $job . "." . $pid . ".log";
 	    system "echo \"--<pid pid=$pid/>\" | cat - $jobwip | c:/pgsql/bin/psql -a >$joblog 2>&1" || die "Couldn't execute job $!";
 	    sleep(int(rand($delay)));
-	    my $jobdone = $pid . ".done/" . $job;
+	    my $jobdone = "done/" . $job;
 	    print "INFO: done working on job \"$jobwip\".\n";
 	    rename($jobwip, $jobdone) || die "Can't rename file $!";
 	}

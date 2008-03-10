@@ -268,6 +268,47 @@ print JOB "$job";
 
 
 ##
+## BNL/SFS+EF ranked
+##
+@size = sizes(100000);
+for my $dist ("i", "c", "a") {
+    for my $dim (2,3,4,5,6,7,8,9,10,11,12,13,14,15) {
+	my $jobfile = "bnl.sfs.ef.ranked.${dist}.${seed}.${dim}.sql";
+
+	next if (-e $jobfile);
+	print "INFO: file ${jobfile}...\n";
+
+	open (JOB, ">$jobfile");
+	$job = "";
+	for my $size (@size) {
+
+my $table = "${dist}15d${size}${seed}";
+my $dims = "d1 min";
+for (my $i=2; $i<=$dim; ++$i) {
+    $dims = $dims . ", d${i} min";
+}
+
+
+$job = <<EOF;
+--<comment>
+explain analyze select * from ${table};
+--</comment>
+--<query runid=bnl.ef.ranked.${table}.${dim}>
+explain analyze select * from ${table} skyline of ${dims} with bnl windowpolicy=ranked ef efwindowpolicy=ranked;
+--</query>
+--<query runid=sfs.ef.ranked.${table}.${dim}>
+explain analyze select * from ${table} skyline of ${dims} with sfs windowpolicy=ranked ef efwindowpolicy=ranked;
+--</query>
+EOF
+
+print JOB "$job";
+	}
+	close (JOB);
+    }
+}
+
+
+##
 ## SFS+INDEX append
 ##
 @size = sizes(100000);
@@ -284,16 +325,18 @@ for my $dist ("i", "c", "a") {
 
 my $table = "${dist}15d${size}${seed}idx";
 my $dims = "d1 min";
+my $sort = "d1";
 for (my $i=2; $i<=$dim; ++$i) {
     $dims = $dims . ", d${i} min";
+    $sort = $sort . ", d${i}";
 }
 
 
 $job = <<EOF;
 --<comment>
-explain analyze select * from ${table};
+explain analyze select * from ${table} order by ${sort};
 --</comment>
---<query runid=sfs.append.${table}.${dim}>
+--<query runid=sfs.index.append.${table}.${dim}>
 explain analyze select * from ${table} skyline of ${dims} with sfs windowpolicy=append;
 --</query>
 EOF
@@ -321,16 +364,18 @@ for my $dist ("i", "c", "a") {
 
 my $table = "${dist}15d${size}${seed}idx";
 my $dims = "d1 min";
+my $sort = "d1";
 for (my $i=2; $i<=$dim; ++$i) {
     $dims = $dims . ", d${i} min";
+    $sort = $sort . ", d${i}";
 }
 
 
 $job = <<EOF;
 --<comment>
-explain analyze select * from ${table};
+explain analyze select * from ${table} order by ${sort};
 --</comment>
---<query runid=sfs.prepend.${table}.${dim}>
+--<query runid=sfs.index.prepend.${table}.${dim}>
 explain analyze select * from ${table} skyline of ${dims} with sfs windowpolicy=prepend;
 --</query>
 EOF
@@ -359,16 +404,18 @@ for my $dist ("i", "c", "a") {
 
 my $table = "${dist}15d${size}${seed}idx";
 my $dims = "d1 min";
+my $sort = "d1";
 for (my $i=2; $i<=$dim; ++$i) {
     $dims = $dims . ", d${i} min";
+    $sort = $sort . ", d${i}";
 }
 
 
 $job = <<EOF;
 --<comment>
-explain analyze select * from ${table};
+explain analyze select * from ${table} order by ${sort};
 --</comment>
---<query runid=sfs.ranked.${table}.${dim}>
+--<query runid=sfs.index.ranked.${table}.${dim}>
 explain analyze select * from ${table} skyline of ${dims} with sfs windowpolicy=ranked;
 --</query>
 EOF
@@ -398,16 +445,18 @@ for my $dist ("i", "c", "a") {
 
 my $table = "${dist}15d${size}${seed}idx";
 my $dims = "d1 min";
+my $sort = "d1";
 for (my $i=2; $i<=$dim; ++$i) {
     $dims = $dims . ", d${i} min";
+    $sort = $sort . ", d${i}";
 }
 
 
 $job = <<EOF;
 --<comment>
-explain analyze select * from ${table};
+explain analyze select * from ${table} order by ${sort};
 --</comment>
---<query runid=sfs.ef.append.${table}.${dim}>
+--<query runid=sfs.index.ef.append.${table}.${dim}>
 explain analyze select * from ${table} skyline of ${dims} with sfs windowpolicy=append ef efwindowpolicy=append;
 --</query>
 EOF
@@ -435,16 +484,18 @@ for my $dist ("i", "c", "a") {
 
 my $table = "${dist}15d${size}${seed}idx";
 my $dims = "d1 min";
+my $sort = "d1";
 for (my $i=2; $i<=$dim; ++$i) {
     $dims = $dims . ", d${i} min";
+    $sort = $sort . ", d${i}";
 }
 
 
 $job = <<EOF;
 --<comment>
-explain analyze select * from ${table};
+explain analyze select * from ${table} order by ${sort};
 --</comment>
---<query runid=sfs.ef.prepend.${table}.${dim}>
+--<query runid=sfs.index.ef.prepend.${table}.${dim}>
 explain analyze select * from ${table} skyline of ${dims} with sfs windowpolicy=prepend ef efwindowpolicy=prepend;
 --</query>
 EOF
@@ -455,6 +506,45 @@ print JOB "$job";
     }
 }
 
+
+##
+## SFS+INDEX+EF ranked
+##
+@size = sizes(100000);
+for my $dist ("i", "c", "a") {
+    for my $dim (2,3,4,5,6) {
+	my $jobfile = "sfs.index.ef.ranked.${dist}.${seed}.${dim}.sql";
+
+	next if (-e $jobfile);
+	print "INFO: file ${jobfile}...\n";
+
+	open (JOB, ">$jobfile");
+	$job = "";
+	for my $size (@size) {
+
+my $table = "${dist}15d${size}${seed}idx";
+my $dims = "d1 min";
+my $sort = "d1";
+for (my $i=2; $i<=$dim; ++$i) {
+    $dims = $dims . ", d${i} min";
+    $sort = $sort . ", d${i}";
+}
+
+
+$job = <<EOF;
+--<comment>
+explain analyze select * from ${table} order by ${sort};
+--</comment>
+--<query runid=sfs.index.ef.prepend.${table}.${dim}>
+explain analyze select * from ${table} skyline of ${dims} with sfs windowpolicy=ranked ef efwindowpolicy=ranked;
+--</query>
+EOF
+
+print JOB "$job";
+	}
+	close (JOB);
+    }
+}
 
 
 ##

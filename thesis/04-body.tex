@@ -25,6 +25,7 @@
 \newcommand\inlinesql[1]{{\tt #1}}
 \newcommand\srcref[1]{{\tt #1}}
 \newcommand\postgresdocu[2]{\href{http://www.postgresql.org/docs/8.3/static/#1}{#2}}
+\newcommand\ttbackslash{{\char92}}
 
 \newtheorem{definition}{Definition}
 \newtheorem{lemma}{Lemma}
@@ -635,6 +636,8 @@ disable: google updater
 
 \todo{postgres.conf: shared\_buffers = XXX, see \url{http://www.postgresql.org/docs/8.3/interactive/runtime-config-resource.html}}{}
 
+\todo{postgres.conf: turn of autovacuum}{}
+
 \subsection{Random Dataset Generator}
 
 Based on the code from \citep{Borzsonyi2001}\footnote{special thanks to Donald Kossmann, for providing the source code} wedeveloped two versions of the random dataset generator, a command line utility, and a PostgreSQL module (see \cite{Eder2007a}).
@@ -695,9 +698,8 @@ COPY "i3d10" (id, d1, d2, d3) FROM STDIN DELIMITERS ',' CSV QUOTE '''';
 2,5.914905399975788e-01,5.547849133400177e-01,3.784288188342139e-01
 ...
 10,8.585111004572880e-01,9.898449857671955e-02,8.770675234855467e-01
-\textbackslash.
+\ttbackslash.
 \end{shellscript}
-\fixme{}{backslash is not in a monospaced font}
 
 \subsubsection{PostgreSQL Random Dataset Generator Function}
 

@@ -29,8 +29,6 @@ for (my $i=0; $i <= $#columns; ++$i) {
 
 print join(";", map { "\"$_\""; } ("runid", @headers)), "\n" if ($show_header);
 
-exit 0;
-
 my $cur_runid = "";
 my $runid;
 my $name;

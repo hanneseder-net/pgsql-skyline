@@ -3,18 +3,33 @@
 
 # Author: Hannes Eder <Hannes@HannesEder.net>
 
+use strict;
 use Getopt::Long;
 use Text::CSV;
 
 my @columns = ();
 my $show_header = 1;
+my @headers = ();
 
 my $result = GetOptions("column|c=s" => \@columns,
 			"header!" => \$show_header);
 
 die "error: couldn't parse options, stopped at : " if (!$result);
 
-print join(";", map { "\"$_\""; } ("runid", @columns)), "\n" if ($show_header);
+for (my $i=0; $i <= $#columns; ++$i) {
+    my $column = $columns[$i];
+    if ($column =~ m/^([^=]+)=([^=]+)$/) {
+	$columns[$i] = $1;
+	$headers[$i] = $2;
+    }
+    else {
+	$headers[$i] = $column;
+    }
+}
+
+print join(";", map { "\"$_\""; } ("runid", @headers)), "\n" if ($show_header);
+
+exit 0;
 
 my $cur_runid = "";
 my $runid;
@@ -31,7 +46,7 @@ sub output()
     my @outfields = ();
     push @outfields, $cur_runid;
 
-    for $column (@columns) {
+    for my $column (@columns) {
 	my $v = $values { $column };
 	push @outfields, defined($v) ? $v : "";
     }
@@ -40,6 +55,8 @@ sub output()
 	print $csv->string(), "\n";
     }
 }
+
+my $line;
 
 while (defined($line = <>)) {
     chomp $line;

@@ -22,6 +22,7 @@ use strict;
 my $line;
 my $prefix;
 my $i;
+my $alias;
 my $runid = "1";
 my $query = "";
 
@@ -69,6 +70,17 @@ LOOP2: {
     }
 
     print "#", $line;
+    redo LOOP2;
+}
+
+sub sizefromtablename {
+    my $name = shift;
+    if ($name =~ m/^[iac]\d+d(\d+)e(\d+)s.*$/) {
+	return $1 * 10 ** $2;
+    }
+    else {
+	return "";
+    }
 }
 
 sub nodename {
@@ -106,6 +118,11 @@ sub process_query {
 
     my $res = shift;
 
+    if ($runid =~ m/^sql\.[^.]+\.(\d+)$/) {
+	# hack for sql only queries
+	plog("sql.dim", $1);
+    }
+
 LOOP2: {
     last LOOP2 if ($res =~ m/\G^\s*QUERY PLAN/gmc);
     if ($res =~ m/\G^(.*)$/gmc) {
@@ -122,6 +139,17 @@ LOOP:
     redo LOOP if ($res =~ m/\G^\(\d+\s+rows\)\s*$/gmc);
     redo LOOP if ($res =~ m/\G[\n\r]/gmc);
     redo LOOP if ($res =~ m/\G^--+/gmc);
+
+
+    if ($res =~ m/\G(Filter: [^\n\r]+)[\n\r]+/gmc) {
+	print("# $1\n");
+	redo LOOP;
+    }
+
+    if ($res =~ m/\G(SubPlan)/gmc) {
+	print "# $1\n";
+	redo LOOP;
+    }
  
     if ($res =~ m/\G(Skyline|Elim Filter) Method: ([^ ]+)\s*( distinct)?\s+([0-9]+) dim/mgc) {
 	$prefix = nodename($1);
@@ -169,10 +197,14 @@ LOOP:
 	redo LOOP;
     }
 
-    if ($res =~ m/\GSeq Scan on ([^ ]+)\s*\(cost=([0-9.]+\.\.[0-9.]+)\s+rows=([0-9]+)\s+width=([0-9]+)\)\s+\(actual time=([0-9.]+\.\.[0-9.]+)\s+rows=([0-9]+)\s+loops=([0-9]+)\)/mgc) {
-	plog("seqscan.table", $1);
-	plog_cost("seqscan.cost", $5);
-	plog("seqscan.rows", $6);
+    if ($res =~ m/\GSeq Scan on ([^ ]+)(\s+([^ ]+))?\s+\(cost=([0-9.]+\.\.[0-9.]+)\s+rows=([0-9]+)\s+width=([0-9]+)\)\s+\(actual time=([0-9.]+\.\.[0-9.]+)\s+rows=([0-9]+)\s+loops=([0-9]+)\)/mgc) {
+	$alias = "";
+	if (defined($3)) { $alias = ".$3"; }
+	plog("seqscan${alias}.on", $1);
+	plog("seqscan${alias}.tablesize", sizefromtablename($1));
+	plog_cost("seqscan${alias}.cost", $7);
+	plog("seqscan${alias}.rows", $8);
+	plog("seqscan${alias}.loops", $9);
 	redo LOOP;
     }
 
@@ -183,6 +215,11 @@ LOOP:
 
     if ($res =~ m/\GSort Method:\s*([^\n\r]+)/mgc) {
 	plog("sort.method", $1);
+	redo LOOP;
+    }
+
+    if ($res =~ m/\GSort Key:\s*([^\n\r]+)/mgc) {
+	plog("sort.key", $1);
 	redo LOOP;
     }
 
@@ -216,6 +253,7 @@ LOOP:
 	print "#<unmatched>\n";
 	print_comment($1);
 	print "#</unmatched>\n";
+	die "unmatched";
     }
 
     print "#<queryplan>\n";

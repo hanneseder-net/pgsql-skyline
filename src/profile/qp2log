@@ -118,9 +118,19 @@ sub process_query {
 
     my $res = shift;
 
-    if ($runid =~ m/^sql\.[^.]+\.(\d+)$/) {
+    if ($runid =~ m/^(.+?)\.[aic]15d.*$/) {
+	plog("method", $1);
+    }
+
+    if ($runid =~ m/^select\..*$/) {
+	# hack for sql select
+	plog("skyline.dim", 15);
+    }
+
+    if ($runid =~ m/^(sql|sort)\.[^.]+\.(\d+)$/) {
 	# hack for sql only queries
-	plog("sql.dim", $1);
+	plog("skyline.dim", $2);
+	plog("skyline.method", $1);
     }
 
 LOOP2: {
@@ -174,10 +184,10 @@ LOOP:
 	redo LOOP;
     }
 
-    if ($res =~ m/\G(Skyline|Elim Filter) Stats: passes=(\d+)(\s+rows=(\d+(, \d+)*))?/mgc) {
+    if ($res =~ m/\G(Skyline|Elim Filter) Stats: passes=(\d+)(\s+rows=(\d+(, \d+)*)?)?/mgc) {
 	$prefix = nodename($1);
 	plog("$prefix.passes", $2);
-	plog("$prefix.passes.rows", $4) if (defined($3));
+	plog("$prefix.passes.rows", $4) if (defined($4));
 	redo LOOP;
     }
 
@@ -193,7 +203,7 @@ LOOP:
 	$prefix = nodename($1);
 	plog("$prefix.cmps.tuples", $2);
 	plog("$prefix.cmps.fields", $3);
-	plog("$prefix.cmps.ratio", $3 / $2);
+	plog("$prefix.cmps.ratio", $3 / $2) if ($2 != 0);
 	redo LOOP;
     }
 

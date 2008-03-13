@@ -4,8 +4,8 @@ use strict;
 
 my $BINDIR="/pgsql/bin";
 
-`$BINDIR/pg_ctl start -w`;
-#`$BINDIR/psql -d postgres < dumpall.dump`;
+#`$BINDIR/pg_ctl start -w`;
+`$BINDIR/psql -d postgres < dumpall.dump`;
 
 my $dim=15;
 
@@ -49,4 +49,4 @@ for my $dist ("i","c", "a") {
 
 `$BINDIR/psql -c \"vacuum full verbose analyze;\"`;
 
-`$BINDIR/pg_ctl stop -w`;
+#`$BINDIR/pg_ctl stop -w`;

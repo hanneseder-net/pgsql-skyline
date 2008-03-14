@@ -7,7 +7,7 @@ my $lockfile = "js.lock";
 my $jobpattern = "*.sql";
 #my $pid = "$ENV{HOSTNAME}.$$";
 my $pid = $ENV{'HOSTNAME'};
-my $delay = 10;
+my $delay = 5;
 
 mkdir($pid) if (! -d $pid);
 mkdir("done")  if (! -d ("done"));
@@ -57,7 +57,11 @@ while (1) {
 	    sleep(int(rand($delay)));
 	    my $jobdone = "done/" . $job;
 	    print "INFO: done working on job \"$jobwip\".\n";
-	    rename($jobwip, $jobdone) || die "Can't rename file $!";
+	    if (-e $jobdone) {
+		print "WARNING: unlinking \"$jobdone\".\n";
+		unlink($jobdone) || die "Couldn't unlink file $!";
+	    }
+	    rename($jobwip, $jobdone) || die "Couldn't rename file $!";
 	}
     }
 }

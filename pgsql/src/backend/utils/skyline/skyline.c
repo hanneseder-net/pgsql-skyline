@@ -165,7 +165,7 @@ skyline_option_get_window_policy(List *skyline_of_options, char *name, TupleWind
 {
 	char	   *window_policy_name;
 
-	if (skyline_option_get_string(skyline_of_options, "windowpolicy", &window_policy_name))
+	if (skyline_option_get_string(skyline_of_options, name, &window_policy_name))
 	{
 		if (strcmp(window_policy_name, "append") == 0)
 			*window_policy = TUP_WIN_POLICY_APPEND;

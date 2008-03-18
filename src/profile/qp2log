@@ -238,6 +238,10 @@ LOOP:
 	plog("idxscan.table", $2);
 	plog_cost("idxscan.cost", $6);
 	plog("idxscan.rows", $7);
+	# hack
+	plog("seqscan.on", $2);
+	plog("seqscan.tablesize", sizefromtablename($2));
+	plog("seqscan.rows", $7);
 	redo LOOP;
     }
 

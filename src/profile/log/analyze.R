@@ -384,6 +384,147 @@ skyplot.cmppertuple("sfs.index.ranked")
 
 
 
+###
+###
+### EFSLOTS
+###
+###
+
+data = sky.readfile("ef.csv")
+d=aggregate(data$total, by=list(data$method, data$inrows, data$dim, data$dist, data$elimfilter.windowslots), FUN = mean);
+colnames(d) <- c("method", "rows", "dim", "dist", "efslots", "total");
+
+
+str(data)
+str(d)
+levels(d$method)
+
+
+rows <- 10000;
+dim <- 4;
+method <- "bnl.ef.append.ranked";
+sel <- d$dim == dim & d$rows == rows & d$method == method;
+plot(d$efslots[sel], d$total[sel], type="n", xlab = "# EF Slots", ylab = "Time (sec)");
+
+dist <- "c";
+sel <- d$dim == dim & d$dist == dist & d$rows == rows & d$method == method;
+par(lty="solid", pch=24);
+lines(d$efslots[sel], d$total[sel]); points(d$efslots[sel], d$total[sel]);
+
+dist="a";
+sel <- d$dim == dim & d$dist == dist & d$rows == rows & d$method == method;
+par(lty="solid", pch="x");
+lines(d$efslots[sel], d$total[sel]); points(d$efslots[sel], d$total[sel]);
+
+dist="i";
+sel <- d$dim == dim & d$dist == dist & d$rows == rows & d$method == method;
+par(lty="solid", pch=22);
+lines(d$efslots[sel], d$total[sel]); points(d$efslots[sel], d$total[sel]);
+
+legend("bottomright", c("corr", "indep", "anti"), 
+			lty=c("solid", "solid", "solid"), pch=c("\x18", "\x16", "x"), inset=0.05, bty="n"); 
 
 
 
+for (method in c("bnl.ef.append.ranked", "sfs.ef.append.ranked")) {
+for (dist in c("i", "c", "a")) {
+
+
+skyplot.pdf(paste(method, "-", dist, "-vs-dim", sep=""));
+
+#method <- "sfs.ef.append.ranked";
+#dist <- "a";
+
+rows <- 10000;
+sel <- d$rows == rows & d$method == method & d$dist == dist;
+ssel <- d$rows == rows & d$method == method & d$dist == dist & d$efslots == 100;
+palette("default")
+plot(d$dim[ssel], d$total[ssel] / d$total[ssel], type="n", xlab = "# Dimensons", ylab = "Time (relative)");
+
+palette(rainbow(length(levels(factor(d$efslots)))))
+
+colidx=0;
+for (efslots in levels(factor(d$efslots))) {
+sel <- d$efslots == efslots & d$dist == dist & d$rows == rows & d$method == method;
+colidx=colidx+1;
+par(lty="solid", pch=24);
+par(col=colidx);
+lines(d$dim[sel], d$total[sel] / d$total[ssel]); points(d$dim[sel], d$total[sel] / d$total[ssel]);
+}
+
+legend("topright", 
+	paste("ef slots", levels(factor(d$efslots))),
+	lty=rep(c("solid"), length(levels(factor(d$efslots)))),
+	col=1:length(levels(factor(d$efslots))),
+	pch=rep(c("\x18"), length(levels(factor(d$efslots)))),
+	inset=0.05, bty="n")
+
+palette("default")
+par(col="black")
+box()
+
+skyplot.off();
+
+}
+}
+
+
+
+##
+##
+## WINDOW SLOTS
+##
+##
+
+data = sky.readfile("wnd.csv")
+d=aggregate(data$total, by=list(data$method, data$inrows, data$dim, data$dist, data$skyline.windowslots), FUN = mean);
+colnames(d) <- c("method", "rows", "dim", "dist", "efslots", "total");
+
+
+str(data)
+str(d)
+levels(d$method)
+
+
+
+for (method in c("bnl.append", "sfs.append")) {
+for (dist in c("a")) {
+
+
+skyplot.pdf(paste(method, "-", dist, "-vs-dim", sep=""));
+
+method <- "sfs.append";
+dist <- "a";
+
+rows <- 10000;
+sel <- d$rows == rows & d$method == method & d$dist == dist;
+ssel <- d$rows == rows & d$method == method & d$dist == dist & d$efslots == 100;
+palette("default")
+plot(d$dim[ssel ], d$total[ssel] / d$total[ssel], type="n", xlab = "# Dimensions", ylab = "Time (relative)");
+
+palette(rainbow(length(levels(factor(d$efslots)))))
+
+colidx=0;
+for (efslots in levels(factor(d$efslots))) {
+sel <- d$efslots == efslots & d$dist == dist & d$rows == rows & d$method == method;
+colidx=colidx+1;
+par(lty="solid", pch=24);
+par(col=colidx);
+lines(d$dim[sel], d$total[sel] / d$total[ssel]); points(d$dim[sel], d$total[sel] / d$total[ssel]);
+}
+
+legend("bottomright", 
+	paste("wnd slots", levels(factor(d$efslots))),
+	lty=rep(c("solid"), length(levels(factor(d$efslots)))),
+	col=1:length(levels(factor(d$efslots))),
+	pch=rep(c("\x18"), length(levels(factor(d$efslots)))),
+	inset=0.05, bty="n")
+
+palette("default")
+par(col="black")
+box()
+
+skyplot.off();
+
+}
+}

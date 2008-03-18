@@ -1266,6 +1266,7 @@ finalize_plan(PlannerInfo *root, Plan *plan,
 		case T_SetOp:
 		case T_Group:
 		case T_Skyline:
+		case T_ElimFilter:
 			break;
 
 		default:

@@ -19,8 +19,8 @@ data = sky.readfile("master.csv");
 d=aggregate(data$total, by=list(data$method, data$inrows, data$dim, data$dist), FUN = mean);
 colnames(d) <- c("method", "rows", "dim", "dist", "total");
 
-str(data)
-levels(data$method)
+#str(data)
+#levels(data$method)
 
 # pdf(file = "allplots.pdf", encoding="ISOLatin1", onefile = TRUE);
 # postscript(file="allplots.ps", onefile = TRUE);
@@ -28,10 +28,12 @@ levels(data$method)
 skyplot.pdf <- function(filename) {
 	# todo define size
 	pdf(file = paste(filename, ".pdf", sep=""), encoding="ISOLatin1", onefile = FALSE)
+	assign("skyplot.title", filename, envir = .GlobalEnv);
 }
 
 skyplot.off <- function() {
-	dev.off(dev.cur());
+	title(main=get("skyplot.title", envir = .GlobalEnv), col="black");
+	dev.off();
 }
 
 ##
@@ -144,13 +146,13 @@ sel <- d$rows == rows & d$dist == dist & d$method == "sql";
 lines(d$dim[sel], 0.001 * d$total[sel], lty="solid")
 points(d$dim[sel], 0.001 * d$total[sel], pch="x")
 
-sel <- d$rows == rows & d$dist == dist & d$method == "bnl.append";
-lines(d$dim[sel], 0.001 * d$total[sel], lty="solid")
-points(d$dim[sel], 0.001 * d$total[sel], pch=22)
+#sel <- d$rows == rows & d$dist == dist & d$method == "bnl.append";
+#lines(d$dim[sel], 0.001 * d$total[sel], lty="solid")
+#points(d$dim[sel], 0.001 * d$total[sel], pch=22)
 
-sel <- d$rows == rows & d$dist == dist & d$method == "sfs.append";
-lines(d$dim[sel], 0.001 * d$total[sel], lty="dotted")
-points(d$dim[sel], 0.001 * d$total[sel], pch=24)
+#sel <- d$rows == rows & d$dist == dist & d$method == "sfs.append";
+#lines(d$dim[sel], 0.001 * d$total[sel], lty="dotted")
+#points(d$dim[sel], 0.001 * d$total[sel], pch=24)
 
 sel <- d$rows == rows & d$dist == dist & d$method == "select";
 abline(h=0.001 * d$total[sel], lwd=1, col="lightgray")
@@ -162,6 +164,60 @@ points(d$dim[sel], 0.001 * d$total[sel], pch=19)
 sel <- d$rows == rows & d$dist == dist & d$method == "sfs.index.append" & d$rows >= 100 & d$rows <= 100000;
 lines(d$dim[sel], 0.001 * d$total[sel], lty="solid")
 points(d$dim[sel], 0.001 * d$total[sel], pch="o")
+
+# sfs
+sel <- d$rows == rows & d$dist == dist & d$method == "sfs.append";
+par(lty="solid", pch=22, col="green");
+lines(d$dim[sel], 0.001 * d$total[sel]); points(d$dim[sel], 0.001 * d$total[sel]);
+
+sel <- d$rows == rows & d$dist == dist & d$method == "sfs.prepend";
+par(lty="solid", pch="x", col="green");
+lines(d$dim[sel], 0.001 * d$total[sel]); points(d$dim[sel], 0.001 * d$total[sel]);
+
+sel <- d$rows == rows & d$dist == dist & d$method == "sfs.ranked";
+par(lty="solid", pch=24, col="green");
+lines(d$dim[sel], 0.001 * d$total[sel]); points(d$dim[sel], 0.001 * d$total[sel]);
+
+# bnl
+sel <- d$rows == rows & d$dist == dist & d$method == "bnl.append";
+par(lty="solid", pch=22, col="black");
+lines(d$dim[sel], 0.001 * d$total[sel]); points(d$dim[sel], 0.001 * d$total[sel]);
+
+sel <- d$rows == rows & d$dist == dist & d$method == "bnl.prepend";
+par(lty="solid", pch="x");
+lines(d$dim[sel], 0.001 * d$total[sel]); points(d$dim[sel], 0.001 * d$total[sel]);
+
+sel <- d$rows == rows & d$dist == dist & d$method == "bnl.ranked";
+par(lty="solid", pch=24);
+lines(d$dim[sel], 0.001 * d$total[sel]); points(d$dim[sel], 0.001 * d$total[sel]);
+
+# bnl+ef
+sel <- d$rows == rows & d$dist == dist & d$method == "bnl.ef.append";
+par(lty="solid", pch=22, col="red");
+lines(d$dim[sel], 0.001 * d$total[sel]); points(d$dim[sel], 0.001 * d$total[sel]);
+
+sel <- d$rows == rows & d$dist == dist & d$method == "bnl.ef.prepend";
+par(lty="solid", pch="x", col="red");
+lines(d$dim[sel], 0.001 * d$total[sel]); points(d$dim[sel], 0.001 * d$total[sel]);
+
+sel <- d$rows == rows & d$dist == dist & d$method == "bnl.ef.ranked";
+par(lty="solid", pch=24, col="red");
+lines(d$dim[sel], 0.001 * d$total[sel]); points(d$dim[sel], 0.001 * d$total[sel]);
+
+# sfs+ef
+sel <- d$rows == rows & d$dist == dist & d$method == "sfs.ef.append";
+par(lty="solid", pch=22, col="blue");
+lines(d$dim[sel], 0.001 * d$total[sel]); points(d$dim[sel], 0.001 * d$total[sel]);
+
+sel <- d$rows == rows & d$dist == dist & d$method == "sfs.ef.prepend";
+par(lty="solid", pch="x", col="blue");
+lines(d$dim[sel], 0.001 * d$total[sel]); points(d$dim[sel], 0.001 * d$total[sel]);
+
+sel <- d$rows == rows & d$dist == dist & d$method == "sfs.ef.ranked";
+par(lty="solid", pch=24, col="blue");
+lines(d$dim[sel], 0.001 * d$total[sel]); points(d$dim[sel], 0.001 * d$total[sel]);
+
+
 
 # bnl, sfs, presort, sort, select
 legend("topleft", c("bnl", "sfs", "sfs + index", "sql", "sort"), lty=c("solid", "dotted", "solid", "solid", "dashed"), pch=c("\x16", "\x18", "o", "x", "\x13"), inset=0.05, bty="n"); 
@@ -203,12 +259,14 @@ for (dist in c("i", "c", "a")) {
 }
 
 
-skyplot.bnlwp <- function(dist, rows) {
-par(col="black", lty="solid");
-ssel <- d$rows == rows & d$dist == dist & d$method == "bnl.append" & d$dim > 1;
-plot(d$dim[ssel], d$total[ssel] / d$total[ssel], log="x", type="n", xlab="# Dimensions", ylab="Time (relative)", ylim=c(0.5,2));
+##
+## 
+##
 
-abline(h=1, lwd=1, col="lightgray")
+skyplot.wp <- function(d, ssel, dist, rows,legendpos) {
+sel <- d$rows == rows & d$dist == dist & d$method == "bnl.append";
+par(lty="solid", pch=22, col="black");
+lines(d$dim[sel], d$total[sel] / d$total[ssel]); points(d$dim[sel], d$total[sel] / d$total[ssel]);
 
 sel <- d$rows == rows & d$dist == dist & d$method == "bnl.prepend";
 par(lty="solid", pch="x");
@@ -219,24 +277,159 @@ par(lty="solid", pch=24);
 lines(d$dim[sel], d$total[sel] / d$total[ssel]); points(d$dim[sel], d$total[sel] / d$total[ssel]);
 
 sel <- d$rows == rows & d$dist == dist & d$method == "bnl.ef.append";
-par(lty="solid", pch=19);
+par(lty="solid", pch=22, col="red");
+lines(d$dim[sel], d$total[sel] / d$total[ssel]); points(d$dim[sel], d$total[sel] / d$total[ssel]);
+
+sel <- d$rows == rows & d$dist == dist & d$method == "bnl.ef.prepend";
+par(lty="solid", pch="x", col="red");
+lines(d$dim[sel], d$total[sel] / d$total[ssel]); points(d$dim[sel], d$total[sel] / d$total[ssel]);
+
+sel <- d$rows == rows & d$dist == dist & d$method == "bnl.ef.ranked";
+par(lty="solid", pch=24, col="red");
 lines(d$dim[sel], d$total[sel] / d$total[ssel]); points(d$dim[sel], d$total[sel] / d$total[ssel]);
 
 sel <- d$rows == rows & d$dist == dist & d$method == "sfs.append";
-par(lty="dotted", pch=22);
+par(lty="solid", pch=22, col="green");
 lines(d$dim[sel], d$total[sel] / d$total[ssel]); points(d$dim[sel], d$total[sel] / d$total[ssel]);
 
-# bnl, sfs, presort, sort, select
-legend("topright", c("bnl append", "bnl prepend", "bnl entropy", "bnl+ef append", "sfs"), 
-			lty=c("solid", "solid", "solid", "solid", "dotted"), pch=c("", "x", "\x18", "\x13", "\x16"), col=c("lightgray","black","black", "black", "black"), inset=0.05, bty="n"); 
+sel <- d$rows == rows & d$dist == dist & d$method == "sfs.prepend";
+par(lty="solid", pch="x", col="green");
+lines(d$dim[sel], d$total[sel] / d$total[ssel]); points(d$dim[sel], d$total[sel] / d$total[ssel]);
+
+sel <- d$rows == rows & d$dist == dist & d$method == "sfs.ranked";
+par(lty="solid", pch=24, col="green");
+lines(d$dim[sel], d$total[sel] / d$total[ssel]); points(d$dim[sel], d$total[sel] / d$total[ssel]);
+
+sel <- d$rows == rows & d$dist == dist & d$method == "sfs.ef.append";
+par(lty="solid", pch=22, col="blue");
+lines(d$dim[sel], d$total[sel] / d$total[ssel]); points(d$dim[sel], d$total[sel] / d$total[ssel]);
+
+sel <- d$rows == rows & d$dist == dist & d$method == "sfs.ef.prepend";
+par(lty="solid", pch="x", col="blue");
+lines(d$dim[sel], d$total[sel] / d$total[ssel]); points(d$dim[sel], d$total[sel] / d$total[ssel]);
+
+sel <- d$rows == rows & d$dist == dist & d$method == "sfs.ef.ranked";
+par(lty="solid", pch=24, col="blue");
+lines(d$dim[sel], d$total[sel] / d$total[ssel]); points(d$dim[sel], d$total[sel] / d$total[ssel]);
+
+par(col="black");
+
+#legend("topright", c("bnl append", "bnl prepend", "bnl entropy", "bnl+ef append", "sfs"), 
+#			lty=c("solid", "solid", "solid", "solid", "dotted"), pch=c("", "x", "\x18", "\x13", "\x16"), col=c("lightgray","black","black", "black", "black"), inset=0.05, bty="n"); 
+
+legend(legendpos,
+	paste(rep(c("bnl","bnl+ef", "sfs", "sfs+ef"),each=3), c("append", "prepend", "entropy")),
+	lty="solid",
+	pch=rep(c("\x16", "x", "\x18"), 4),
+	col=rep(c("black", "red", "green", "blue"), each=3), inset=0.05, bty="n", ncol=2)
+
 box()
+}
+
+skyplot.bnlwp <- function(dist, rows) {
+
+par(col="black", lty="solid");
+ssel <- d$rows == rows & d$dist == dist & d$method == "bnl.append" & d$dim > 1;
+plot(d$dim[ssel], d$total[ssel] / d$total[ssel], type="n", xlab="# Dimensions", ylab="Time (relative)", ylim=c(0.25,2));
+
+skyplot.wp(d, ssel, dist,rows, "topright");
 }
 
 for (dist in c("i", "c", "a")) {
 	skyplot.pdf(paste("bnl-wp-1e5-", dist, sep=""));
-	skyplot.bnlwp(dist, 100000);
+	dist <- "c";
+	skyplot.bnlwp(dist, 50000);
 	skyplot.off();
 }
+
+
+##
+## relative runtime vs. rows (comparing bnl, sfs, bnl+ef, bnl+ef and windowpolicies)
+##
+##
+
+skyplot.wptups <- function(d, ssel, dist, dim, legendpos) {
+sel <- d$dim == dim & d$dist == dist & d$method == "bnl.append";
+par(lty="solid", pch=22, col="black");
+lines(d$rows[sel], d$total[sel] / d$total[ssel]); points(d$rows[sel], d$total[sel] / d$total[ssel]);
+
+sel <- d$rows == rows & d$dist == dist & d$method == "bnl.prepend";
+par(lty="solid", pch="x");
+lines(d$rows[sel], d$total[sel] / d$total[ssel]); points(d$rows[sel], d$total[sel] / d$total[ssel]);
+
+sel <- d$rows == rows & d$dist == dist & d$method == "bnl.ranked";
+par(lty="solid", pch=24);
+lines(d$rows[sel], d$total[sel] / d$total[ssel]); points(d$rows[sel], d$total[sel] / d$total[ssel]);
+
+sel <- d$rows == rows & d$dist == dist & d$method == "bnl.ef.append";
+par(lty="solid", pch=22, col="red");
+lines(d$rows[sel], d$total[sel] / d$total[ssel]); points(d$rows[sel], d$total[sel] / d$total[ssel]);
+
+sel <- d$rows == rows & d$dist == dist & d$method == "bnl.ef.prepend";
+par(lty="solid", pch="x", col="red");
+lines(d$rows[sel], d$total[sel] / d$total[ssel]); points(d$rows[sel], d$total[sel] / d$total[ssel]);
+
+sel <- d$rows == rows & d$dist == dist & d$method == "bnl.ef.ranked";
+par(lty="solid", pch=24, col="red");
+lines(d$rows[sel], d$total[sel] / d$total[ssel]); points(d$rows[sel], d$total[sel] / d$total[ssel]);
+
+sel <- d$rows == rows & d$dist == dist & d$method == "sfs.append";
+par(lty="solid", pch=22, col="green");
+lines(d$rows[sel], d$total[sel] / d$total[ssel]); points(d$rows[sel], d$total[sel] / d$total[ssel]);
+
+sel <- d$rows == rows & d$dist == dist & d$method == "sfs.prepend";
+par(lty="solid", pch="x", col="green");
+lines(d$rows[sel], d$total[sel] / d$total[ssel]); points(d$rows[sel], d$total[sel] / d$total[ssel]);
+
+sel <- d$rows == rows & d$dist == dist & d$method == "sfs.ranked";
+par(lty="solid", pch=24, col="green");
+lines(d$rows[sel], d$total[sel] / d$total[ssel]); points(d$rows[sel], d$total[sel] / d$total[ssel]);
+
+sel <- d$rows == rows & d$dist == dist & d$method == "sfs.ef.append";
+par(lty="solid", pch=22, col="blue");
+lines(d$rows[sel], d$total[sel] / d$total[ssel]); points(d$rows[sel], d$total[sel] / d$total[ssel]);
+
+sel <- d$rows == rows & d$dist == dist & d$method == "sfs.ef.prepend";
+par(lty="solid", pch="x", col="blue");
+lines(d$rows[sel], d$total[sel] / d$total[ssel]); points(d$rows[sel], d$total[sel] / d$total[ssel]);
+
+sel <- d$rows == rows & d$dist == dist & d$method == "sfs.ef.ranked";
+par(lty="solid", pch=24, col="blue");
+lines(d$rows[sel], d$total[sel] / d$total[ssel]); points(d$rows[sel], d$total[sel] / d$total[ssel]);
+
+par(col="black");
+
+#legend("topright", c("bnl append", "bnl prepend", "bnl entropy", "bnl+ef append", "sfs"), 
+#			lty=c("solid", "solid", "solid", "solid", "dotted"), pch=c("", "x", "\x18", "\x13", "\x16"), col=c("lightgray","black","black", "black", "black"), inset=0.05, bty="n"); 
+
+legend(legendpos,
+	paste(rep(c("bnl","bnl+ef", "sfs", "sfs+ef"),each=3), c("append", "prepend", "entropy")),
+	lty="solid",
+	pch=rep(c("\x16", "x", "\x18"), 4),
+	col=rep(c("black", "red", "green", "blue"), each=3), inset=0.05, bty="n", ncol=2)
+
+box()
+}
+
+skyplot.bnlwptups <- function(dist, dim) {
+
+par(col="black", lty="solid");
+ssel <- d$dim == dim & d$dist == dist & d$method == "bnl.append";
+plot(d$rows[ssel], d$total[ssel] / d$total[ssel], log="x", type="n", xlab="# Tuples", ylab="Time (relative)", ylim=c(0.25,2));
+
+skyplot.wptups(d, ssel, dist, dim, "topright");
+}
+
+for (dist in c("i", "c", "a")) {
+	for (dim in 2:15) {
+	skyplot.pdf(paste("bnl-wp-", dist, "-", dim, sep=""));
+	skyplot.bnlwptups(dist, dim);
+	skyplot.off();
+	}
+}
+
+
+
 
 
 ##
@@ -246,36 +439,9 @@ for (dist in c("i", "c", "a")) {
 skyplot.sfswp <- function(dist, rows) {
 par(col="black", lty="solid");
 ssel <- d$rows == rows & d$dist == dist & d$method == "sfs.append" & d$dim > 1;
-plot(d$dim[ssel], d$total[ssel] / d$total[ssel], log="x", type="n", xlab="# Dimensions", ylab="Time (relative)", ylim=c(0.1,2));
+plot(d$dim[ssel], d$total[ssel] / d$total[ssel], type="n", xlab="# Dimensions", ylab="Time (relative)", ylim=c(0.1,2));
 
-abline(h=1, lwd=1, col="lightgray", lty="dotted")
-
-sel <- d$rows == rows & d$dist == dist & d$method == "sfs.prepend";
-par(lty="dotted", pch="x");
-lines(d$dim[sel], d$total[sel] / d$total[ssel]); points(d$dim[sel], d$total[sel] / d$total[ssel]);
-
-sel <- d$rows == rows & d$dist == dist & d$method == "sfs.ranked";
-par(lty="dotted", pch=24);
-lines(d$dim[sel], d$total[sel] / d$total[ssel]); points(d$dim[sel], d$total[sel] / d$total[ssel]);
-
-sel <- d$rows == rows & d$dist == dist & d$method == "sfs.ef.append";
-par(lty="dotted", pch=19);
-lines(d$dim[sel], d$total[sel] / d$total[ssel]); points(d$dim[sel], d$total[sel] / d$total[ssel]);
-
-sel <- d$rows == rows & d$dist == dist & d$method == "bnl.append";
-par(lty="solid", pch=22);
-lines(d$dim[sel], d$total[sel] / d$total[ssel]); points(d$dim[sel], d$total[sel] / d$total[ssel]);
-
-sel <- d$rows == rows & d$dist == dist & d$method == "sfs.index.append"
-ssel <- d$rows == rows & d$dist == dist & d$method == "sfs.append" & d$dim > 1 & d$dim <= 6;
-par(lty="dotted", pch="o");
-lines(d$dim[sel], d$total[sel] / d$total[ssel]); points(d$dim[sel], d$total[sel] / d$total[ssel]);
-
-# bnl, sfs, presort, sort, select
-legend("topleft", c("sfs append", "sfs prepend", "sfs entropy", "sfs+ef append", "sfs + index append", "bnl append"),
-	lty=c("dotted", "dotted", "dotted", "dotted", "dotted", "solid"),
-	pch=c("", "x", "\x18", "\x13", "o", "\x16"), col=c("lightgray","black","black", "black", "black", "black"), inset=0.05, bty="n"); 
-box()
+skyplot.wp(d, ssel, dist,rows,"topleft");
 }
 
 for (dist in c("i", "c", "a")) {
@@ -284,9 +450,6 @@ for (dist in c("i", "c", "a")) {
 	skyplot.off();
 }
 
-dev.off(dev.cur());
-
-
 
 
 
@@ -294,38 +457,38 @@ dev.off(dev.cur());
 ## tuple cmps
 ##
 
-d=aggregate(data$skyline.cmps.tuples, by=list(data$method, data$inrows, data$dim, data$dist), FUN = mean);
-colnames(d) <- c("method", "rows", "dim", "dist", "cmps");
-
-rows <- 100000;
-
-ssel <- d$rows == rows & d$dist == dist & d$method == "bnl.append" & d$dim > 1;
-sel <- ssel;
-plot(d$dim[sel], d$cmps[sel] / d$cmps[ssel], type="n", xlab = "# Dimensions", ylab = "# Tuple Comparisons", ylim=c(0.2,2))
-
-sel <- d$rows == rows & d$dist == dist & d$method == "bnl.append" & d$dim > 1;
-par(lty="solid", pch=22);
-lines(d$dim[sel], d$cmps[sel] / d$cmps[ssel]); points(d$dim[sel], d$cmps[sel] / d$cmps[ssel]);
-
-sel <- d$rows == rows & d$dist == dist & d$method == "bnl.prepend" & d$dim > 1;
-par(lty="solid", pch="x");
-lines(d$dim[sel], d$cmps[sel] / d$cmps[ssel]); points(d$dim[sel], d$cmps[sel] / d$cmps[ssel]);
-
-sel <- d$rows == rows & d$dist == dist & d$method == "bnl.ranked" & d$dim > 1;
-par(lty="solid", pch=24);
-lines(d$dim[sel], d$cmps[sel] / d$cmps[ssel]); points(d$dim[sel], d$cmps[sel] / d$cmps[ssel]);
-
-sel <- d$rows == rows & d$dist == dist & d$method == "sfs.append" & d$dim > 1;
-par(lty="dotted", pch=22);
-lines(d$dim[sel], d$cmps[sel] / d$cmps[ssel]); points(d$dim[sel], d$cmps[sel] / d$cmps[ssel]);
-
-sel <- d$rows == rows & d$dist == dist & d$method == "sfs.prepend" & d$dim > 1;
-par(lty="dotted", pch="x");
-lines(d$dim[sel], d$cmps[sel] / d$cmps[ssel]); points(d$dim[sel], d$cmps[sel] / d$cmps[ssel]);
-
-sel <- d$rows == rows & d$dist == dist & d$method == "sfs.ranked" & d$dim > 1;
-par(lty="dotted", pch=24);
-lines(d$dim[sel], d$cmps[sel] / d$cmps[ssel]); points(d$dim[sel], d$cmps[sel] / d$cmps[ssel]);
+#d=aggregate(data$skyline.cmps.tuples, by=list(data$method, data$inrows, data$dim, data$dist), FUN = mean);
+#colnames(d) <- c("method", "rows", "dim", "dist", "cmps");
+#
+#rows <- 100000;
+#
+#ssel <- d$rows == rows & d$dist == dist & d$method == "bnl.append" & d$dim > 1;
+#sel <- ssel;
+#plot(d$dim[sel], d$cmps[sel] / d$cmps[ssel], type="n", xlab = "# Dimensions", ylab = "# Tuple Comparisons", ylim=c(0.2,2))
+#
+#sel <- d$rows == rows & d$dist == dist & d$method == "bnl.append" & d$dim > 1;
+#par(lty="solid", pch=22);
+#lines(d$dim[sel], d$cmps[sel] / d$cmps[ssel]); points(d$dim[sel], d$cmps[sel] / d$cmps[ssel]);
+#
+#sel <- d$rows == rows & d$dist == dist & d$method == "bnl.prepend" & d$dim > 1;
+#par(lty="solid", pch="x");
+#lines(d$dim[sel], d$cmps[sel] / d$cmps[ssel]); points(d$dim[sel], d$cmps[sel] / d$cmps[ssel]);
+#
+#sel <- d$rows == rows & d$dist == dist & d$method == "bnl.ranked" & d$dim > 1;
+#par(lty="solid", pch=24);
+#lines(d$dim[sel], d$cmps[sel] / d$cmps[ssel]); points(d$dim[sel], d$cmps[sel] / d$cmps[ssel]);
+#
+#sel <- d$rows == rows & d$dist == dist & d$method == "sfs.append" & d$dim > 1;
+#par(lty="dotted", pch=22);
+#lines(d$dim[sel], d$cmps[sel] / d$cmps[ssel]); points(d$dim[sel], d$cmps[sel] / d$cmps[ssel]);
+#
+#sel <- d$rows == rows & d$dist == dist & d$method == "sfs.prepend" & d$dim > 1;
+#par(lty="dotted", pch="x");
+#lines(d$dim[sel], d$cmps[sel] / d$cmps[ssel]); points(d$dim[sel], d$cmps[sel] / d$cmps[ssel]);
+#
+#sel <- d$rows == rows & d$dist == dist & d$method == "sfs.ranked" & d$dim > 1;
+#par(lty="dotted", pch=24);
+#lines(d$dim[sel], d$cmps[sel] / d$cmps[ssel]); points(d$dim[sel], d$cmps[sel] / d$cmps[ssel]);
 
 
 
@@ -338,6 +501,8 @@ d=aggregate(data$skyline.cmps.fields / data$skyline.cmps.tuples, by=list(data$me
 colnames(d) <- c("method", "rows", "dim", "dist", "cmps");
 
 skyplot.cmppertuple <- function(method, ...) {
+skyplot.pdf(paste("fld-tup-cmps-", method, sep=""));
+
 rows <- 100000;
 dist <- "c";
 sel <- d$rows == rows & d$method == method;
@@ -359,6 +524,7 @@ lines(d$dim[sel], d$cmps[sel] ); points(d$dim[sel], d$cmps[sel]);
 
 legend("bottomright", c("corr", "indep", "anti"), 
 			lty=c("solid", "solid", "solid"), pch=c("\x18", "\x16", "x"), inset=0.05, bty="n"); 
+skyplot.off();
 }
 
 
@@ -395,47 +561,47 @@ d=aggregate(data$total, by=list(data$method, data$inrows, data$dim, data$dist, d
 colnames(d) <- c("method", "rows", "dim", "dist", "efslots", "total");
 
 
-str(data)
-str(d)
-levels(d$method)
+#str(data)
+#str(d)
+#levels(d$method)
 
 
-rows <- 10000;
-dim <- 4;
-method <- "bnl.ef.append.ranked";
-sel <- d$dim == dim & d$rows == rows & d$method == method;
-plot(d$efslots[sel], d$total[sel], type="n", xlab = "# EF Slots", ylab = "Time (sec)");
-
-dist <- "c";
-sel <- d$dim == dim & d$dist == dist & d$rows == rows & d$method == method;
-par(lty="solid", pch=24);
-lines(d$efslots[sel], d$total[sel]); points(d$efslots[sel], d$total[sel]);
-
-dist="a";
-sel <- d$dim == dim & d$dist == dist & d$rows == rows & d$method == method;
-par(lty="solid", pch="x");
-lines(d$efslots[sel], d$total[sel]); points(d$efslots[sel], d$total[sel]);
-
-dist="i";
-sel <- d$dim == dim & d$dist == dist & d$rows == rows & d$method == method;
-par(lty="solid", pch=22);
-lines(d$efslots[sel], d$total[sel]); points(d$efslots[sel], d$total[sel]);
-
-legend("bottomright", c("corr", "indep", "anti"), 
-			lty=c("solid", "solid", "solid"), pch=c("\x18", "\x16", "x"), inset=0.05, bty="n"); 
+#rows <- 10000;
+#dim <- 4;
+#method <- "bnl.ef.append.ranked";
+#sel <- d$dim == dim & d$rows == rows & d$method == method;
+#plot(d$efslots[sel], d$total[sel], type="n", xlab = "# EF Slots", ylab = "Time (sec)");
+#
+#dist <- "c";
+#sel <- d$dim == dim & d$dist == dist & d$rows == rows & d$method == method;
+#par(lty="solid", pch=24);
+#lines(d$efslots[sel], d$total[sel]); points(d$efslots[sel], d$total[sel]);
+#
+#dist="a";
+#sel <- d$dim == dim & d$dist == dist & d$rows == rows & d$method == method;
+#par(lty="solid", pch="x");
+#lines(d$efslots[sel], d$total[sel]); points(d$efslots[sel], d$total[sel]);
+#
+#dist="i";
+#sel <- d$dim == dim & d$dist == dist & d$rows == rows & d$method == method;
+#par(lty="solid", pch=22);
+#lines(d$efslots[sel], d$total[sel]); points(d$efslots[sel], d$total[sel]);
+#
+#legend("bottomright", c("corr", "indep", "anti"), 
+#			lty=c("solid", "solid", "solid"), pch=c("\x18", "\x16", "x"), inset=0.05, bty="n"); 
 
 
 
 for (method in c("bnl.ef.append.ranked", "sfs.ef.append.ranked")) {
 for (dist in c("i", "c", "a")) {
 
+rows <- 100000;
 
-skyplot.pdf(paste(method, "-", dist, "-vs-dim", sep=""));
+skyplot.pdf(paste(method, "-", rows, "-", dist, "-vs-dim", sep=""));
 
 #method <- "sfs.ef.append.ranked";
 #dist <- "a";
 
-rows <- 10000;
 sel <- d$rows == rows & d$method == method & d$dist == dist;
 ssel <- d$rows == rows & d$method == method & d$dist == dist & d$efslots == 100;
 palette("default")
@@ -457,7 +623,7 @@ legend("topright",
 	lty=rep(c("solid"), length(levels(factor(d$efslots)))),
 	col=1:length(levels(factor(d$efslots))),
 	pch=rep(c("\x18"), length(levels(factor(d$efslots)))),
-	inset=0.05, bty="n")
+	inset=0.05, bty="n", ncol=2)
 
 palette("default")
 par(col="black")
@@ -481,9 +647,9 @@ d=aggregate(data$total, by=list(data$method, data$inrows, data$dim, data$dist, d
 colnames(d) <- c("method", "rows", "dim", "dist", "efslots", "total");
 
 
-str(data)
-str(d)
-levels(d$method)
+#str(data)
+#str(d)
+#levels(d$method)
 
 
 

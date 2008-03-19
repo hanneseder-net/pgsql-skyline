@@ -353,47 +353,47 @@ sel <- d$dim == dim & d$dist == dist & d$method == "bnl.append";
 par(lty="solid", pch=22, col="black");
 lines(d$rows[sel], d$total[sel] / d$total[ssel]); points(d$rows[sel], d$total[sel] / d$total[ssel]);
 
-sel <- d$rows == rows & d$dist == dist & d$method == "bnl.prepend";
+sel <- d$dim == dim & d$dist == dist & d$method == "bnl.prepend";
 par(lty="solid", pch="x");
 lines(d$rows[sel], d$total[sel] / d$total[ssel]); points(d$rows[sel], d$total[sel] / d$total[ssel]);
 
-sel <- d$rows == rows & d$dist == dist & d$method == "bnl.ranked";
+sel <- d$dim == dim & d$dist == dist & d$method == "bnl.ranked";
 par(lty="solid", pch=24);
 lines(d$rows[sel], d$total[sel] / d$total[ssel]); points(d$rows[sel], d$total[sel] / d$total[ssel]);
 
-sel <- d$rows == rows & d$dist == dist & d$method == "bnl.ef.append";
+sel <- d$dim == dim & d$dist == dist & d$method == "bnl.ef.append";
 par(lty="solid", pch=22, col="red");
 lines(d$rows[sel], d$total[sel] / d$total[ssel]); points(d$rows[sel], d$total[sel] / d$total[ssel]);
 
-sel <- d$rows == rows & d$dist == dist & d$method == "bnl.ef.prepend";
+sel <- d$dim == dim & d$dist == dist & d$method == "bnl.ef.prepend";
 par(lty="solid", pch="x", col="red");
 lines(d$rows[sel], d$total[sel] / d$total[ssel]); points(d$rows[sel], d$total[sel] / d$total[ssel]);
 
-sel <- d$rows == rows & d$dist == dist & d$method == "bnl.ef.ranked";
+sel <- d$dim == dim & d$dist == dist & d$method == "bnl.ef.ranked";
 par(lty="solid", pch=24, col="red");
 lines(d$rows[sel], d$total[sel] / d$total[ssel]); points(d$rows[sel], d$total[sel] / d$total[ssel]);
 
-sel <- d$rows == rows & d$dist == dist & d$method == "sfs.append";
+sel <- d$dim == dim & d$dist == dist & d$method == "sfs.append";
 par(lty="solid", pch=22, col="green");
 lines(d$rows[sel], d$total[sel] / d$total[ssel]); points(d$rows[sel], d$total[sel] / d$total[ssel]);
 
-sel <- d$rows == rows & d$dist == dist & d$method == "sfs.prepend";
+sel <- d$dim == dim & d$dist == dist & d$method == "sfs.prepend";
 par(lty="solid", pch="x", col="green");
 lines(d$rows[sel], d$total[sel] / d$total[ssel]); points(d$rows[sel], d$total[sel] / d$total[ssel]);
 
-sel <- d$rows == rows & d$dist == dist & d$method == "sfs.ranked";
+sel <- d$dim == dim & d$dist == dist & d$method == "sfs.ranked";
 par(lty="solid", pch=24, col="green");
 lines(d$rows[sel], d$total[sel] / d$total[ssel]); points(d$rows[sel], d$total[sel] / d$total[ssel]);
 
-sel <- d$rows == rows & d$dist == dist & d$method == "sfs.ef.append";
+sel <- d$dim == dim & d$dist == dist & d$method == "sfs.ef.append";
 par(lty="solid", pch=22, col="blue");
 lines(d$rows[sel], d$total[sel] / d$total[ssel]); points(d$rows[sel], d$total[sel] / d$total[ssel]);
 
-sel <- d$rows == rows & d$dist == dist & d$method == "sfs.ef.prepend";
+sel <- d$dim == dim & d$dist == dist & d$method == "sfs.ef.prepend";
 par(lty="solid", pch="x", col="blue");
 lines(d$rows[sel], d$total[sel] / d$total[ssel]); points(d$rows[sel], d$total[sel] / d$total[ssel]);
 
-sel <- d$rows == rows & d$dist == dist & d$method == "sfs.ef.ranked";
+sel <- d$dim == dim & d$dist == dist & d$method == "sfs.ef.ranked";
 par(lty="solid", pch=24, col="blue");
 lines(d$rows[sel], d$total[sel] / d$total[ssel]); points(d$rows[sel], d$total[sel] / d$total[ssel]);
 

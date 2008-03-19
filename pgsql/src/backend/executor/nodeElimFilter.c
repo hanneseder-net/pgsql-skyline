@@ -97,14 +97,16 @@ ExecInitElimFilter(ElimFilter *node, EState *estate, int eflags)
 	 * If we do not have stats for at least one column, fall back from
 	 * window policy "ranked" back to "append".
 	 */
-	if (state->window_policy == TUP_WIN_POLICY_RANKED && !(node->flags & SKYLINE_FLAGS_HAVE_STATS))
+	if (state->window_policy == TUP_WIN_POLICY_ENTROPY && !(node->flags & SKYLINE_FLAGS_HAVE_STATS))
 	{
 		state->window_policy = TUP_WIN_POLICY_APPEND;
 		elog(INFO, "no stats for skyline expressions available, falling back to window policy \"append\"");
 	}
 
-	if (state->window_policy == TUP_WIN_POLICY_RANKED)
-		node->flags |= SL_FLAGS_RANKED;
+	if (state->window_policy == TUP_WIN_POLICY_ENTROPY)
+		state->flags |= SL_FLAGS_RANKED | SL_FLAGS_ENTROPY;
+	else if (state->window_policy == TUP_WIN_POLICY_RANDOM)
+		state->flags |= SL_FLAGS_RANKED | SL_FLAGS_RANDOM;
 
 	ExecElimFilterInitTupleWindow(state, node);
 
@@ -232,7 +234,14 @@ ExecElimFilter(ElimFilterState *state)
 
 				tuplewindow_rewind(window);
 				if (state->flags & SL_FLAGS_RANKED)
-					tuplewindow_setinsertrank(window, ExecSkylineRank(state, slot));
+				{
+					if (state->flags & SL_FLAGS_ENTROPY)
+						tuplewindow_setinsertrank(window, ExecSkylineRank(state, slot));
+					else if (state->flags & SL_FLAGS_RANDOM)
+						tuplewindow_setinsertrank(window, ExecSkylineRandom());
+					else
+						Assert(0);
+				}
 				for (;;)
 				{
 					int cmp;

@@ -87,7 +87,8 @@ tuplewindow_begin(int maxKBytes, int maxSlots, TupleWindowPolicy policy)
 	 */
 	AssertArg(   (policy == TUP_WIN_POLICY_APPEND)
 			  || (policy == TUP_WIN_POLICY_PREPEND)
-		      || (policy == TUP_WIN_POLICY_RANKED)
+		      || (policy == TUP_WIN_POLICY_ENTROPY)
+			  || (policy == TUP_WIN_POLICY_RANDOM)
 			  );
 
 	state->policy = policy;
@@ -233,7 +234,9 @@ tuplewindow_movenext(TupleWindowState *state)
 
 	if (state->current != state->nil)
 	{
-		if (state->policy == TUP_WIN_POLICY_RANKED 
+		if ((state->policy == TUP_WIN_POLICY_ENTROPY 
+			|| state->policy == TUP_WIN_POLICY_RANDOM
+			)
 			&& state->current == state->rankinsert)
 		{
 			if (state->current->rank >= state->insertrank)
@@ -390,9 +393,10 @@ tuplewindow_setinsertrank(TupleWindowState *state, double rank)
 	AssertArg(state != NULL);
 	
 	/*
-	 * Setting the rank is only useful when using RANKED policy
+	 * Setting the rank is only useful when using a ranked policy
 	 */
-	AssertState(state->policy == TUP_WIN_POLICY_RANKED);
+	AssertState(state->policy == TUP_WIN_POLICY_ENTROPY 
+				|| state->policy == TUP_WIN_POLICY_RANDOM);
 
 	/*
 	 * When setting the rank the cursor (current) has to be
@@ -505,7 +509,8 @@ tuplewindow_puttupleslot(TupleWindowState *state,
 		}
 		break;
 
-	case TUP_WIN_POLICY_RANKED:
+	case TUP_WIN_POLICY_ENTROPY:
+	case TUP_WIN_POLICY_RANDOM:
 		if (forced && !tuplewindow_has_freespace(state))
 		{
 			/*

@@ -9,7 +9,8 @@ typedef enum TupleWindowPolicy
 {
 	TUP_WIN_POLICY_APPEND,
 	TUP_WIN_POLICY_PREPEND,
-	TUP_WIN_POLICY_RANKED
+	TUP_WIN_POLICY_ENTROPY,
+	TUP_WIN_POLICY_RANDOM
 } TupleWindowPolicy;
 
 extern TupleWindowState *tuplewindow_begin(int maxKBytes, int maxSlots, TupleWindowPolicy policy);

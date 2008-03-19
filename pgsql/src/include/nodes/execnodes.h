@@ -1365,6 +1365,8 @@ typedef enum
 
 #define SL_FLAGS_NONE		0x0000
 #define SL_FLAGS_RANKED		0x0001
+#define SL_FLAGS_ENTROPY	0x0002
+#define SL_FLAGS_RANDOM		0x0004
 
 typedef struct SkylineState
 {

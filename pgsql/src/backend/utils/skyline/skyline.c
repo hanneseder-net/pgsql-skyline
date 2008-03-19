@@ -171,9 +171,10 @@ skyline_option_get_window_policy(List *skyline_of_options, char *name, TupleWind
 			*window_policy = TUP_WIN_POLICY_APPEND;
 		else if (strcmp(window_policy_name, "prepend") == 0)
 			*window_policy = TUP_WIN_POLICY_PREPEND;
-		else if (strcmp(window_policy_name, "ranked") == 0
-				|| strcmp(window_policy_name, "entropy") == 0)
-			*window_policy = TUP_WIN_POLICY_RANKED;
+		else if (strcmp(window_policy_name, "entropy") == 0)
+			*window_policy = TUP_WIN_POLICY_ENTROPY;
+		else if (strcmp(window_policy_name, "random") == 0)
+			*window_policy = TUP_WIN_POLICY_RANDOM;
 		else
 			ereport(ERROR,
 				(errcode(ERRCODE_SYNTAX_ERROR),
@@ -202,8 +203,10 @@ skyline_window_policy_name(TupleWindowPolicy window_policy)
 		return "append";
 	case TUP_WIN_POLICY_PREPEND:
 		return "prepend";
-	case TUP_WIN_POLICY_RANKED:
-		return "ranked";
+	case TUP_WIN_POLICY_ENTROPY:
+		return "entropy";
+	case TUP_WIN_POLICY_RANDOM:
+		return "random";
 	default:
 		elog(WARNING, "FIXME: skyline window policy `%d' unknown at %s:%d", window_policy, __FILE__, __LINE__);
 		return "?";

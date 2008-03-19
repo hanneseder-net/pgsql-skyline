@@ -27,5 +27,6 @@ extern int ExecSkylineIsDominating(SkylineState *node, TupleTableSlot *inner_slo
 extern void ExecSkylineCacheCompareFunctionInfo(SkylineState *slstate, Skyline *node);
 extern void ExecSkylineCacheCoerceFunctionInfo(SkylineState *slstate, Skyline *node);
 extern double ExecSkylineRank(SkylineState *node, TupleTableSlot *slot);
+extern double ExecSkylineRandom();
 
 #endif   /* SKYLINE_H */

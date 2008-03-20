@@ -2,6 +2,8 @@
 
 use strict;
 
+die "usage: gj.pl SEED" if ($#ARGV != 0);
+
 my $job = undef;
 
 sub sizes {
@@ -20,7 +22,7 @@ sub sizes {
 
 my @size = sizes(1000000);
 
-my $seed = "s0";
+my $seed = $ARGV[0];
 
 
 ##
@@ -195,39 +197,41 @@ EOF
 ##
 @size = sizes(100000);
 for my $windowpolicy ("append", "prepend", "entropy", "random") {
-  for my $dist ("i", "c", "a") {
-    for my $dim (2,3,4,5,6,7,8,9,10,11,12,13,14,15) {
-      my $jobfile = "bnl.sfs.ef.${windowpolicy}.${windowpolicy}.${dist}.${seed}.${dim}.sql";
+    for my $efwindowpolicy ("append", "prepend", "entropy", "random") {
+	for my $dist ("i", "c", "a") {
+	    for my $dim (2,3,4,5,6,7,8,9,10,11,12,13,14,15) {
+		my $jobfile = "bnl.sfs.ef.${windowpolicy}.${efwindowpolicy}.${dist}.${seed}.${dim}.sql";
 
-      next if (-e $jobfile);
-      print "INFO: file ${jobfile}...\n";
+		next if (-e $jobfile);
+		print "INFO: file ${jobfile}...\n";
 
-      open (JOB, ">$jobfile");
-      $job = "";
-      for my $size (@size) {
-	my $table = "${dist}15d${size}${seed}";
-	my $dims = "d1 min";
-	for (my $i=2; $i<=$dim; ++$i) {
-	  $dims = $dims . ", d${i} min";
-	}
+		open (JOB, ">$jobfile");
+		$job = "";
+		for my $size (@size) {
+		    my $table = "${dist}15d${size}${seed}";
+		    my $dims = "d1 min";
+		    for (my $i=2; $i<=$dim; ++$i) {
+			$dims = $dims . ", d${i} min";
+		    }
 
-$job = <<EOF;
+		    $job = <<EOF;
 --<comment>
 explain analyze select * from ${table};
 --</comment>
---<query runid=bnl.ef.${windowpolicy}.${windowpolicy}.${table}.${dim}>
-explain analyze select * from ${table} skyline of ${dims} with bnl windowpolicy=${windowpolicy} ef efwindowpolicy=${windowpolicy};
+--<query runid=bnl.ef.${windowpolicy}.${efwindowpolicy}.${table}.${dim}>
+explain analyze select * from ${table} skyline of ${dims} with bnl windowpolicy=${windowpolicy} ef efwindowpolicy=${efwindowpolicy};
 --</query>
---<query runid=sfs.ef.${windowpolicy}.${windowpolicy}.${table}.${dim}>
-explain analyze select * from ${table} skyline of ${dims} with sfs windowpolicy=${windowpolicy} ef efwindowpolicy=${windowpolicy};
+--<query runid=sfs.ef.${windowpolicy}.${efwindowpolicy}.${table}.${dim}>
+explain analyze select * from ${table} skyline of ${dims} with sfs windowpolicy=${windowpolicy} ef efwindowpolicy=${efwindowpolicy};
 --</query>
 EOF
 
-	print JOB "$job";
-      }
-      close (JOB);
+                    print JOB "$job";
+		}
+		close (JOB);
+	    }
+	}
     }
-  }
 }
 
 ##

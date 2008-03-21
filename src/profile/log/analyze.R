@@ -162,9 +162,16 @@ skyplot.pch <- function(method) {
 		else
 			warning("unknown method");
 	}
+	else if (length(parts) == 5) {
+		if (parts[1] == "sfs" && parts[2] == "index" && parts[3] == "ef") {
+			return (skyplot.pch.wp(parts[length(parts)]));
+		}
+	}
 	else
 		warning("unknown method");
 }
+
+# skyplot.pch("sfs.index.ef.append.append");
 
 skyplot.col <- function(method) {
 	parts <- strsplit(method, ".", fixed=TRUE)[[1]];
@@ -188,7 +195,7 @@ skyplot.col <- function(method) {
 		bnl.ef = "red",
 		sfs.ef = "blue",
 		sfs.index = "orange",
-		sfs.index.ef = "yellow",
+		sfs.ef.index = "blue",
 		"pink"
 		);
 
@@ -213,18 +220,20 @@ sel <- d$rows == rows & d$dist == dist & d$method == "select";
 abline(h=0.001 * d$total[sel], lwd=1, col="lightgray")
 
 sel <- d$rows == rows & d$dist == dist & d$method == "sort" & d$dim > 1;
-lines(d$dim[sel], 0.001 * d$total[sel], lty="dashed")
+lines(d$dim[sel], 0.001 * d$total[sel], lty="solid")
 points(d$dim[sel], 0.001 * d$total[sel], pch=19)
 
-sel <- d$rows == rows & d$dist == dist & d$method == "sfs.index.append" & d$rows >= 100 & d$rows <= 100000;
-lines(d$dim[sel], 0.001 * d$total[sel], lty="solid")
-points(d$dim[sel], 0.001 * d$total[sel], pch="o")
+#sel <- d$rows == rows & d$dist == dist & d$method == "sfs.index.append" & d$rows >= 100 & d$rows <= 100000;
+#lines(d$dim[sel], 0.001 * d$total[sel], lty="solid")
+#points(d$dim[sel], 0.001 * d$total[sel], pch="o")
 
 for (method in c(
-			"sfs.append", "sfs.prepend", "sfs.entropy", "sfs.random",
-			"bnl.append", "bnl.prepend", "bnl.entropy", "bnl.random",
-			"bnl.ef.append.append", "bnl.ef.prepend.prepend", "bnl.ef.entropy.entropy", "bnl.ef.random.random",
-			"sfs.ef.append.append", "sfs.ef.prepend.prepend", "sfs.ef.entropy.entropy", "sfs.ef.random.random")) {
+			#"sfs.append", 
+			#"sfs.prepend", #"sfs.entropy", "sfs.random",
+			"bnl.append"#, "bnl.prepend", "bnl.entropy", "bnl.random",
+			#"bnl.ef.append.append", "bnl.ef.prepend.prepend", "bnl.ef.entropy.entropy", "bnl.ef.random.random",
+			#"sfs.ef.append.append", "sfs.ef.prepend.prepend", "sfs.ef.entropy.entropy", "sfs.ef.random.random"
+	)) {
 	sel <- d$rows == rows & d$dist == dist & d$method == method;
 	par(lty="solid", pch=skyplot.pch(method), col=skyplot.col(method));
 	lines(d$dim[sel], 0.001 * d$total[sel]); points(d$dim[sel], 0.001 * d$total[sel]);
@@ -233,13 +242,16 @@ for (method in c(
 par(col="black");
 
 # bnl, sfs, presort, sort, select
-legend("topleft", c("bnl", "sfs", "sfs + index", "sql", "sort"), lty=c("solid", "dotted", "solid", "solid", "dashed"), pch=c("\x16", "\x18", "o", "x", "\x13"), inset=0.05, bty="n"); 
+#legend("topleft", c("bnl append", "sfs", "sfs + index", "sql", "sort"), lty=c("solid", "dotted", "solid", "solid", "dashed"), pch=c("\x16", "\x18", "o", "x", "\x13"), inset=0.05, bty="n"); 
+legend("topleft", c("bnl append", "sql", "sort"), lty=c("solid", "solid", "solid"), pch=c("\x16", "x", "\x13"), inset=0.05, bty="n"); 
+
 box();
 }
 
 for (dist in c("i", "c", "a")) {
-	rows <- 100000;
 	skyplot.pdf(paste("all-dim-", dist, "-", sprintf("%d", rows), sep=""));
+	rows <- 100000;
+	dist <- "i";
 	skyplot.alltimeabs(dist, rows);
 	skyplot.off();
 }
@@ -250,18 +262,27 @@ for (dist in c("i", "c", "a")) {
 ##
 
 skyplot.sfs.index <- function(dist) {
+par(col="black");
 rows <- 100000;
-sel <- d$rows == rows & d$dist == dist & d$dim > 1;
+sel <- d$rows == rows & d$dist == dist & d$dim > 1 & d$dim <= 6 & 
+	(d$method == "sfs.index.ef.append.append" | d$method == "sfs.index.prepend");
 plot(d$dim[sel], 0.001 * d$total[sel], log="y", type="n", xlab="# Dimensions", ylab="Time (sec)");
 
-for (method in c("sfs.index.append", "sfs.index.prepend", "sfs.index.entropy", "sfs.index.random")) {
-	sel <- d$rows == rows & d$dist == dist & d$method == method & d$rows >= 100 & d$rows <= 100000;
+sel <- d$rows == rows & d$dist == dist & d$dim > 1 & d$method == "sfs.index.append";
+
+for (method in c(
+		"sfs.index.append", "sfs.index.prepend", "sfs.index.entropy", "sfs.index.random",
+		"sfs.index.ef.append.append", "sfs.index.ef.prepend.prepend", "sfs.index.ef.entropy.entropy", "sfs.index.ef.random.random")) {
+	sel <- d$rows == rows & d$dist == dist & d$dim > 1 & d$dim <= 6 & d$method == method  ;
 	par(lty="solid", pch=skyplot.pch(method), col=skyplot.col(method));
 	lines(d$dim[sel], 0.001 * d$total[sel]); points(d$dim[sel], 0.001 * d$total[sel]);
 }
 par(col="black")
 # bnl, sfs, presort, sort, select
-legend("topleft", c("sfs + index append", "sfs + index prepend", "sfs + index entropy", "sfs + index random"), lty=rep(c("solid"),4), pch=c("\x16", "x", "\x18","o"), inset=0.05, bty="n"); 
+legend("topleft", 
+	paste(rep(c("sf+index", "sfs+index+ef"),each=4), c("append", "prepend", "entropy", "random")),
+	lty=rep(c("solid"),8), pch=rep(c("\x16", "x", "\x18","o"),2), col=rep(c("orange","blue"),each=4), inset=0.05, bty="n"); 
+box();
 }
 
 for (dist in c("i", "c", "a")) {
@@ -269,7 +290,6 @@ for (dist in c("i", "c", "a")) {
 	skyplot.sfs.index(dist);
 	skyplot.off();
 }
-
 
 ##
 ## 
@@ -419,7 +439,19 @@ for (dist in c("i", "c", "a")) {
 #lines(d$dim[sel], d$cmps[sel] / d$cmps[ssel]); points(d$dim[sel], d$cmps[sel] / d$cmps[ssel]);
 
 
+dtc=(data$skyline.cmps.tuples, by=list(data$method, data$inrows, data$dim, data$dist), FUN = mean);
+colnames(dtc) <- c("method", "rows", "dim", "dist", "cmps");
 
+dim <- 4;
+dist <- "a";
+sel <- !is.na(dtc$cmps) & dtc$dim == dim & dtc$method != "" & dtc$rows == 10000
+	dtc$method %in%
+		c(
+			"sfs.append", "sfs.prepend", "sfs.entropy", "sfs.random",
+			"bnl.append", "bnl.prepend", "bnl.entropy", "bnl.random",
+			"bnl.ef.append.append", "bnl.ef.prepend.prepend", "bnl.ef.entropy.entropy", "bnl.ef.random.random",
+			"sfs.ef.append.append", "sfs.ef.prepend.prepend", "sfs.ef.entropy.entropy", "sfs.ef.random.random");
+boxplot((dtc$cmps[sel] / dtc$rows[sel]) ~ unclass(dtc$method[sel]), ylab="# Tuple Comps")
 
 ##
 ## field cmps vs. tuple cmps

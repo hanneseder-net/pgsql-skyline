@@ -25,15 +25,47 @@ colnames(d) <- c("method", "rows", "dim", "dist", "total");
 # pdf(file = "allplots.pdf", encoding="ISOLatin1", onefile = TRUE);
 # postscript(file="allplots.ps", onefile = TRUE);
 
+
+skyplot.setup <- function(final, tofile) {
+	assign("skyplot.final", final, envir = .GlobalEnv);
+	assign("skyplot.tofile", tofile, envir = .GlobalEnv);
+}
+
+skyplot.isfinal <- function() {
+	return (get("skyplot.final", , envir = .GlobalEnv));
+}
+
+skyplot.istofile <- function() {
+	return (get("skyplot.tofile", , envir = .GlobalEnv));
+}
+
 skyplot.pdf <- function(filename) {
 	# todo define size
-	pdf(file = paste(filename, ".pdf", sep=""), encoding="ISOLatin1", onefile = FALSE)
+
+	if (skyplot.isfinal()) {
+		path = "plots-final/";
+	}	
+	else {
+		path = "plots-draft/";
+	}
+	
+	if (skyplot.istofile()) {
+		pdf(file = paste(path, filename, ".pdf", sep=""), encoding="ISOLatin1", onefile = FALSE, width=6, height=6-1.5)
+	}
+
+	par(mar=c(5, 4, 4, 2) + c(-0.75,0,-3.75,0));
+
 	assign("skyplot.title", filename, envir = .GlobalEnv);
 }
 
 skyplot.off <- function() {
-	title(main=get("skyplot.title", envir = .GlobalEnv), col="black");
-	dev.off();
+	if (! skyplot.isfinal()) {
+		title(main=get("skyplot.title", envir = .GlobalEnv), col="black");
+	}
+	
+	if (skyplot.istofile()) {
+		dev.off();
+	}
 }
 
 ##
@@ -255,10 +287,17 @@ par(col="black");
 
 # bnl, sfs, presort, sort, select
 #legend("topleft", c("bnl append", "sfs", "sfs + index", "sql", "sort"), lty=c("solid", "dotted", "solid", "solid", "dashed"), pch=c("\x16", "\x18", "o", "x", "\x13"), inset=0.05, bty="n"); 
-legend("topleft", c("bnl append", "sql", "sort"), lty=c("solid", "solid", "solid"), pch=c("\x16", "x", "\x13"), inset=0.05, bty="n"); 
+legend("topleft", c("bnl append", "sql", "sort", "all methods"), lty=c("solid", "solid", "solid", "solid"), pch=c("\x16", "x", "\x13", " "), lwd=c(1,1,1,10), col=c("black", "black", "black", rgb(0.95,0.95,1)), inset=0.01, bty="n"); 
 
 box();
 }
+
+windowsize <- 1024;
+efwindowsize <- 8;
+
+sel <- (is.na(data$windowsize) | data$windowsize == windowsize) & (is.na(data$efwindowsize) | data$efwindowsize == efwindowsize)
+d=aggregate(data$total[sel], by=list(data$method[sel], data$inrows[sel], data$dim[sel], data$dist[sel]), FUN = mean);
+colnames(d) <- c("method", "rows", "dim", "dist", "total");
 
 for (dist in c("i", "c", "a")) {
 	rows <- 100000;
@@ -268,39 +307,43 @@ for (dist in c("i", "c", "a")) {
 }
 
 
+
 ##
 ## sfs.index
 ##
 
 skyplot.sfs.index <- function(dist) {
 par(col="black");
+ssel <- d$rows == rows & d$dist == dist & d$method == "sfs.append" & d$dim > 1 & d$dim <= 6;
 sel <- d$rows == rows & d$dist == dist & d$dim > 1 & d$dim <= 6 & 
 	(d$method == "sfs.index.ef.append.append" | d$method == "sfs.index.prepend");
-plot(d$dim[sel], 0.001 * d$total[sel], log="y", type="n", xlab="# Dimensions", ylab="Time (sec)");
+plot(d$dim[sel], d$total[sel], type="n", xlab="# Dimensions", ylab="Time (relative)", ylim=c(0.1,1.75));
 
-sel <- d$rows == rows & d$dist == dist & ! (d$method %in% c("sql", "select", "sort"));
+sel <- d$rows == rows & d$dist == dist & ! (d$method %in% c("sql", "select", "sort")) & d$dim <= 6;
 dmin <- aggregate(d$total[sel], by=list(d$rows[sel], d$dim[sel], d$dist[sel]), FUN = min);
 dmax <- aggregate(d$total[sel], by=list(d$rows[sel], d$dim[sel], d$dist[sel]), FUN = max);
 colnames(dmin) <- c("rows", "dim", "dist", "total");
 colnames(dmax) <- c("rows", "dim", "dist", "total");
 
-polygon(c(dmin$dim, rev(dmax$dim)), c(0.001 * dmin$total, rev(0.001 * dmax$total)), col=rgb(0.95,0.95,1), border=FALSE)
+polygon(c(dmin$dim, rev(dmax$dim)), c(dmin$total / d$total[ssel] , rev(dmax$total / d$total[ssel])), col=rgb(0.95,0.95,1), border=FALSE)
 
 
-sel <- d$rows == rows & d$dist == dist & d$dim > 1 & d$method == "sfs.index.append";
+#sel <- d$rows == rows & d$dist == dist & d$dim > 1 & d$method == "sfs.index.append";
 
 for (method in c(
+		"sfs.append",
 		"sfs.index.append", "sfs.index.prepend", "sfs.index.entropy", "sfs.index.random",
 		"sfs.index.ef.append.append", "sfs.index.ef.prepend.prepend", "sfs.index.ef.entropy.entropy", "sfs.index.ef.random.random")) {
 	sel <- d$rows == rows & d$dist == dist & d$dim > 1 & d$dim <= 6 & d$method == method  ;
 	par(lty="solid", pch=skyplot.pch(method), col=skyplot.col(method));
-	lines(d$dim[sel], 0.001 * d$total[sel]); points(d$dim[sel], 0.001 * d$total[sel]);
+	lines(d$dim[sel], d$total[sel] / d$total[ssel]); points(d$dim[sel], d$total[sel] / d$total[ssel]);
 }
 par(col="black")
 # bnl, sfs, presort, sort, select
 legend("topleft", 
-	paste(rep(c("sf+index", "sfs+index+ef"),each=4), c("append", "prepend", "entropy", "random")),
-	lty=rep(c("solid"),8), pch=rep(c("\x16", "x", "\x18","o"),2), col=rep(c("orange","blue"),each=4), inset=0.05, bty="n"); 
+	c("all methods", paste(rep(c("sfs+index"),each=4), c("append", "prepend", "entropy", "random")), "sfs append", paste(rep(c("sfs+index+ef"),each=4), c("append", "prepend", "entropy", "random"))),
+	lty=c(rep(c("solid"),10)), pch=c(" ", "\x16", "x", "\x18","o", "\x16", "\x16", "x", "\x18", "o"), 
+	col=c(rgb(0.95,0.95,1),rep("orange",4),"green", rep("blue", 4)), lwd=c(10, rep(1,9)), inset=0.01, bty="n", ncol=2); 
 box();
 }
 
@@ -811,3 +854,49 @@ boxplot(data$skyline.cmps.fields[sel] / data$skyline.cmps.tuples[sel] ~ data$sky
 
 
 
+
+
+skyplot.pch4rows <- function(rows) {
+	return (switch(rows, 1000=
+}
+
+
+
+
+##
+## selectivify
+##
+
+dor <- aggregate(data$outrows, by=list(data$method, data$inrows, data$dim, data$dist), FUN = mean);
+colnames(dor) <- c("method", "rows", "dim", "dist", "outrows");
+
+for (dist in c("i", "c", "a")) {
+	skyplot.pdf(paste("selectifity-dim", "-", dist, sep=""));
+
+sel <- dor$rows == rows & dor$method == method & dor$dist == dist;
+par(col="black", pch="+");
+plot(dor$dim[sel], dor$outrows[sel] / dor$rows[sel], ylim=c(0,1), type="n", xlab = "# Dimensions", ylab = "selectifity = # output tuples / # input tuples")
+grid()
+
+rowss <- c(100, 500, 1000, 5000, 10000, 50000, 100000);
+palette(rainbow(2+length(rowss)))
+colidx <- 0;
+for (rows in rowss) {
+	colidx <- colidx + 1;
+	sel <- dor$rows == rows & dor$method == method & dor$dist == dist;
+	par(col=colidx);
+	lines(dor$dim[sel], dor$outrows[sel] / dor$rows[sel]); points(dor$dim[sel], dor$outrows[sel] / dor$rows[sel]);
+}
+
+	par(col="black");
+	legend("topleft", sprintf("%d tuples", rowss), lty=rep("solid", length(rows)), col=1:length(rowss), inset=0.00, bty="n")
+	palette("default");
+
+	skyplot.off();
+}
+
+
+
+
+
+skyplot.setup(TRUE, FALSE)

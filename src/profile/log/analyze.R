@@ -25,6 +25,7 @@ colnames(d) <- c("method", "rows", "dim", "dist", "total");
 # pdf(file = "allplots.pdf", encoding="ISOLatin1", onefile = TRUE);
 # postscript(file="allplots.ps", onefile = TRUE);
 
+skyplot.setup(TRUE, TRUE)
 
 skyplot.setup <- function(final, tofile) {
 	assign("skyplot.final", final, envir = .GlobalEnv);
@@ -375,7 +376,7 @@ legend(legendpos,
 	paste(rep(c("bnl","bnl+ef", "sfs", "sfs+ef"),each=4), c("append", "prepend", "entropy", "random")),
 	lty="solid",
 	pch=rep(c("\x16", "x", "\x18", "o"), 4),
-	col=rep(c("black", "red", "green", "blue"), each=4), inset=0.05, bty="n", ncol=2)
+	col=rep(c("black", "red", "green", "blue"), each=4), inset=0.01, bty="n", ncol=2)
 box()
 }
 
@@ -418,7 +419,7 @@ legend(legendpos,
 	paste(rep(c("bnl","bnl+ef", "sfs", "sfs+ef"),each=4), c("append", "prepend", "entropy", "random")),
 	lty="solid",
 	pch=rep(c("\x16", "x", "\x18", "o"), 4),
-	col=rep(c("black", "red", "green", "blue"), each=4), inset=0.05, bty="n", ncol=2)
+	col=rep(c("black", "red", "green", "blue"), each=4), inset=0.01, bty="n", ncol=2)
 box()
 }
 

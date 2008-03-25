@@ -511,6 +511,8 @@ tuplewindow_puttupleslot(TupleWindowState *state,
 
 	case TUP_WIN_POLICY_ENTROPY:
 	case TUP_WIN_POLICY_RANDOM:
+		// FIXME: if the tuple is going to be inserted, has a lower rank as the last
+		// tuple it is replace, which should not happen
 		if (forced && !tuplewindow_has_freespace(state))
 		{
 			/*

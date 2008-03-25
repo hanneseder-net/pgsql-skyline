@@ -144,6 +144,10 @@ parseCheckAggregates(ParseState *pstate, Query *qry)
 		groupClauses = lcons(expr, groupClauses);
 	}
 
+	/* FIXME:
+	 * No aggregates allowed in SKYLINE OF clauses, either. ???
+	 */
+
 	/*
 	 * If there are join alias vars involved, we have to flatten them to the
 	 * underlying vars, so that aliased and unaliased vars will be correctly

@@ -511,8 +511,6 @@ tuplewindow_puttupleslot(TupleWindowState *state,
 
 	case TUP_WIN_POLICY_ENTROPY:
 	case TUP_WIN_POLICY_RANDOM:
-		// FIXME: if the tuple is going to be inserted, has a lower rank as the last
-		// tuple it is replace, which should not happen
 		if (forced && !tuplewindow_has_freespace(state))
 		{
 			/*
@@ -520,15 +518,18 @@ tuplewindow_puttupleslot(TupleWindowState *state,
 			 */
 			Assert(state->nil->prev != state->nil);
 
-			tuplewindow_removeslot(state, state->nil->prev, true);
+			if (state->insertrank > state->nil->prev->rank)
+				tuplewindow_removeslot(state, state->nil->prev, true);
 		}
 
 		/*
 		 * We insert the tuple at the ranked position, this keeps the window
 		 * ordered by the rank.
 		 */
-		AssertState(tuplewindow_has_freespace(state));
-		tuplewindow_puttupleslot_impl(state, slot, timestamp, state->rankinsert, state->insertrank);
+		if (tuplewindow_has_freespace(state))
+		{
+			tuplewindow_puttupleslot_impl(state, slot, timestamp, state->rankinsert, state->insertrank);
+		}
 		
 		/* checking that the tuples in the window are ordered rank desc (\infty .. -\infty) */
 		/*

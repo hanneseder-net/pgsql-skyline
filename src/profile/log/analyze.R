@@ -203,7 +203,7 @@ skyplot.col <- function(method) {
 }
 
 ##
-## all (sql, sort, bnl, sfs ...)
+## all (sql, sort, bnl, sfs ...) vs dim.
 ##
 
 skyplot.alltimeabs <- function(dist, rows) {
@@ -211,6 +211,17 @@ skyplot.alltimeabs <- function(dist, rows) {
 
 sel <- d$rows == rows & d$dist == dist & d$dim > 1;
 plot(d$dim[sel], 0.001 * d$total[sel], log="y", type="n", xlab="# Dimensions", ylab="Time (sec)");
+
+sel <- d$rows == rows & d$dist == dist & ! (d$method %in% c("sql", "select", "sort"));
+dmin <- aggregate(d$total[sel], by=list(d$rows[sel], d$dim[sel], d$dist[sel]), FUN = min);
+dmax <- aggregate(d$total[sel], by=list(d$rows[sel], d$dim[sel], d$dist[sel]), FUN = max);
+colnames(dmin) <- c("rows", "dim", "dist", "total");
+colnames(dmax) <- c("rows", "dim", "dist", "total");
+
+#lines(dmin$dim, dmin$total * 0.001)
+#lines(dmax$dim, dmax$total * 0.001)
+
+polygon(c(dmin$dim, rev(dmax$dim)), c(0.001 * dmin$total, rev(0.001 * dmax$total)), col=rgb(0.95,0.95,1), border=FALSE)
 
 sel <- d$rows == rows & d$dist == dist & d$method == "sql";
 lines(d$dim[sel], 0.001 * d$total[sel], lty="solid")
@@ -241,6 +252,7 @@ for (method in c(
 
 par(col="black");
 
+
 # bnl, sfs, presort, sort, select
 #legend("topleft", c("bnl append", "sfs", "sfs + index", "sql", "sort"), lty=c("solid", "dotted", "solid", "solid", "dashed"), pch=c("\x16", "\x18", "o", "x", "\x13"), inset=0.05, bty="n"); 
 legend("topleft", c("bnl append", "sql", "sort"), lty=c("solid", "solid", "solid"), pch=c("\x16", "x", "\x13"), inset=0.05, bty="n"); 
@@ -249,9 +261,8 @@ box();
 }
 
 for (dist in c("i", "c", "a")) {
-	skyplot.pdf(paste("all-dim-", dist, "-", sprintf("%d", rows), sep=""));
 	rows <- 100000;
-	dist <- "i";
+	skyplot.pdf(paste("all-dim-", dist, "-", sprintf("%d", rows), sep=""));
 	skyplot.alltimeabs(dist, rows);
 	skyplot.off();
 }
@@ -263,10 +274,18 @@ for (dist in c("i", "c", "a")) {
 
 skyplot.sfs.index <- function(dist) {
 par(col="black");
-rows <- 100000;
 sel <- d$rows == rows & d$dist == dist & d$dim > 1 & d$dim <= 6 & 
 	(d$method == "sfs.index.ef.append.append" | d$method == "sfs.index.prepend");
 plot(d$dim[sel], 0.001 * d$total[sel], log="y", type="n", xlab="# Dimensions", ylab="Time (sec)");
+
+sel <- d$rows == rows & d$dist == dist & ! (d$method %in% c("sql", "select", "sort"));
+dmin <- aggregate(d$total[sel], by=list(d$rows[sel], d$dim[sel], d$dist[sel]), FUN = min);
+dmax <- aggregate(d$total[sel], by=list(d$rows[sel], d$dim[sel], d$dist[sel]), FUN = max);
+colnames(dmin) <- c("rows", "dim", "dist", "total");
+colnames(dmax) <- c("rows", "dim", "dist", "total");
+
+polygon(c(dmin$dim, rev(dmax$dim)), c(0.001 * dmin$total, rev(0.001 * dmax$total)), col=rgb(0.95,0.95,1), border=FALSE)
+
 
 sel <- d$rows == rows & d$dist == dist & d$dim > 1 & d$method == "sfs.index.append";
 
@@ -286,7 +305,8 @@ box();
 }
 
 for (dist in c("i", "c", "a")) {
-	skyplot.pdf(paste("sfs-index-", dist, sep=""));
+	rows <- 100000;
+	skyplot.pdf(paste("sfs-index-", dist, "-", sprintf("%d", rows), sep=""));
 	skyplot.sfs.index(dist);
 	skyplot.off();
 }
@@ -439,20 +459,65 @@ for (dist in c("i", "c", "a")) {
 #lines(d$dim[sel], d$cmps[sel] / d$cmps[ssel]); points(d$dim[sel], d$cmps[sel] / d$cmps[ssel]);
 
 
-dtc=(data$skyline.cmps.tuples, by=list(data$method, data$inrows, data$dim, data$dist), FUN = mean);
+dtc=aggregate(data$skyline.cmps.tuples, by=list(data$method, data$inrows, data$dim, data$dist), FUN = mean);
+dor=aggregate(data$outrows, by=list(data$method, data$inrows, data$dim, data$dist), FUN = mean);
 colnames(dtc) <- c("method", "rows", "dim", "dist", "cmps");
+colnames(dor) <- c("method", "rows", "dim", "dist", "outrows");
 
-dim <- 4;
+rows <- 1000;
+dim <- 6;
 dist <- "a";
-sel <- !is.na(dtc$cmps) & dtc$dim == dim & dtc$method != "" & dtc$rows == 10000
+sel <- !is.na(dtc$cmps) & dtc$dim == dim & #dtc$rows == rows & #dtc$dist == dist &
 	dtc$method %in%
 		c(
 			"sfs.append", "sfs.prepend", "sfs.entropy", "sfs.random",
 			"bnl.append", "bnl.prepend", "bnl.entropy", "bnl.random",
 			"bnl.ef.append.append", "bnl.ef.prepend.prepend", "bnl.ef.entropy.entropy", "bnl.ef.random.random",
 			"sfs.ef.append.append", "sfs.ef.prepend.prepend", "sfs.ef.entropy.entropy", "sfs.ef.random.random");
-boxplot((dtc$cmps[sel] / dtc$rows[sel]) ~ unclass(dtc$method[sel]), ylab="# Tuple Comps")
 
+dtc.cmps <- dtc$cmps[sel] / dor$outrows[sel];
+dtc.rows <- dtc$rows[sel];
+dtc.method <- as.factor(as.vector(dtc$method[sel]));
+
+boxplot((dtc.cmps / dtc.rows) ~ dtc.method, ylab="# Tuple Comps", las=2, notch=TRUE)
+
+##
+##
+##
+
+sel <- data$method %in%	c("sfs.append", "sfs.prepend", "sfs.entropy", "sfs.random",
+				"bnl.append", "bnl.prepend", "bnl.entropy", "bnl.random");
+dtc=aggregate(data$skyline.cmps.tuples[sel], by=list(paste(data$skyline.method[sel], data$windowpolicy[sel], sep="."), data$inrows[sel], data$dim[sel], data$dist[sel]), FUN = mean);
+dor=aggregate(data$outrows[sel], by=list(paste(data$skyline.method[sel], data$windowpolicy[sel], sep="."), data$inrows[sel], data$dim[sel], data$dist[sel]), FUN = mean);
+colnames(dtc) <- c("method", "rows", "dim", "dist", "cmps");
+colnames(dor) <- c("method", "rows", "dim", "dist", "outrows");
+
+rows <- 10000;
+dim <- 15;
+dist <- "a";
+sel <- !is.na(dtc$cmps) #& dtc$dist == dist& dtc$dim == dim & dtc$rows == rows #& #dtc$dist == dist &
+	dtc$method %in%
+		c(
+			"sfs.append", "sfs.prepend", "sfs.entropy", "sfs.random",
+			"bnl.append", "bnl.prepend", "bnl.entropy", "bnl.random",
+			"bnl.ef.append.append", "bnl.ef.prepend.prepend", "bnl.ef.entropy.entropy", "bnl.ef.random.random",
+			"sfs.ef.append.append", "sfs.ef.prepend.prepend", "sfs.ef.entropy.entropy", "sfs.ef.random.random");
+
+dtc.cmps <- dtc$cmps[sel] / (dor$outrows[sel]);
+dtc.method <- as.factor(as.vector(dtc$method[sel]));
+dtc.dim <- dtc$dim[sel];
+dtc.rows <- dtc$rows[sel];
+
+
+boxplot(dtc.cmps ~ dtc.method, ylab="# Tuple Comps", las=2, notch=TRUE)
+
+
+sel <- !is.na(dtc$cmps) & dtc$method == "bnl.append" & dtc$dist == dist & dtc$rows == rows;
+plot(dtc$dim[sel] , dtc$cmps[sel]/ dor$outrows[sel]);
+
+
+
+ 
 ##
 ## field cmps vs. tuple cmps
 ##
@@ -654,3 +719,95 @@ skyplot.off();
 
 }
 }
+
+
+
+##
+## EF window effectiveness
+##
+
+sel <- data$efwindowpolicy != "";
+def = aggregate(((data$inrows-data$efrows)/(data$inrows-data$outrows))[sel], by=list(data$efwindowpolicy[sel], data$inrows[sel], data$dim[sel], data$dist[sel], data$efwindowsize[sel]), FUN = mean);
+colnames(def) <- c("policy", "rows", "dim", "dist", "efwindowsize", "eff");
+
+
+skyplot.col4dist <- function(dist) {
+	return (switch(dist, i="blue", c="green", a="red", "pink"));
+}
+
+
+skyplot.efeff <- function(rows, dist, efwindowsize) {
+policy <- "append";
+sel <- def$policy == policy & def$rows == rows & def$dist == dist & def$efwindowsize == efwindowsize;
+plot(def$dim[sel], def$eff[sel], type="n", ylim=c(0,1), xlab = "# Dimensions", ylab="% of non skyline elimiated by EF");
+
+for (dist in c("i", "c", "a")) {
+for (policy in c("append", "prepend", "entropy", "random")) {
+#for (policy in c("append", "prepend")) {
+	sel <- def$policy == policy & def$rows == rows & def$dist == dist & def$efwindowsize == efwindowsize;
+	par(col=skyplot.col4dist(dist), pch = skyplot.pch(paste("bnl.ef.", policy , "." , policy, sep="")));
+	lines(def$dim[sel], def$eff[sel]); points(def$dim[sel], def$eff[sel]);
+}
+}
+
+par(col="black")
+legend("bottomleft", c("corr", "indep", "anti", "append", "prepend", "entropy", "random"),
+	col=c("green", "blue", "red", rep("black", 4)),
+	pch=c(" ", " ", " ", "\x16", "x", "\x18", "o"),
+	lty=c(rep("solid", 3), rep("blank", 4)),
+	inset=0.05, bty="n", ncol=1);
+}
+
+
+for (dist in c("i", "c", "a")) {
+	rows <- 100000;
+	efwindowsize <- 8;
+	skyplot.pdf(paste("ef-eff-dim", "-", sprintf("%d", rows), "-", dist, "-efws", efwindowsize, sep=""));
+	skyplot.efeff(rows, dist, efwindowsize);
+	skyplot.off();
+}
+
+
+
+##
+##
+##
+
+dist <- "a";
+sel <- #data$dist == dist & 
+	data$method %in%	c(
+			"sfs.append", "sfs.prepend", "sfs.entropy", "sfs.random",
+			"bnl.append", "bnl.prepend", "bnl.entropy", "bnl.random")
+
+par(mar=c(5, 4, 4, 2) + c(1,0,0,0))
+boxplot(data$skyline.cmps.fields[sel] / data$skyline.cmps.tuples[sel] ~ paste(data$skyline.method[sel], data$windowpolicy[sel]), las=2, notch=TRUE, ylab="# Field Cmps / # Tuple Cmps")
+#boxplot(data$skyline.cmps.fields[sel] / data$skyline.cmps.tuples[sel] ~ data$skyline.method[sel], las=2)
+#boxplot(data$skyline.cmps.fields[sel] / data$skyline.cmps.tuples[sel] ~ data$windowpolicy[sel], las=2)
+par(mar=c(5, 4, 4, 2))
+
+
+
+
+##
+## average fields cmps / tuple cmps
+##
+
+for (dist in c("i", "c", "a")) {
+sel <- data$dist == dist & 
+	data$skyline.method %in% c("bnl", "sfs");
+
+
+print(summary(data$skyline.cmps.fields[sel] / data$skyline.cmps.tuples[sel]))
+}
+
+##
+##
+##
+
+sel <- data$skyline.method %in% c("bnl", "sfs");
+boxplot(data$skyline.cmps.fields[sel] / data$skyline.cmps.tuples[sel] ~ data$dist[sel],notch=TRUE)
+boxplot(data$skyline.cmps.fields[sel] / data$skyline.cmps.tuples[sel] ~ paste(data$dist[sel],data$skyline.method[sel]),notch=TRUE)
+boxplot(data$skyline.cmps.fields[sel] / data$skyline.cmps.tuples[sel] ~ data$skyline.method[sel],notch=TRUE)
+
+
+

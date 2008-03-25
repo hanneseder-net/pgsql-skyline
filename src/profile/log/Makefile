@@ -18,7 +18,7 @@ master.csv: $(masterfiles)
 	tail -q -n +2 $(masterfiles) >> master.csv
 
 sql.csv: sql.zip
-	unzip -p $< | $(QP2LOG) | $(PIVOT_LOG) --c=method --c=seqscan.o.on=table --c=seqscan.o.rows=outrows --c=skyline.dim=dim --c=seqscan.o.tablesize=inrows --c=skyline.method --c=skyline.passes --c=skyline.windowsize --c=skyline.windowpolicy --c=skyline.cmps.tuples --c=skyline.cmps.fields --c=total > $@
+	unzip -p $< | $(QP2LOG) | $(PIVOT_LOG) --c=method --c=seqscan.o.on=table --c=seqscan.o.rows=outrows --c=skyline.dim=dim --c=seqscan.o.tablesize=inrows --c=skyline.method --c=skyline.passes --c=skyline.windowsize=windowsize --c=skyline.windowpolicy=windowpolicy --c=skyline.cmps.tuples --c=skyline.cmps.fields --c=elimfilter.rows=efrows --c=elimfilter.windowpolicy=efwindowpolicy --c=elimfilter.windowsize=efwindowsize --c=total > $@
 
 %.csv : %.zip
-	unzip -p $< | $(QP2LOG) | $(PIVOT_LOG) --c=method --c=seqscan.on=table --c=skyline.rows=outrows --c=skyline.dim=dim --c=seqscan.rows=inrows --c=skyline.method --c=skyline.passes --c=skyline.windowsize --c=skyline.windowpolicy --c=skyline.cmps.tuples --c=skyline.cmps.fields --c=total > $@
+	unzip -p $< | $(QP2LOG) | $(PIVOT_LOG) --c=method --c=seqscan.on=table --c=skyline.rows=outrows --c=skyline.dim=dim --c=seqscan.rows=inrows --c=skyline.method --c=skyline.passes --c=skyline.windowsize=windowsize --c=skyline.windowpolicy=windowpolicy --c=skyline.cmps.tuples --c=skyline.cmps.fields --c=elimfilter.rows=efrows --c=elimfilter.windowpolicy=efwindowpolicy --c=elimfilter.windowsize=efwindowsize --c=total > $@

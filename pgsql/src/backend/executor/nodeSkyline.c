@@ -266,7 +266,7 @@ ExecSkylineRank(SkylineState *state, TupleTableSlot *slot)
 		if (sk_flags & SK_BT_DESC)
 			value = SKYLINE_RANK_BOUND_MAX - value;
 
-		res -= log(value);
+		res -= log(value+1.0);
 	}
 
 	return res;

@@ -16,7 +16,10 @@ sky.readfile <- function(filename) {
 
 
 data = sky.readfile("master.csv");
-d=aggregate(data$total, by=list(data$method, data$inrows, data$dim, data$dist), FUN = mean);
+windowsize <- 1024;
+efwindowsize <- 8;
+sel <- (is.na(data$windowsize) | data$windowsize == windowsize) & (is.na(data$efwindowsize) | data$efwindowsize == efwindowsize)
+d=aggregate(data$total[sel], by=list(data$method[sel], data$inrows[sel], data$dim[sel], data$dist[sel]), FUN = mean);
 colnames(d) <- c("method", "rows", "dim", "dist", "total");
 
 #str(data)
@@ -24,8 +27,6 @@ colnames(d) <- c("method", "rows", "dim", "dist", "total");
 
 # pdf(file = "allplots.pdf", encoding="ISOLatin1", onefile = TRUE);
 # postscript(file="allplots.ps", onefile = TRUE);
-
-skyplot.setup(TRUE, TRUE)
 
 skyplot.setup <- function(final, tofile) {
 	assign("skyplot.final", final, envir = .GlobalEnv);
@@ -68,6 +69,9 @@ skyplot.off <- function() {
 		dev.off();
 	}
 }
+
+skyplot.setup(TRUE, TRUE)
+
 
 ##
 ## 2 dim presort vs. sfs append, bnl append, sort
@@ -241,7 +245,7 @@ skyplot.col <- function(method) {
 
 skyplot.alltimeabs <- function(dist, rows) {
 #title <- sprintf("%s%d", dist, rows);
-
+par(col="black");
 sel <- d$rows == rows & d$dist == dist & d$dim > 1;
 plot(d$dim[sel], 0.001 * d$total[sel], log="y", type="n", xlab="# Dimensions", ylab="Time (sec)");
 
@@ -285,20 +289,10 @@ for (method in c(
 
 par(col="black");
 
-
-# bnl, sfs, presort, sort, select
-#legend("topleft", c("bnl append", "sfs", "sfs + index", "sql", "sort"), lty=c("solid", "dotted", "solid", "solid", "dashed"), pch=c("\x16", "\x18", "o", "x", "\x13"), inset=0.05, bty="n"); 
 legend("topleft", c("bnl append", "sql", "sort", "all methods"), lty=c("solid", "solid", "solid", "solid"), pch=c("\x16", "x", "\x13", " "), lwd=c(1,1,1,10), col=c("black", "black", "black", rgb(0.95,0.95,1)), inset=0.01, bty="n"); 
 
 box();
 }
-
-windowsize <- 1024;
-efwindowsize <- 8;
-
-sel <- (is.na(data$windowsize) | data$windowsize == windowsize) & (is.na(data$efwindowsize) | data$efwindowsize == efwindowsize)
-d=aggregate(data$total[sel], by=list(data$method[sel], data$inrows[sel], data$dim[sel], data$dist[sel]), FUN = mean);
-colnames(d) <- c("method", "rows", "dim", "dist", "total");
 
 for (dist in c("i", "c", "a")) {
 	rows <- 100000;
@@ -780,14 +774,14 @@ skyplot.col4dist <- function(dist) {
 }
 
 
-skyplot.efeff <- function(rows, dist, efwindowsize) {
+skyplot.efeff <- function(rows, efwindowsize) {
 policy <- "append";
 sel <- def$policy == policy & def$rows == rows & def$dist == dist & def$efwindowsize == efwindowsize;
 plot(def$dim[sel], def$eff[sel], type="n", ylim=c(0,1), xlab = "# Dimensions", ylab="% of non skyline elimiated by EF");
+grid();
 
 for (dist in c("i", "c", "a")) {
 for (policy in c("append", "prepend", "entropy", "random")) {
-#for (policy in c("append", "prepend")) {
 	sel <- def$policy == policy & def$rows == rows & def$dist == dist & def$efwindowsize == efwindowsize;
 	par(col=skyplot.col4dist(dist), pch = skyplot.pch(paste("bnl.ef.", policy , "." , policy, sep="")));
 	lines(def$dim[sel], def$eff[sel]); points(def$dim[sel], def$eff[sel]);
@@ -800,16 +794,17 @@ legend("bottomleft", c("corr", "indep", "anti", "append", "prepend", "entropy", 
 	pch=c(" ", " ", " ", "\x16", "x", "\x18", "o"),
 	lty=c(rep("solid", 3), rep("blank", 4)),
 	inset=0.05, bty="n", ncol=1);
+box();
 }
 
 
-for (dist in c("i", "c", "a")) {
-	rows <- 100000;
+for (rows in c(100, 1000, 10000, 100000)) {
 	efwindowsize <- 8;
-	skyplot.pdf(paste("ef-eff-dim", "-", sprintf("%d", rows), "-", dist, "-efws", efwindowsize, sep=""));
-	skyplot.efeff(rows, dist, efwindowsize);
+	skyplot.pdf(paste("ef-eff-dim", "-", sprintf("%d", rows), "-efws", efwindowsize, sep=""));
+	skyplot.efeff(rows, efwindowsize);
 	skyplot.off();
 }
+
 
 
 
@@ -884,6 +879,7 @@ palette(rainbow(2+length(rowss)))
 colidx <- 0;
 for (rows in rowss) {
 	colidx <- colidx + 1;
+	method <- "bnl.append";
 	sel <- dor$rows == rows & dor$method == method & dor$dist == dist;
 	par(col=colidx);
 	lines(dor$dim[sel], dor$outrows[sel] / dor$rows[sel]); points(dor$dim[sel], dor$outrows[sel] / dor$rows[sel]);
@@ -896,8 +892,3 @@ for (rows in rowss) {
 	skyplot.off();
 }
 
-
-
-
-
-skyplot.setup(TRUE, FALSE)

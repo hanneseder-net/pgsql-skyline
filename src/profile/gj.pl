@@ -66,6 +66,46 @@ EOF
 
 
 ##
+## SORT.INDEX
+##
+for my $dist ("i", "c", "a") {
+  for my $dim (1,2,3,4,5,6) {
+    my $jobfile = "sort.index.${dist}.${seed}.${dim}.sql";
+
+    next if (-e $jobfile);
+    print "INFO: file ${jobfile}...\n";
+
+    open (JOB, ">$jobfile");
+    $job = "";
+    for my $size (@size) {
+
+      my $table = "${dist}15d${size}${seed}idx";
+      my $dims = "d1";
+      for (my $i=2; $i<=$dim; ++$i) {
+	$dims = $dims . ", d${i}";
+      }
+
+
+      $job = <<EOF;
+--<comment>
+explain analyze select * from ${table};
+--</comment>
+--<comment>
+explain analyze select * from ${table} order by ${dims};
+--</comment>
+--<query runid=sort.index.${table}.${dim}>
+explain analyze select * from ${table} order by ${dims};
+--</query>
+EOF
+
+      print JOB "$job";
+    }
+    close (JOB);
+  }
+}
+
+
+##
 ## PRESORT
 ##
 @size = sizes(1000000);
@@ -149,6 +189,18 @@ EOF
   }
 }
 
+my @dims = (2,3,4,5,6,7,8,9,10,15);
+#my @windowsizes = (16,32,64,128,256,512,1024,2048,4096,8192,16384);
+my @windowsizes = (1024);
+my $windowsize_default = 1024;
+
+my @efwindowsizes = (1,2,4,8,16,32,64,128);
+my $efwindowsize_default = 8;
+
+for my $windowsize (@windowsizes) {
+
+    my $wssuffix = ($windowsize != $windowsize_default ? ".ws${windowsize}k" : "");
+    my $windowsize_sql = ($windowsize != $windowsize_default ? "windowsize=${windowsize}" : "");
 
 ##
 ## BNL/SFS append/prepend/entropy/random
@@ -156,8 +208,11 @@ EOF
 @size = sizes(100000);
 for my $windowpolicy ("append", "prepend", "entropy", "random") {
   for my $dist ("i", "c", "a") {
-    for my $dim (2,3,4,5,6,7,8,9,10,11,12,13,14,15) {
-      my $jobfile = "bnl.sfs.${windowpolicy}.${dist}.${seed}.${dim}.sql";
+    for my $dim (@dims) {
+
+	
+
+      my $jobfile = "bnl.sfs.${windowpolicy}.${dist}.${seed}.${dim}${wssuffix}.sql";
 
       next if (-e $jobfile);
       print "INFO: file ${jobfile}...\n";
@@ -175,11 +230,11 @@ for my $windowpolicy ("append", "prepend", "entropy", "random") {
 --<comment>
 explain analyze select * from ${table};
 --</comment>
---<query runid=bnl.${windowpolicy}.${table}.${dim}>
-explain analyze select * from ${table} skyline of ${dims} with bnl windowpolicy=${windowpolicy};
+--<query runid=bnl.${windowpolicy}.${table}.${dim}${wssuffix}>
+explain analyze select * from ${table} skyline of ${dims} with bnl windowpolicy=${windowpolicy} $windowsize_sql;
 --</query>
---<query runid=sfs.${windowpolicy}.${table}.${dim}>
-explain analyze select * from ${table} skyline of ${dims} with sfs windowpolicy=${windowpolicy};
+--<query runid=sfs.${windowpolicy}.${table}.${dim}${wssuffix}>
+explain analyze select * from ${table} skyline of ${dims} with sfs windowpolicy=${windowpolicy} $windowsize_sql;
 --</query>
 EOF
 
@@ -192,15 +247,25 @@ EOF
 }
 
 
+
+for my $efwindowsize (@efwindowsizes) {
+
+    my $efwssuffix = ($efwindowsize != $efwindowsize_default ? ".efws${efwindowsize}k" : "");
+    my $efwindowsize_sql = ($efwindowsize != $efwindowsize_default ? "efwindowsize=${efwindowsize}" : "");
+
+
 ##
 ## BNL/SFS+EF append/prepend/entropy/random
 ##
 @size = sizes(100000);
 for my $windowpolicy ("append", "prepend", "entropy", "random") {
     for my $efwindowpolicy ("append", "prepend", "entropy", "random") {
+	
+	next if ($windowpolicy ne $efwindowpolicy);
+
 	for my $dist ("i", "c", "a") {
-	    for my $dim (2,3,4,5,6,7,8,9,10,11,12,13,14,15) {
-		my $jobfile = "bnl.sfs.ef.${windowpolicy}.${efwindowpolicy}.${dist}.${seed}.${dim}.sql";
+	    for my $dim (@dims) {
+		my $jobfile = "bnl.sfs.ef.${windowpolicy}.${efwindowpolicy}.${dist}.${seed}.${dim}${wssuffix}${efwssuffix}.sql";
 
 		next if (-e $jobfile);
 		print "INFO: file ${jobfile}...\n";
@@ -218,11 +283,11 @@ for my $windowpolicy ("append", "prepend", "entropy", "random") {
 --<comment>
 explain analyze select * from ${table};
 --</comment>
---<query runid=bnl.ef.${windowpolicy}.${efwindowpolicy}.${table}.${dim}>
-explain analyze select * from ${table} skyline of ${dims} with bnl windowpolicy=${windowpolicy} ef efwindowpolicy=${efwindowpolicy};
+--<query runid=bnl.ef.${windowpolicy}.${efwindowpolicy}.${table}.${dim}${wssuffix}${efwssuffix}>
+explain analyze select * from ${table} skyline of ${dims} with bnl windowpolicy=${windowpolicy} ef efwindowpolicy=${efwindowpolicy} $windowsize_sql $efwindowsize_sql;
 --</query>
---<query runid=sfs.ef.${windowpolicy}.${efwindowpolicy}.${table}.${dim}>
-explain analyze select * from ${table} skyline of ${dims} with sfs windowpolicy=${windowpolicy} ef efwindowpolicy=${efwindowpolicy};
+--<query runid=sfs.ef.${windowpolicy}.${efwindowpolicy}.${table}.${dim}${wssuffix}${efwssuffix}>
+explain analyze select * from ${table} skyline of ${dims} with sfs windowpolicy=${windowpolicy} ef efwindowpolicy=${efwindowpolicy} $windowsize_sql $efwindowsize_sql;
 --</query>
 EOF
 
@@ -233,6 +298,9 @@ EOF
 	}
     }
 }
+
+} # for efwindowsizes
+} # for windowsizes
 
 ##
 ## SFS+INDEX append/prepend/entropy/random
@@ -316,224 +384,3 @@ EOF
   }
 }
 
-
-##
-## BNL/SFS append + EF (windowsize)
-##
-@size = ("1e4");
-for my $dist ("i", "c", "a") {
-    for my $dim (2,3,4,5,6,7,8,9,10,11,12,13,14,15) {
-	for my $size (@size) {
-	    for my $wndsize (1,3,5,7,10,20,30,50,100) {
-	my $jobfile = "bnl.sfs.ef.append.${dist}.${size}.${seed}.${dim}.ef${wndsize}.sql";
-
-	next if (-e $jobfile);
-	print "INFO: file ${jobfile}...\n";
-
-	open (JOB, ">$jobfile");
-	$job = "";
-
-my $table = "${dist}15d${size}${seed}";
-my $dims = "d1 min";
-for (my $i=2; $i<=$dim; ++$i) {
-    $dims = $dims . ", d${i} min";
-}
-
-
-$job = <<EOF;
---<comment>
-explain analyze select * from ${table};
---</comment>
---<query runid=bnl.ef.append.${table}.${dim}.ef${wndsize}>
-explain analyze select * from ${table} skyline of ${dims} with bnl windowpolicy=append ef efslots=${wndsize};
---</query>
---<query runid=sfs.ef.append.${table}.${dim}.ef${wndsize}>
-explain analyze select * from ${table} skyline of ${dims} with sfs windowpolicy=append ef efslots=${wndsize};
---</query>
-EOF
-
-print JOB "$job";
-	close (JOB);
-	}
-    }
-}
-}
-
-
-
-##
-## BNL/SFS append + EF entropy (windowsize)
-##
-@size = ("1e4", "1e5");
-for my $dist ("i", "c", "a") {
-    for my $dim (2,3,4,5,6,7,8,9,10,11,12,13,14,15) {
-	for my $size (@size) {
-	    for my $wndsize (1,3,5,7,10,20,30,50,100,200) {
-	my $jobfile = "bnl.sfs.ef.append.entropy.${dist}.${size}.${seed}.${dim}.ef${wndsize}.sql";
-
-	next if (-e $jobfile);
-	print "INFO: file ${jobfile}...\n";
-
-	open (JOB, ">$jobfile");
-	$job = "";
-
-my $table = "${dist}15d${size}${seed}";
-my $dims = "d1 min";
-for (my $i=2; $i<=$dim; ++$i) {
-    $dims = $dims . ", d${i} min";
-}
-
-
-$job = <<EOF;
---<comment>
-explain analyze select * from ${table};
---</comment>
---<query runid=bnl.ef.append.entropy.${table}.${dim}.ef${wndsize}>
-explain analyze select * from ${table} skyline of ${dims} with bnl windowpolicy=append ef efslots=${wndsize} efwindowpolicy=entropy;
---</query>
---<query runid=sfs.ef.append.entropy.${table}.${dim}.ef${wndsize}>
-explain analyze select * from ${table} skyline of ${dims} with sfs windowpolicy=append ef efslots=${wndsize} efwindowpolicy=entropy;
---</query>
-EOF
-
-print JOB "$job";
-	close (JOB);
-	}
-    }
-}
-}
-
-
-##
-## BNL/SFS prepend + EF entropy (windowsize)
-##
-@size = ("1e5");
-for my $dist ("i", "c", "a") {
-    for my $dim (2,3,4,5,6,7,8,9,10,11,12,13,14,15) {
-	for my $size (@size) {
-	    for my $wndsize (1,3,5,7,10,20,30,50,100,200) {
-	my $jobfile = "bnl.sfs.ef.prepend.entropy.${dist}.${size}.${seed}.${dim}.ef${wndsize}.sql";
-
-	next if (-e $jobfile);
-	print "INFO: file ${jobfile}...\n";
-
-	open (JOB, ">$jobfile");
-	$job = "";
-
-my $table = "${dist}15d${size}${seed}";
-my $dims = "d1 min";
-for (my $i=2; $i<=$dim; ++$i) {
-    $dims = $dims . ", d${i} min";
-}
-
-
-$job = <<EOF;
---<comment>
-explain analyze select * from ${table};
---</comment>
---<query runid=bnl.ef.prepend.entropy.${table}.${dim}.ef${wndsize}>
-explain analyze select * from ${table} skyline of ${dims} with bnl windowpolicy=prepend ef efslots=${wndsize} efwindowpolicy=entropy;
---</query>
---<query runid=sfs.ef.prepend.entropy.${table}.${dim}.ef${wndsize}>
-explain analyze select * from ${table} skyline of ${dims} with sfs windowpolicy=prepend ef efslots=${wndsize} efwindowpolicy=entropy;
---</query>
-EOF
-
-print JOB "$job";
-	close (JOB);
-	}
-    }
-}
-}
-
-
-##
-## BNL/SFS entropy + EF entropy (windowsize)
-##
-@size = ("1e5");
-for my $dist ("i", "c", "a") {
-    for my $dim (2,3,4,5,6,7,8,9,10,11,12,13,14,15) {
-	for my $size (@size) {
-	    for my $wndsize (1,3,5,7,10,20,30,50,100,200) {
-	my $jobfile = "bnl.sfs.ef.entropy.entropy.${dist}.${size}.${seed}.${dim}.ef${wndsize}.sql";
-
-	next if (-e $jobfile);
-	print "INFO: file ${jobfile}...\n";
-
-	open (JOB, ">$jobfile");
-	$job = "";
-
-my $table = "${dist}15d${size}${seed}";
-my $dims = "d1 min";
-for (my $i=2; $i<=$dim; ++$i) {
-    $dims = $dims . ", d${i} min";
-}
-
-
-$job = <<EOF;
---<comment>
-explain analyze select * from ${table};
---</comment>
---<query runid=bnl.ef.entropy.entropy.${table}.${dim}.ef${wndsize}>
-explain analyze select * from ${table} skyline of ${dims} with bnl windowpolicy=entropy ef efslots=${wndsize} efwindowpolicy=entropy;
---</query>
---<query runid=sfs.ef.entropy.entropy.${table}.${dim}.ef${wndsize}>
-explain analyze select * from ${table} skyline of ${dims} with sfs windowpolicy=entropy ef efslots=${wndsize} efwindowpolicy=entropy;
---</query>
-EOF
-
-print JOB "$job";
-	close (JOB);
-	}
-    }
-}
-}
-
-
-
-
-
-
-exit;
-
-##
-## BNL/SFS append (windowsize)
-##
-@size = ("1e4", "5e4", "1e5");
-for my $dist ("i", "c", "a") {
-    for my $dim (2,3,4,5,6,7,8,9,10,11,12,13,14,15) {
-	for my $size (@size) {
-	    for my $wndsize (10,20,30,40,50,100) {
-	my $jobfile = "bnl.sfs.append.${dist}.${size}.${seed}.${dim}.wnd${wndsize}.sql";
-
-	next if (-e $jobfile);
-	print "INFO: file ${jobfile}...\n";
-
-	open (JOB, ">$jobfile");
-	$job = "";
-
-my $table = "${dist}15d${size}${seed}";
-my $dims = "d1 min";
-for (my $i=2; $i<=$dim; ++$i) {
-    $dims = $dims . ", d${i} min";
-}
-
-
-$job = <<EOF;
---<comment>
-explain analyze select * from ${table};
---</comment>
---<query runid=bnl.append.${table}.${dim}.wnd${wndsize}>
-explain analyze select * from ${table} skyline of ${dims} with bnl windowpolicy=append slots=${wndsize};
---</query>
---<query runid=sfs.append.${table}.${dim}.wnd${wndsize}>
-explain analyze select * from ${table} skyline of ${dims} with sfs windowpolicy=append slots=${wndsize};
---</query>
-EOF
-
-print JOB "$job";
-	close (JOB);
-	}
-    }
-}
-}

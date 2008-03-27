@@ -765,8 +765,12 @@ skyplot.off();
 ##
 
 sel <- data$efwindowpolicy != "";
-def = aggregate(((data$inrows-data$efrows)/(data$inrows-data$outrows))[sel], by=list(data$efwindowpolicy[sel], data$inrows[sel], data$dim[sel], data$dist[sel], data$efwindowsize[sel]), FUN = mean);
+def = aggregate(ifelse(data$inrows==data$outrows, 1.0, ((data$inrows-data$efrows)/(data$inrows-data$outrows)))[sel], by=list(data$efwindowpolicy[sel], data$inrows[sel], data$dim[sel], data$dist[sel], data$efwindowsize[sel]), FUN = mean);
 colnames(def) <- c("policy", "rows", "dim", "dist", "efwindowsize", "eff");
+
+defp = aggregate(ifelse(data$inrows==data$outrows, 1.0, ((data$inrows-data$efrows)/(data$inrows-data$outrows)))[sel], by=list(data$efwindowpolicy[sel], data$inrows[sel], data$dim[sel], data$efwindowsize[sel]), FUN = mean);
+colnames(defp) <- c("policy", "rows", "dim", "efwindowsize", "eff");
+
 
 
 skyplot.col4dist <- function(dist) {
@@ -780,20 +784,23 @@ sel <- def$policy == policy & def$rows == rows & def$dist == dist & def$efwindow
 plot(def$dim[sel], def$eff[sel], type="n", ylim=c(0,1), xlab = "# Dimensions", ylab="% of non skyline elimiated by EF");
 grid();
 
-for (dist in c("i", "c", "a")) {
 for (policy in c("append", "prepend", "entropy", "random")) {
+for (dist in c("i", "c", "a")) {
 	sel <- def$policy == policy & def$rows == rows & def$dist == dist & def$efwindowsize == efwindowsize;
 	par(col=skyplot.col4dist(dist), pch = skyplot.pch(paste("bnl.ef.", policy , "." , policy, sep="")));
 	lines(def$dim[sel], def$eff[sel]); points(def$dim[sel], def$eff[sel]);
 }
+	sel <- defp$policy == policy & defp$rows == rows & defp$efwindowsize == efwindowsize;
+	par(col="black", pch = skyplot.pch(paste("bnl.ef.", policy , "." , policy, sep="")));
+	lines(defp$dim[sel], defp$eff[sel]); points(defp$dim[sel], defp$eff[sel]);
 }
 
 par(col="black")
-legend("bottomleft", c("corr", "indep", "anti", "append", "prepend", "entropy", "random"),
-	col=c("green", "blue", "red", rep("black", 4)),
-	pch=c(" ", " ", " ", "\x16", "x", "\x18", "o"),
-	lty=c(rep("solid", 3), rep("blank", 4)),
-	inset=0.05, bty="n", ncol=1);
+legend("bottomleft", c("corr", "indep", "anti", "(combined)", "append", "prepend", "entropy", "random"),
+	col=c("green", "blue", "red", "black", rep("black", 4)),
+	pch=c(" ", " ", " ", " ", "\x16", "x", "\x18", "o"),
+	lty=c(rep("solid", 4), rep("blank", 4)),
+	inset=0.00, bty="n", ncol=1);
 box();
 }
 
@@ -805,7 +812,7 @@ for (rows in c(100, 1000, 10000, 100000)) {
 	skyplot.off();
 }
 
-
+skyplot.setup(TRUE,TRUE)
 
 
 ##
@@ -891,4 +898,6 @@ for (rows in rowss) {
 
 	skyplot.off();
 }
+
+
 

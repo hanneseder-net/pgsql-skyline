@@ -4,6 +4,8 @@
 
 setwd("c:/hannes/skyline/src/profile/log/")
 
+skyplot.lightblue <- rgb(0.95,0.95,1);
+
 sky.readfile <- function(filename) {
 	data = read.csv(filename);
 
@@ -70,6 +72,96 @@ skyplot.off <- function() {
 	}
 }
 
+skyplot.pch.wp <- function(wp) {
+	pch <- switch(wp,
+		append = "\x16",
+		prepend = "x",
+		entropy = "\x18",
+		random = "o",
+		"?"
+		);
+	return (pch);
+}
+
+skyplot.pch <- function(method) {
+	if (method == "all methods") {
+		return (" ");
+	}
+
+	parts <- strsplit(method, ".", fixed=TRUE)[[1]];
+
+	if (length(parts) == 2 || length(parts) == 3) {
+		return (skyplot.pch.wp(parts[length(parts)]));
+	}
+	else if (length(parts) == 4) {
+		if (parts[1] == "sfs" && parts[2] == "index") {
+			return (skyplot.pch.wp(parts[length(parts)]));
+		}
+		else if (parts[2] == "ef") {
+			if (parts[3] == parts[4]) {
+				return (skyplot.pch.wp(parts[length(parts)]));
+			}
+			else {
+				warning("mixed wp not yet supported");
+				return (skyplot.pch.wp(parts[3]));
+			}	
+		}
+		else
+			warning("unknown method");
+	}
+	else if (length(parts) == 5) {
+		if (parts[1] == "sfs" && parts[2] == "index" && parts[3] == "ef") {
+			return (skyplot.pch.wp(parts[length(parts)]));
+		}
+	}
+	else
+		warning("unknown method");
+}
+
+# skyplot.pch("sfs.index.ef.append.append");
+
+skyplot.col <- function(method) {
+	if (method == "all methods") {
+		return (skyplot.lightblue);
+	}
+
+	parts <- strsplit(method, ".", fixed=TRUE)[[1]];
+	method <- parts[1];
+
+	if (length(parts) > 2) {
+		ef <- parts[2] == "ef" || parts[3] == "ef";
+	}
+	else {
+		ef <- parts[2] == "ef";
+	}
+
+	index <- parts[2] == "index";
+
+	if (ef == TRUE) method <- paste(method, ".ef", sep="");
+	if (index == TRUE) method <- paste(method, ".index", sep="");
+
+	col <- switch(method,
+		bnl = "black",
+		sfs = "green",
+		bnl.ef = "red",
+		sfs.ef = "blue",
+		sfs.index = "orange",
+		sfs.ef.index = "magenta",
+		"pink"
+		);
+
+	return (col);
+}
+
+skyplot.lwd <- function(method) {
+	if (method == "all methods") {
+		return (10);
+	}
+
+	return (1);
+}
+
+
 skyplot.setup(TRUE, TRUE)
 
 
@@ -106,7 +198,7 @@ lines(d$rows[sel], 0.001 * d$total[sel], lty="solid")
 points(d$rows[sel], 0.001 * d$total[sel], pch="o");
 
 # bnl, sfs, presort, sort, select
-legend("topleft", c("bnl", "sfs", "2 dim w/ sort", "2 dim w/ index", "2 dim sort only", "select only"), lty=c("solid", "dotted", "solid", "solid", "dashed", "solid"), pch=c("\x16", "\x18", "x", "o", "\x13", "\x13"), lwd=c(1,1,1,1,1,2), inset=0.05, bty="n"); 
+legend("topleft", c("bnl", "sfs", "2 dim w/ sort", "2 dim w/ index", "2 dim sort only", "select only"), lty=c("solid", "dotted", "solid", "solid", "dashed", "solid"), pch=c("\x16", "\x18", "x", "o", "\x13", "\x13"), lwd=c(1,1,1,1,1,2), inset=0.00, bty="n"); 
 
 # presort = sfs, bnl an order of magnitute faster
 }
@@ -166,78 +258,6 @@ for (dist in c("i", "c", "a")) {
 	skyplot.off();
 }
 
-skyplot.pch.wp <- function(wp) {
-	pch <- switch(wp,
-		append = "\x16",
-		prepend = "x",
-		entropy = "\x18",
-		random = "o",
-		"?"
-		);
-	return (pch);
-}
-
-skyplot.pch <- function(method) {
-	parts <- strsplit(method, ".", fixed=TRUE)[[1]];
-
-	if (length(parts) == 2 || length(parts) == 3) {
-		return (skyplot.pch.wp(parts[length(parts)]));
-	}
-	else if (length(parts) == 4) {
-		if (parts[1] == "sfs" && parts[2] == "index") {
-			return (skyplot.pch.wp(parts[length(parts)]));
-		}
-		else if (parts[2] == "ef") {
-			if (parts[3] == parts[4]) {
-				return (skyplot.pch.wp(parts[length(parts)]));
-			}
-			else {
-				warning("mixed wp not yet supported");
-				return (skyplot.pch.wp(parts[3]));
-			}	
-		}
-		else
-			warning("unknown method");
-	}
-	else if (length(parts) == 5) {
-		if (parts[1] == "sfs" && parts[2] == "index" && parts[3] == "ef") {
-			return (skyplot.pch.wp(parts[length(parts)]));
-		}
-	}
-	else
-		warning("unknown method");
-}
-
-# skyplot.pch("sfs.index.ef.append.append");
-
-skyplot.col <- function(method) {
-	parts <- strsplit(method, ".", fixed=TRUE)[[1]];
-	method <- parts[1];
-
-	if (length(parts) > 2) {
-		ef <- parts[2] == "ef" || parts[3] == "ef";
-	}
-	else {
-		ef <- parts[2] == "ef";
-	}
-
-	index <- parts[2] == "index";
-
-	if (ef == TRUE) method <- paste(method, ".ef", sep="");
-	if (index == TRUE) method <- paste(method, ".index", sep="");
-
-	col <- switch(method,
-		bnl = "black",
-		sfs = "green",
-		bnl.ef = "red",
-		sfs.ef = "blue",
-		sfs.index = "orange",
-		sfs.ef.index = "blue",
-		"pink"
-		);
-
-	return (col);
-}
 
 ##
 ## all (sql, sort, bnl, sfs ...) vs dim.
@@ -258,7 +278,7 @@ colnames(dmax) <- c("rows", "dim", "dist", "total");
 #lines(dmin$dim, dmin$total * 0.001)
 #lines(dmax$dim, dmax$total * 0.001)
 
-polygon(c(dmin$dim, rev(dmax$dim)), c(0.001 * dmin$total, rev(0.001 * dmax$total)), col=rgb(0.95,0.95,1), border=FALSE)
+polygon(c(dmin$dim, rev(dmax$dim)), c(0.001 * dmin$total, rev(0.001 * dmax$total)), col=skyplot.lightblue, border=FALSE)
 
 sel <- d$rows == rows & d$dist == dist & d$method == "sql";
 lines(d$dim[sel], 0.001 * d$total[sel], lty="solid")
@@ -289,7 +309,7 @@ for (method in c(
 
 par(col="black");
 
-legend("topleft", c("bnl append", "sql", "sort", "all methods"), lty=c("solid", "solid", "solid", "solid"), pch=c("\x16", "x", "\x13", " "), lwd=c(1,1,1,10), col=c("black", "black", "black", rgb(0.95,0.95,1)), inset=0.01, bty="n"); 
+legend("topleft", c("bnl append", "sql", "sort", "all methods"), lty=c("solid", "solid", "solid", "solid"), pch=c("\x16", "x", "\x13", " "), lwd=c(1,1,1,10), col=c("black", "black", "black", skyplot.lightblue), inset=0.00, bty="n"); 
 
 box();
 }
@@ -320,7 +340,7 @@ dmax <- aggregate(d$total[sel], by=list(d$rows[sel], d$dim[sel], d$dist[sel]), F
 colnames(dmin) <- c("rows", "dim", "dist", "total");
 colnames(dmax) <- c("rows", "dim", "dist", "total");
 
-polygon(c(dmin$dim, rev(dmax$dim)), c(dmin$total / d$total[ssel] , rev(dmax$total / d$total[ssel])), col=rgb(0.95,0.95,1), border=FALSE)
+polygon(c(dmin$dim, rev(dmax$dim)), c(dmin$total / d$total[ssel] , rev(dmax$total / d$total[ssel])), col=skyplot.lightblue, border=FALSE)
 
 
 #sel <- d$rows == rows & d$dist == dist & d$dim > 1 & d$method == "sfs.index.append";
@@ -328,17 +348,31 @@ polygon(c(dmin$dim, rev(dmax$dim)), c(dmin$total / d$total[ssel] , rev(dmax$tota
 for (method in c(
 		"sfs.append",
 		"sfs.index.append", "sfs.index.prepend", "sfs.index.entropy", "sfs.index.random",
-		"sfs.index.ef.append.append", "sfs.index.ef.prepend.prepend", "sfs.index.ef.entropy.entropy", "sfs.index.ef.random.random")) {
+		"sfs.index.ef.append.append", "sfs.index.ef.prepend.prepend", "sfs.index.ef.entropy.entropy", "sfs.index.ef.random.random"
+
+		
+		#, "sfs.prepend", "sfs.entropy"
+		#, "bnl.append", "bnl.entropy"
+		#, "bnl.ef.append.append", "bnl.ef.entropy.entropy"
+		, "sfs.ef.prepend.prepend", "sfs.ef.entropy.entropy"
+	)) {
 	sel <- d$rows == rows & d$dist == dist & d$dim > 1 & d$dim <= 6 & d$method == method  ;
 	par(lty="solid", pch=skyplot.pch(method), col=skyplot.col(method));
 	lines(d$dim[sel], d$total[sel] / d$total[ssel]); points(d$dim[sel], d$total[sel] / d$total[ssel]);
 }
+
+legend.labels <- c("all methods", paste(rep(c("sfs+index"),each=4), c("append", "prepend", "entropy", "random")), "sfs+ef prepend", "sfs append", paste(rep(c("sfs+index+ef"),each=4), c("append", "prepend", "entropy", "random")), "sfs+ef entropy");
+legend.methods <- c("all methods", paste(rep(c("sfs.index"),each=4), c("append", "prepend", "entropy", "random"), sep="."), "sfs.ef.prepend.prepend", "sfs.append", paste(rep(c("sfs.index.ef"),each=4), c("append.append", "prepend.prepend", "entropy.entropy", "random.random"), sep="."), "sfs.ef.entropy.entropy");
+
 par(col="black")
 # bnl, sfs, presort, sort, select
 legend("topleft", 
-	c("all methods", paste(rep(c("sfs+index"),each=4), c("append", "prepend", "entropy", "random")), "sfs append", paste(rep(c("sfs+index+ef"),each=4), c("append", "prepend", "entropy", "random"))),
-	lty=c(rep(c("solid"),10)), pch=c(" ", "\x16", "x", "\x18","o", "\x16", "\x16", "x", "\x18", "o"), 
-	col=c(rgb(0.95,0.95,1),rep("orange",4),"green", rep("blue", 4)), lwd=c(10, rep(1,9)), inset=0.01, bty="n", ncol=2); 
+	legend.labels,
+	lty=c(rep(c("solid"),length(legend.labels))), 
+	pch=sapply(legend.methods, FUN=skyplot.pch), 
+	col=sapply(legend.methods, FUN=skyplot.col), 
+	lwd=sapply(legend.methods, FUN=skyplot.lwd),
+	inset=0.01, bty="n", ncol=2); 
 box();
 }
 
@@ -348,6 +382,8 @@ for (dist in c("i", "c", "a")) {
 	skyplot.sfs.index(dist);
 	skyplot.off();
 }
+
+skyplot.setup(TRUE, TRUE)
 
 ##
 ## 
@@ -370,7 +406,7 @@ legend(legendpos,
 	paste(rep(c("bnl","bnl+ef", "sfs", "sfs+ef"),each=4), c("append", "prepend", "entropy", "random")),
 	lty="solid",
 	pch=rep(c("\x16", "x", "\x18", "o"), 4),
-	col=rep(c("black", "red", "green", "blue"), each=4), inset=0.01, bty="n", ncol=2)
+	col=rep(c("black", "red", "green", "blue"), each=4), inset=0.00, bty="n", ncol=2)
 box()
 }
 
@@ -413,7 +449,7 @@ legend(legendpos,
 	paste(rep(c("bnl","bnl+ef", "sfs", "sfs+ef"),each=4), c("append", "prepend", "entropy", "random")),
 	lty="solid",
 	pch=rep(c("\x16", "x", "\x18", "o"), 4),
-	col=rep(c("black", "red", "green", "blue"), each=4), inset=0.01, bty="n", ncol=2)
+	col=rep(c("black", "red", "green", "blue"), each=4), inset=0.00, bty="n", ncol=2)
 box()
 }
 
@@ -586,7 +622,7 @@ par(lty="solid", pch=22);
 lines(d$dim[sel], d$cmps[sel] ); points(d$dim[sel], d$cmps[sel]);
 
 legend("bottomright", c("corr", "indep", "anti"), 
-			lty=c("solid", "solid", "solid"), pch=c("\x18", "\x16", "x"), inset=0.05, bty="n"); 
+			lty=c("solid", "solid", "solid"), pch=c("\x18", "\x16", "x"), inset=0.00, bty="n"); 
 skyplot.off();
 }
 
@@ -651,7 +687,7 @@ colnames(d) <- c("method", "rows", "dim", "dist", "efslots", "total");
 #lines(d$efslots[sel], d$total[sel]); points(d$efslots[sel], d$total[sel]);
 #
 #legend("bottomright", c("corr", "indep", "anti"), 
-#			lty=c("solid", "solid", "solid"), pch=c("\x18", "\x16", "x"), inset=0.05, bty="n"); 
+#			lty=c("solid", "solid", "solid"), pch=c("\x18", "\x16", "x"), inset=0.00, bty="n"); 
 
 
 
@@ -686,7 +722,7 @@ legend("topright",
 	lty=rep(c("solid"), length(levels(factor(d$efslots)))),
 	col=1:length(levels(factor(d$efslots))),
 	pch=rep(c("\x18"), length(levels(factor(d$efslots)))),
-	inset=0.05, bty="n", ncol=2)
+	inset=0.00, bty="n", ncol=2)
 
 palette("default")
 par(col="black")
@@ -747,7 +783,7 @@ legend("bottomright",
 	lty=rep(c("solid"), length(levels(factor(d$efslots)))),
 	col=1:length(levels(factor(d$efslots))),
 	pch=rep(c("\x18"), length(levels(factor(d$efslots)))),
-	inset=0.05, bty="n")
+	inset=0.00, bty="n")
 
 palette("default")
 par(col="black")
@@ -869,37 +905,39 @@ skyplot.pch4rows <- function(rows) {
 
 
 ##
-## selectivify
+## selectivity
 ##
 
 dor <- aggregate(data$outrows, by=list(data$method, data$inrows, data$dim, data$dist), FUN = mean);
 colnames(dor) <- c("method", "rows", "dim", "dist", "outrows");
 
 for (dist in c("i", "c", "a")) {
-	skyplot.pdf(paste("selectifity-dim", "-", dist, sep=""));
+	skyplot.pdf(paste("selectivity-dim", "-", dist, sep=""));
 
-sel <- dor$rows == rows & dor$method == method & dor$dist == dist;
+#sel <- dor$rows == rows & dor$method == "sql" & dor$dist == dist;
 par(col="black", pch="+");
-plot(dor$dim[sel], dor$outrows[sel] / dor$rows[sel], ylim=c(0,1), type="n", xlab = "# Dimensions", ylab = "selectifity = # output tuples / # input tuples")
+plot(c(), c(), xlim=c(2,15), ylim=c(0,1), type="n", xlab = "# Dimensions", ylab = "selectivity factor = # output tuples / # input tuples")
 grid()
 
 rowss <- c(100, 500, 1000, 5000, 10000, 50000, 100000);
+rowss.legned <- c("100", "500", "1k", "5k", "10k", "50k", "100k");
 palette(rainbow(2+length(rowss)))
 colidx <- 0;
 for (rows in rowss) {
 	colidx <- colidx + 1;
-	method <- "bnl.append";
+	method <- "sql";
 	sel <- dor$rows == rows & dor$method == method & dor$dist == dist;
 	par(col=colidx);
 	lines(dor$dim[sel], dor$outrows[sel] / dor$rows[sel]); points(dor$dim[sel], dor$outrows[sel] / dor$rows[sel]);
 }
 
 	par(col="black");
-	legend("topleft", sprintf("%d tuples", rowss), lty=rep("solid", length(rows)), col=1:length(rowss), inset=0.00, bty="n")
+	legend("topleft", rowss.legned, lty=rep("solid", length(rows)), col=1:length(rowss), inset=0.00, bty="n")
 	palette("default");
 
 	skyplot.off();
 }
 
+skyplot.setup(TRUE,TRUE)
 
 

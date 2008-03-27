@@ -765,10 +765,12 @@ skyplot.off();
 ##
 
 sel <- data$efwindowpolicy != "";
-def = aggregate(ifelse(data$inrows==data$outrows, 1.0, ((data$inrows-data$efrows)/(data$inrows-data$outrows)))[sel], by=list(data$efwindowpolicy[sel], data$inrows[sel], data$dim[sel], data$dist[sel], data$efwindowsize[sel]), FUN = mean);
+#def = aggregate(ifelse(data$inrows==data$outrows, 1.0, ((data$inrows-data$efrows)/(data$inrows-data$outrows)))[sel], by=list(data$efwindowpolicy[sel], data$inrows[sel], data$dim[sel], data$dist[sel], data$efwindowsize[sel]), FUN = mean);
+def = aggregate(((data$inrows-data$efrows)/(data$inrows-data$outrows))[sel], by=list(data$efwindowpolicy[sel], data$inrows[sel], data$dim[sel], data$dist[sel], data$efwindowsize[sel]), FUN = mean);
 colnames(def) <- c("policy", "rows", "dim", "dist", "efwindowsize", "eff");
 
-defp = aggregate(ifelse(data$inrows==data$outrows, 1.0, ((data$inrows-data$efrows)/(data$inrows-data$outrows)))[sel], by=list(data$efwindowpolicy[sel], data$inrows[sel], data$dim[sel], data$efwindowsize[sel]), FUN = mean);
+#defp = aggregate(ifelse(data$inrows==data$outrows, 1.0, ((data$inrows-data$efrows)/(data$inrows-data$outrows)))[sel], by=list(data$efwindowpolicy[sel], data$inrows[sel], data$dim[sel], data$efwindowsize[sel]), FUN = mean);
+defp = aggregate(((data$inrows-data$efrows)/(data$inrows-data$outrows))[sel], by=list(data$efwindowpolicy[sel], data$inrows[sel], data$dim[sel], data$efwindowsize[sel]), FUN = mean);
 colnames(defp) <- c("policy", "rows", "dim", "efwindowsize", "eff");
 
 

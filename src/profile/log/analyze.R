@@ -332,7 +332,7 @@ par(col="black");
 ssel <- d$rows == rows & d$dist == dist & d$method == "sfs.append" & d$dim > 1 & d$dim <= 6;
 sel <- d$rows == rows & d$dist == dist & d$dim > 1 & d$dim <= 6 & 
 	(d$method == "sfs.index.ef.append.append" | d$method == "sfs.index.prepend");
-plot(d$dim[sel], d$total[sel], type="n", xlab="# Dimensions", ylab="Time (relative)", ylim=c(0.1,1.75));
+plot(d$dim[sel], d$total[sel], type="n", xlab="# Dimensions", ylab="Time (relative)", ylim=c(0.1,2));
 
 sel <- d$rows == rows & d$dist == dist & ! (d$method %in% c("sql", "select", "sort")) & d$dim <= 6;
 dmin <- aggregate(d$total[sel], by=list(d$rows[sel], d$dim[sel], d$dist[sel]), FUN = min);
@@ -351,7 +351,7 @@ for (method in c(
 		"sfs.index.ef.append.append", "sfs.index.ef.prepend.prepend", "sfs.index.ef.entropy.entropy", "sfs.index.ef.random.random"
 
 		
-		#, "sfs.prepend", "sfs.entropy"
+		, "sfs.prepend", "sfs.entropy", "sfs.random"
 		#, "bnl.append", "bnl.entropy"
 		#, "bnl.ef.append.append", "bnl.ef.entropy.entropy"
 		, "sfs.ef.prepend.prepend", "sfs.ef.entropy.entropy"
@@ -361,8 +361,8 @@ for (method in c(
 	lines(d$dim[sel], d$total[sel] / d$total[ssel]); points(d$dim[sel], d$total[sel] / d$total[ssel]);
 }
 
-legend.labels <- c("all methods", paste(rep(c("sfs+index"),each=4), c("append", "prepend", "entropy", "random")), "sfs+ef prepend", "sfs append", paste(rep(c("sfs+index+ef"),each=4), c("append", "prepend", "entropy", "random")), "sfs+ef entropy");
-legend.methods <- c("all methods", paste(rep(c("sfs.index"),each=4), c("append", "prepend", "entropy", "random"), sep="."), "sfs.ef.prepend.prepend", "sfs.append", paste(rep(c("sfs.index.ef"),each=4), c("append.append", "prepend.prepend", "entropy.entropy", "random.random"), sep="."), "sfs.ef.entropy.entropy");
+legend.labels <- c(paste(rep(c("sfs+index"),each=4), c("append", "prepend", "entropy", "random")), paste(rep(c("sfs+index+ef"),each=4), c("append", "prepend", "entropy", "random")), paste(rep(c("sfs"),each=4), c("append", "prepend", "entropy", "random")), "sfs+ef prepend", "sfs+ef entropy", "all methods");
+legend.methods <- c(paste(rep(c("sfs.index"),each=4), c("append", "prepend", "entropy", "random"), sep="."), paste(rep(c("sfs.index.ef"),each=4), c("append.append", "prepend.prepend", "entropy.entropy", "random.random"), sep="."), paste(rep(c("sfs"),each=4), c("append", "prepend", "entropy", "random"), sep="."), "sfs.ef.prepend.prepend", "sfs.ef.entropy.entropy", "all methods");
 
 par(col="black")
 # bnl, sfs, presort, sort, select
@@ -800,7 +800,7 @@ skyplot.off();
 ## EF window effectiveness
 ##
 
-sel <- data$efwindowpolicy != "";
+sel <- data$efwindowpolicy != "" & data$method %in% paste(rep(c("bnl.ef", "sfs.ef"), each=4), rep(c("append.append", "prepend.prepend", "entropy.entropy", "random.random"),2), sep=".");
 #def = aggregate(ifelse(data$inrows==data$outrows, 1.0, ((data$inrows-data$efrows)/(data$inrows-data$outrows)))[sel], by=list(data$efwindowpolicy[sel], data$inrows[sel], data$dim[sel], data$dist[sel], data$efwindowsize[sel]), FUN = mean);
 def = aggregate(((data$inrows-data$efrows)/(data$inrows-data$outrows))[sel], by=list(data$efwindowpolicy[sel], data$inrows[sel], data$dim[sel], data$dist[sel], data$efwindowsize[sel]), FUN = mean);
 colnames(def) <- c("policy", "rows", "dim", "dist", "efwindowsize", "eff");
@@ -809,6 +809,12 @@ colnames(def) <- c("policy", "rows", "dim", "dist", "efwindowsize", "eff");
 defp = aggregate(((data$inrows-data$efrows)/(data$inrows-data$outrows))[sel], by=list(data$efwindowpolicy[sel], data$inrows[sel], data$dim[sel], data$efwindowsize[sel]), FUN = mean);
 colnames(defp) <- c("policy", "rows", "dim", "efwindowsize", "eff");
 
+sel <- data$efwindowpolicy != "" & data$method %in% paste(rep(c("sfs.index.ef"), each=4), c("append.append", "prepend.prepend", "entropy.entropy", "random.random"), sep=".");
+defi = aggregate(((data$inrows-data$efrows)/(data$inrows-data$outrows))[sel], by=list(data$efwindowpolicy[sel], data$inrows[sel], data$dim[sel], data$dist[sel], data$efwindowsize[sel]), FUN = mean);
+colnames(defi) <- c("policy", "rows", "dim", "dist", "efwindowsize", "eff");
+
+defpi = aggregate(((data$inrows-data$efrows)/(data$inrows-data$outrows))[sel], by=list(data$efwindowpolicy[sel], data$inrows[sel], data$dim[sel], data$efwindowsize[sel]), FUN = mean);
+colnames(defpi) <- c("policy", "rows", "dim", "efwindowsize", "eff");
 
 
 skyplot.col4dist <- function(dist) {
@@ -817,6 +823,7 @@ skyplot.col4dist <- function(dist) {
 
 
 skyplot.efeff <- function(rows, efwindowsize) {
+par(col="black", lwd=1);
 policy <- "append";
 sel <- def$policy == policy & def$rows == rows & def$dist == dist & def$efwindowsize == efwindowsize;
 plot(def$dim[sel], def$eff[sel], type="n", ylim=c(0,1), xlab = "# Dimensions", ylab="% of non skyline elimiated by EF");
@@ -828,17 +835,44 @@ for (dist in c("i", "c", "a")) {
 	par(col=skyplot.col4dist(dist), pch = skyplot.pch(paste("bnl.ef.", policy , "." , policy, sep="")));
 	lines(def$dim[sel], def$eff[sel]); points(def$dim[sel], def$eff[sel]);
 }
+
 	sel <- defp$policy == policy & defp$rows == rows & defp$efwindowsize == efwindowsize;
 	par(col="black", pch = skyplot.pch(paste("bnl.ef.", policy , "." , policy, sep="")));
 	lines(defp$dim[sel], defp$eff[sel]); points(defp$dim[sel], defp$eff[sel]);
 }
 
+if (rows == 100000) {
+
+for (policy in c("append", "prepend", "entropy", "random")) {
+for (dist in c("i", "c", "a")) {
+#	sel <- defi$policy == policy & defi$rows == 100000 & defi$dist == dist & defi$efwindowsize == efwindowsize;
+#	par(col=skyplot.col4dist(dist), pch = skyplot.pch(paste("bnl.ef.", policy , "." , policy, sep="")), lwd=2);
+#	lines(defi$dim[sel], defi$eff[sel]); points(defi$dim[sel], defi$eff[sel]);
+}
+
+	sel <- defpi$policy == policy & defpi$rows == rows & defpi$efwindowsize == efwindowsize;
+	par(col="magenta", pch = skyplot.pch(paste("bnl.ef.", policy , "." , policy, sep="")));
+	lines(defpi$dim[sel], defpi$eff[sel]); points(defpi$dim[sel], defpi$eff[sel]);
+
+}
+}
+
+
 par(col="black")
+if (rows == 100000) {
+legend("bottomleft", c("corr", "indep", "anti", "(combined)", "sfs+index+ef", "append", "prepend", "entropy", "random"),
+	col=c("green", "blue", "red", "black", "magenta", rep("black", 4)),
+	pch=c(" ", " ", " ", " ", " ", "\x16", "x", "\x18", "o"),
+	lty=c(rep("solid", 5), rep("blank", 4)),
+	inset=0.00, bty="n", ncol=1);
+}
+else {
 legend("bottomleft", c("corr", "indep", "anti", "(combined)", "append", "prepend", "entropy", "random"),
 	col=c("green", "blue", "red", "black", rep("black", 4)),
 	pch=c(" ", " ", " ", " ", "\x16", "x", "\x18", "o"),
 	lty=c(rep("solid", 4), rep("blank", 4)),
 	inset=0.00, bty="n", ncol=1);
+}
 box();
 }
 

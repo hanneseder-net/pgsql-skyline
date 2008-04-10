@@ -954,7 +954,7 @@ plot(c(), c(), xlim=c(2,15), ylim=c(0,1), type="n", xlab = "# Dimensions", ylab 
 grid()
 
 rowss <- c(100, 500, 1000, 5000, 10000, 50000, 100000);
-rowss.legned <- c("100", "500", "1k", "5k", "10k", "50k", "100k");
+rowss.legend <- c("100", "500", "1k", "5k", "10k", "50k", "100k");
 palette(rainbow(2+length(rowss)))
 colidx <- 0;
 for (rows in rowss) {
@@ -966,11 +966,44 @@ for (rows in rowss) {
 }
 
 	par(col="black");
-	legend("topleft", rowss.legned, lty=rep("solid", length(rows)), col=1:length(rowss), inset=0.00, bty="n")
+	legend("topleft", rowss.legend, lty=rep("solid", length(rows)), col=1:length(rowss), inset=0.00, bty="n")
 	palette("default");
 
 	skyplot.off();
 }
+
+
+
+
+
+for (dist in c("i", "c", "a")) {
+	skyplot.pdf(paste("selectivity-rows", "-", dist, sep=""));
+
+#sel <- dor$rows == rows & dor$method == "sql" & dor$dist == dist;
+par(col="black", pch="+");
+plot(c(), c(), xlim=c(100,100000), ylim=c(0,1), type="n", log="x", xlab = "# Dimensions", ylab = "selectivity factor = # output tuples / # input tuples")
+grid()
+
+dims <- 15:2;
+dims.legend <- paste(dims, "dim");
+palette(rainbow(2+length(dims)))
+colidx <- 0;
+for (dim in dims) {
+	colidx <- colidx + 1;
+	method <- "sql";
+	sel <- dor$dim == dim & dor$method == method & dor$dist == dist;
+	par(col=colidx);
+	lines(dor$rows[sel], dor$outrows[sel] / dor$rows[sel]); points(dor$rows[sel], dor$outrows[sel] / dor$rows[sel]);
+}
+
+	par(col="black");
+	legend("topleft", dims.legend, lty=rep("solid", length(dims)), col=1:length(dims), inset=0.05, bty="o", bg="white")
+	palette("default");
+
+	skyplot.off();
+}
+
+
 
 skyplot.setup(TRUE,TRUE)
 

@@ -385,9 +385,9 @@ We extended the above syntax a bit further, so we additionally provide syntax to
 \begin{itemize}
 \item \emph{method} (BNL, SFS, MNL, PRESORT (2 dim only))
 \item \emph{tuple window size} in terms of memory and/or number of slots
-\item \emph{tuple window policy} (append, prepend, ranked/entropy)
+\item \emph{tuple window policy} (append, prepend, ranked by entropy, ranked by a random value)
 \item \emph{usage of indizies} (\texttt{noindex})
-\item \emph{usage of elimination filter (EF)}
+\item \emph{usage of elimination filter (EF), with the possiblity to influence the EF window in the same way as for the BNL or SFS node}
 \end{itemize}
 
 \end{itemize}
@@ -651,6 +651,8 @@ die zwölfer regel scheint problematisch,
 ein mal spektrum analysieren
 
 ev. erf verwenden \#include <math.h>
+
+\todo{include stuff from skyline/mathamatica/histo}{}
 
 \subsubsection{As command line utility}
 

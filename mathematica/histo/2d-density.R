@@ -5,13 +5,13 @@ par.mar <- par(c("mar"));
 
 nf <- layout(matrix(c(1,0,2,3), 2, 2, byrow = TRUE), widths=c(5,2), height=c(2,5));
 
+bins = 50
 par(mar=c(0.5,par.mar[2],2,0.5))
 hist(data$d1,breaks=bins-1, main="", xlab="", ylab="Frequency", axes=FALSE, horizontal=TRUE)
 #axis(1, lables=TRUE)
 axis(2, labels=FALSE)
 
 
-bins = 50
 data.bins = floor(data * bins)/bins
 data.bc = aggregate(data.bins$d1, list(data.bins$d1, data.bins$d2), FUN=length)
 colnames(data.bc) <- c("d1", "d2", "count")

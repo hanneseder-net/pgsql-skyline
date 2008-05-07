@@ -18,16 +18,25 @@
 \author{Bakk.techn. Hannes Eder}
 \date{\today}
 \usepackage{heder}
+
+%\usepackage[T1]{fontenc}
+%\usepackage{textcomp}
+%\usepackage[scaled]{luximono}
+
 \usepackage{rail}
 \usepackage{subfigure}
 \usepackage{listings}
+
+%http://www.tex.ac.uk/cgi-bin/texfaq2html?label=bold-extras
+\usepackage[cmbtt]{bold-extra}
+
 
 %%%%%   SETUP FANCYHEADERS
 \usepackage{fancyhdr}
 % with this we ensure that the chapter and section
 % headings are in lowercase.
-\renewcommand{\chaptermark}[1]{\markboth{#1}{}}
-\renewcommand{\sectionmark}[1]{\markright{\thesection\ #1}}
+%\renewcommand{\chaptermark}[1]{\markboth{#1}{}}
+%\renewcommand{\sectionmark}[1]{\markright{\thesection\ #1}}
 %\renewcommand{\sectionmark}[1]{\markboth{\thesection} {#1}{}}
 %\renewcommand{\subsectionmark}[1]{\markright {#1}}
 \fancyhf{} % delete current setting for header and footer
@@ -50,6 +59,34 @@
 \let\cleardoublepage\clearemptydoublepage
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%%%%% Listings parameters %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\lstloadlanguages{[ANSI]C}
+\lstset{% general command to set parameter(s)
+	language=C,
+	firstnumber=1,
+	frame=lines,
+	tabsize=4,
+	emphstyle=\underbar,
+	keywordstyle=[1]\bfseries\ttfamily,
+%	identifierstyle=\sl,
+	numbers=left, numberstyle=\tiny, 
+	%stepnumber=2, 
+	%numbersep=5pt,
+%	morekeywords={std,string,set,size_t,map},
+	classoffset=1,
+%	keywordstyle=[1]\bf,
+%	morekeywords={ugVertex, tdVertex, void, VertexVector, ugGraph,
+%	ugsGraph,treeDec, niceTreeDec, TKNiceTreeDec, TDBag, std::string,
+%	eliminationScheme
+%	},
+	basicstyle=\small
+\ttfamily,
+	breaklines=true,
+        prebreak={\hbox{ \textcolor{blue}{$\rightarrow$}}}, postbreak={\hbox{\textcolor{blue}{$\hookrightarrow$ }}},
+	classoffset=0,
+	morecomment=[l]{//},
+	moredelim=[is][\bf]{|}{|}
+}
 
 \makeindex
 \begin{document}

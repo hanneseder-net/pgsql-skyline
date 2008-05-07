@@ -60,16 +60,46 @@
         }
 }
 
+\usepackage{tikz}
+
 %
 \newcommand\fixme[2]{\colorbox{Yellow}{#1}\marginpar{\textcolor{Crimson}{\begin{flushleft}\footnotesize {\textsc FIXME:} #2\end{flushleft}}}}
-\newcommand\todo[2]{\textcolor{DarkGreen}{#1}\marginpar{\textcolor{DarkGreen}{\begin{flushleft}\footnotesize {\textsc TODO:} #2\end{flushleft}}}}
+%\newcommand\todo[2]{\textcolor{DarkGreen}{#1}\marginpar{\textcolor{DarkGreen}{\begin{flushleft}\footnotesize {\textsc TODO:} #2\end{flushleft}}}}
+
+\newcommand\todo[2]{%
+\textcolor{DarkGreen}{#1}
+% Add to todo list
+\addcontentsline{tdo}{todo}{\protect{#1}}%
+\begin{tikzpicture}[remember picture, baseline=-0.75ex]%
+\node [coordinate] (inText) {};
+\end{tikzpicture}%
+%
+% Make the margin par
+\marginpar{%
+\begin{tikzpicture}[remember picture]%
+\definecolor{orange}{rgb}{1,0.5,0}
+\draw node[draw=black, fill=orange, text width = 2.5cm] (inNote)
+{#2};%
+\end{tikzpicture}%
+}%
+%
+\begin{tikzpicture}[remember picture, overlay]%
+\draw[draw = orange, thick]
+([yshift=-0.2cm] inText)
+-| ([xshift=-0.2cm] inNote.west)
+-| (inNote.west);
+\end{tikzpicture}%
+%
+}%
+
 
 \newcommand\skylinebibliography[0]{\bibliographystyle{plainnat}\bibliography{skyline}}
 
 \usepackage{hypernat}
 
 \newif\ifshowrevisions
-\newcommand{\revision}[0]{{\ifshowrevisions{\small\textcolor{lightgray}{\ rev:\svnInfoRevision}}\fi}}
+%\newcommand{\revision}[0]{{\ifshowrevisions{\small{\ rev:\svnInfoRevision}}\fi}}
+\newcommand{\revision}[0]{}
 
 
 %\newtheoremstyle{sql}% name

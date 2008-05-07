@@ -34,10 +34,12 @@
 
 \makeatletter
 \newenvironment{shellscript}
-{\begingroup\list{}{\listparindent 0\p@\itemindent\listparindent\leftmargin15\p@\rightmargin15\p@}\item[]\begin{alltt}}{\end{alltt}\endlist\endgroup}
+{%
+\newcommand\prompt[1]{{\bfseries\$\ ##1}}
+\begingroup\list{}{\listparindent 0\p@\itemindent\listparindent\leftmargin15\p@\rightmargin15\p@}\item[]\begin{alltt}}{\end{alltt}\endlist\endgroup}
 \makeatother
 
-\newcommand\cmd[1]{\textcolor{blue}{> #1}} \fixme{}{fix command prompt}
+
 
 \section{TODO}
 \begin{itemize}
@@ -55,10 +57,14 @@
 \chapter{Introduction\revision}
 \label{chap:Introduction}
 
+
 \section{General Introduction}
 \todo{}{take some parts from the research planning intro}
 
 give the intuition.
+
+\subsection{Typographical Conventions}
+For interatice input and output we will show our typed input in a \texttt{\bfseries bold font}, and the output \texttt{like this}.
 
 \subsection{motivation}
 motivation: green computing: less cpu time, less computers, less energy --> safe the planet
@@ -304,7 +310,12 @@ The $n$th skyline startum $\skyline_C^n$ is recursifly defined as:
 
 To give an example, the query $\skyline_C^2(\relation{R})$ computes the set of ``second-best'' tuples.\todo{}{rephrase or cite}
 
-The startum are of interesset especially if there is a single or very few dominating tuples. In the context of the relation \emph{Hotel(Price, Distance to beach)}, a hut on the beach might be cheaper and closer to the beach than any other \todo{Unterkunft}{translate}, but might to meet our standards. \todo{restaurat, close, good, tiered of eating there}{}
+The startum are of interest especially if there is a single
+\emph{killer tuple} or very few tuples which are dominating the entire
+dataset.  In the context of the relation \emph{Hotel(Price, Distance
+to beach)}, a barrack on the beach is cheaper and closer to the beach
+than any other accommodation, but might to meet our
+standards. \todo{restaurat, close, good, tiered of eating there}{}
 
 A \emph{$K$-skyband}\index{$K$-skyband} query, introduced by \citet{Papadias2005}, is a simlar concept as skyline stratum. A $K$-skyband query reports all tuples which are dominated by at most $K$ points.
 
@@ -635,7 +646,7 @@ standby options and any form of automatic software update suche as
 Microsoft Windows Update or Google Pack software updater.
 
 \todo{postgres.conf: shared\_buffers = XXX, see PostgreSQL documentation on 
-\postgresdocu{runtime-config-resource.html}{Resource Consumption}
+%\postgresdocu{runtime-config-resource.html}{Resource Consumption}
 }{}
 
 \todo{postgres.conf: turn of autovacuum}{}
@@ -689,7 +700,7 @@ A vextor $x$ with the dimension $dim$ is generated in the following way:
 \begin{lstlisting}
 do
 {
-	int	d;
+	int		d;
 	double	v = random_peak(0, 1, dim);
 	double	l = v <= 0.5 ? v : 1.0 - v;
 	
@@ -748,8 +759,7 @@ look at the implementation which is available at \citep{Eder2007a}.
 
 The usage message explains, how to use the command line utility
 \begin{shellscript}
-\cmd{randdataset -?}
-
+\prompt{randdataset -?}
 Test Data Generator for Skyline Operator Evaluation
 Usage: randdataset (-i|-c|-a) -d DIM -n COUNT [-s SEED] [-p] [-S] [-h|-?]
 
@@ -781,8 +791,7 @@ Examples:
 An invocation of \texttt{randdataset} suitable to pipe it directly into \texttt{psql}, i.e. load it into database, could look like: 
 
 \begin{shellscript}
-\cmd{randdataset -i -d 3 -n 10 -I -R}
-
+\prompt{randdataset -i -d 3 -n 10 -I -R}
 DROP TABLE IF EXISTS "i3d10";
 CREATE TABLE "i3d10" (id int, d1 float, d2 float, d3 float);
 COPY "i3d10" (id, d1, d2, d3) FROM STDIN DELIMITERS ',' CSV QUOTE '''';

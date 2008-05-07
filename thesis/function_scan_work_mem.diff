@@ -1,0 +1,68 @@
+Index: C:/Hannes/skyline/pgsql/src/include/miscadmin.h
+===================================================================
+--- C:/Hannes/skyline/pgsql/src/include/miscadmin.h	(revision 358)
++++ C:/Hannes/skyline/pgsql/src/include/miscadmin.h	(revision 359)
+@@ -206,6 +206,7 @@
+ extern bool enableFsync;
+ extern bool allowSystemTableMods;
+ extern PGDLLIMPORT int work_mem;
++extern PGDLLIMPORT int function_scan_work_mem;
+ extern PGDLLIMPORT int maintenance_work_mem;
+ 
+ extern int	VacuumCostPageHit;
+Index: C:/Hannes/skyline/pgsql/src/backend/executor/execQual.c
+===================================================================
+--- C:/Hannes/skyline/pgsql/src/backend/executor/execQual.c	(revision 358)
++++ C:/Hannes/skyline/pgsql/src/backend/executor/execQual.c	(revision 359)
+@@ -1628,7 +1628,7 @@
+ 									   -1,
+ 									   0);
+ 				}
+-				tupstore = tuplestore_begin_heap(true, false, work_mem);
++				tupstore = tuplestore_begin_heap(true, false, function_scan_work_mem);
+ 				MemoryContextSwitchTo(oldcontext);
+ 				rsinfo.setResult = tupstore;
+ 				rsinfo.setDesc = tupdesc;
+@@ -1695,7 +1695,7 @@
+ 	if (rsinfo.setResult == NULL)
+ 	{
+ 		MemoryContextSwitchTo(econtext->ecxt_per_query_memory);
+-		tupstore = tuplestore_begin_heap(true, false, work_mem);
++		tupstore = tuplestore_begin_heap(true, false, function_scan_work_mem);
+ 		rsinfo.setResult = tupstore;
+ 		if (!returnsSet)
+ 		{
+Index: C:/Hannes/skyline/pgsql/src/backend/utils/misc/guc.c
+===================================================================
+--- C:/Hannes/skyline/pgsql/src/backend/utils/misc/guc.c	(revision 358)
++++ C:/Hannes/skyline/pgsql/src/backend/utils/misc/guc.c	(revision 359)
+@@ -1271,6 +1271,17 @@
+ 	},
+ 
+ 	{
++		{"function_scan_work_mem", PGC_USERSET, RESOURCES_MEM,
++			gettext_noop("Sets the maximum memory to be used for function scan workspaces."),
++			gettext_noop("This much memory can be used by each function "
++						 "scan operation before switching to temporary disk files."),
++			GUC_UNIT_KB
++		},
++		&function_scan_work_mem,
++		1024, 8 * BLCKSZ / 1024, MAX_KILOBYTES, NULL, NULL
++	},
++
++	{
+ 		{"maintenance_work_mem", PGC_USERSET, RESOURCES_MEM,
+ 			gettext_noop("Sets the maximum memory to be used for maintenance operations."),
+ 			gettext_noop("This includes operations such as VACUUM and CREATE INDEX."),
+Index: C:/Hannes/skyline/pgsql/src/backend/utils/init/globals.c
+===================================================================
+--- C:/Hannes/skyline/pgsql/src/backend/utils/init/globals.c	(revision 358)
++++ C:/Hannes/skyline/pgsql/src/backend/utils/init/globals.c	(revision 359)
+@@ -94,6 +94,7 @@
+ bool		enableFsync = true;
+ bool		allowSystemTableMods = false;
+ int			work_mem = 1024;
++int			function_scan_work_mem = 1024;
+ int			maintenance_work_mem = 16384;
+ 
+ /*

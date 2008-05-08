@@ -5,12 +5,8 @@
 %%% source id: $Id$
 %%%
 
-#ifndef FILE
-#define FILE 00-thesis
-#endif
-
 #ifndef OPTIONS
-#define OPTIONS a4paper,10pt,revisions
+#define OPTIONS a4paper,10pt,final
 #endif
 
 \documentclass[OPTIONS]{book}
@@ -24,10 +20,11 @@
 %\usepackage[scaled]{luximono}
 
 \usepackage{rail}
-\usepackage{subfigure}
+\usepackage{subfig}
 \usepackage{listings}
 
 %http://www.tex.ac.uk/cgi-bin/texfaq2html?label=bold-extras
+%todo: see http://ssel.vub.ac.be/ssel/internal:boldextra
 \usepackage[cmbtt]{bold-extra}
 
 
@@ -79,8 +76,7 @@
 %	ugsGraph,treeDec, niceTreeDec, TKNiceTreeDec, TDBag, std::string,
 %	eliminationScheme
 %	},
-	basicstyle=\small
-\ttfamily,
+	basicstyle=\small\ttfamily,
 	breaklines=true,
         prebreak={\hbox{ \textcolor{blue}{$\rightarrow$}}}, postbreak={\hbox{\textcolor{blue}{$\hookrightarrow$ }}},
 	classoffset=0,
@@ -90,5 +86,48 @@
 
 \makeindex
 \begin{document}
-\input{FILE}
+
+\svnInfo $Id$ 
+
+%%% Title page: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\pagestyle{empty}
+\include{01-titlepage-de}
+\include{01-titlepage-en}
+\pagenumbering{roman}
+
+%%% Preface: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\include{03-abstract-de}
+\include{03-abstract-en}
+\include{02-acknowledgement}
+
+%%% Table of contents: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\renewcommand{\contentsname}{Table of Contents}
+\setcounter{tocdepth}{3} 
+\pdfbookmark[0]{Table of Contents}{contents}% contents.0
+\tableofcontents
+
+
+%%% Chapter 1: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\pagestyle{fancy}
+\pagenumbering{arabic}
+\include{04-body}
+
+%%% Appendix: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\appendix
+
+\skylinebibliography
+\addcontentsline{toc}{chapter}{Bibliography}
+
+%%% TODO: Is a list of figures really required?
+\listoffigures
+\addcontentsline{toc}{chapter}{List of Figures}
+
+%%% TODO: Is a list of tables really required?
+\listoftables
+\addcontentsline{toc}{chapter}{List of Tables}
+
+\newpage
+\addcontentsline{toc}{chapter}{Index}
+\printindex
+
 \end{document}

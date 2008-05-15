@@ -31,17 +31,16 @@
 \newtheorem{lemma}{Lemma}
 \newtheorem{theorem}{Theorem}
 
+\newcommand\nt[1]{\textit{#1}}
 
 \makeatletter
-\newenvironment{shellscript}
+\newenvironment{interactive}
 {%
-\newcommand\prompt[1]{{\bfseries\$\ ##1}}
-\begingroup\small\list{}{\listparindent 0\p@\itemindent\listparindent\leftmargin15\p@\rightmargin15\p@}\item[]\begin{alltt}}{\end{alltt}\endlist\endgroup}
-
-\newenvironment{sqlscript}
-{%
-\newcommand\prompt[1]{\textbf{##1}}
+\newcommand\shprompt[1]{\$\ {\textbf{##1}}}
+\newcommand\sqlprompt[1]{db=\# {\textbf{##1}}}
+\newcommand\sqlpromptcont[1]{db-\# {\textbf{##1}}}
 \newcommand\comment[1]{{\rmfamily\textit{##1}}}
+\newcommand\rcomment[1]{\hfill\comment{##1}}
 \begingroup\small\list{}{\listparindent 0\p@\itemindent\listparindent\leftmargin15\p@\rightmargin15\p@}\item[]\begin{alltt}}{\end{alltt}\endlist\endgroup}
 
 \makeatother
@@ -61,7 +60,7 @@
 \clearpage
 
 
-\chapter{Introduction\revision}
+\chapter{Introduction}
 \label{chap:Introduction}
 
 
@@ -71,10 +70,36 @@
 give the intuition.
 
 \subsection{Typographical Conventions}
-For interatice input and output we will show our typed input in a \texttt{\bfseries bold font}, the output \texttt{like this}, \textit{and comments like this}.
+For interactive input and output we will show our typed input in a \texttt{\bfseries bold font}, the output \texttt{like this}, \textit{and comments like this}.
+
+
+%         1         2         3         4         5         6         7         8
+%12345678901234567890123456789012345678901234567890123456789012345678901234567890
+
+\begin{interactive}
+\shprompt{psql}\rcomment{start PostgreSQL interactive terminal}
+\sqlprompt{SELECT * FROM a2d1e5s0 SKYLINE OF d1 MIN, d2 MIN;}\rcomment{issue a skyline query}
+  id   |          d1           |          d2
+-------+-----------------------+-----------------------
+   417 |     0.660430708919594 |    0.0734207719527077
+  1329 |    0.0486199019148477 |     0.663867116113964
+...\rcomment{53 rows omitted}
+ 98953 |     0.136247931652335 |     0.607638615081091
+(56 rows)
+
+\sqlprompt{\ttbackslash{}q}\rcomment{quit psql}
+\shprompt{}\rcomment{back at the shell prompt}
+\end{interactive}
+
+The example above also illustrates two other concepts: ``\texttt{\$}''
+indicates a shell prompt and ``\texttt{db=\#}'' indicates the prompt for
+PostgreSQL interactive terminal \texttt{psql}. Furthermore
+``\texttt{db-\#}'' is displayed when \texttt{psql} is waiting for more
+input. All of them are used throughtout the text.
 
 \subsection{motivation}
-motivation: green computing: less cpu time, less computers, less energy --> safe the planet
+motivation: green computing: less cpu time, less computers, less
+energy --> safe the planet
 
 stocks: risk vs. costs (--> streaming skyline see [Tao2006])
 
@@ -386,7 +411,7 @@ extensions of B-trees and R$^*$-trees.
 \chapter{Implementation}
 \section{SQL Extension}
 
-\citet{Borzsonyi2001} proposed the following extension to the SQL's \inlinesql{SELECT} statement with an optional \inlinesql{SKYLINE OF}:
+\citet{Borzsonyi2001} proposed the following extension to the SQL's \inlinesql{SELECT} statement with an optional \inlinesql{SKYLINE OF}-clause:
 \begin{sql}
 SELECT ... FROM ... WHERE ... \\
 GROUP BY ... HAVING ...       \\
@@ -410,9 +435,17 @@ We extended the above syntax a bit further, so we additionally provide syntax to
 
 \end{itemize}
 
-To describe the syntax we use 
 \subsection{Syntax (Railroad Diagrams)}
+To describe the formal grammar of the \inlinesql{SKYLINE OF}-clause
+extension to the SQL query syntax we use syntax diagrams (or railroad
+diagrams). Railroad diagrams are a graphical alternative to
+Backus-Naur form or EBNF and they have been made popular by books such
+as the ``Pascal User Manual'' written by Niklaus Wirth. We believe the
+general concept of railroad diagrams is easy to grasp and does not
+need a further explanation at this point, so we can directly focus on
+our \inlinesql{SKYLINE OF} extension.
 
+\railoptions{ah}
 \railalias{selectclause}{select\_clause}
 \railalias{targetlist}{target\_list}
 \railalias{intoclause}{into\_clause}
@@ -422,18 +455,44 @@ To describe the syntax we use
 \railalias{havingclause}{having\_clause}
 \railalias{skylineclause}{skyline\_clause}
 \railalias{sortclause}{sort\_clause}
+\railalias{select_limit}{select\_limit}
 \railalias{qualOp}{qual\_Op}
 \railalias{cexpr}{c\_expr}
 
 % \railparam{\thinline}
 % \railparam{\thicklines}
+\railnontermfont{\rmfamily\itshape}
 \railtermfont{\ttfamily\upshape\small}
 \railboxheight 12pt
 \railinit
 
-\begin{rail}
+The following diagram depicts how the \inlinesql{SKLINE OF}-clause
+(denoted by \nt{skyline\_clause} in the diagram) fits into an SQL
+select query.  It is right between the optional \inlinesql{GROUP
+BY}/\inlinesql{HAVING}-clause and the optional \inlinesql{ORDER
+BY}-clause, denoted by \nt{group\_clause} / \nt{having\_clause} and
+\nt{sort\_clause}. We omit some details here but it should be clear
+from the context that \nt{target\_list}, \nt{into\_clause},
+\nt{from\_clause}, \nt{where\_clause}, \nt{group\_clause},
+\nt{having\_clause}, \nt{sort\_clause}, and \nt{select\_limit} have
+there usual meaning. We refer you to the according SQL standard and
+especially to the PostgreSQL documentation on SQL
+\postgresdocu{sql-select.html}{SELECT}. For the non-terminals that we omitted
+here we selected the same name as in the implemenation (see
+\srcref{src/backend/parser/gram.y}), in order to easily find the exact definition.
 
-selectclause : 'SELECT' 'DISTINCT'? targetlist intoclause ? fromclause \\ whereclause ? ( groupclause havingclause ? ) ? \\ skylineclause ? sortclause ? ';';
+%
+\begin{rail}
+selectclause :
+    'SELECT' 'DISTINCT'? targetlist intoclause ? fromclause \\ 
+    whereclause ? ( groupclause havingclause ? ) ? \\
+    skylineclause ? sortclause ? selectlimit ? ';' ;
+\end{rail}
+
+
+
+
+\begin{rail}
 skylineclause : 'SKYLINE OF' 'DISTINCT' ? ( skylineexpr + ',' ) skylineoptions ?;
 skylineexpr: cexpr ( 'MIN' | 'MAX' | 'DIFF' | 'USING' qualOp ) (() | 'NULLS FIRST' | 'NULLS LAST') ;
 skylineoptions : 'WITH' ('EF' efwindowoptions ?) ? \\ ( (('BNL' | 'SFS') windowoptions ?) | 'PRESORT') ? \\ ( 'NOINDEX' ) ? ;
@@ -462,21 +521,31 @@ related to the \inlinesql{GROUP BY} clause than to the \inlinesql{ORDER BY}
 clause, therefore we parse it in the same way.
 
 \subsection{Reserved Keywords}
-\todo{check if we defined some other reserved keywords}{}
+On the lexicalical level we introduced one new \emph{reserved
+keyword}: ``\inlinesql{SKYLINE}'' (see
+\srcref{src/backend/parser/keywords.c}). Introducing a reserved
+keyword has the usual consequences: it can not be used as normal
+identifier, like illustrated in the following example:
 
-\begin{sqlscript}
-\prompt{CREATE DATABASE SKYLINE;}
-
+\begin{interactive}
+\sqlprompt{CREATE DATABASE SKYLINE;}
 ERROR:  syntax error at or near "SKYLINE"
 LINE 1: CREATE DATABASE SKYLINE;
                         ^
-\end{sqlscript}
-The solution is easy and the same for every reserved word, just quote it:
-\begin{sqlscript}
-\prompt{CREATE DATABASE "SKYLINE";}
-\end{sqlscript}
+\end{interactive}
+\noindent
+Nevertheless the solution is easy and the same for every reserved
+word, just quote it:
+\begin{interactive}
+\sqlprompt{CREATE DATABASE "SKYLINE";}
+\end{interactive}
 
-We not define \inlinesql{MIN}, \inlinesql{MAX}, and \inlinesql{DIFF} as reserved keywords, because the SQL aggregate functions \inlinesql{MIN} and \inlinesql{MAX} are in PostgreSQL implemented as functions and are lookuped up at runtime and not directly hardcoded into the query parser.
+We did not define \inlinesql{MIN}, \inlinesql{MAX}, and
+\inlinesql{DIFF} as reserved keywords, because the SQL aggregate
+functions \inlinesql{MIN} and \inlinesql{MAX} are implemented as
+functions and are looked up at runtime and not directly hardcoded into
+the grammar. Defining these keywords as reserved keywords would mess
+up the implementation of SQL aggregate functions.
 
 \section{Semantics}
 
@@ -638,7 +707,7 @@ Turing development it was very helpful to run the PostgreSQL backend in \texttt{
 \todo{see \srcref{test/....}}{}
 \todo{see more extensive see perl script}{}
 
-\chapter{Results\revision}
+\chapter{Results}
 \label{chap:Results}
 
 
@@ -907,8 +976,8 @@ random dataset generator is to pipe its output directly into the
 database. The usage message explains how to use the command line
 utility:
 
-\begin{shellscript}
-\prompt{randdataset -?}
+\begin{interactive}
+\shprompt{randdataset -?}
 Test Data Generator for Skyline Operator Evaluation
 Usage: randdataset (-i|-c|-a) -d DIM -n COUNT [-s SEED] [-p] [-S] [-h|-?]
 
@@ -935,22 +1004,22 @@ Options:
 Examples:
        randdataset -i -d 3 -n 10 -I -R
        randdataset -a -d 2 -n 100 -S
-\end{shellscript}
+\end{interactive}
 
 An invocation of \texttt{randdataset} suitable to pipe it directly
 into \texttt{psql}, i.e. load it into database, could look like:
 
-\begin{shellscript}
-\prompt{randdataset -i -d 3 -n 10 -I -R}
+\begin{interactive}
+\shprompt{randdataset -i -d 3 -n 10 -I -R}
 DROP TABLE IF EXISTS "i3d10";
 CREATE TABLE "i3d10" (id int, d1 float, d2 float, d3 float);
 COPY "i3d10" (id, d1, d2, d3) FROM STDIN DELIMITERS ',' CSV QUOTE '''';
 1,0.000000000000000e+00,6.900010321708401e-01,5.054183972559023e-01
 2,5.914905399975788e-01,5.547849133400177e-01,3.784288188342139e-01
-...
+...\rcomment{7 rows omitted}
 10,8.585111004572880e-01,9.898449857671955e-02,8.770675234855467e-01
 \ttbackslash.
-\end{shellscript}
+\end{interactive}
 
 \subsubsection{PostgreSQL Random Dataset Generator Function}
 
@@ -968,15 +1037,15 @@ debugging this function was very handy. PostgreSQLs concept of
 \postgresdocu{functions-srf.html}{set returning functions} allows to
 issue queries as such:
 
-\begin{sqlscript}
-\prompt{SELECT * FROM generate_series(2,4);}
+\begin{interactive}
+\sqlprompt{SELECT * FROM generate_series(2,4);}
  generate_series
 -----------------
                2
                3
                4
 (3 rows)
-\end{sqlscript}
+\end{interactive}
 
 This concept of set returning functions is quite flexible and allows
 also to return complex data types such as records. To test drive this
@@ -988,41 +1057,43 @@ PostgreSQL installation follow the instructions
 \srcref{contrib/randdataset/README.randdataset}. Once installed the
 function can be used as follows:
 
-\begin{sqlscript}
-\prompt{SELECT * FROM
-pg_rand_dataset('indep', 2, 10, 0) AS
-ds(id int, d1 float, d2 float);}
+\begin{interactive}
+\sqlprompt{SELECT rds.id, rds.d1, rds.d2 FROM}\rcomment{columns are refered by name}
+\sqlpromptcont{pg_rand_dataset('indep', 2, 10, 0) AS}\rcomment{2 dim independent dataset with 10 tuples}
+\sqlpromptcont{rds(id int, d1 float, d2 float);}\rcomment{define names and types}
  id |         d1         |         d2
 ----+--------------------+--------------------
   1 |  0.170828036112165 |  0.749901980510867
   2 | 0.0963716553972902 |  0.870465227342427
-...
+...\rcomment{7 rows omitted}
  10 |  0.715538595204958 | 0.0830042460388524
 (10 rows)
 
-\prompt{SELECT * FROM
-pg_rand_dataset('corr', 3, 10, 0) AS
-ds(id int, d1 float, d2 float, d3 float);}
+\sqlprompt{SELECT rds.* FROM}
+\sqlpromptcont{pg_rand_dataset('corr', 3, 10, 0) AS}\rcomment{3 dim, correleted, 10 tuples}
+\sqlpromptcont{rds(id int, d1 float, d2 float, d3 float);}
  id |        d1         |        d2         |        d3
 ----+-------------------+-------------------+-------------------
   1 | 0.482522432069401 | 0.327330244422693 | 0.207248995528228
   2 | 0.448836206689892 | 0.512027726159258 | 0.600054676092416
-...
+...\rcomment{7 rows omitted}
  10 | 0.319189108559988 | 0.407713612758059 |  0.30165467053249
 (10 rows)
 
-\prompt{SELECT * FROM
-pg_rand_dataset('anti', 3, 20, 0) AS
-ds(id int, d1 float, d2 float, d3 float);}
-\comment{output ommit, as it similar to above, except other distribution and more records}
-\end{sqlscript}
+\sqlprompt{SELECT rds.* FROM}
+\sqlpromptcont{pg_rand_dataset('anti', 3, 20, 1) AS}\rcomment{3 dim, anti-correlated, 20 tuples, seed 1}
+\sqlpromptcont{rds(id int, d1 float, d2 float, d3 float);}
+\comment{output ommit, as it is similar to above, except other distribution, more tuples, and another inital seed is used}
+\end{interactive}
 
+\noindent
 The general signatur for \inlinesql{pg\_rand\_dataset} is:
-\begin{sqlscript}
+\begin{interactive}
 FUNCTION pg_rand_dataset(disttype text, dim int, rows int, seed int)
 RETURNS setof record
-\end{sqlscript}
+\end{interactive}
 
+\noindent
 Where the arguments have following meaning:
 \begin{itemize}
 \item \texttt{disttype} specifies the distribution type (see section \ref{sec:corr-anti-indep}), allowed values are \texttt{'indep'}, \texttt{'corr'}, and \texttt{'anti'}
@@ -1045,16 +1116,16 @@ functions \texttt{rds$k$d} for the dimenions $k \in \{1, \ldots,
 20\}$, they allowed us to issue the same queries as above in the
 following why (see \srcref{contrib/randdataset/randdataset.sql.in}):
 
-\begin{sqlscript}
-\prompt{SELECT * FROM rds2d('indep', 10, 0);}
-\comment{output ommited, as it is as above}
+\begin{interactive}
+\sqlprompt{SELECT rds.* FROM rds2d('indep', 10, 0) AS rds;}
+\rcomment{output completely omitted, as it is the same as above}
 
-\prompt{SELECT * FROM rds3d('corr', 10, 0);}
-\comment{same here}
+\sqlprompt{SELECT rds.* FROM rds3d('corr', 10, 0) AS rds;}
+\rcomment{same here}
 
-\prompt{SELECT * FROM rds3d('anti', 20, 0);}
-\comment{same here}
-\end{sqlscript}
+\sqlprompt{SELECT rds.* FROM rds3d('anti', 20, 0) AS rds;}
+\rcomment{same here}
+\end{interactive}
 
 
 \subsubsection{Buffer for Set returning function}
@@ -1078,13 +1149,13 @@ PostgreSQL call \texttt{generate\_series} a million times and will
 discard all tuples except one due to the
 \texttt{LIMIT 1}-clause.
 
-\begin{sqlscript}
-\prompt{SELECT * FROM generate_series(1,1000000) LIMIT 1;}
+\begin{interactive}
+\sqlprompt{SELECT * FROM generate_series(1,1000000) LIMIT 1;}
  generate_series
 -----------------
                1
 (1 row)
-\end{sqlscript}
+\end{interactive}
 
 This behavior is not desirable, at least we want that the tuples do
 not get swapped out to disk as
@@ -1100,9 +1171,9 @@ to introduce a new configuration variable
 in the function scan node. The following utility query sets this
 configuration variable to 100~MB;
 
-\begin{sqlscript}
-\prompt{SET function_scan_work_mem  = 102400;}
-\end{sqlscript}
+\begin{interactive}
+\sqlprompt{SET function_scan_work_mem  = 102400;}
+\end{interactive}
 
 \todo{}{link to the patch function\_scan\_work\_mem.diff}
 
@@ -1166,21 +1237,38 @@ Todo's
 
 
 
-\chapter*{Summary\revision}
+\chapter{Summary}
+%\addcontentsline{toc}{chapter}{Summary}
+
 \section{Futher work}
 
+\subsection{Speedups for low cardinalty domains}
+%
 use special algorithms if we deal with domains with small cardinalites, \citep{Preisinger2006, Preisinger2007, Morse2007}
 
-use seperate windows for each skyline group? or use hashing to reduce the number of comparisons?
+\subsection{Speedups for \inlinesql{SKYLINE OF DIFF}}
+%
+Use a seperate tuple window for each \inlinesql{SKYLINE OF DIFF}
+group, so only the tuples with the same values on the
+\inlinesql{SKYLINE OF DIFF} attributes have to be compared to each
+other. This reduction of comparision would yield an overall speedup.
+In order to avoid an unbounded number of tuple windows instead of
+having a tuple window for each \inlinesql{SKYLINE OF DIFF} group
+hashing could be engaded, i.e. allocate a fixed number of tuple
+windows and hash each \inlinesql{SKYLINE OF DIFF} group into one tuple
+window.
 
-hashing seams to be promissing for skyline groups.
 
+\subsection{Extensions}
+
+\subsubsection{$K$-skyband}
 implement $K$-skyband (maintaine dominance count in tuple window) do so for BNL and SFS.
 
+\subsubsection{$k$-dominance skyline}
+\todo{is this easy possible?}{}
 
 
 
-\addcontentsline{toc}{chapter}{Summary\revision}
 
 
 

@@ -94,8 +94,16 @@ setwd("c:\\hannes\\skyline\\mathematica\\histo\\");
 
 for (dist in c("i", "c", "a")) {
 	data = read.csv(paste(dist, "2d1e5.csv", sep=""), header=FALSE, col.names=c("d1", "d2"));
+	dist
+	mean(data$d1)
+	var(data$d1)
+	mean(data$d2)
+	var(data$d2)
+	cor(data)
+
 	pdf(file = paste("density-2d-", dist, "2d1e5.pdf", sep=""), encoding="ISOLatin1", onefile = FALSE, width=6, height=6)
 	distplot(data);
 	dev.off();
 }
+
 

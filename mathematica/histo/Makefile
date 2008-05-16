@@ -27,13 +27,13 @@ a2d1e3.csv:
 	randdataset.exe -a -d 2 -n 1000 > $@
 
 i2d1e5.csv:
-	randdataset.exe -i -d 2 -n 100000 > $@
+	randdataset.exe -i -d 2 -n 100000 -S > $@
 
 c2d1e5.csv:
-	randdataset.exe -c -d 2 -n 100000 > $@
+	randdataset.exe -c -d 2 -n 100000 -S > $@
 
 a2d1e5.csv:
-	randdataset.exe -a -d 2 -n 100000 > $@
+	randdataset.exe -a -d 2 -n 100000 -S > $@
 
 i2d1e6.csv:
 	randdataset.exe -i -d 2 -n 1000000 > $@

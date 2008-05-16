@@ -711,7 +711,7 @@ Turing development it was very helpful to run the PostgreSQL backend in \texttt{
 \label{chap:Results}
 
 
-\section{Experiments}
+\section{Experimental Setup}
 
 Although we continously merging \texttt{CSV HEAD} of \fixme{PostgreSQL
 source repository}{ref} into our main development branch, we decided
@@ -842,7 +842,7 @@ for (d = 0; d < dim; d++)
 % TODO: place table and picture next to each other instead of below
 \begin{figure}[htbp]
 \centering
-\subfloat[Density Plot]{\includegraphics[width=100mm]{plots/density-2d-i2d1e5}}
+\subfloat[Density Plot]{\includegraphics[width=100mm]{plots-density/density-2d-i2d1e5}}
 \subfloat[Statistics]{
 \begin{tabular}{r|rr}
 	& d1 	& d2 \\
@@ -897,7 +897,7 @@ Figure \ref{fig:density-2d-c2d1e5} shows a correlated dataset with
 
 \begin{figure}[htbp]
 \centering
-\subfloat[Density plot]{\includegraphics[width=100mm]{plots/density-2d-c2d1e5}}
+\subfloat[Density plot]{\includegraphics[width=100mm]{plots-density/density-2d-c2d1e5}}
 \subfloat[Statistics]{
 \begin{tabular}{r|rr}
 	& d1 	& d2 \\
@@ -948,7 +948,7 @@ with 100k tuples for $d = 2$.
 
 \begin{figure}[htbp]
 \centering
-\subfloat[Density Plot]{\includegraphics[width=100mm]{plots/density-2d-a2d1e5}}
+\subfloat[Density Plot]{\includegraphics[width=100mm]{plots-density/density-2d-a2d1e5}}
 \subfloat[Statistics]{
 \begin{tabular}{r|rr}
 	& d1 	& d2 \\
@@ -1177,19 +1177,11 @@ configuration variable to 100~MB;
 
 \todo{}{link to the patch function\_scan\_work\_mem.diff}
 
-\subsection{window size}
-assumtions on windowsize:
-
-the assumtion that at no time more than output\_tuples will be in the window can not be hold.
-
-larger window and and less passes do not always mean better runtime
-
-infact there is a break even point
-
-
 \clearpage % \todo{remove clearpage}{}
 
-\section{Benchmarking}
+\section{Comparisons and Analysis}
+
+\subsection{Parameter Space}
 \todo{see \citep{Gray1993}}{}
 
 There is a large number of parameters that can be varied:
@@ -1231,9 +1223,38 @@ Todo's
 \item describe software (operating system: Windows XP + SP 2, Microsoft Visual Studio 2005 + SP1, based on PostgreSQL 8.3.0) and hardware (CPU, RAM, Disk config, File System) used for benchmarking
 
 \item describe the configuration of PostgreSQL (flags used for \texttt{configure --enable-asserts --enable-checks, ...}, it is recommended to turn asserts and co. off for benchmarking
-
-\item \todo{maybe run all the tests on dmdb2.bda.local = Dell OptiPlex XXX, to have a off the shelf hardware}{}
 \end{itemize}
+
+
+\subsection{window size}
+assumtions on windowsize:
+
+the assumtion that at no time more than output\_tuples will be in the window can not be hold.
+
+larger window and and less passes do not always mean better runtime
+
+infact there is a break even point
+
+
+
+\subsection{Special Method for 2 dim Skylines}
+
+\twocolumn
+\begin{figure}[ht]
+\centering
+\subfloat[Independent dataset]{\includegraphics[width=72.5mm]{plots-profile/presort-i}} \\
+\subfloat[Correlated dataset]{\includegraphics[width=72.5mm]{plots-profile/presort-c}} \\
+\subfloat[Anti-correlated dataset]{\includegraphics[width=72.5mm]{plots-profile/presort-a}}
+\caption{Absolute timing for different physical skyline operators in the 2 dimensional case}
+\end{figure}
+\begin{figure}[ht]
+\centering
+\subfloat[Independent dataset (100k tuples)]{\includegraphics[width=72.5mm]{plots-profile/sfs-index-i-100000}} \\
+\subfloat[Correlated dataset (100k tuples)]{\includegraphics[width=72.5mm]{plots-profile/sfs-index-c-100000}} \\
+\subfloat[Anti-correlated dataset (100k tuples)]{\includegraphics[width=72.5mm]{plots-profile/sfs-index-a-100000}}
+\caption{Relative timing for SFS/SFS+EF when usning index access paths (100k tuples)}
+\end{figure}
+\onecolumn
 
 
 

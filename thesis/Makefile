@@ -1,4 +1,7 @@
 # -*- Makefile -*-
+CURRENTWORKPAGE=47
+# set CURRENTWORKPAGE to the page in the .pdf where you are currently
+# working on, this is used for pdfopen --page=..
 
 # [NOTE]: all output formats depend on these files
 # add new files to this list
@@ -30,7 +33,7 @@ all: 00-thesis.pdf
 
 00-thesis.pdf: closepdf prereq 00-thesis.rao 00-thesis.tex $(FILES)
 	texify --pdf $(TEXIFYFLAGS) 00-thesis.tex
-	pdfopen --file=$@ --page=27
+	pdfopen --file=$@ --page=$(CURRENTWORKPAGE)
 
 closepdf:
 	-pdfclose --file=00-thesis.pdf

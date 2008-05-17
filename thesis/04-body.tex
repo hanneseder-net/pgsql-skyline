@@ -53,6 +53,17 @@
 
 \makeatother
 
+\newcommand\subplotprofile[2][todo]{%
+\subfloat[#1]{%
+\includegraphics[width=\onecolumnwidth]{plots-profile/#2}}%
+}%
+
+\newcommand\subplotlabeledprofile[3]{%
+\subfloat[#1]{%
+\includegraphics[width=\onecolumnwidth]{plots-profile/#2}%
+\label{#3}%
+}}%
+
 
 
 \section{TODO}
@@ -685,6 +696,8 @@ ORDER BY AVG(e.Salary) DESC
 \label{fig:qp-agg-bnl-sort}%
 \end{figure}
 
+%
+
 \begin{figure}[htbp]
 \subfloat[BNL+EF]{%
 \begin{minipage}[b]{\onecolumnwidth}%
@@ -787,7 +800,69 @@ edit \& continue in msvc.
 
 
 \section{Experimental Setup}
+We ran our experiments on seven Dell OptiPlex 755, Intel Pentium
+Dual-Core CPU E2160 (1.80GHz, 1MB L2 cache), with 1~GB RAM and Seagate
+Barracuda 160~GB HDD (7200~rpm, SATA 3.0Gb/s, 8~MB cache) with a
+single NTFS partition,
+% average latency 4.16msec
+running Microsoft Windows XP (SP2).
+% 
+Our implementation was based on PostgreSQL 8.3.0 and was compiled
+using Microsoft Visual Studio 2005 (SP1) using the \texttt{RELEASE}
+configuration with assertions disabled.
+%
+PostgreSQL was configured to use 200 MB of RAM for shared buffers,
+with auto vacuuming disabled, and all other settings were left as
+default.
 
+If not otherwise mentioned, a tuple window size of 1024~KB (equal to
+the PostgreSQL \texttt{work\_mem} setting), and an EF tuple window
+size of 8~KB (equal to the PostgreSQL block size) were used.
+
+The tables for the test runs have been generated using the extended
+version \cite{Eder2007a} of the dataset generated presented in
+\cite{Borzsonyi2001}, which allows to generate tables with
+different initial seeds for the random generator. All experiments
+were carried out on three different sets with varying initial seed, for each
+distribution type (independent, correlated, and anti-correlated), and
+with 100, 500, 1k, 5k, 10k, 50k, 100k tuples.
+
+Each tuple consists of a unique 4 byte integer \emph{id} and 15
+randomly generated 8 byte floats $d_1, \ldots, d_{15}$. With a 23 byte
+tuple header and the alignment it sums up to a tuple length of 152 bytes. 
+The memory chunk used by the PostgreSQL memory allocation function
+(\texttt{palloc}) was 264 bytes long.
+%The tuples are 152 bytes long, but the memory chunk used by PostgreSQL memory allocation function (palloc) is 264 bytes long.
+%
+%23 bytes tuple header, (0 bytes for null value bitmap) 
+%
+%data align at 8:
+%4 (id) + 8 * 15 (d1-d15) = 124
+%
+%= 148 + alignment = 152
+%
+%MAXALIGN 
+%MAXIMUM_ALIGNOF 8
+%
+%http://www.postgresql.org/docs/current/static/storage-page-layout.html
+
+For the experiments using an index, a duplicate of the same set of
+tables was used, including six indexes, where index $k$ is an index on
+$d_1, \ldots, d_k$. This all sums up to 126 tables and an database of
+approximately 1 GB.  
+For most of our experiments we did not consider tables with more than
+100k tuples, as the runtime for a 15 dimensional skyline query on 100k
+tuples went up to 30 minutes.
+
+% TODO hot cache, we ensure the table is in the shared buffer, before
+% running the query, as each of the implemented methods has to read the
+% entire table anyway
+
+All experiments were carried out with a \emph{hot disk cache}, i.e. due to
+appropriate queries all pages were in the shared buffers.
+
+
+\subsection{Source Code}
 Although we continously merging \texttt{CSV HEAD} of \fixme{PostgreSQL
 source repository}{ref} into our main development branch, we decided
 to base this paper on branch \texttt{REL8\_3\_STABLE}, in order to
@@ -795,17 +870,12 @@ have a more stable and reproducibly setting, i.e. all experiments in
 this paper are based on version 8.3.0 of PostgreSQL with our patch for
 the skyline operator applied.
 
+\subsection{Lesson learned}
 A lesson we have painfully learned during our experiments is to
 minimize all possible influences on the runs to avoid skewed
 results. This esspecially includes: screen savers, power saving or
 standby options and any form of automatic software update suche as
 Microsoft Windows Update or Google Pack software updater.
-
-\todo{postgres.conf: shared\_buffers = XXX, see PostgreSQL documentation on 
-%\postgresdocu{runtime-config-resource.html}{Resource Consumption}
-}{}
-
-\todo{postgres.conf: turn of autovacuum}{}
 
 \subsection{Random Dataset Generator}
 
@@ -1276,6 +1346,281 @@ configuration variable to 100~MB;
 \clearpage % \todo{remove clearpage}{}
 
 \section{Comparisons and Analysis}
+\label{sec:analysis}
+We measure the time performance with respect to three parameters:
+dimension, data cardinality, and data distribution.  We tested on the
+following three data distributions: independent (i), correlated (c),
+and anti-correlated (a).  For the other two factors "dimension" and
+"cardinality", one has been fixed during each experiment.  Thus all
+the plots are two dimensional.
+
+\subsection{Time performance w.r.t. dimension}
+
+\begin{figure}[htbp]
+\centering%
+\begin{minipage}{\onecolumnwidth}%
+\subplotprofile[Independent dataset (100k tuples)]{bnl-wp-dim-i-100000}\\
+\subplotprofile[Correlated dataset (100k tuples)]{bnl-wp-dim-c-100000}\\
+\subplotprofile[Anti-correlated dataset (100k tuples)]{bnl-wp-dim-a-100000}%
+\caption{Comparing runtime for different methods (100k tuples)}%
+\label{fig:all-dim}%
+\end{minipage}%
+\hspace{\columnsep}%
+\begin{minipage}{\onecolumnwidth}%
+\subplotprofile[Independent dataset (100k tuples)]{all-dim-i-100000}\\
+\subplotprofile[Correlated dataset (100k tuples)]{all-dim-c-100000}\\
+\subplotprofile[Anti-correlated dataset (100k tuples)]{all-dim-a-100000}%
+\caption{Absolute timing for different physical skyline operators (100k tuples)}%
+\label{fig:all-dim-absolute}
+\end{minipage}%
+\end{figure}
+
+For this set of experiments we fix the number of tuples of the input data.
+Note that generally the absolute time measurements are not proportional 
+throughout the dimensions, we thus deploy the relative values by setting one measurement as
+the reference. 
+In Figure~\ref{fig:all-dim-absolute}
+we illustrate the absolute time measurements which are corresponding to
+the relative values in Figure~\ref{fig:all-dim}. 
+In the rest of the experiments, we only provide relative time measurements.
+
+\todo{write about 2 dim case}{}
+
+\subsubsection{Big datasets}
+\label{sec:big-datasets}
+Figure~\ref{fig:all-dim} shows the time performance of the skyline
+algorithms vs. dimension with 100k tuples. It shows clearly that the
+SFS+EF algorithm has the best time performance with all the data
+distributions.  This conforms with the results in \cite{Godfrey2007},
+where it was shown that LESS outperforms the SFS algorithm with 1M
+tuples.
+
+We also note that SFS performs extremely poor as the dimension is less
+than six for independent and anti-correlated data, and even worse for
+correlated data.  This can be justified that if the dimension is low,
+the skyline selectivity factor\footnote{selectivity factor = skyline
+tuples / input tuples. A low selectivity factor means high
+selectivity.}  is low as well. Therefore, EF operation is effective,
+i.e., a number of tuples could be removed at this stage. However, this
+does not explain why SFS performs worse than BNL on datasets of low
+dimensions. This can be clarified when considering the absolute time
+measurement in Figure~\ref{fig:all-dim-absolute}.  It is shown that
+the sorting routine of SFS has a nearly constant cost for all
+dimensions. Therefore, for low dimensional datasets, the sorting cost
+is dominant.
+
+BNL+EF performs consistently better than BNL, due to the low skyline
+selectivity factor for datasets with 100k tuples
+(cf. Figure~\ref{fig:sf}).  As far as the window policy is concerned,
+\emph{entropy} has consistently better performance for all the
+algorithms.
+
+\subsubsection{Small datasets}
+\label{sec:small-datasets}
+
+\begin{figure}[htbp]
+\centering%
+\begin{minipage}{\onecolumnwidth}%
+\subplotprofile[Independent dataset]{presort-i}\\
+\subplotprofile[Correlated dataset]{presort-c}\\
+\subplotprofile[Anti-correlated dataset]{presort-a}%
+\caption{Absolute timing for different physical skyline operators 
+in the 2 dimensional case}%
+\end{minipage}%
+\hspace{\columnsep}%
+\begin{minipage}{\onecolumnwidth}%
+\subplotprofile[Independent dataset (1k tuples)]{bnl-wp-dim-i-1000}\\
+\subplotprofile[Correlated dataset (1k tuples)]{bnl-wp-dim-c-1000}\\
+\subplotprofile[Anti-correlated dataset (1k tuples)]{bnl-wp-dim-a-1000}%
+\caption{Comparing runtime for different methods (1k tuples)}
+\label{fig:all-dim-onek}
+\end{minipage}%
+\end{figure}
+
+Figure~\ref{fig:all-dim-onek}
+depicts the time-dimensionality performance regarding to datasets with 1k number of tuples.
+One interesting observation is that the performance of SFS 
+is surprisingly better than others, except for the extremely low dimension values
+(three for independent, anti-correlated, and six for correlated distributions).
+As illustrated by Figure~\ref{fig:sf}, 
+there exists a causal relation with the skyline selectivity factors.
+It shows clearly that as the data cardinality decreases,
+the skyline selectivity factor increases. Therefore, in general, the EF operator is less effective 
+with lower data cardinalities. To be more accurate, if the skyline selectivity factor
+is higher than 0.1, the benefit gained from EF is marginal. 
+This is confirmed by the results shown in Figure~\ref{fig:all-dim} as well.
+
+The result is somehow contradictory to the claim that SFS+EF should 
+perform consistently better than SFS, because at the EF stage there should be always 
+some tuples eliminated. However, one should not ignore the cost of the EF operation,
+where comparisons are executed. Moreover, if the \emph{entropy} window 
+policy is applied, the time consumption is even higher. Hence, there exist
+data settings where EF does not pay off anymore.
+
+\subsection{Time performance w.r.t. cardinality}
+
+To better understand the time performance of the skyline algorithm
+with respect to the data cardinality, 
+we conducted experiments for each dimension $k \in \{2, \ldots, 15\}$
+with the number of tuples ranging from 100 to 100k. 
+For each data distribution we have chosen four to five representative
+dimension values.
+Figure~\ref{fig:inde}, \ref{fig:corre}, and \ref{fig:anti}
+illustrate the test results for independent, correlated,
+and anti-correlated datasets, respectively.
+
+Surprisingly, the \emph{rule of the selectivity factor} 
+is proven to be true in all the datasets. 
+That is, 
+if the selectivity factor is higher than 0.1, the elimination filter
+does not have any advantage. 
+
+\subsubsection{Independent and anti-correlated datasets}
+Let us first consider the independent datasets (Figure~\ref{fig:inde}).
+As the dimension is higher than four, SFS is superior for all datasets,
+except for data cardinality of 50k and 100k, where SFS+EF outperforms SFS.
+If we examine again the selectivity factor for independent datasets in Figure~\ref{fig:sf},
+these datasets are in the category where the selectivity factor 
+is higher than 0.1. This result confirms our observation in Section~\ref{sec:small-datasets}.
+Note that the same observation holds for BNL+EF vs. BNL as well.
+
+With dimension three there is an exception, where BNL performs best.
+This can be justified as follows: 
+the sorting cost remains constant w.r.t. dimensions,
+thus it becomes dominant with low dimension (such as three). 
+
+The performance of anti-correlated datasets in Figure~\ref{fig:anti} 
+behaves similarly to that of independent datasets, 
+thus the above analysis can be applied as well.
+
+\subsubsection{Correlated datasets}
+For correlated datasets in Figure~\ref{fig:corre}, SFS+EF is superior
+with a few exceptions. This again, can be perfectly explained by
+the selectivity factors for correlated datasets (cf. Figure~\ref{fig:sf-c}).
+Except for the data cardinality of 100 and 500, all
+the selectivity factors are remarkably low (most of them are less than 0.1),
+thus the EF operation pays off.
+
+\begin{figure}[htbp]
+\centering%
+\subplotprofile[3 dim (independent)]{bnl-wp-rows-i-03}%
+\hspace{\columnsep}%
+\subplotprofile[4 dim (independent)]{bnl-wp-rows-i-04}\\
+\subplotprofile[6 dim (independent)]{bnl-wp-rows-i-06}%
+\hspace{\columnsep}%
+\subplotprofile[9 dim (independent)]{bnl-wp-rows-i-09}\\
+\subplotprofile[15 dim (independent)]{bnl-wp-rows-i-15}%
+\caption{Comparing runtime for independent datasets}%
+\label{fig:inde}%
+\end{figure}
+
+\begin{figure}[htbp]
+\centering%
+\subplotprofile[3 dim (correlated)]{bnl-wp-rows-c-03}%
+\hspace{\columnsep}%
+\subplotprofile[5 dim (correlated)]{bnl-wp-rows-c-05}\\
+\subplotprofile[8 dim (correlated)]{bnl-wp-rows-c-08}%
+\hspace{\columnsep}%
+\subplotprofile[15 dim (correlated)]{bnl-wp-rows-c-15}%
+\caption{Comparing runtime for correlated datasets}%
+\label{fig:corre}%
+\end{figure}
+
+
+\begin{figure}[htbp]
+\centering%
+\subplotprofile[3 dim (anti-correlated)]{bnl-wp-rows-a-03}%
+\hspace{\columnsep}%
+\subplotprofile[4 dim (anti-correlated)]{bnl-wp-rows-a-04}\\
+\subplotprofile[7 dim (anti-correlated)]{bnl-wp-rows-a-07}%
+\hspace{\columnsep}%
+\subplotprofile[15 dim (anti-correlated)]{bnl-wp-rows-a-15}%
+\caption{Comparing runtime for anti-correlated datasets}%
+\label{fig:anti}%
+\end{figure}
+
+
+\begin{figure}[htbp]
+\centering%
+\begin{minipage}{\onecolumnwidth}%
+\subplotlabeledprofile{Independent dataset (100k tuples)}{sfs-index-i-100000}{fig:sfs-index-i}\\
+\subplotlabeledprofile{Correlated dataset (100k tuples)}{sfs-index-c-100000}{fig:sfs-index-c}\\
+\subplotlabeledprofile{Anti-correlated dataset (100k tuples)}{sfs-index-a-100000}{fig:sfs-index-a}%
+\caption{Relative timing for SFS/SFS+EF when using index access paths (100k tuples)}%
+\label{fig:sfs-index}%
+\end{minipage}%
+\hspace{\columnsep}%
+\begin{minipage}{\onecolumnwidth}%
+\subplotlabeledprofile{independent dataset}{selectivity-dim-i}{fig:sf-i}\\
+\subplotlabeledprofile{correlated dataset}{selectivity-dim-c}{fig:sf-c}\\
+\subplotlabeledprofile{anti-correlated dataset}{selectivity-dim-a}{fig:sf-a}%
+\caption{Skyline operator selectivity factor on our test datasets}%
+\label{fig:sf}%
+\end{minipage}
+\end{figure}
+
+
+\begin{figure}[htbp]
+\centering
+\subplotlabeledprofile{1k tuples}{ef-eff-dim-1000-efws8}{fig:ef-eff-1k}\\
+\subplotlabeledprofile{10k tuples}{ef-eff-dim-10000-efws8}{fig:ef-eff-10k}\\
+\subplotlabeledprofile{100k tuples}{ef-eff-dim-100000-efws8}{fig:ef-eff-100k}%
+\caption{Effectiveness of elimination filter (EF) for varying dimensions}%
+\label{fig:ef-eff}%
+\end{figure}
+
+\subsection{SFS using indexes}
+The idea is to leverage the index structure for SFS in order to avoid an explicit sort.
+For SFS+EF w/ index this is illustrated in Figure~\ref{fig:qp-sfs-index-ef}.
+It is up to the query optimizer to decide by means of cost estimation 
+whether to use an index or not.
+We analyzed the usage of indexes for SFS in detail for 100k tuples 
+(see Figure~\ref{fig:sfs-index}).
+
+It turns out that SFS w/ index consistently outperforms SFS, 
+independent from the window policy used, with a single exception (cf. 
+Figure~\ref{fig:sfs-index-a} when dim=6). 
+This is clearly an argument for using an index.
+
+However, SFS+EF w/ index performs worse than SFS w/ index. 
+This is somehow counterintuitive, because for 100k tuples 
+SFS+EF performs better than SFS, as we have discussed
+in Section~\ref{sec:big-datasets} (cf. Figure~\ref{fig:all-dim}).
+We argue that, the effectiveness of EF deteriorates
+in the presence of the index structure.
+The data is physically ordered according to one of the indexed attributes,
+which is not guaranteed to be beneficial for the elimination filtering.
+Therefore, one should be careful with applying EF in the presence of index,
+even on the datasets with low selectivity factors.
+%
+The only significant exception is for correlated data, window policy append, and dim 
+$\le 3$ (cf. Figure~\ref{fig:sfs-index-c}).
+We argue this is due to the general low selectivity factor and high EF effectiveness in 
+this case (cf. Figure~\ref{fig:sf-c} and \ref{fig:ef-eff-100k}).
+
+In all aspects, SFS w/ index and SFS+EF w/ index are outperformed
+by SFS+EF using window policy entropy or prepend. This can
+be explained with the same argument as above, EF eliminates
+so many tuples prior to sorting that this becomes cheaper than
+using an index.
+
+%\pagebreak[4]
+\subsection{Window policy}
+All experimental results show that the \emph{entropy} is
+the most efficient and effective window policy.
+One might notice that on correlated datasets, the \emph{prepend}
+window policy performs the worst in the SFS algorithm. 
+The explanation is obvious: if the correlated data is sorted,
+the most effective skyline tuples (that is, the tuples dominate 
+most of the other tuples) tend to enter the widow earlier. 
+However with the prepend policy, these tuples are successively pushed
+to the end of the window, which results in high time costs
+for checking whether a new tuple is dominated by
+the tuples in the window.
+Figure \ref{fig:ef-eff} shows that \emph{entropy} is
+the most effective EF window policy. 
+
+
 
 \subsection{Parameter Space}
 \todo{see \citep{Gray1993}}{}
@@ -1337,34 +1682,9 @@ infact there is a break even point
 
 \subsection{Special case 2 dim skylines}
 
-
-\begin{figure}[htbp]
-\centering%
-\begin{minipage}{\onecolumnwidth}%
-\subfloat[Independent dataset]{%
-\includegraphics[width=\onecolumnwidth]{plots-profile/presort-i}}\\
-\subfloat[Correlated dataset]{%
-\includegraphics[width=\onecolumnwidth]{plots-profile/presort-c}}\\
-\subfloat[Anti-correlated dataset]{%
-\includegraphics[width=\onecolumnwidth]{plots-profile/presort-a}}%
-\caption{Absolute timing for different physical skyline operators 
-in the 2 dimensional case}%
-\end{minipage}%
-\hspace{\columnsep}%
-\begin{minipage}{\onecolumnwidth}%
-\subfloat[Independent dataset (100k tuples)]{%
-\includegraphics[width=\onecolumnwidth]{plots-profile/sfs-index-i-100000}}\\
-\subfloat[Correlated dataset (100k tuples)]{%
-\includegraphics[width=\onecolumnwidth]{plots-profile/sfs-index-c-100000}}\\
-\subfloat[Anti-correlated dataset (100k tuples)]{%
-\includegraphics[width=\onecolumnwidth]{plots-profile/sfs-index-a-100000}}%
-\caption{Relative timing for SFS/SFS+EF when using index access paths 
-(100k tuples)}%
-\end{minipage}%
-\end{figure}
-
-
-
+%%
+%% Summary
+%%
 
 \chapter{Summary}
 %\addcontentsline{toc}{chapter}{Summary}

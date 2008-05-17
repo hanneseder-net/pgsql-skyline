@@ -24,10 +24,10 @@ sel <- (is.na(data$windowsize) | data$windowsize == windowsize) & (is.na(data$ef
 d=aggregate(data$total[sel], by=list(data$method[sel], data$inrows[sel], data$dim[sel], data$dist[sel]), FUN = mean);
 colnames(d) <- c("method", "rows", "dim", "dist", "total");
 
-
+# see: http://www.stat.auckland.ac.nz/~paul/R/CM/CMR.html
 skyplot.setupcmfonts <- function() {
 	CM <- Type1Font("CM",
-			c(paste("../../../fonts/metric/",
+			c(paste("../../../fonts/metrics/",
 			c("fcmr8a.afm", "fcmb8a.afm", "fcmri8a.afm", "fcmbi8a.afm", "cmsyase.afm"), sep="")));
 	pdfFonts(CM=CM);
 }
@@ -51,7 +51,7 @@ skyplot.embedcmfonts <- function(srcfilename, dstfilename) {
 
 	embedFonts(	srcfilename, 
 			outfile = dstfilename, 
-			fontpaths=c("../../../fonts/outline"));
+			fontpaths=c("../../../fonts/outlines"));
 }
 
 skyplot.pdf <- function(filename) {

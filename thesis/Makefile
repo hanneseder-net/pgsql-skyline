@@ -30,7 +30,7 @@ all: 00-thesis.pdf
 
 00-thesis.pdf: closepdf prereq 00-thesis.rao 00-thesis.tex $(FILES)
 	texify --pdf $(TEXIFYFLAGS) 00-thesis.tex
-	pdfopen --file=$@ --page=31
+	pdfopen --file=$@ --page=27
 
 closepdf:
 	-pdfclose --file=00-thesis.pdf

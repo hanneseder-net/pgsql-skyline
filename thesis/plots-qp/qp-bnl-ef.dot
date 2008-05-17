@@ -1,0 +1,12 @@
+digraph "bnl-ef" {
+	graph [	fontname = "Helvetica",
+		fontsize = 10,
+		size = "6,6" ];
+	node [	fontname = "Helvetica" ];
+
+	BNL [ label="BNL (price MIN, dist MIN)", fillcolor=lightblue2, style=filled ];
+	EF [ label="EF (price MIN, dist MIN)", fillcolor=lightblue2, style=filled ];
+
+	BNL -> EF [ dir=back ];
+	EF -> "SeqScan on hotel" [ dir=back ];
+}

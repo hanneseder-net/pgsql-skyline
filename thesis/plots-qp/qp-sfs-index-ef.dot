@@ -1,0 +1,12 @@
+digraph "sfs-index-ef" {
+	graph [	fontname = "Helvetica",
+		fontsize = 10,
+		size = "6,6" ];
+	node [	fontname = "Helvetica" ];
+
+	SFS [ label="SFS (price MIN, dist MIN)", fillcolor=lightblue2, style=filled ];
+	EF [ label="EF (price MIN, dist MIN)", fillcolor=lightblue2, style=filled ];
+
+	SFS -> EF [ dir=back ];
+	EF -> "IndexScan on ix_hotel_dist_price" [ dir=back ];
+}

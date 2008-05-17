@@ -1,0 +1,10 @@
+digraph "sfs-index" {
+	graph [	fontname = "Helvetica",
+		fontsize = 10,
+		size = "6,6" ];
+	node [	fontname = "Helvetica" ];
+
+	SFS [ label="SFS (price MIN, dist MIN)", fillcolor=lightblue2, style=filled ];
+
+	SFS -> "IndexScan on ix_hotel_dist_price" [ dir=back ];
+}

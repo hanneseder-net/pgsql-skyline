@@ -1,0 +1,18 @@
+digraph "agg-bnl-sort" {
+	graph [	fontname = "Helvetica",
+		fontsize = 10,
+		size = "6,6" ];
+	node [	fontname = "Helvetica" ];
+
+	SORT [ label="Sort (AVG(e.Salary))" ];
+	BNL [ label="BNL (AVG(e.Salary) MAX, AVG(e.Revenue) MIN)", fillcolor=lightblue2, style=filled];
+	GROUPBY [ label="Group By (AVG)" ];
+	GROUPBYSORT [ label="Sort (d.DeptName)" ];
+
+	SORT -> BNL [ dir=back ];
+	BNL -> GROUPBY [ dir=back ];
+	GROUPBY ->  GROUPBYSORT [ dir=back ];
+	GROUPBYSORT -> "Index Join" [ dir=back ];
+	"Index Join" -> "HeapScan on emp" [ dir=back ];
+	"Index Join" -> "IndexScan on dept" [ dir=back ];
+}

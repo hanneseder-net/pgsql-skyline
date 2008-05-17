@@ -49,7 +49,6 @@
 \global\onecolumnwidth\textwidth
 \advance\onecolumnwidth -\columnsep
 \divide\onecolumnwidth\tw@
-
 \newsavebox\tempbox
 
 \makeatother
@@ -666,6 +665,68 @@ ERROR:  column "e2d100.d1" must appear in the GROUP BY clause or be used in an a
 
 \todo{}{explain more}
 
+\section{Query Execution}
+
+\begin{figure}[htbp]
+\centering
+\subfloat[Query Plan]{\includegraphics[scale=0.5]{plots-qp/qp-agg-bnl-sort}}\\
+\subfloat[Query]{%
+\parbox{100mm}{%
+\texttt{%
+SELECT d.DeptName, AVG(e.Salary), AVG(e.Revenue)\\
+FROM emp e JOIN dept d on (e.Dno = d.DeptId)\\
+GROUP BY d.DeptName\\
+SKYLINE OF AVG(e.Salary) MAX, AVG(e.Revenue) MIN\\
+ORDER BY AVG(e.Salary) DESC
+}
+}
+}%
+\caption{Example query plan for BNL}%
+\label{fig:qp-agg-bnl-sort}%
+\end{figure}
+
+\begin{figure}[htbp]
+\subfloat[BNL+EF]{%
+\begin{minipage}[b]{\onecolumnwidth}%
+\centering%
+\includegraphics[scale=0.5]{plots-qp/qp-bnl-ef}%
+\label{fig:qp-bnl-ef}%
+\end{minipage}%
+}%
+\hspace{\columnsep}%
+%
+\subfloat[SFS+EF]{%
+\begin{minipage}[b]{\onecolumnwidth}%
+\centering%
+\includegraphics[scale=0.5]{plots-qp/qp-sfs-ef}%
+\end{minipage}
+\label{fig:qp-sfs-ef}%
+}%
+%
+\\
+%
+\subfloat[SFS \emph{w/ index}]{%
+\begin{minipage}[b]{\onecolumnwidth}%
+\centering%
+\includegraphics[scale=0.5]{plots-qp/qp-sfs-index}%
+\label{fig:qp-sfs-index}%
+\end{minipage}%
+}%
+\hspace{\columnsep}%
+%
+\subfloat[SFS+EF \emph{w/ index}]{%
+\begin{minipage}[b]{\onecolumnwidth}%
+\centering%
+\includegraphics[scale=0.5]{plots-qp/qp-sfs-index-ef}%
+\label{fig:qp-sfs-index-ef}%
+\end{minipage}%
+}%
+\caption{Query plans for: 
+\texttt{SELECT * FROM hotel SKYLINE OF price MIN, dist MIN;}}%
+\end{figure}
+
+
+
 \section{Pseudo Code}
 
 \subsection{The stages of a query}
@@ -692,9 +753,9 @@ brauchbar, da es unserer vermutung nach ein ein gut anzuwendender fall ist, aber
 
 \subsection{EF and BNL}
 
-\section{Sampling}
+\section{Query base relation statistics}
 
-sampling --> min / max  ---> (0,1) --> ln   --> sum
+PostgreSQL does not do a good job with statistics and subqueries.
 
 \section{Cardinality and Cost Estimation}
 
@@ -1327,11 +1388,16 @@ hashing could be engaded, i.e. allocate a fixed number of tuple
 windows and hash each \inlinesql{SKYLINE OF DIFF} group into one tuple
 window.
 
-
 \subsection{Extensions}
 
+\subsubsection{Sampling}
+
+In the absence of statistics for the relation in questions, sampling
+could be engadged. \todo{cite}{Chaurduri2006}
+
 \subsubsection{$K$-skyband}
-implement $K$-skyband (maintaine dominance count in tuple window) do so for BNL and SFS.
+implement $K$-skyband (maintaine dominance count in tuple window) do
+so for BNL and SFS.
 
 \subsubsection{$k$-dominance skyline}
 \todo{is this easy possible?}{}

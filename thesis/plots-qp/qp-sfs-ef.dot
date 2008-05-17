@@ -1,0 +1,14 @@
+digraph "less" {
+	graph [	fontname = "Helvetica",
+		fontsize = 10,
+		size = "6,6" ];
+	node [	fontname = "Helvetica" ];
+
+	SFS [ label="SFS (price MIN, dist MIN)", fillcolor=lightblue2, style=filled ];
+	SORT [ label="Sort (price ASC, dist ASC)" ];
+	EF [ label="EF (price MIN, dist MIN)", fillcolor=lightblue2, style=filled ];
+
+	SFS -> SORT [ dir=back ];
+	SORT -> EF [ dir=back ];
+	EF -> "SeqScan on hotel" [ dir=back ];
+}

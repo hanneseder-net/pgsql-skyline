@@ -50,6 +50,8 @@
 \advance\onecolumnwidth -\columnsep
 \divide\onecolumnwidth\tw@
 
+\newsavebox\tempbox
+
 \makeatother
 
 
@@ -462,7 +464,7 @@ our \inlinesql{SKYLINE OF} extension.
 \railalias{havingclause}{having\_clause}
 \railalias{skylineclause}{skyline\_clause}
 \railalias{sortclause}{sort\_clause}
-\railalias{select_limit}{select\_limit}
+\railalias{selectlimit}{select\_limit}
 \railalias{qualOp}{qual\_Op}
 \railalias{cexpr}{c\_expr}
 
@@ -854,14 +856,13 @@ for (d = 0; d < dim; d++)
 % TODO: place table and picture next to each other instead of below
 \begin{figure}[htbp]
 \centering
-\begin{minipage}[b]{100mm}%
-\subfloat[Density Plot]{%
-\includegraphics[width=100mm]{plots-density/density-2d-i2d1e5}}%
-\end{minipage}%
-\qquad%
-\begin{minipage}[b]{30mm}%
+\sbox{\tempbox}{\includegraphics[width=100mm]{plots-density/density-2d-i2d1e5}}%
+\subfloat[Density Plot]{\usebox{\tempbox}}%
 \subfloat[Statistics]{%
-\begin{tabular}{r|rr}
+\begin{minipage}[b]{38mm}%
+\vbox to \ht\tempbox{%
+\vfil
+\begin{tabular}[b]{r|rr}%
 	& d1 	& d2 \\
 \hline
 mean	& 0.500 & 0.500 \\
@@ -872,10 +873,12 @@ cor	& d1	& d2 \\
 d1	& 1.000 & 0.000 \\
 d2	& 0.000 & 1.000 \\
 \end{tabular}%
-}%
+\vfil
+}
 \end{minipage}%
-\label{fig:density-2d-i2d1e5}%
+}%
 \caption{Independent dataset (100k tuples)}%
+\label{fig:density-2d-i2d1e5}%
 \end{figure}
 
 \item \emph{corr}: 
@@ -915,9 +918,13 @@ Figure \ref{fig:density-2d-c2d1e5} shows a correlated dataset with
 
 \begin{figure}[htbp]
 \centering
-\subfloat[Density plot]{\includegraphics[width=100mm]{plots-density/density-2d-c2d1e5}}
-\subfloat[Statistics]{
-\begin{tabular}{r|rr}
+\sbox{\tempbox}{\includegraphics[width=100mm]{plots-density/density-2d-c2d1e5}}%
+\subfloat[Density plot]{\usebox{\tempbox}}%
+\subfloat[Statistics]{%
+\begin{minipage}[b]{38mm}%
+\vbox to \ht\tempbox{%
+\vfil
+\begin{tabular}[b]{r|rr}
 	& d1 	& d2 \\
 \hline
 mean	& 0.500 & 0.500 \\
@@ -928,9 +935,12 @@ cor	& d1	& d2 \\
 d1	& 1.000 & 0.717 \\
 d2	& 0.717 & 1.000 \\
 \end{tabular}
+\vfil
 }
-\caption{Correlated dataset (100k tuples)}
-\label{fig:density-2d-c2d1e5}
+\end{minipage}
+}
+\caption{Correlated dataset (100k tuples)}%
+\label{fig:density-2d-c2d1e5}%
 \end{figure}
 
 
@@ -966,9 +976,13 @@ with 100k tuples for $d = 2$.
 
 \begin{figure}[htbp]
 \centering
-\subfloat[Density Plot]{\includegraphics[width=100mm]{plots-density/density-2d-a2d1e5}}
-\subfloat[Statistics]{
-\begin{tabular}{r|rr}
+\sbox{\tempbox}{\includegraphics[width=100mm]{plots-density/density-2d-a2d1e5}}%
+\subfloat[Density Plot]{\usebox{\tempbox}}%
+\subfloat[Statistics]{%
+\begin{minipage}[b]{38mm}%
+\vbox to \ht\tempbox{%
+\vfil
+\begin{tabular}[b]{r|rr}
 	& d1 	& d2 \\
 \hline
 mean	& 0.500 & 0.500 \\
@@ -979,9 +993,12 @@ cor	& d1	& d2 \\
 d1	& 1.000 & -0.944 \\
 d2	& -0.9444 & 1.000 \\
 \end{tabular}
+\vfil
 }
-\caption{Anti-correlated dataset (100k tuples)}
-\label{fig:density-2d-a2d1e5}
+\end{minipage}
+}
+\caption{Anti-correlated dataset (100k tuples)}%
+\label{fig:density-2d-a2d1e5}%
 \end{figure}
 
 For the very details of the random dataset generator, please have a

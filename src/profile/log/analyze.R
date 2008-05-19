@@ -70,7 +70,7 @@ skyplot.pdf <- function(filename) {
 		pdf(file = paste(file, ".tmp.pdf", sep=""), encoding="ISOLatin1", onefile = FALSE, width=6/1.10, height=(6-1.5)/1.10, family="CM")
 	}
 
-	par(mar=c(5, 4, 4, 2) + c(-0.75,0,-3.75,0));
+	par(mar=c(5, 4, 4, 2) + c(-0.75,0,-3.5,-1.5));
 
 	assign("skyplot.title", filename, envir = .GlobalEnv);
 }
@@ -215,7 +215,10 @@ lines(d$rows[sel], 0.001 * d$total[sel], lty="solid")
 points(d$rows[sel], 0.001 * d$total[sel], pch="o");
 
 # bnl, sfs, presort, sort, select
-legend(x="topleft", c("bnl/", "sfs", "2 dim w/ sort", "2 dim w/ index", "2 dim sort only", "select only"), lty=c("solid", "dotted", "solid", "solid", "dashed", "solid"), pch=c("\x16", "\x18", "x", "o", "\x13", "\x13"), lwd=c(1,1,1,1,1,2), inset=c(0,-0.03), bty="n"); 
+legend(x="topleft", c("bnl/", "sfs", "2 dim w/ sort", "2 dim w/ index", "2 dim sort only", "select only"), 
+	lty=c("solid", "dotted", "solid", "solid", "dashed", "solid"), pch=c("\x16", "\x18", "x", "o", "\x13", "\x13"), 
+	lwd=c(1,1,1,1,1,2), 
+	inset=c(0,-0.03), bty="n"); 
 
 # presort = sfs, bnl an order of magnitute faster
 }
@@ -265,7 +268,10 @@ points(d$rows[sel],d$total[sel] / d$total[ssel], pch="o");
 #points(d$rows[sel], d$total[sel] / d$total[ssel], pch=19);
 
 # bnl, sfs, presort, sort, select
-legend("bottomleft", c("bnl", "sfs", "sfs w/ index", "2 dim w/ sort", "2 dim w/ index", "2 dim sort only"), lty=c("solid", "dotted", "dotted", "solid", "solid", "dashed"), pch=c("\x16", "\x18", "o", "x", "o", "\x13"), inset=0.00, bty="n"); 
+legend("bottomleft", c("bnl", "sfs", "sfs w/ index", "2 dim w/ sort", "2 dim w/ index", "2 dim sort only"), 
+	lty=c("solid", "dotted", "dotted", "solid", "solid", "dashed"), 
+	pch=c("\x16", "\x18", "o", "x", "o", "\x13"), 
+	inset=c(0,-0.03), bty="n"); 
 # presort = sfs, bnl an order of magnitute faster
 }
 
@@ -326,7 +332,10 @@ for (method in c(
 
 par(col="black");
 
-legend("topleft", c("bnl append", "sql", "sort", "all methods"), lty=c("solid", "solid", "solid", "solid"), pch=c("\x16", "x", "\x13", " "), lwd=c(1,1,1,10), col=c("black", "black", "black", skyplot.lightblue), inset=0.00, bty="n"); 
+legend("topleft", c("bnl append", "sql", "sort", "all methods"), 
+	lty=c("solid", "solid", "solid", "solid"), pch=c("\x16", "x", "\x13", " "), 
+	lwd=c(1,1,1,10), col=c("black", "black", "black", skyplot.lightblue), 
+	inset=c(0,-0.03), bty="n"); 
 
 box();
 }
@@ -422,7 +431,8 @@ legend(legendpos,
 	paste(rep(c("bnl","bnl+ef", "sfs", "sfs+ef"),each=4), c("append", "prepend", "entropy", "random")),
 	lty="solid",
 	pch=rep(c("\x16", "x", "\x18", "o"), 4),
-	col=rep(c("black", "red", "green", "blue"), each=4), inset=0.00, bty="n", ncol=2)
+	col=rep(c("black", "red", "green", "blue"), each=4), 
+	inset=c(0,-0.03), bty="n", ncol=2)
 box()
 }
 
@@ -465,7 +475,8 @@ legend(legendpos,
 	paste(rep(c("bnl","bnl+ef", "sfs", "sfs+ef"),each=4), c("append", "prepend", "entropy", "random")),
 	lty="solid",
 	pch=rep(c("\x16", "x", "\x18", "o"), 4),
-	col=rep(c("black", "red", "green", "blue"), each=4), inset=0.00, bty="n", ncol=2)
+	col=rep(c("black", "red", "green", "blue"), each=4), 
+	inset=c(0,-0.03), bty="n", ncol=2)
 box()
 }
 
@@ -499,7 +510,7 @@ for (dist in c("i", "c", "a")) {
 
 #sel <- dor$rows == rows & dor$method == "sql" & dor$dist == dist;
 par(col="black", pch="+");
-plot(c(), c(), xlim=c(2,15), ylim=c(0,1), type="n", xlab = "# Dimensions", ylab = "selectivity factor = # output tuples / # input tuples")
+plot(c(), c(), xlim=c(2,15), ylim=c(0,1), type="n", xlab = "# Dimensions", ylab = "select. factor = #output rows/#input rows")
 grid()
 
 rowss <- c(100, 500, 1000, 5000, 10000, 50000, 100000);
@@ -515,7 +526,7 @@ for (rows in rowss) {
 }
 
 	par(col="black");
-	legend("topleft", rowss.legend, lty=rep("solid", length(rows)), col=1:length(rowss), inset=0.00, bty="n")
+	legend("topleft", rowss.legend, lty=rep("solid", length(rows)), col=1:length(rowss), inset=c(0,-0.03), bty="n")
 	palette("default");
 
 	skyplot.off();
@@ -531,7 +542,7 @@ for (dist in c("i", "c", "a")) {
 
 #sel <- dor$rows == rows & dor$method == "sql" & dor$dist == dist;
 par(col="black", pch="+");
-plot(c(), c(), xlim=c(100,100000), ylim=c(0,1), type="n", log="x", xlab = "# Dimensions", ylab = "selectivity factor = # output tuples / # input tuples")
+plot(c(), c(), xlim=c(100,100000), ylim=c(0,1), type="n", log="x", xlab = "# input rows", ylab = "select. factor = #output rows/#input rows")
 grid()
 
 dims <- 15:2;
@@ -547,7 +558,7 @@ for (dim in dims) {
 }
 
 	par(col="black");
-	legend("topleft", dims.legend, lty=rep("solid", length(dims)), col=1:length(dims), inset=0.00, bty="o", bg="white")
+	legend("topleft", dims.legend, lty=rep("solid", length(dims)), col=1:length(dims), inset=0.01, bty="o", bg="white")
 	palette("default");
 
 	skyplot.off();
@@ -645,6 +656,43 @@ for (rows in c(100, 1000, 10000, 100000)) {
 	skyplot.off();
 }
 
+
+##
+## estimated output rows
+##
+# hm? does not work as expected ... skip it
+
+skyplot.setup(FALSE, FALSE);
+
+par(col="black");
+skyplot.pdf("est-rows-i");
+
+dist <- "i";
+method <- "sql";
+
+sel <- dor$method == method & dor$dist == dist;
+#exprows <- log10(dor$rows[sel])**(dor$dim[sel]-1) / factorial(dor$dim[sel]-1)
+plot(dor$rows[sel], dor$outrows[sel], type="n", ylim=c(0.05,5), xlim=c(1000, 100000), log="x", xlab = "# tuples", ylab="ratio (todo)");
+
+
+dims <- 15:2;
+dims.legend <- paste(dims, "dim");
+palette(rainbow(2+length(dims)))
+colidx <- 0;
+for (dim in dims) {
+	colidx <- colidx + 1;
+	sel <- dor$dim == dim & dor$method == method & dor$dist == dist;
+	exprows <- (log(dor$rows[sel])**(dor$dim[sel]-1)) / factorial(dor$dim[sel]-1);
+	#exprows <- (log(dor$rows[sel]) + 0.577216)**(dor$dim[sel]-1) / factorial(dor$dim[sel]-1);
+	par(col=colidx);
+	lines(dor$rows[sel], dor$outrows[sel] / exprows); points(dor$rows[sel], dor$outrows[sel] / exprows);
+}
+
+	par(col="black");
+	legend("topleft", dims.legend, lty=rep("solid", length(dims)), col=1:length(dims), inset=0.01, bty="o", bg="white")
+	palette("default");
+
+	skyplot.off();
 
 
 

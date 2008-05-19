@@ -1570,14 +1570,32 @@ thus the EF operation pays off.
 \caption{Relative timing for SFS/SFS+EF when using index access paths (100k tuples)}%
 \label{fig:sfs-index}%
 \end{minipage}%
+%\hspace{\columnsep}%
+%\begin{minipage}{\onecolumnwidth}%
+%\subplotlabeledprofile{independent dataset}{selectivity-dim-i}{fig:sf-i}\\
+%\subplotlabeledprofile{correlated dataset}{selectivity-dim-c}{fig:sf-c}\\
+%\subplotlabeledprofile{anti-correlated dataset}{selectivity-dim-a}{fig:sf-a}%
+%\caption{Skyline operator selectivity factor on our test datasets}%
+%\label{fig:sf}%
+%\end{minipage}
+\end{figure}
+
+
+\begin{figure}[htbp]
+\centering%
+\begin{minipage}{\onecolumnwidth}%
+\subplotlabeledprofile{Independent dataset}{selectivity-dim-i}{fig:sf-i}\\
+\subplotlabeledprofile{Correlated dataset}{selectivity-dim-c}{fig:sf-c}\\
+\subplotlabeledprofile{Anti-correlated dataset}{selectivity-dim-a}{fig:sf-a}%
+\end{minipage}%
 \hspace{\columnsep}%
 \begin{minipage}{\onecolumnwidth}%
-\subplotlabeledprofile{independent dataset}{selectivity-dim-i}{fig:sf-i}\\
-\subplotlabeledprofile{correlated dataset}{selectivity-dim-c}{fig:sf-c}\\
-\subplotlabeledprofile{anti-correlated dataset}{selectivity-dim-a}{fig:sf-a}%
+\subplotlabeledprofile{Independent dataset}{selectivity-rows-i}{fig:sf-rows-i}\\
+\subplotlabeledprofile{Correlated dataset}{selectivity-rows-c}{fig:sf-rows-c}\\
+\subplotlabeledprofile{Anti-correlated dataset}{selectivity-rows-a}{fig:sf-rows-a}%
+\end{minipage}
 \caption{Skyline operator selectivity factor on our test datasets}%
 \label{fig:sf}%
-\end{minipage}
 \end{figure}
 
 

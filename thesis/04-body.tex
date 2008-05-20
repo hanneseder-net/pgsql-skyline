@@ -457,20 +457,20 @@ SKYLINE OF \textnormal{[}DISTINCT\textnormal{]} $a_1$ \textnormal{[}MIN$|$MAX$|$
 ORDER BY ...
 \end{sql}
 
-We extended the above syntax a bit further, so we additionally provide syntax to specify
+In addition, we extended the standard syntax to specify
 \begin{itemize}
-\item treatment of NULL values (\inlinesql{NULLS FIRST} and \inlinesql{NULLS LAST})
-\item usage of other order functions than $<$ and $>$ (\inlinesql{USING \emph{Op}}) and
-\item operational aspects of skyline computation, such as 
-
+\item The treatment of NULL values (\texttt{NULLS FIRST} and \texttt{NULLS LAST})
+\item The usage of order relations other than $<$ and $>$ (\texttt{USING \emph{Op}})
+\item Operational aspects of skyline computation, such as 
 \begin{itemize}
 \item \emph{method} (BNL, SFS, MNL, PRESORT (2 dim only))
 \item \emph{tuple window size} in terms of memory and/or number of slots
 \item \emph{tuple window policy} (append, prepend, ranked by entropy, ranked by a random value)
-\item \emph{usage of indizies} (\texttt{noindex})
-\item \emph{usage of elimination filter (EF), with the possiblity to influence the EF window in the same way as for the BNL or SFS node}
+\item \emph{usage of indexes} (\texttt{NOINDEX})
+\item \emph{usage of elimination filter (EF), 
+  	with the possiblity to influence the EF window in the same way
+  	as for the BNL or SFS node}
 \end{itemize}
-
 \end{itemize}
 
 \subsection{Syntax (Railroad Diagrams)}
@@ -497,7 +497,10 @@ our \inlinesql{SKYLINE OF} extension.
 \railalias{sortclause}{sort\_clause}
 \railalias{selectlimit}{select\_limit}
 \railalias{qualOp}{qual\_Op}
+\railalias{skylineofexpr}{skyline\_of\_expr}
+\railalias{skylineoptions}{skyline\_options}
 \railalias{cexpr}{c\_expr}
+
 
 % \railparam{\thinline}
 % \railparam{\thicklines}
@@ -530,22 +533,201 @@ selectclause :
 \end{rail}
 
 
+The \nt{skyline\_clause} itself is preluded by keywords
+\inlinesql{SKYLINE OF}, followed by an optional \inlinesql{DISTINCT}.
+The essential part is the comma seperated list of
+\nt{skyline\_of\_expr}, and it is closed by the optional 
+\nt{skyline\_options} part. For the semantics of \inlinesql{DISTINCT}
+see \todo{}{ref}. For the entire skyline clause we introduced just
+a single new reserved keyword, see section~\ref{sec:reservedkeywords}.
+
+\begin{rail}
+skylineclause : 
+    'SKYLINE OF' 'DISTINCT' ? ( skylineofexpr + ',' ) skylineoptions ?;
+\end{rail}
+
+A \nt{skyline\_of\_expr} specifies how to treat a single dimension
+of a skyline query. This includes the specification of the column
+or even an expression (\nt{c\_expr}) and the specification of
+\inlinesql{MIN}, \inlinesql{MAX}, \inlinesql{DIFF}, and 
+\inlinesql{USING}~\emph{qualOP}. We call the later specification 
+\emph{skyline direction} or just \emph{direction} for short, this
+is because a similar concept (\inlinesql{ASC}/\inlinesql{DESC}) in the
+\inlinesql{ORDER~BY}-clause is also called direction.  Furthermore the
+treatment of null values can be specified using \inlinesql{NULLS
+FIRST} and \inlinesql{NULLS LAST}.  We have to same concept for the
+\inlinesql{ORDER BY}-clause, where this special treatment of null values 
+was introduced in PostgreSQL 8.3.0 (see
+\postgresdocu{sql-select.html\#SQL-ORDERBY}{SQL SELECT/ORDER BY}. For
+the sementics of this see Section~\ref{sec:nullvalues}.
+
+The indroduction of \inlinesql{USING}~\emph{qualOp} to skyline queries
+is our idea, but as for the treatment of null values it was inspired
+by a PostgreSQL extension to \inlinesql{ORDER~BY}-clause. See
+section~\ref{sec:using-qualop} for more details.
+
+In the \nt{target\_list} of the \nt{select\_clause} and in many other
+places \nt{a\_expr} is used. This is the concept of a general expression
+and the heart of the expression syntax. In certain places \nt{b\_expr}
+is used, which is a restricted subset to avoid shift/reduce conflicts.
+
+\nt{c\_expr} contains all the productions that are common to \nt{a\_expr}
+and \nt{b\_expr} it is factored out to eliminate redundant coding, but
+in our case we use it directly to avoid shift/reduce conflicts. Please
+note that \texttt{'('} \nt{a\_expr} \texttt{')'} is a \nt{c\_expr}, so
+an unrestricted can always be used by surrounding it with parens. 
+Furthermore \nt{c\_expr} contains to most common case a column reference
+(\nt{columnref}) anyway and also function calls can be used without
+an extra pair of paranthesis.
+
+\begin{rail}
+skylineofexpr:
+    cexpr ( 'MIN' | 'MAX' | 'DIFF' | 'USING' qualOp )
+    (() | 'NULLS FIRST' | 'NULLS LAST') ;
+\end{rail}
+
+The syntax we have described so far deals only with specifing the
+skyline query itself and the ultimate goal of our work is building a
+skyline query optimizer to automatically generate a good query plan
+w.r.t. I/O, time, and memory consumption and decide all operational
+aspects of the query evaluation.  It is well known that the cost
+estimation of the skyline queries is a non-trivial task
+\cite{Chaudhuri2006} since the performance of a skyline query is
+sensitive to a number of parameters \cite{Godfrey2007}.
+
+To be able to study different query plans, differnt physical
+operators, and various options for the physical operators we
+indroduced a set of options. This options list is preluded by the
+keyword \inlinesql{WITH}.
+
+Except from order of the tuples in the output all of the following
+options do not have an impact on the result of the skyline
+computation. Using either BNL or SFS will change to order of tuples in
+the output, as SFS does a sort prior to skyline
+computation. Furthermore the size of the tuple window and the tuple
+window policy have an impact on the order of tuples. And even the
+elimination filter and its tuple window size have an impact on the
+output order, as a different amount of potential skyline tuples reach
+the final skyline computation node, altough the elemination filter
+does not change the relative order.  See detailed discution on
+relative tuple order preserving property in
+section~\label{sec:relative-tuple-order}.  To work around this
+reordering if decired, sort the query result by means of an
+appropriate
+\inlinesql{ORDER~BY}-clause.  We did so in regression testing, we
+ordered on the unique \inlinesql{ID} column, no matter what method and
+what options used the results are or at least should be the
+same. While the latter clearly indicates a flaw in the implemenation.
+
+The options fall into three groups: elimination filter
+(\inlinesql{EF}), physical operator (\inlinesql{BNL}, \inlinesql{SFS},
+etc.), and access path selection (\inlinesql{NOINDEX}) and associated
+options if applicable.
+
+To tell the query planner to include a elimination filter (EF) in the
+query plan specify the option \inlinesql{EF}.  If the
+\nt{efwindowoptios} are omitted, the query planner uses the defaults
+and plans the elimination filter with a 8~KB tuple window and the
+tuple window policy \inlinesql{APPEND}. The 8~KB tuple window size
+stem from PostgreSQL page size \texttt{BLCKSZ}, which is 8~KB on most
+platforms.
+
+The next group of options is to specify the main algorithm used for
+skyline computation.
+
+BNL, SFS ... \todo{}{}
+
+The \inlinesql{PRESORT} method is more or less a special case of SFS,
+which only works in the 2 dimensional case it was pointed out by 
+\citet{Borzsonyi2001}. In the 2 dimensional case once the data
+are ordered according to the two skyline expressions a single tuple is
+enough to compute the skyline. See section~\ref{sec:presort}.
+
+\inlinesql{MNL} stands for \emph{materialized nested loop}, which
+is our own very basic and experipental nevertheless full general
+skyline computation algorithm, i.e. skylines of any dimensionality,
+distinct and non-distinct with the same type of expressions and
+directions (\inlinesql{MIN}, \inlinesql{MAX}, $\ldots$) can be
+computed. The approach is very simple: materialize all tuples from the
+outer query plan node in a tuple store and compare one tuple after the
+other agains all other tuples in the tuple store. It is obvious that
+this algorithm has $O(n^2)$ run time complexity and very poor I/O
+behaviour. Nevertheless it was easy to implement and gave us something
+to play with while implementing other parts of the system and of
+course for regression testing, because this method was just easier to
+get right and later on use it to verify the results from other
+algorithms. See section~\ref{sec:mnl}.
+
+Two other special methods do exist, namely \texttt{1DIM} and
+\texttt{1DIMDISTINCT}, as the names suggest they are only for the 1
+dimensional non-distinct and distinct case.  These methods are
+directly selected by the query planner and no options can be set for
+them.  The tuplestore used by the method \texttt{1DIM} uses the
+default \texttt{work\_mem} setting. See
+section~\ref{sec:onedim-nondistinct} and
+section~\ref{sec:onedim-distinct}.
+
+We modified the query optimizer to decided in a cost based way to use
+a \texttt{IndexScan} instead of a \texttt{SeqScan}, in case a suitable
+index is present.  With \inlinesql{NOINDEX} option we enforce in the
+query planner to not use a \texttt{IndexScan}, this is especially of
+interest when profiling SFS, as SFS does a sort prior to skyline
+computation.
 
 
 \begin{rail}
-skylineclause : 'SKYLINE OF' 'DISTINCT' ? ( skylineexpr + ',' ) skylineoptions ?;
-skylineexpr: cexpr ( 'MIN' | 'MAX' | 'DIFF' | 'USING' qualOp ) (() | 'NULLS FIRST' | 'NULLS LAST') ;
-skylineoptions : 'WITH' ('EF' efwindowoptions ?) ? \\ ( (('BNL' | 'SFS') windowoptions ?) | 'PRESORT') ? \\ ( 'NOINDEX' ) ? ;
-efwindowoptions : ( ('EFSLOTS' '=' slots) ? | (('EFWINDOW' | 'EFWINDOWSIZE') '=' windowsize ) ) \\ ( 'EFWINDOWPOLICY' '=' windowpolicy ) ? ;
-windowoptions : ( ( 'SLOTS' '=' slots ) ? | (('WINDOW' | 'WINDOWSIZE') '=' windowsize ) ) \\ ( 'WINDOWPOLICY' '=' windowpolicy ) ? ;
-windowpolicy : 'APPEND' | 'PREPEND' | 'ENTROPY' | 'RANDOM' ;
+skylineoptions : 
+    'WITH' 
+    ( 'EF' efwindowoptions ?) ? \\
+    ( ( ( 'BNL' | 'SFS' ) windowoptions ? ) | 'MNL' | 'PRESORT' ) ? \\
+    ( 'NOINDEX' ) ? ;
+\end{rail}
 
+\begin{rail}
+efwindowoptions : 
+    ( 'EFSLOTS' '=' slots) ? \\
+    ( ( 'EFWINDOW' | 'EFWINDOWSIZE' ) '=' windowsize ) ? \\
+    ( 'EFWINDOWPOLICY' '=' windowpolicy ) ? ;
+\end{rail}
+
+\begin{rail}
+windowoptions : 
+    ( 'SLOTS' '=' slots ) ? \\
+    ( ( 'WINDOW' | 'WINDOWSIZE' ) '=' windowsize ) ? \\ 
+    ( 'WINDOWPOLICY' '=' windowpolicy ) ? ;
+\end{rail}
+
+\begin{rail}
+windowpolicy : 'APPEND' | 'PREPEND' | 'ENTROPY' | 'RANDOM' ;
 \end{rail}
 
 
-In fact we defined the grammar a little bit different\footnote{see \srcref{src/backend/parser/gram.y} for details} but only in the aspect of the assozitivity of the entire \inlinesql{SKLYINE OF} clause, this is because \fixme{SQL92}{ref:SQL92} requires the following statement:
+In fact we defined the grammar for \nt{skyline\_options}, just as 
+simple as that:
+
+\begin{rail}
+skylineoptions:
+    'WITH' ( () | ( name ( '=' value ) ? ) + )
+\end{rail}
+
+While the definition given above describes exactly the indented
+sementics this definition gave as maximum flexibility during
+development. Using the short definition above we were able to
+introduce new options as we liked on the fly.  The options are passed
+around from the parser, trought query planing to the execution engine
+as a simple \emph{name/value} list.  So when ever we needed a new
+option we just had to query this list at the desired point in the
+code. If the equal sign and the value are omitted, this has the
+semantics of assigning the integer const 1 to the name.
+
+To tell the whole truth the grammar for \nt{select\_clause} is defined
+a little bit different\footnote{see \srcref{src/backend/parser/gram.y}
+for details} but only in the aspect of the assozitivity of the entire
+\inlinesql{SKLYINE OF} clause, this is because the SQL:1992 Standard
+\citep{SQL92} requires the following statement:
+
 \begin{sql}SELECT foo UNION SELECT bar ORDER BY baz\end{sql}
-to be parsed as 
+to be parsed as
 \begin{sql}(SELECT foo UNION SELECT bar) ORDER BY baz\end{sql}
 and not as
 \begin{sql}SELECT foo UNION (SELECT bar ORDER BY baz)\end{sql}
@@ -561,6 +743,7 @@ related to the \inlinesql{GROUP BY} clause than to the \inlinesql{ORDER BY}
 clause, therefore we parse it in the same way.
 
 \subsection{Reserved Keywords}
+\label{sec:reservedkeywords}
 On the lexicalical level we introduced one new \emph{reserved
 keyword}: ``\inlinesql{SKYLINE}'' (see
 \srcref{src/backend/parser/keywords.c}). Introducing a reserved
@@ -605,8 +788,13 @@ select d1 from a2d100 skyline distinct d1 min = select min(d1) from a2d100;
 wenn mehr als ein column in der result list ist
 
 
+\subsection{\inlinesql{USING}~\emph{qualOp}}
+\label{sec:using-qualop}
+
+\todo{lala}{}
 
 \subsection{Skyline in the presents of NULL values}
+\label{sec:nullvalues}
 \begin{verbatim}
 skyline by nulls first / nulls last
 
@@ -699,6 +887,16 @@ ERROR:  column "e2d100.d1" must appear in the GROUP BY clause or be used in an a
 
 \section{Query Execution}
 
+The original System R prototype compiled query plans into machine
+code, whereas other systems like INGRES, the grandfather of
+PostgreSQL, generated an interpretable query plan. In the 1980 query
+interpreation was considered a ``mistake'' by the INGRES
+authors. Moore's law and enabling cross-platform portability, every
+system now compiles queries into some kind of interpretable data
+structure; the only difference across systems these days is the level
+of abstraction \citep{Hellerstein2005}. We stick to the represenation
+as a tree, as it is used by PostgreSQL (see Figure~\ref{fig:qp-agg-bnl-sort}).
+
 \begin{figure}[htbp]
 \centering
 \subfloat[Query Plan]{\includegraphics[scale=0.5]{plots-qp/qp-agg-bnl-sort}}\\
@@ -768,14 +966,22 @@ ORDER BY AVG(e.Salary) DESC
 \subsection{The iterator model in the executor}
 
 \subsection{Special case: one dimensional}
+\label{sec:onedim-nondistinct}
 use is limited
 
+\subsection{Special case: one dimensional with distinct}
+\label{sec:onedim-distinct}
 
 \subsection{Special case: two dimensional with presort}
+\label{sec:presort}
+
 in case a suitable access path, no sort is needed,
 
-brauchbar, da es unserer vermutung nach ein ein gut anzuwendender fall ist, aber d=2 macht skyline sinn.
+brauchbar, da es unserer vermutung nach ein ein gut anzuwendender fall
+ist, aber d=2 macht skyline sinn.
 
+\subsection{Na\"{\i}ve method: \emph{MNL: materialized nested loop}}
+\label{sec:mnl}
 
 \subsection{Tuple Window interface}
 
@@ -786,6 +992,11 @@ brauchbar, da es unserer vermutung nach ein ein gut anzuwendender fall ist, aber
 \subsection{Elimination Window EF and LESS}
 
 \subsection{EF and BNL}
+
+\subsection{Preserving relative tuple order}
+\label{sec:relative-tuple-order}
+
+see \texttt{skyline\_method\_preserves\_tuple\_order} in \srcref{src/backend/utils/skyline/skyline.c}
 
 \section{Query base relation statistics}
 

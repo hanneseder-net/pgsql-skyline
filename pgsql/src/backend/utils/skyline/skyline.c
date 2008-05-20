@@ -337,8 +337,14 @@ skyline_method_preserves_tuple_order(SkylineMethod skyline_method)
 			 * Skyline method, so the current_pathkeys can be kept.
 			 */
 
-			/* FIXME tuple order is only preserved if window policy "append" is used */
-			return false;
+			/*
+			 * No matter what tuple window policy is used the relative order
+			 * is preserved by SFS, as tuple come in are checked against the
+			 * tuple window and either dropped or if not dominated then
+			 * either directly returned or written to a temp file in the
+			 * same order.
+			 */
+			return true;
 		case SM_ELIMFILTER:
 			/* 
 			 * No matter what tuple window policy is used by the elimination

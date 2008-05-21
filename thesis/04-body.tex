@@ -70,11 +70,8 @@
 \begin{itemize}
 \item \todo{casing of section headings?}{}
 \item \todo{ask ali, which website for travelling by airplane uses skyline}{}
-\item \todo{using hashing for diff groups}{}
-\item \todo{EF+SFS=LESS (check this again)}{}
 \item \todo{has the order in which the skyline dimensions are checked an effect?}{}
 \item \todo{show how Preference SQL ABOUT can be emulated}{}
-\item \todo{PostgreSQL as of 8.3 does not derive the stats for subselect like \inlinesql{explain analyze select * from (select * from i15d1e6s0 limit 1000) as a skyline of d1 min, d2 min with windowpolicy=ranked;}}{}
 \end{itemize}
 \clearpage
 
@@ -83,7 +80,7 @@
 \label{chap:Introduction}
 
 
-\section{General Introduction}
+\section{Introduction}
 \todo{}{take some parts from the research planning intro}
 
 \begin{figure}[htbp]
@@ -1001,6 +998,8 @@ see \texttt{skyline\_method\_preserves\_tuple\_order} in \srcref{src/backend/uti
 \section{Query base relation statistics}
 
 PostgreSQL does not do a good job with statistics and subqueries.
+
+\todo{PostgreSQL as of 8.3 does not derive the stats for subselect like \inlinesql{explain analyze select * from (select * from i15d1e6s0 limit 1000) as a skyline of d1 min, d2 min with windowpolicy=ranked;}}{}
 
 \section{Cardinality and Cost Estimation}
 

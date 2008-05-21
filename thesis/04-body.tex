@@ -864,8 +864,9 @@ The \nt{skyline\_clause} itself is preluded by keywords
 The essential part is the comma seperated list of
 \nt{skyline\_of\_expr}, and it is closed by the optional 
 \nt{skyline\_options} part. For the semantics of \inlinesql{DISTINCT}
-see \todo{}{ref}. For the entire skyline clause we introduced just
-a single new reserved keyword, see section~\ref{sec:reservedkeywords}.
+see section~\ref{sec:distinct}. For the entire skyline clause we
+introduced just a single new reserved keyword, see
+section~\ref{sec:reservedkeywords}.
 
 \begin{rail}
 skylineclause : 
@@ -1181,6 +1182,10 @@ up the implementation of SQL aggregate functions.
 
 \section{Semantics}
 
+\subsection{\inlinesql{DISTINCT} and non-\inlinesql{DISTINCT}}
+\label{sec:distinct}
+\todo{}{}
+
 \subsection{One dimensional \inlinesql{SKYLINE OF} is different to SQL \inlinesql{MIN}/\inlinesql{MAX}}
 \todo{for 1 dim distinct use FIRST as supported by Microsoft SQL Server, PostgreSQL does not have this, but it could be built in}{}
 \todo{for 1 dim distinct use subselect/self-join and limit 1}{}
@@ -1317,6 +1322,54 @@ has five main components:
 
 \todo{changeset: [140] \texttt{is\_simple\_subquery}, do not pull up subqueries with a skyline query}{}
 
+\section{Parsing the Skyline Query}
+
+\section{Query Analyzing}
+
+\section{Query Planning}
+
+\subsection{Selecting Indexes}
+
+\subsection{Preserving relative tuple order}
+\label{sec:relative-tuple-order}
+
+see \texttt{skyline\_method\_preserves\_tuple\_order} in \srcref{src/backend/utils/skyline/skyline.c}
+
+\subsection{Physical operator selection}
+\label{sec:operatorselection}
+
+\subsection{Using relation statistics}
+
+PostgreSQL does not do a good job with statistics and subqueries.
+
+\todo{PostgreSQL as of 8.3 does not derive the stats for subselect like \inlinesql{explain analyze select * from (select * from i15d1e6s0 limit 1000) as a skyline of d1 min, d2 min with windowpolicy=ranked;}}{}
+
+\subsection{Cardinality and Cost Estimation}
+
+cite \citep{Buchta1989}
+
+\subsubsection{Tuple window size}
+One could be tempted to set the tuple window size according to the
+outcome of the cardinality estimation, but the assumtion that at no
+time more than \texttt{output\_tuples} will be in the window does not
+hold. To see this image the BNL algorithm running on a uniformly
+distributed dataset, which implies the expected result set size is
+$\Theta(\log(n)^{d-1} / (d-1)!)$ but the order of the tuple stream is
+as such that before seeing the actual skyline tuples a lot of
+anti-correlated tuples show up in the tuple stream.  The tuple window
+will fill up with non skyline tuples.
+
+We would like to also point out, that larger window and and less
+passes do not always mean better runtime, as with larger windows the
+number of comparisons per tuple could increase and therefore more CPU
+time is required, so there is a break even point. For experimental
+results see section~\ref{sec:analysis-window-size}.
+
+\subsection{\inlinesql{LIMIT} / \inlinesql{TOP $k$}}
+how top k interacts with skyline, no special measures have to be taken
+as the upper node will stop fetching tuples. only in cost estimation.
+
+
 \section{Query Execution}
 
 The original System R prototype compiled query plans into machine
@@ -1390,11 +1443,6 @@ ORDER BY AVG(e.Salary) DESC
 \end{figure}
 
 
-
-\section{Pseudo Code}
-
-\subsection{The stages of a query}
-
 \subsection{The iterator model in the executor}
 
 \subsection{Special case: one dimensional}
@@ -1423,54 +1471,11 @@ ist, aber d=2 macht skyline sinn.
 
 \subsection{SFS}
 
-\subsection{Elimination Window EF and LESS}
+\subsection{Elimination Filter (EF)}
 
-\subsection{EF and BNL}
+\subsection{SFS+EF (a LESS Variant)}
 
-\subsection{Preserving relative tuple order}
-\label{sec:relative-tuple-order}
-
-see \texttt{skyline\_method\_preserves\_tuple\_order} in \srcref{src/backend/utils/skyline/skyline.c}
-
-\subsection{Physical operator selection}
-\label{sec:operatorselection}
-
-\section{Query base relation statistics}
-
-PostgreSQL does not do a good job with statistics and subqueries.
-
-\todo{PostgreSQL as of 8.3 does not derive the stats for subselect like \inlinesql{explain analyze select * from (select * from i15d1e6s0 limit 1000) as a skyline of d1 min, d2 min with windowpolicy=ranked;}}{}
-
-\section{Cardinality and Cost Estimation}
-
-cite \citep{Buchta1989}
-
-\subsection{Tuple window size}
-One could be tempted to set the tuple window size according to the
-outcome of the cardinality estimation, but the assumtion that at no
-time more than \texttt{output\_tuples} will be in the window does not
-hold. To see this image the BNL algorithm running on a uniformly
-distributed dataset, which implies the expected result set size is
-$\Theta(\log(n)^{d-1} / (d-1)!)$ but the order of the tuple stream is
-as such that before seeing the actual skyline tuples a lot of
-anti-correlated tuples show up in the tuple stream.  The tuple window
-will fill up with non skyline tuples.
-
-We would like to also point out, that larger window and and less
-passes do not always mean better runtime, as with larger windows the
-number of comparisons per tuple could increase and therefore more CPU
-time is required, so there is a break even point. For experimental
-results see section~\ref{sec:analysis-window-size}.
-
-\section{Usage of indizes}
-skyline 1dim with index: in case of 1 dim skyline and the presence of
-an usable index, the fact that the index scan could be cancled early
-is not explored.
-
-\section{\inlinesql{LIMIT} / \inlinesql{TOP $k$}}
-how top k interacts with skyline, no special measures have to be taken
-as the upper node will stop fetching tuples. only in cost estimation.
-
+\subsection{BNL+EF}
 
 \section{Development}
 \subsection{Debugging PostgreSQL}
@@ -2393,15 +2398,15 @@ the most effective EF window policy.
 
 \chapter{Summary}
 
-In this paper we presented the experiments 
-with skyline algorithms applied on the open source RDBMS PostgreSQL.
+In this paper we presented the experiments with skyline algorithms
+applied on the open source RDBMS PostgreSQL.
 
-From our experimental results we were able to expose
-several findings which are difficult to be verified theoretically.
-There are: (1) the elimination filter is effective only if the selectivity factor
-of the dataset is not more than $0.1$;
-(2) for datasets up to $500$ tuples and of relative small dimension (e.g. up to five), 
-BNL performs the best in all aspects.
+From our experimental results we were able to expose several findings
+which are difficult to be verified theoretically.  There are: (1) the
+elimination filter is effective only if the selectivity factor of the
+dataset is not more than $0.1$; (2) for datasets up to $500$ tuples
+and of relative small dimension (e.g. up to five), BNL performs the
+best in all aspects.
 
 \section{Futher work}
 
@@ -2411,18 +2416,27 @@ such as
 {\em Nearest Neighbor} (NN) \cite{Kossmann2002}, and
 {\em Branch and Bound} (BBS) \cite{Papadias2003, Papadias2005}.
 %
-We believe the concept of EF is very promising and
-plan to further improve its efficiency and effectiveness,
-e.g. to integrate it as a filter in the index scan code, to use other data
-structures and policies for the EF window, and to optimize the order of attributes when
-comparing two tuples.
+We believe the concept of EF is very promising and plan to further
+improve its efficiency and effectiveness, e.g. to integrate it as a
+filter in the index scan code, to use other data structures and
+policies for the EF window, and to optimize the order of attributes
+when comparing two tuples.
 
-As for SFS algorithms using indexes, what remains open  
-is to investigate the behavior
-in case all skyline attributes and attributes in the 
-select clause are part of the index, such that it suffices 
-only to access the indexes for the query processing.
-We believe this could yield good results.
+As for SFS algorithms using indexes, what remains open is to
+investigate the behavior in case all skyline attributes and attributes
+in the select clause are part of the index, such that it suffices only
+to access the indexes for the query processing.  We believe this could
+yield good results.
+
+\subsection{Index scan for one dimensional skylines}
+Since one dimensional skylines are a little bit of limited use anyway
+we did not yet make an attempt to make use of an suitable index for
+skyline computation in the one dimensional case. The computation of
+distinct and non-distinct one dimensional skyline could be speedup by
+performing an index scan. In the distinct case start at the minimum or
+maximum respectivly and read a sinlge tuple. For the non-distinct case
+start at the right end of the index and read as long as the value does
+not change.
 
 \subsection{Speedups for low cardinalty domains}
 %

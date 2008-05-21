@@ -80,6 +80,8 @@
 \label{sec:introduction}
 \todo{}{take some parts from the research planning intro}
 
+\todo{lala skyline in the real world, photography, natural concept}{}
+
 \begin{figure}[htbp]
 % this is from: 
 % http://www.istockphoto.com/file_closeup/where/scenics/cityscapes/
@@ -99,7 +101,161 @@ taken by Franz Pflügl / Vienna}%
 \label{fig:vienneseskyline}%
 \end{figure}
 
-give the intuition.
+\todo{3d skyline blocks, mathematica}{}
+
+\todo{give the intuition.}{}
+
+The skyline operator is important for supporting multi-criteria
+decision making applications.  Given a set of $d$-dimensional data
+points, the skyline consists of the points, called skyline points,
+which are not {\em dominated} by another data point.
+\citet{Borzsonyi2001} proposed a {\em skyline} extension of the SQL
+syntax with the form:
+
+\begin{sql}
+SELECT ... FROM ... WHERE ... \\
+GROUP BY ... HAVING ...       \\
+SKYLINE OF \textnormal{[}DISTINCT\textnormal{]} $a_1$ \textnormal{[}MIN$|$MAX$|$DIFF\textnormal{]}, ..., $a_m$ \textnormal{[}MIN$|$MAX$|$DIFF\textnormal{]} \\
+ORDER BY ...
+\end{sql}
+
+Since the introduction of the skyline operator \cite{Borzsonyi2001}, a
+number of secondary-memory algorithms have been developed for
+efficient skyline computation. These algorithms can be classified into
+two categories. The first one involves solutions that do not require
+any preprocessing on the underlying dataset. Algorithms such as
+{\em Block Nested Loops} (BNL) \cite{Borzsonyi2001}, 
+{\em Divide and Conquer} (D\&C) \cite{Borzsonyi2001}, 
+{\em Sort First Skyline} (SFS) \cite{Chomicki2003}, and
+{\em Linear Elimination Sort for Skyline} (LESS) \cite{Godfrey2005}
+belong to this category.
+The algorithms in the second category utilize different index structures
+such as sorted lists and R-trees to reduce the query costs.
+Well-known algorithms in this category include 
+{\em Bitmap} \cite{Tan2001}, 
+{\em Index} \cite{Tan2001},
+{\em Nearest Neighbor} (NN) \cite{Kossmann2002}, and
+{\em Branch and Bound} (BBS) \cite{Papadias2003, Papadias2005}.
+
+The advantage of index-based algorithms is that they need to access
+only a portion of the dataset to compute the skyline, while
+non-index-based algorithms have to visit the whole dataset at least
+once.  However, index-based algorithms have to incur additional time
+and space costs for building and maintaining the indexes.  Comparisons
+of these methods are presented in several works
+\cite{Tan2001, Kossmann2002, Chomicki2003}.
+
+%All of the algorithms are implemented as stand-alone algorithms,
+In this paper, we present our work on evaluating skyline algorithms in
+PostgreSQL. Building the skyline query operation in an RDBMS has
+several advantages.  First, skyline can be integrated with other
+relational operators, thus more sophisticated queries can be
+constructed.  Moreover, no work on concurrency control and transaction
+management has to be addressed.  Second, the existing index structures
+such as R-trees in an RDBMS can be adapted to implement index-based
+skyline algorithms.  Third, if several skyline algorithms are
+available in an RDBMS, the system is able to select the most efficient
+one for the given datasets.  Indeed, the comparisons of the skyline
+algorithms we have so far implemented reveal that there does not exist
+a clear winner in all aspects.  The efficiency of the algorithms
+depend on the properties of the datasets such as dimension,
+distribution, cardinality and so on.
+%(more details are given in Section~\ref{sec:contribution}).
+For instance, BNL is more efficient than SFS and even LESS, if the
+dimension of the data is less than 5 and the number of tuples is
+relatively small.
+
+%\subsection{Our Contribution}
+%\label{sec:contribution}
+We have so far implemented the non-index based algorithms
+BNL, SFS, and a variant of LESS in PostgreSQL.
+%To the best of our knowledge, this is the first work of building
+%skyline operators in an open source RDBMS. 
+%\todo{there are implementations: see \cite{Chaudhuri2006, Goncalves2005, Brando2007}}
+In addition, 
+we extended the standard syntax to specify
+\begin{itemize}
+\item The treatment of NULL values (\texttt{NULLS FIRST} and \texttt{NULLS LAST})
+\item The usage of order relations other than $<$ and $>$ (\texttt{USING \emph{Op}})
+\item Operational aspects of skyline computation, such as 
+\begin{itemize}
+\item \emph{method} (BNL, SFS)
+\item \emph{tuple window size} in terms of memory and/or number of slots
+\item \emph{tuple window policy} (append, prepend, entropy, random)
+\item \emph{usage of indexes} (\texttt{NOINDEX})
+\item \emph{usage of elimination filter (EF)}
+\end{itemize}
+\end{itemize}
+
+The ultimate goal of our work is building a skyline query optimizer to
+automatically generate a good query plan w.r.t. I/O, time, and memory
+consumption.  It is well known that the cost estimation of the skyline
+queries is a non-trivial task \cite{Chaudhuri2006} since the
+performance of a skyline query is sensitive to a number of parameters
+\cite{Godfrey2007}.  To achieve this goal, we conducted extensive
+experiments on the skyline implementations.
+
+We discovered several \emph{hidden rules}, which are remarkably simple
+and useful, but hard to obtain from the theoretical investigation.  We
+expect that our exposition of experimental results on skyline
+algorithms could serve as a guideline for developing heuristics of a
+skyline query optimizer, and in the meantime, provide some insight for
+a deeper understanding of the skyline query characteristics.
+
+For the purpose of repeatability we have set up a website to present
+our experimental results. The source code, and the log-files from our
+experiments are accessible via
+\url{http://skyline.dbai.tuwien.ac.at/}.
+
+The paper is organized as follows: In Section~\ref{sec:algorithms} we
+introduce briefly the implemented skyline algorithms.
+Section~\ref{sec:configuration} describes the experimental setup.
+Section~\ref{sec:analysis} presents the extensive experiments over
+various data settings, followed by the analysis of the
+results. Section~\ref{sec:conclusion} concludes the paper and
+discusses future work.
+
+
+
+\subsubsection{motivation} motivation: green computing: less cpu time,
+less computers, less energy --> safe the planet
+
+stocks: risk vs. costs (--> streaming skyline see [Tao2006])
+
+example of skyline
+
+when travelling by airplane: time vs. costs
+
+TODO: more dim: \#stops, total dist travel by bus: \#of visited cities
+
+it is shown on some website. which?
+
+Credit To: Ali (room mate)
+
+employee (salary, revenue, years in the company)
+
+\subsubsection{consider only bnl and sfs}
+
+from \citep{Chaudhuri2006}:
+
+In this paper, our focus is on algorithms that can be directly
+implemented in today's commercial database systems without the
+addition of new access methods (which would require addressing the
+associated challenges of maintenance with updates, concurrency
+control, etc.). Specifically, we consider the Block-nested-loop
+Algorithm [15], and the Block-nested-loop with Presorting [5].
+
+Special algorithms have been proposed for the case the whole relation
+fits into main memory \citep{Preparata1985}, nevertheless we do not
+take them into account as memory is always a short resource in a
+database scenario, either due to the number of concurrent users or
+limited total main memory, e.g. on a handheld device.
+
+The skyline operator \citep{Borzsonyi2001} filters out the
+\emph{interesting} points from a potentially large set of data
+points. The skyline operator returns the pareto optimal\index{pareto
+optimal} elements of a set. This is also know as maximum vector
+problem\index{maximum vector problem}.
 
 \subsection{Typographical Conventions}
 For interactive input and output we will show our typed input in a \texttt{\bfseries bold font}, the output \texttt{like this}, \textit{and comments like this}.
@@ -129,52 +285,9 @@ PostgreSQL interactive terminal \texttt{psql}. Furthermore
 ``\texttt{db-\#}'' is displayed when \texttt{psql} is waiting for more
 input. All of them are used throughtout the text.
 
-\subsection{motivation}
-motivation: green computing: less cpu time, less computers, less
-energy --> safe the planet
 
-stocks: risk vs. costs (--> streaming skyline see [Tao2006])
-
-example of skyline
-
-when travelling by airplane: time vs. costs
-
-TODO: more dim: \#stops, total dist
-travel by bus: \#of visited cities
-
-it is shown on some website. which?
-
-Credit To: Ali (room mate)
-
-employee (salary, revenue, years in the company)
-
-\subsection{consider only bnl and sfs}
-
-from \citep{Chaudhuri2006}:
-
-In this paper, our focus is on algorithms that can be
-directly implemented in today's commercial database systems
-without the addition of new access methods (which
-would require addressing the associated challenges of maintenance
-with updates, concurrency control, etc.). Specifically,
-we consider the Block-nested-loop Algorithm [15],
-and the Block-nested-loop with Presorting [5].
-
-Special algorithms have been proposed for the case the whole relation fits into main memory \citep{Preparata1985}, nevertheless we do not take them into account as memory is always a short resource in a database scenario, either due to the number of concurrent users or limited total main memory, e.g. on a handheld device.
-
-The skyline operator \citep{Borzsonyi2001} filters out the \emph{interesting} points from a potentially large set of data points. The skyline operator returns the pareto optimal\index{pareto optimal} elements of a set. This is also know as maximum vector problem\index{maximum vector problem}.
-
-\section{Related Problems}
-Convex hull, \emph{top-K} queries, and nearest-neighbor search (especially in the context of spacial skylines ``give me the next good restaurant'')
-
-In particlar, the convex hull contains the subset of skyline points that may be optimal only for linear preference functions (as opposed to any monotone function).\todo{from \citep{Papadias2005}}{rephrase}
-
-
-
-
-
-\clearpage 
-\fixme{}{no clearpage}
+\chapter{Preliminaries}
+\label{chap:preliminaries}
 \section{Basic definitions}
 \todo{We are in the context of relational model\index{relational model} of data}{\citep{Chomicki2002, Chomicki2003a}?}. As we aim at an implementation of the skyline operator into a relational database management system (RDBMS)\index{RDBMS} we restrict to finite database\index{finite database} instances.
 
@@ -426,19 +539,125 @@ see \citep{Chomicki2002a} page 5, Theorem 4
 \item \emph{Universality}: the algorithm should be applicable to any dataset distribution and dimensionality, using some standard index structure.
 \end{enumerate}
 
+\section{Related Problems}
+Convex hull, \emph{top-K} queries, and nearest-neighbor search (especially in the context of spacial skylines ``give me the next good restaurant'')
 
-\section{Preliminaries}
-\section{Existing Methods and Related Works}
+In particlar, the convex hull contains the subset of skyline points that may be optimal only for linear preference functions (as opposed to any monotone function).\todo{from \citep{Papadias2005}}{rephrase}
+
+
+\chapter{Related Works}
+\label{chap:relatedworks}
 \section{Skyline Algorithms}
-\subsection{BNL}
-\subsection{SFS}
-\subsection{LESS}
+The skyline algorithms we have implemented are: BNL, SFS,
+BNL+EF and SFS+EF. EF stands for {\em Elimination Filter},
+which was introduced in \cite{Godfrey2005} as an essential 
+routine for the LESS algorithm. 
 
-\subsection{Related Works}
-from \citep{Chaudhuri2006}: 
- There are other algorithms that include Bitmap and Index[16], NN
-[7] and BBS [12] which use specialized data structures like
-extensions of B-trees and R$^*$-trees.
+\subsection{BNL}
+BNL was implemented according to the algorithm proposed in \cite{Borzsonyi2001}.
+A {\em tuple window} is maintained in the main memory for storing
+the potential skyline tuples. Once the window becomes full,
+an overflow file has to be generated.
+In the PostgreSQL execution engine, the BNL operator 
+lies in the iterator tree between the \texttt{ORDER BY} 
+and the \texttt{GROUP BY} node (see Figure~\ref{fig:qp-agg-bnl-sort}),
+to directly reflect the intended semantic of the \texttt{SKYLINE OF}-extension
+to the SQL syntax.
+% NOTE: it is actually between HAVING and ORDER BY, but HAVING is done 
+% more or less in the GROUP BY, as the WHERE clause to some
+% extend is directly used in the SeqScan/IndexScan node
+
+%NOTE: I think we do not need that
+%
+%To achieve this, some more state information has 
+%the be maintained \todo{which information? please specify}.
+
+\subsection{SFS}
+The implementation of SFS is according to \cite{Chomicki2003}. 
+It differs from BNL in that the data is topologically sorted at start-up time.
+We realize the sorting by utilizing the same physical operator as for 
+the \texttt{ORDER BY}-clause.
+%
+In the presence of a suitable index, an explicit sort phase can be
+omitted.
+%The skyline operator can make use of more indexes than the \texttt{ORDER BY}-clause,
+%since the semantic of the skyline operator is insensitive to the order of attributes.
+While 
+%the \texttt{ORDER BY}-clause requires that the order of the
+%fields, and direction (\texttt{ASC}/\texttt{DESC}) of the index match
+%the \texttt{ORDER BY}-clause, 
+the skyline operator is insensitive to
+the order of attributes, more indexes can be considered by the
+query optimizer for the access path selection.  We modified the query
+optimizer accordingly.
+
+%It is well known fact that the skyline operator is insensitive to the order of attributes.
+%To versatile all suitable access paths (indexes) we modified the query
+%optimizer accordingly.
+
+\subsection{SFS+EF}
+In \cite{Godfrey2005} Godfrey et al. proposed the LESS
+algorithm, which is an improvement of SFS due to the introduction of
+the concept of {\em elimination filter} (EF). With the original LESS
+algorithm the elimination filtering is carried out in the pass zero of
+the external sort routine to eliminate records quickly.
+
+In our case, in order to integrate the elimination filter into the SFS algorithm,
+while at the same time preserving the utilization of the  
+physical sort operator, 
+we implemented the elimination filter {\em before} the sort routine.
+Speaking in terms of the iterator tree, the EF node is a child of the sort node,
+which in turn is a child of the SFS node (see Figure~\ref{fig:qp-sfs-ef}).
+Furthermore, we do not integrate the skyline computation into the final pass 
+of the merge sort phase, as described in \cite{Godfrey2005}.
+Therefore, technically speaking, SFS+EF is not an equivalent implementation of LESS.
+However, the elimination filter is preserved in SFS+EF,
+which is essentially the gist of LESS.
+
+The implementation of EF is similar to BNL.
+An elimination filter window is maintained in the main memory.
+We use 8 KB as default window size.
+The difference between EF and BNL is that EF does not write tuples to a
+temporary file if the tuple window is full, and that the relative order of tuples 
+going through the EF is preserved.
+
+\subsection{BNL+EF}
+Inspired from the idea of the elimination filter in LESS, we experimented
+a new combination of BNL and EF. That is, the elimination filter 
+is executed before the BNL algorithm. Since our implementation of the
+elimination filter is independent from the external sort routine,
+the coding of this variant is straightforward.
+It turns out that the algorithm BNL+EF is a substantial improvement
+to BNL.
+
+\subsection{TODO}
+We experimented with four window policies for both the tuple
+window (applied for BNL and SFS) and the EF window (for elimination filter): 
+\emph{append}, \emph{prepend}, \emph{entropy} and \emph{random} \cite{Godfrey2007}.
+We implemented both windows with doubly linked lists with a sentinel, thus
+the time cost for insertion and deletion was in $O(1)$.
+Furthermore, as the insert 
+position for the \emph{entropy} and \emph{random} window policy was determined while iterating 
+over the tuple window, the insert operation was also in $O(1)$.
+
+If the EF window is full, in case of EF window policy 
+\emph{entropy} or \emph{random}, the tuple with the lowest ranking is 
+evicted to make space for a higher ranked tuple. 
+Instead of calculating the entropy, a random value is used for ranking by
+the window policy \emph{random}.
+With EF window 
+policy \emph{append} and \emph{prepend}, once the EF window is full, space
+in the EF window is only gained if a tuple in the EF window is dominated by
+the incoming tuple and thus removed.
+In our implementation the window policy \emph{entropy} can only be used if 
+statistics for basetables is available.
+
+In summary, we conducted experiments of the four skyline algorithms:
+BNL, SFS, BNL+EF, SFS+EF, upon each of which four 
+window policies were applied: \emph{append}, \emph{prepend}, \emph{entropy} and \emph{random}.
+For BNL+EF and SFS+EF, we applied on both windows
+the same window policy in our experiments.
+
 
 \chapter{Implementation}
 \section{SQL Extension}
@@ -2021,9 +2240,37 @@ the most effective EF window policy.
 %%
 
 \chapter{Summary}
-%\addcontentsline{toc}{chapter}{Summary}
+
+In this paper we presented the experiments 
+with skyline algorithms applied on the open source RDBMS PostgreSQL.
+
+From our experimental results we were able to expose
+several findings which are difficult to be verified theoretically.
+There are: (1) the elimination filter is effective only if the selectivity factor
+of the dataset is not more than $0.1$;
+(2) for datasets up to $500$ tuples and of relative small dimension (e.g. up to five), 
+BNL performs the best in all aspects.
 
 \section{Futher work}
+
+In the future work we plan to implement and evaluate index-based algorithms 
+such as 
+{\em Index} \cite{Tan2001}, 
+{\em Nearest Neighbor} (NN) \cite{Kossmann2002}, and
+{\em Branch and Bound} (BBS) \cite{Papadias2003, Papadias2005}.
+%
+We believe the concept of EF is very promising and
+plan to further improve its efficiency and effectiveness,
+e.g. to integrate it as a filter in the index scan code, to use other data
+structures and policies for the EF window, and to optimize the order of attributes when
+comparing two tuples.
+
+As for SFS algorithms using indexes, what remains open  
+is to investigate the behavior
+in case all skyline attributes and attributes in the 
+select clause are part of the index, such that it suffices 
+only to access the indexes for the query processing.
+We believe this could yield good results.
 
 \subsection{Speedups for low cardinalty domains}
 %

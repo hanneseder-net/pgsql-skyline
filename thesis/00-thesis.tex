@@ -84,7 +84,6 @@
  moredelim=[is][\bf]{|}{|}
 }
 
-
 \makeatletter
 \renewcommand\tableofcontents{%
     \if@twocolumn
@@ -117,7 +116,7 @@
 %%% Preface: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \include{03-abstract-de}
 \include{03-abstract-en}
-\include{02-acknowledgement}
+
 
 %%% Table of contents: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %\renewcommand{\contentsname}{Table of Contents}
@@ -132,6 +131,7 @@
 
 %%% Appendix: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \appendix
+\include{02-acknowledgement}
 
 \skylinebibliography
 \addcontentsline{toc}{chapter}{Bibliography}

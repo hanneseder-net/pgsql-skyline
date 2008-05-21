@@ -65,6 +65,8 @@
 }}%
 
 
+\chapter{Introduction}
+\label{chap:introduction}
 
 \section{TODO}
 \begin{itemize}
@@ -73,14 +75,9 @@
 \item \todo{has the order in which the skyline dimensions are checked an effect?}{}
 \item \todo{show how Preference SQL ABOUT can be emulated}{}
 \end{itemize}
-\clearpage
-
-
-\chapter{Introduction}
-\label{chap:Introduction}
-
 
 \section{Introduction}
+\label{sec:introduction}
 \todo{}{take some parts from the research planning intro}
 
 \begin{figure}[htbp]
@@ -572,10 +569,10 @@ is used, which is a restricted subset to avoid shift/reduce conflicts.
 and \nt{b\_expr} it is factored out to eliminate redundant coding, but
 in our case we use it directly to avoid shift/reduce conflicts. Please
 note that \texttt{'('} \nt{a\_expr} \texttt{')'} is a \nt{c\_expr}, so
-an unrestricted can always be used by surrounding it with parens. 
-Furthermore \nt{c\_expr} contains to most common case a column reference
-(\nt{columnref}) anyway and also function calls can be used without
-an extra pair of paranthesis.
+an unrestricted expression can always be used by surrounding it with
+parens. Furthermore \nt{c\_expr} contains to most common case a column
+reference (\nt{columnref}) anyway and also function calls can be used
+without an extra pair of paranthesis.
 
 \begin{rail}
 skylineofexpr:
@@ -631,8 +628,20 @@ platforms.
 
 The next group of options is to specify the main algorithm used for
 skyline computation.
+%
+Currently the work horses of our skyline operator implementation into
+PostgreSQL are the BNL and the SFS algorithm. BNL is the catch all
+default in the query optimizer, only if a suitable index access path
+is available SFS is selected. This automatic can be overruled by
+specifing \inlinesql{BNL} or \inlinesql{SFS} as an option. Furthermore
+the size and the tuple placement policy for the tuple window used by
+BNL or SFS can be specified with the \nt{windowoptions}, see below.
+In fact the options for the tuple window could be specified, while
+leaving the decision which physical operator to take to the query
+optimizer, but nevertheless these \nt{windowoptions} only have an
+effect on BNL and SFS. See section~\ref{sec:operatorselection} for
+more details on how the physical operator is selected.
 
-BNL, SFS ... \todo{}{}
 
 The \inlinesql{PRESORT} method is more or less a special case of SFS,
 which only works in the 2 dimensional case it was pointed out by 
@@ -671,14 +680,17 @@ query planner to not use a \texttt{IndexScan}, this is especially of
 interest when profiling SFS, as SFS does a sort prior to skyline
 computation.
 
-
 \begin{rail}
 skylineoptions : 
     'WITH' 
     ( 'EF' efwindowoptions ?) ? \\
-    ( ( ( 'BNL' | 'SFS' ) windowoptions ? ) | 'MNL' | 'PRESORT' ) ? \\
+    ( ( ( () | 'BNL' | 'SFS' ) windowoptions ? ) | 'MNL' | 'PRESORT' ) ? \\
     ( 'NOINDEX' ) ? ;
 \end{rail}
+
+The options for the elimination filter (EF) tuple window
+\nt{efwindowoptions} are modulo renaming the same as for the tuple window
+use by BNL and SFS cf. \nt{windowoptions} below.
 
 \begin{rail}
 efwindowoptions : 
@@ -687,6 +699,22 @@ efwindowoptions :
     ( 'EFWINDOWPOLICY' '=' windowpolicy ) ? ;
 \end{rail}
 
+BNL and SFS are using a tuple window to do their job. Our
+implementation allows to specify the size and the tuple placement
+policy. The size can be defined in two differnt terms, either
+in the number of slots or in the amount of RAM (in KB). When placing
+a tuple into the tuple window it takes up exactly one slot and
+as much RAM as required for the chunk of memory allocated with PostgreSQL
+\texttt{palloc}. If both are given, i.e. \inlinesql{SLOTS} and \inlinesql{WINDOWSIZE}
+the tuple window is only limited in the number of available slots and
+the RAM constraints are ignored. When the \inlinesql{WINDOWSIZE}
+option is used an accoring amount of RAM is used for the tuplewindow.
+\inlinesql{WINDOW} is just an alias for \inlinesql{WINDOWSIZE}.  If
+neither \inlinesql{SLOTS} nor \inlinesql{WINDOWSIZE} is given the
+configuration variable \texttt{work\_mem} is used, which is 1~MB per
+default. The other property which can be influenced is the order in which
+tuples are placed in the tuple window, where the default is \inlinesql{APPEND}.
+
 \begin{rail}
 windowoptions : 
     ( 'SLOTS' '=' slots ) ? \\
@@ -694,13 +722,65 @@ windowoptions :
     ( 'WINDOWPOLICY' '=' windowpolicy ) ? ;
 \end{rail}
 
+As indicated above a tuple window is used by the elimenation filter
+(EF) and the BNL and SFS algorithm. For each of them the order in
+which tuples are placed into the window is set by this option, where
+the default is \inlinesql{APPEND}. See
+section~\ref{sec:tuplewindowpolicies} for details.
+
 \begin{rail}
 windowpolicy : 'APPEND' | 'PREPEND' | 'ENTROPY' | 'RANDOM' ;
 \end{rail}
 
+At this point we would like to give a little example how the options can be
+used (we slightly reformatted the output to make it fit into the page with
+constraint):
 
-In fact we defined the grammar for \nt{skyline\_options}, just as 
-simple as that:
+\begin{interactive}
+\sqlprompt{EXPLAIN ANALZYE} \rcomment{see that query plan and stats}
+\sqlpromptcont{SELECT * FROM a15d1e5s0idx} \rcomment{on relation ad1e50idx is an index defined}
+\sqlpromptcont{SKYLINE OF d1 min, d2 min, d3 min} \rcomment{we do a 3 dim skyline}
+\sqlpromptcont{WITH} \rcomment{options for \inlinesql{SKYLINE OF} follow}
+\sqlpromptcont{  EF} \rcomment{use an elimination filter (EF)}
+\sqlpromptcont{    EFWINDOWSIZE=16} \rcomment{use 16 KB RAM and policy \inlinesql{ENTROPY} for EF}
+\sqlpromptcont{    EFWINDOWPOLICY=ENTROPY}
+\sqlpromptcont{  SFS} \rcomment{use SFS}
+\sqlpromptcont{    WINDOWSIZE=512} \rcomment{use 515 KB RAM and policy \inlinesql{PREPEND} for SFS}
+\sqlpromptcont{    WINDOWPOLICY=PREPEND}
+\sqlpromptcont{  NOINDEX;} \rcomment{do not use an available index access path}
+
+                                     QUERY PLAN
+-----------------------------------------------------------------------------------
+ Skyline  (cost=25106.90..25107.06 rows=9 width=124) \rcomment{estimated} 
+     (actual time=329.052..342.313 rows=196 loops=1) \rcomment{actual}
+   Skyline Attr: d1, d2, d3
+   Skyline Method: sfs 3 dim \rcomment{3 dim and SFS}
+   Skyline Stats: passes=1 rows=1303 \rcomment{some stats on the SFS node}
+   Skyline Window: size=512k policy=prepend \rcomment{as requested}
+   Skyline Cmps: tuples=25953 fields=62229 \rcomment{# of comparisons}
+   ->  Sort  (cost=25104.70..25104.86 rows=66 width=124) 
+           (actual time=329.046..329.564 rows=1303 loops=1)
+         Sort Key: d1, d2, d3
+         Sort Method:  quicksort  Memory: 368kB
+         ->  Elimination Filter  (cost=24852.69..25102.69 rows=66 width=124) 
+                 (actual time=0.088..325.329 rows=1303 loops=1)
+               Elim Filter Attr: d1, d2, d3
+               Elim Filter Method: elimfilter 3 dim
+               Elim Filter Stats: passes=1 rows=
+               Elim Filter Window: size=16k policy=entropy \rcomment{as requested}
+               Elim Filter Cmps: tuples=313895 fields=828555
+               ->  Seq Scan on a15d1e5s0  (cost=0.00..2924.00 rows=100000 width=124) 
+                       (actual time=0.043..71.488 rows=100000 loops=1)
+\rcomment{the effect of \inlinesql{NOINDEX} can be seen here as no \texttt{IndexScan} is used}
+ Total runtime: 343.200 ms
+(17 rows)
+\end{interactive}
+
+The reader might noticed that the grammar for \nt{skyline\_options}
+contains a rather big amount of $\varepsilon$-productions and that this
+grammar whould be easy to implement without any shift/reduce conflicts
+using yacc/bison. In fact we defined the grammar for
+\nt{skyline\_options}, just as simple as that:
 
 \begin{rail}
 skylineoptions:
@@ -742,8 +822,8 @@ clause, therefore we parse it in the same way.
 \subsection{Reserved Keywords}
 \label{sec:reservedkeywords}
 On the lexicalical level we introduced one new \emph{reserved
-keyword}: ``\inlinesql{SKYLINE}'' (see
-\srcref{src/backend/parser/keywords.c}). Introducing a reserved
+keyword}: ``\inlinesql{SKYLINE}''\footnote{see
+\srcref{src/backend/parser/keywords.c}}. Introducing a reserved
 keyword has the usual consequences: it can not be used as normal
 identifier, like illustrated in the following example:
 
@@ -980,9 +1060,22 @@ ist, aber d=2 macht skyline sinn.
 \subsection{Na\"{\i}ve method: \emph{MNL: materialized nested loop}}
 \label{sec:mnl}
 
-\subsection{Tuple Window interface}
+\subsection{Tuple Window}
+\subsubsection{Placement Policies}
+\label{sec:tuplewindowpolicies}
 
 \subsection{BNL}
+
+\subsubsection{window size}
+assumtions on windowsize:
+
+the assumtion that at no time more than output\_tuples will be in the
+window can not be hold.
+
+larger window and and less passes do not always mean better runtime
+
+infact there is a break even point
+
 
 \subsection{SFS}
 
@@ -994,6 +1087,9 @@ ist, aber d=2 macht skyline sinn.
 \label{sec:relative-tuple-order}
 
 see \texttt{skyline\_method\_preserves\_tuple\_order} in \srcref{src/backend/utils/skyline/skyline.c}
+
+\subsection{Physical operator selection}
+\label{sec:operatorselection}
 
 \section{Query base relation statistics}
 
@@ -1574,7 +1670,53 @@ configuration variable to 100~MB;
 
 \todo{}{link to the patch function\_scan\_work\_mem.diff}
 
-\clearpage % \todo{remove clearpage}{}
+
+
+\section{Parameter Space}
+\todo{see \citep{Gray1993}}{}
+\todo{}{rework}
+
+There is a large number of parameters that can be varied:
+
+\begin{itemize}
+\item \emph{size of dataset} (100?, 1000?, 10000, 100000, 1000000)
+\item \emph{number of dimensions} (1-15, or even 10 is enough)
+\item \emph{data distribution} (indep, corr, anti)
+\item \emph{data source} (disk, set returning function)
+
+in case the data are stored on disk
+\begin{itemize}
+\item \emph{sequencial scan vs. index scan} SFS can benefit from index scan (ommit sort phase), BNL and SFS could benefit from a index scan if DIFF groups are used.
+\item \emph{sequence of tuples in tuple stream} (random, high entropy first/last) for BNL and EF if a very good tuple is very early in the tuple stream it will eliminate a lot of tuples in a very early stage
+\end{itemize}
+\item \emph{methods}
+
+\begin{itemize}
+\item as SQL statement
+\item special case 1 dim distinct
+\item special case 1 dim 
+\item special case 2 dim (needs sort presort or access path)
+\item BNL
+\item SFS
+\item EF+SFS=LESS
+\item EF+BNL
+\end{itemize}
+
+\item window size
+\item window policy (prepend, append, entropy)
+\item entropy needs stats for scaling to (0,1)
+
+\end{itemize}
+
+
+\begin{itemize}
+\item use 90\% percentile (\citep{Gray1993}[page 315]) vs, average / variance (box-plots?)
+\item describe software (operating system: Windows XP + SP 2, Microsoft Visual Studio 2005 + SP1, based on PostgreSQL 8.3.0) and hardware (CPU, RAM, Disk config, File System) used for benchmarking
+
+\item describe the configuration of PostgreSQL (flags used for \texttt{configure --enable-asserts --enable-checks, ...}, it is recommended to turn asserts and co. off for benchmarking
+\end{itemize}
+
+
 
 \section{Comparisons and Analysis}
 \label{sec:analysis}
@@ -1615,7 +1757,11 @@ we illustrate the absolute time measurements which are corresponding to
 the relative values in Figure~\ref{fig:all-dim}. 
 In the rest of the experiments, we only provide relative time measurements.
 
-\todo{write about 2 dim case}{}
+\subsubsection{Special case: 1 dimensional skylines}
+\todo{}{}
+
+\subsubsection{Special case: 2 dimensional skylines}
+\todo{}{}
 
 \subsubsection{Big datasets}
 \label{sec:big-datasets}
@@ -1869,67 +2015,6 @@ the tuples in the window.
 Figure \ref{fig:ef-eff} shows that \emph{entropy} is
 the most effective EF window policy. 
 
-
-
-\subsection{Parameter Space}
-\todo{see \citep{Gray1993}}{}
-
-There is a large number of parameters that can be varied:
-
-\begin{itemize}
-\item \emph{size of dataset} (100?, 1000?, 10000, 100000, 1000000)
-\item \emph{number of dimensions} (1-15, or even 10 is enough)
-\item \emph{data distribution} (indep, corr, anti)
-\item \emph{data source} (disk, set returning function)
-
-in case the data are stored on disk
-\begin{itemize}
-\item \emph{sequencial scan vs. index scan} SFS can benefit from index scan (ommit sort phase), BNL and SFS could benefit from a index scan if DIFF groups are used.
-\item \emph{sequence of tuples in tuple stream} (random, high entropy first/last) for BNL and EF if a very good tuple is very early in the tuple stream it will eliminate a lot of tuples in a very early stage
-\end{itemize}
-\item \emph{methods}
-
-\begin{itemize}
-\item as SQL statement
-\item special case 1 dim distinct
-\item special case 1 dim 
-\item special case 2 dim (needs sort presort or access path)
-\item BNL
-\item SFS
-\item EF+SFS=LESS
-\item EF+BNL
-\end{itemize}
-
-\item window size
-\item window policy (prepend, append, entropy)
-\item entropy needs stats for scaling to (0,1)
-
-\end{itemize}
-
-Todo's
-
-\begin{itemize}
-\item use 90\% percentile (\citep{Gray1993}[page 315]) vs, average / variance (box-plots?)
-\item describe software (operating system: Windows XP + SP 2, Microsoft Visual Studio 2005 + SP1, based on PostgreSQL 8.3.0) and hardware (CPU, RAM, Disk config, File System) used for benchmarking
-
-\item describe the configuration of PostgreSQL (flags used for \texttt{configure --enable-asserts --enable-checks, ...}, it is recommended to turn asserts and co. off for benchmarking
-\end{itemize}
-
-
-\subsection{window size}
-assumtions on windowsize:
-
-the assumtion that at no time more than output\_tuples will be in the
-window can not be hold.
-
-larger window and and less passes do not always mean better runtime
-
-infact there is a break even point
-
-\subsection{Special case 1 dim skylines}
-
-
-\subsection{Special case 2 dim skylines}
 
 %%
 %% Summary

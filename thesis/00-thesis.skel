@@ -84,6 +84,23 @@
 	moredelim=[is][\bf]{|}{|}
 }
 
+\makeatletter
+\renewcommand\tableofcontents{%
+    \if@twocolumn
+      \@restonecoltrue\onecolumn
+    \else
+      \@restonecolfalse
+    \fi
+    \chapter*{\contentsname
+        \@mkboth{%
+           \MakeUppercase\contentsname}{\MakeUppercase\contentsname}}%
+    \pdfbookmark[0]{Contents}{contents}% contents.0
+    \@starttoc{toc}%
+    \if@restonecol\twocolumn\fi
+    }
+\makeatother
+
+
 \makeindex
 \begin{document}
 
@@ -91,6 +108,7 @@
 
 %%% Title page: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \pagestyle{empty}
+\pdfbookmark[0]{Titlepage}{title}
 \include{01-titlepage-de}
 \include{01-titlepage-en}
 \pagenumbering{roman}
@@ -98,12 +116,11 @@
 %%% Preface: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \include{03-abstract-de}
 \include{03-abstract-en}
-\include{02-acknowledgement}
+
 
 %%% Table of contents: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %\renewcommand{\contentsname}{Table of Contents}
 \setcounter{tocdepth}{3} 
-\pdfbookmark[0]{Table of Contents}{contents}% contents.0
 \tableofcontents
 
 
@@ -114,6 +131,7 @@
 
 %%% Appendix: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \appendix
+\include{02-acknowledgement}
 
 \skylinebibliography
 \addcontentsline{toc}{chapter}{Bibliography}

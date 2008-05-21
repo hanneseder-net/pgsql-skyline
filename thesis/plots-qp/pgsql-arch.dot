@@ -1,0 +1,21 @@
+digraph "less" {
+	graph [	fontname = "Helvetica",
+		fontsize = 10,
+		size = "6,6" ];
+	node [	fontname = "Helvetica", shape = "box" ];
+
+	MAIN [ label="PostgreSQL backend\nPostgresMain()" ];
+	PARSE [ label="PARSE:\nParse query string\npg_parse_query()", fillcolor=lightblue2, style=filled ];
+	ANALYZE [ label="ANALYZE:\nSemantic analysis of query, tranform to Query node\nparse_analyze()", fillcolor=lightblue2, style=filled ];
+	REWRITE [ label="REWRITE:\nApply rewrite rules\npg_rewrite_query()" ];
+	PLAN [ label="PLAN:\nProduce a query plan\npg_plan_queries()", fillcolor=lightblue2, style=filled ];
+	EXECUTOR [ label="EXECUTOR:\nExecute DML\nPortalRun() -> ExecutePlan()", fillcolor=lightblue2, style=filled ];
+	UTILITYPROCESSOR [ label="UTILITY PROCESSOR:\nExecute DDL\nPortalRun() -> ProcessUtility()" ];
+	
+	MAIN -> PARSE;
+	PARSE -> ANALYZE;
+	ANALYZE -> REWRITE;
+	ANALYZE -> UTILITYPROCESSOR;
+	REWRITE -> PLAN;
+	PLAN -> EXECUTOR;
+}

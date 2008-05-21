@@ -4,7 +4,7 @@
 
 GS=gswin32c.exe
 
-dotgraphs=qp-sfs-ef.pdf qp-sfs-index.pdf qp-sfs-index-ef.pdf qp-bnl-ef.pdf qp-agg-bnl-sort.pdf
+dotgraphs=qp-sfs-ef.pdf qp-sfs-index.pdf qp-sfs-index-ef.pdf qp-bnl-ef.pdf qp-agg-bnl-sort.pdf pgsql-arch.pdf
 
 all: qps
 

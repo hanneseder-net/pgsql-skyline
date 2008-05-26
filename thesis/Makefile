@@ -1,5 +1,5 @@
 # -*- Makefile -*-
-CURRENTWORKPAGE=14
+CURRENTWORKPAGE=15
 # set CURRENTWORKPAGE to the page in the .pdf where you are currently
 # working on, this is used for pdfopen --page=..
 
@@ -26,6 +26,12 @@ REVISION := $(shell svn info | perl -n -e 'if ($$_ =~ m/^Revision:\s*(\d+)/) { p
 TEXIFYFLAGS=--src-specials --tex-option="-c-style-errors -halt-on-error"
 
 all: 00-thesis.pdf
+
+once: closepdf
+	pdflatex 00-thesis.tex
+	pdfopen --file=00-thesis.pdf --page=$(CURRENTWORKPAGE)
+	bibtex 00-thesis
+	rail 00-thesis
 
 # [NOTE] using texify eases the building of tex stuff, it calls
 # every thing needed, as many times as needed.

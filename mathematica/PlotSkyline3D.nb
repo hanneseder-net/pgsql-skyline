@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       145,          7]
-NotebookDataLength[     11223,        287]
-NotebookOptionsPosition[     10720,        266]
-NotebookOutlinePosition[     11082,        282]
-CellTagsIndexPosition[     11039,        279]
+NotebookDataLength[     11767,        306]
+NotebookOptionsPosition[     11223,        284]
+NotebookOutlinePosition[     11585,        300]
+CellTagsIndexPosition[     11542,        297]
 WindowFrame->Normal
 ContainsDynamic->False*)
 
@@ -145,7 +145,12 @@ Cell[BoxData[{
           RowBox[{"0", ",", "0", ",", 
            RowBox[{"-", "0.1"}]}], "}"}]}], "]"}]}], ",", " ", 
       RowBox[{"Lighting", "\[Rule]", "\"\<Neutral\>\""}], ",", " ", 
-      RowBox[{"Boxed", " ", "\[Rule]", " ", "False"}]}], "]"}]}], ";"}], 
+      RowBox[{"Boxed", " ", "\[Rule]", " ", "False"}], ",", " ", 
+      RowBox[{"Axes", " ", "\[Rule]", " ", "True"}], ",", " ", 
+      RowBox[{"AxesLabel", "\[Rule]", 
+       RowBox[{"{", 
+        RowBox[{"\"\<x\>\"", ",", " ", "\"\<y\>\"", ",", " ", "\"\<z\>\""}], 
+        "}"}]}]}], "]"}]}], ";"}], 
   "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
  RowBox[{"PlotSkyline3D", "[", 
   RowBox[{"{", "\[IndentingNewLine]", 
@@ -160,7 +165,7 @@ Cell[BoxData[{
      RowBox[{"2", ",", "1", ",", "0.5", ",", 
       RowBox[{"{", 
        RowBox[{"Blue", ",", " ", 
-        RowBox[{"Opacity", "[", "0.3", "]"}]}], "}"}]}], "}"}], ",", 
+        RowBox[{"Opacity", "[", "0.7", "]"}]}], "}"}]}], "}"}], ",", 
     "\[IndentingNewLine]", 
     RowBox[{"{", 
      RowBox[{"1", ",", "0", ",", "1", ",", 
@@ -205,14 +210,16 @@ Cell[BoxData[{
    3.420546351418*^9, 3.420546402714875*^9}, {3.420546567933625*^9, 
    3.42054664363675*^9}, {3.420546699589875*^9, 3.420546809058625*^9}, {
    3.420546915558625*^9, 3.4205469659805*^9}, {3.42054737376175*^9, 
-   3.420547379089875*^9}}],
+   3.420547379089875*^9}, {3.42079074696875*^9, 3.420790756296875*^9}, {
+   3.420790801125*^9, 3.420790829203125*^9}, {3.42079103209375*^9, 
+   3.42079103228125*^9}}],
 
 Cell[BoxData[
  Graphics3DBox[{
    {GrayLevel[0.5], Opacity[0.1], CuboidBox[{0, 0, 0}, {3, 2, -0.1}], 
     {RGBColor[0, 0, 1], Opacity[0.7], 
      CuboidBox[{2.2, 0.2, 0}, {2.8, 0.8, 0.75}]}, 
-    {RGBColor[0, 0, 1], Opacity[0.3], 
+    {RGBColor[0, 0, 1], Opacity[0.7], 
      CuboidBox[{2.2, 1.2, 0}, {2.8, 1.8, 0.5}]}, 
     {RGBColor[0, 1, 0], Opacity[0.7], 
      CuboidBox[{1.2, 0.2, 0}, {1.8, 0.8, 1}]}, 
@@ -229,19 +236,30 @@ Cell[BoxData[
     Polygon3DBox[{{2, -3, 0}, {1.5, -1, 0}, {1.5, -1, -0.1}, {2, -3, -0.1}}], 
     Polygon3DBox[{{1.5, -1, -0.1}, {1, -3, -0.1}, {2, -3, -0.1}, {
       1.5, -1, -0.1}}]}},
+  Axes->True,
+  AxesLabel->{
+    FormBox["\"x\"", TraditionalForm], 
+    FormBox["\"y\"", TraditionalForm], 
+    FormBox["\"z\"", TraditionalForm]},
   Boxed->False,
-  ImageSize->{519., 480.},
+  ImageMargins->0.,
+  ImageSize->{468., 425.},
   Lighting->"Neutral",
-  ViewPoint->{1.549130331172717, -2.7664120622021056`, 1.1820150249228667`},
-  ViewVertical->{0.23852680125585596`, -0.23169174564641862`, 
-   3.0068878001134953`}]], "Output",
+  ViewPoint->{1.6213563391488608`, -2.8586559768177118`, 0.8057851002011513},
+  ViewVertical->{0.3228936268243641, -0.3292509987643848, 
+   2.8879803339067474`}]], "Output",
+ GeneratedCell->False,
+ CellAutoOverwrite->False,
  CellChangeTimes->{
-  3.420545233793*^9, {3.420546149652375*^9, 3.420546172308625*^9}, {
-   3.42054635319925*^9, 3.420546403183625*^9}, {3.42054657882425*^9, 
-   3.420546606214875*^9}, 3.420546644168*^9, 3.420546712527375*^9, 
-   3.420546745543*^9, {3.420546779777375*^9, 3.420546809418*^9}, {
-   3.42054691744925*^9, 3.420546966652375*^9}, 3.420547379964875*^9}]
+  3.420791154921875*^9, {3.420791332671875*^9, 3.42079134259375*^9}}]
 }, Open  ]],
+
+Cell[BoxData[
+ GraphicsBox[{},
+  PlotRange->{{0, 1}, {0, 1}}]], "Input",
+ CellChangeTimes->{
+  3.420790829546875*^9, 3.42079103284375*^9, {3.420791104765625*^9, 
+   3.420791106890625*^9}}],
 
 Cell[BoxData[""], "Input",
  CellChangeTimes->{{3.39194115325*^9, 3.391941262953125*^9}, {
@@ -282,13 +300,14 @@ CellTagsIndex->{}
 (*NotebookFileOutline
 Notebook[{
 Cell[CellGroupData[{
-Cell[590, 23, 7533, 184, 312, "Input"],
-Cell[8126, 209, 1680, 33, 495, "Output"]
+Cell[590, 23, 7903, 191, 312, "Input"],
+Cell[8496, 216, 1622, 37, 440, "Output"]
 }, Open  ]],
-Cell[9821, 245, 347, 5, 31, "Input"],
-Cell[10171, 252, 310, 5, 31, "Input"],
-Cell[10484, 259, 92, 1, 31, "Input"],
-Cell[10579, 262, 137, 2, 31, "Input"]
+Cell[10133, 256, 188, 5, 375, "Input"],
+Cell[10324, 263, 347, 5, 31, "Input"],
+Cell[10674, 270, 310, 5, 31, "Input"],
+Cell[10987, 277, 92, 1, 31, "Input"],
+Cell[11082, 280, 137, 2, 31, "Input"]
 }
 ]
 *)

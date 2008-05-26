@@ -32,6 +32,7 @@
 \newtheorem{definition}{Definition}
 \newtheorem{lemma}{Lemma}
 \newtheorem{theorem}{Theorem}
+\newtheorem{example}{Example}
 
 \newcommand\nt[1]{\textit{#1}}
 
@@ -77,8 +78,8 @@
 \chapter{Introduction}
 \label{chap:introduction}
 
-\section{Introduction}
-\label{sec:introduction}
+\section{General Introduction}
+\label{sec:generalintroduction}
 When thinking of a \emph{skyline} images like
 Figure~\ref{fig:vienneseskyline} might come to ones mind, the
 popularity of such photographs is illustrated by following figures:
@@ -131,10 +132,7 @@ perspective projection and of the fact that the earth is not a disk.
 However, we will shortly see how this intuition matches a precise
 mathematical definition and a concept in the real of databases.
 
-
-
-\todo{3d skyline blocks, mathematica}{}
-
+\bigskip
 In the realm of database systems the skyline operator is important for
 supporting multi-criteria decision making applications.  Given a set
 of $d$-dimensional data points, the skyline consists of the points,
@@ -238,17 +236,11 @@ our experimental results. The source code, and the log-files from our
 experiments are accessible via
 \url{http://skyline.dbai.tuwien.ac.at/}.
 
-The paper is organized as follows: In Section~\ref{sec:algorithms} we
-introduce briefly the implemented skyline algorithms.
-Section~\ref{sec:configuration} describes the experimental setup.
-Section~\ref{sec:analysis} presents the extensive experiments over
-various data settings, followed by the analysis of the
-results. Section~\ref{sec:conclusion} concludes the paper and
-discusses future work.
 
 
+\subsection{Motivation}
 
-\subsubsection{motivation} motivation: green computing: less cpu time,
+motivation: green computing: less cpu time,
 less computers, less energy --> safe the planet
 
 stocks: risk vs. costs (--> streaming skyline see [Tao2006])
@@ -265,16 +257,8 @@ Credit To: Ali (room mate)
 
 employee (salary, revenue, years in the company)
 
-\subsubsection{consider only bnl and sfs}
-
+\todo{}{}
 from \citep{Chaudhuri2006}:
-
-In this paper, our focus is on algorithms that can be directly
-implemented in today's commercial database systems without the
-addition of new access methods (which would require addressing the
-associated challenges of maintenance with updates, concurrency
-control, etc.). Specifically, we consider the Block-nested-loop
-Algorithm [15], and the Block-nested-loop with Presorting [5].
 
 Special algorithms have been proposed for the case the whole relation
 fits into main memory \citep{Preparata1985}, nevertheless we do not
@@ -287,6 +271,84 @@ The skyline operator \citep{Borzsonyi2001} filters out the
 points. The skyline operator returns the pareto optimal\index{pareto
 optimal} elements of a set. This is also know as maximum vector
 problem\index{maximum vector problem}.
+
+\subsection{Name of the Game}
+In this subsection we would like to give a little motiviation
+why \emph{skyline operator} is a good name for this type of
+\emph{preference queries}, it also illustrates the usage of the
+\inlinesql{DIFF} and \inlinesql{DISTINCT} keyword. 
+
+In figure~\ref{fig:threeDskyline} the yellow arrow indicates the
+direction of view and the colored cuboids should illustrate
+buildings. Table~\ref{tab:threeDskyline} shows the coordinate of the
+lower left edge of each building and gives them names ($a, b,
+\ldots$). The same color indicates the same $x$ coordinate. For $y$ we
+have only to cases \emph{front} and
+\emph{back}.
+
+\begin{example}[Which buildings are touching the sky?]\label{ex:touchsky}
+For sure building $c$ (the green in the backline) and building $f$
+(the blue one in the frontline) are part of the answer and $d$ and $e$
+are not.  As $a$ and $b$ do have the same height, we could take them
+both or make an arbitrary choice amoung $a$ and $b$.  We will later
+see that this tacking both or choose an arbitrary one can be
+influenced by the keyword \inlinesql{DISTINCT}. So overall, possible
+answers are $\{a, c, f\}$, $\{b, c, f\}$, or $\{a, b, c, f\}$.
+\end{example}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=100mm]{plots-misc/PlotSkyline3D}%
+\caption{Skyline of buildings}%
+\label{fig:threeDskyline}%
+\end{figure}
+
+\begin{table}[htbp]
+\centering
+\begin{tabular}{l|rrrll}
+id & x & y & z & color & row\\
+\hline
+$a$ & 0 & 1 & 1.5 & red & back \\
+$b$ & 0 & 0 & 1.5 & red & front \\
+$c$ & 1 & 1 & 1.25 & green & back \\
+$d$ & 1 & 0 & 1.0 & green & front \\
+$e$ & 2 & 1 & 0.5 & blue & back \\
+$f$ & 2 & 0 & 0.75 & blue & front
+\end{tabular}
+\label{tab:threeDskyline}
+\caption{Data for Figure~\ref{fig:threeDskyline}}
+\end{table}
+
+\begin{example}[Which buildings are visible?]\label{ex:visibility}
+To answer this question we have also to take into account how close a
+building as, i.e. the $y$ coordinate.  Building $a$ is covered by $b$
+and $e$ by $f$, we will later call this property \emph{dominance}. It
+is obvious that $c$ and $d$ are part of the answer. The complete
+answer is $\{b, c, d, f\}$.
+\end{example}
+
+The question from example~\ref{ex:touchsky} could be formalized in the
+following way:
+
+\begin{interactive}
+SELECT * FROM building SKYLINE OF x DIFF, z MAX;
+\end{interactive}
+
+\noindent
+in above query $a$ and $b$ will be part of the answer, will in the following
+it is up to the database system to make a choice between $a$ or $b$, as they 
+are equally good:
+
+\begin{interactive}
+SELECT * FROM building SKYLINE OF DISTINCT x DIFF, z MAX;
+\end{interactive}
+
+\noindent
+On the other hand the query for example~\ref{ex:visibility} looks like:
+
+\begin{interactive}
+SELECT * FROM building SKYLINE OF x DIFF, y MIN, z MAX;
+\end{interactive}
 
 \subsection{Typographical Conventions}
 For interactive input and output we will show our typed input in a \texttt{\bfseries bold font}, the output \texttt{like this}, \textit{and comments like this}.
@@ -317,8 +379,43 @@ PostgreSQL interactive terminal \texttt{psql}. Furthermore
 input. All of them are used throughtout the text.
 
 
+% Research Questions for this Thesis
+\section{Focus of this Thesis}
+\todo{}{}
+
+\subsection{We consinder only BNL, SFS and variants}
+\todo{}{}
+
+from \citep{Chauduri2006}
+
+In this paper, our focus is on algorithms that can be directly
+implemented in today's commercial database systems without the
+addition of new access methods (which would require addressing the
+associated challenges of maintenance with updates, concurrency
+control, etc.). Specifically, we consider the Block-nested-loop
+Algorithm [15], and the Block-nested-loop with Presorting [5].
+
+
+\section{Main Results}
+\todo{}{}
+
+\section{Further Organization}
+\todo{}{}
+The paper is organized as follows: In Section~\ref{sec:algorithms} we
+introduce briefly the implemented skyline algorithms.
+Section~\ref{sec:configuration} describes the experimental setup.
+Section~\ref{sec:analysis} presents the extensive experiments over
+various data settings, followed by the analysis of the
+results. Section~\ref{sec:conclusion} concludes the paper and
+discusses future work.
+
+
+
 \chapter{Preliminaries}
 \label{chap:preliminaries}
+
+\todo{see \citep[Simkovics1998] section 1.1.1}{}
+
 \section{Basic definitions}
 \todo{We are in the context of relational model\index{relational model} of data}{\citep{Chomicki2002, Chomicki2003a}?}. As we aim at an implementation of the skyline operator into a relational database management system (RDBMS)\index{RDBMS} we restrict to finite database\index{finite database} instances.
 
@@ -470,6 +567,10 @@ Let $\relation{S} = \skyline_C(\relation{R})$, it is clear that condition (\ref{
 
 \subsection{Further notions}
 dominance, anti dominance region
+
+\todo{If a point is a skyline point can be answered by checking of the
+anti domiance region is empty. This can be done with a range query
+even fasilidating an index.}{}
 
 \subsection{How our implementation differs from the mathematical model}
 Our implementation of the \inlinesql{SKYLINE OF} clause is actually a

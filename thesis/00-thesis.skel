@@ -116,25 +116,12 @@
 %%% Preface: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \include{03-abstract-de}
 \include{03-abstract-en}
-
+\include{02-acknowledgement}
 
 %%% Table of contents: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %\renewcommand{\contentsname}{Table of Contents}
 \setcounter{tocdepth}{3} 
 \tableofcontents
-
-
-%%% Chapter 1: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\pagestyle{fancy}
-\pagenumbering{arabic}
-\include{04-body}
-
-%%% Appendix: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\appendix
-\include{02-acknowledgement}
-
-\skylinebibliography
-\addcontentsline{toc}{chapter}{Bibliography}
 
 %%% TODO: Is a list of figures really required?
 \listoffigures
@@ -143,6 +130,18 @@
 %%% TODO: Is a list of tables really required?
 \listoftables
 \addcontentsline{toc}{chapter}{List of Tables}
+\newpage
+
+%%% Chapter 1: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\pagestyle{fancy}
+\pagenumbering{arabic}
+\include{04-body}
+
+%%% Appendix: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\appendix
+
+\skylinebibliography
+\addcontentsline{toc}{chapter}{Bibliography}
 
 \newpage
 \addcontentsline{toc}{chapter}{Index}

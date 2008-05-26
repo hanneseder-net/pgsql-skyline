@@ -1,5 +1,5 @@
 # -*- Makefile -*-
-CURRENTWORKPAGE=25
+CURRENTWORKPAGE=14
 # set CURRENTWORKPAGE to the page in the .pdf where you are currently
 # working on, this is used for pdfopen --page=..
 

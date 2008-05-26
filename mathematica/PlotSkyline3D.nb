@@ -10,146 +10,262 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       145,          7]
-NotebookDataLength[      6096,        168]
-NotebookOptionsPosition[      5710,        150]
-NotebookOutlinePosition[      6071,        166]
-CellTagsIndexPosition[      6028,        163]
+NotebookDataLength[     11223,        287]
+NotebookOptionsPosition[     10720,        266]
+NotebookOutlinePosition[     11082,        282]
+CellTagsIndexPosition[     11039,        279]
 WindowFrame->Normal
 ContainsDynamic->False*)
 
 (* Beginning of Notebook Content *)
 Notebook[{
-Cell[BoxData[
+
+Cell[CellGroupData[{
+Cell[BoxData[{
  RowBox[{
-  RowBox[{"PlotSkyline3D", "[", "skyline_", "]"}], " ", ":=", " ", 
-  RowBox[{"Graphics3D", "[", 
+  RowBox[{
    RowBox[{
+    RowBox[{"Arrow3D", "[", 
+     RowBox[{"a_", ",", " ", "b_", ",", " ", "c_", ",", " ", "h_"}], "]"}], 
+    " ", ":=", " ", 
     RowBox[{"{", 
-     RowBox[{"Gray", ",", 
-      RowBox[{"Cuboid", "[", 
-       RowBox[{
-        RowBox[{"{", 
-         RowBox[{
-          RowBox[{"Min", "[", 
-           RowBox[{"skyline", "\[LeftDoubleBracket]", 
-            RowBox[{"All", ",", "1"}], "\[RightDoubleBracket]"}], "]"}], ",", 
-          
-          RowBox[{"Min", "[", 
-           RowBox[{"skyline", "\[LeftDoubleBracket]", 
-            RowBox[{"All", ",", "2"}], "\[RightDoubleBracket]"}], "]"}], ",", 
-          "0"}], "}"}], ",", " ", 
-        RowBox[{"{", 
-         RowBox[{
-          RowBox[{"1", "+", 
-           RowBox[{"Max", "[", 
-            RowBox[{"skyline", "\[LeftDoubleBracket]", 
-             RowBox[{"All", ",", "1"}], "\[RightDoubleBracket]"}], "]"}]}], 
-          ",", 
-          RowBox[{"1", "+", 
-           RowBox[{"Max", "[", 
-            RowBox[{"skyline", "\[LeftDoubleBracket]", 
-             RowBox[{"All", ",", "2"}], "\[RightDoubleBracket]"}], "]"}]}], 
-          ",", " ", 
-          RowBox[{"-", "0.1"}]}], "}"}]}], "]"}], ",", " ", "Red"}], "}"}], 
-    " ", "~", "Join", "~", " ", 
-    RowBox[{"Map", "[", 
+     RowBox[{
+      RowBox[{"Polygon", "[", 
+       RowBox[{"{", 
+        RowBox[{"a", ",", "b", ",", "c", ",", "a"}], "}"}], "]"}], ",", " ", 
+      RowBox[{"Polygon", "[", 
+       RowBox[{"{", 
+        RowBox[{"a", ",", "b", ",", 
+         RowBox[{"b", "+", "h"}], ",", " ", 
+         RowBox[{"a", "+", "h"}]}], "}"}], "]"}], ",", " ", 
+      RowBox[{"Polygon", "[", 
+       RowBox[{"{", 
+        RowBox[{"b", ",", "c", ",", " ", 
+         RowBox[{"c", "+", "h"}], ",", " ", 
+         RowBox[{"b", "+", "h"}]}], "}"}], "]"}], ",", " ", 
+      RowBox[{"Polygon", "[", 
+       RowBox[{"{", 
+        RowBox[{"c", ",", " ", "a", ",", " ", 
+         RowBox[{"a", "+", "h"}], ",", " ", 
+         RowBox[{"c", "+", "h"}]}], "}"}], "]"}], ",", " ", 
+      RowBox[{"Polygon", "[", 
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{"a", "+", "h"}], ",", " ", 
+         RowBox[{"b", "+", "h"}], ",", " ", 
+         RowBox[{"c", "+", "h"}], ",", " ", 
+         RowBox[{"a", "+", "h"}]}], "}"}], "]"}]}], "}"}]}], ";"}], 
+  "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{
+    RowBox[{"PlotSkyline3D", "[", "skyline_", "]"}], " ", ":=", " ", 
+    RowBox[{"Graphics3D", "[", 
      RowBox[{
       RowBox[{
        RowBox[{"{", 
         RowBox[{
-         RowBox[{"Opacity", "[", 
-          RowBox[{"If", "[", 
-           RowBox[{
-            RowBox[{
-             RowBox[{
-             "#", "\[LeftDoubleBracket]", "4", "\[RightDoubleBracket]"}], 
-             "\[Equal]", "1"}], ",", "0.7", ",", "0.1"}], "]"}], "]"}], ",", 
-         " ", 
+         RowBox[{"Opacity", "[", "0.1", "]"}], ",", "Gray", ",", 
          RowBox[{"Cuboid", "[", 
           RowBox[{
            RowBox[{"{", 
             RowBox[{
-             RowBox[{
-              RowBox[{
-              "#", "\[LeftDoubleBracket]", "1", "\[RightDoubleBracket]"}], 
-              "+", "0.2"}], ",", 
-             RowBox[{
-              RowBox[{
-              "#", "\[LeftDoubleBracket]", "2", "\[RightDoubleBracket]"}], 
-              "+", "0.2"}], ",", "0"}], "}"}], ",", " ", 
+             RowBox[{"Min", "[", 
+              RowBox[{"skyline", "\[LeftDoubleBracket]", 
+               RowBox[{"All", ",", "1"}], "\[RightDoubleBracket]"}], "]"}], 
+             ",", 
+             RowBox[{"Min", "[", 
+              RowBox[{"skyline", "\[LeftDoubleBracket]", 
+               RowBox[{"All", ",", "2"}], "\[RightDoubleBracket]"}], "]"}], 
+             ",", "0"}], "}"}], ",", " ", 
            RowBox[{"{", 
             RowBox[{
+             RowBox[{"1", "+", 
+              RowBox[{"Max", "[", 
+               RowBox[{"skyline", "\[LeftDoubleBracket]", 
+                RowBox[{"All", ",", "1"}], "\[RightDoubleBracket]"}], "]"}]}],
+              ",", 
+             RowBox[{"1", "+", 
+              RowBox[{"Max", "[", 
+               RowBox[{"skyline", "\[LeftDoubleBracket]", 
+                RowBox[{"All", ",", "2"}], "\[RightDoubleBracket]"}], "]"}]}],
+              ",", " ", 
+             RowBox[{"-", "0.1"}]}], "}"}]}], "]"}]}], "}"}], " ", "~", 
+       "Join", "~", " ", 
+       RowBox[{"Map", "[", 
+        RowBox[{
+         RowBox[{
+          RowBox[{
+           RowBox[{
+           "#", "\[LeftDoubleBracket]", "4", "\[RightDoubleBracket]"}], " ", 
+           "~", "Join", " ", "~", 
+           RowBox[{"{", 
+            RowBox[{"Cuboid", "[", 
              RowBox[{
-              RowBox[{
-              "#", "\[LeftDoubleBracket]", "1", "\[RightDoubleBracket]"}], 
-              "+", "0.8"}], ",", 
-             RowBox[{
-              RowBox[{
-              "#", "\[LeftDoubleBracket]", "2", "\[RightDoubleBracket]"}], 
-              "+", "0.8"}], ",", 
-             RowBox[{
-             "#", "\[LeftDoubleBracket]", "3", "\[RightDoubleBracket]"}]}], 
-            "}"}]}], "]"}]}], " ", "}"}], " ", "&"}], ",", " ", "skyline"}], 
-     "]"}]}], "]"}]}]], "Input",
- CellChangeTimes->{{3.3919408460625*^9, 3.391941085921875*^9}, {
-  3.391941128625*^9, 3.391941151015625*^9}, {3.39194134109375*^9, 
-  3.391941394109375*^9}, {3.3919414581875*^9, 3.391941462765625*^9}, {
-  3.391941833890625*^9, 3.391941891890625*^9}, {3.391942017734375*^9, 
-  3.39194207384375*^9}, {3.391942131171875*^9, 3.391942140921875*^9}, {
-  3.391942250390625*^9, 3.39194226978125*^9}}],
-
-Cell[CellGroupData[{
-
-Cell[BoxData[
+              RowBox[{"{", 
+               RowBox[{
+                RowBox[{
+                 RowBox[{
+                 "#", "\[LeftDoubleBracket]", "1", "\[RightDoubleBracket]"}], 
+                 "+", "0.2"}], ",", 
+                RowBox[{
+                 RowBox[{
+                 "#", "\[LeftDoubleBracket]", "2", "\[RightDoubleBracket]"}], 
+                 "+", "0.2"}], ",", "0"}], "}"}], ",", " ", 
+              RowBox[{"{", 
+               RowBox[{
+                RowBox[{
+                 RowBox[{
+                 "#", "\[LeftDoubleBracket]", "1", "\[RightDoubleBracket]"}], 
+                 "+", "0.8"}], ",", 
+                RowBox[{
+                 RowBox[{
+                 "#", "\[LeftDoubleBracket]", "2", "\[RightDoubleBracket]"}], 
+                 "+", "0.8"}], ",", 
+                RowBox[{
+                "#", "\[LeftDoubleBracket]", "3", "\[RightDoubleBracket]"}]}],
+                "}"}]}], "]"}], " ", "}"}]}], " ", "&"}], ",", " ", 
+         "skyline"}], "]"}], " ", "~", "Join", "~", "\[IndentingNewLine]", 
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{"Opacity", "[", "0.7", "]"}], ",", "Yellow"}], "}"}], " ", 
+       "~", "Join", "~", " ", 
+       RowBox[{"Arrow3D", "[", 
+        RowBox[{
+         RowBox[{"{", 
+          RowBox[{"1.5", ",", " ", 
+           RowBox[{"-", "1"}], ",", "0"}], "}"}], ",", " ", 
+         RowBox[{"{", 
+          RowBox[{"1", ",", " ", 
+           RowBox[{"-", "3"}], ",", "0"}], "}"}], ",", " ", 
+         RowBox[{"{", 
+          RowBox[{"2", ",", " ", 
+           RowBox[{"-", "3"}], ",", "0"}], "}"}], ",", " ", 
+         RowBox[{"{", 
+          RowBox[{"0", ",", "0", ",", 
+           RowBox[{"-", "0.1"}]}], "}"}]}], "]"}]}], ",", " ", 
+      RowBox[{"Lighting", "\[Rule]", "\"\<Neutral\>\""}], ",", " ", 
+      RowBox[{"Boxed", " ", "\[Rule]", " ", "False"}]}], "]"}]}], ";"}], 
+  "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
  RowBox[{"PlotSkyline3D", "[", 
-  RowBox[{"{", 
+  RowBox[{"{", "\[IndentingNewLine]", 
    RowBox[{
     RowBox[{"{", 
-     RowBox[{"0", ",", "0", ",", "1", ",", "1"}], "}"}], ",", " ", 
+     RowBox[{"2", ",", "0", ",", "0.75", ",", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"Opacity", "[", "0.7", "]"}], ",", " ", "Blue"}], "}"}]}], 
+     "}"}], ",", " ", 
     RowBox[{"{", 
-     RowBox[{"0", ",", "1", ",", "0.8", ",", "0"}], "}"}], ",", " ", 
+     RowBox[{"2", ",", "1", ",", "0.5", ",", 
+      RowBox[{"{", 
+       RowBox[{"Blue", ",", " ", 
+        RowBox[{"Opacity", "[", "0.3", "]"}]}], "}"}]}], "}"}], ",", 
+    "\[IndentingNewLine]", 
     RowBox[{"{", 
-     RowBox[{"0", ",", "2", ",", "3", ",", "1"}], "}"}], ",", " ", 
+     RowBox[{"1", ",", "0", ",", "1", ",", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"Opacity", "[", "0.7", "]"}], ",", " ", "Green"}], "}"}]}], 
+     "}"}], ",", 
     RowBox[{"{", 
-     RowBox[{"1", ",", "0", ",", "1", ",", "1"}], "}"}], ",", 
+     RowBox[{"1", ",", "1", ",", "1.25", ",", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"Opacity", "[", "0.7", "]"}], ",", " ", "Green"}], "}"}]}], 
+     "}"}], ",", " ", "\[IndentingNewLine]", 
     RowBox[{"{", 
-     RowBox[{"1", ",", "1", ",", "2", ",", "1"}], "}"}], ",", " ", 
+     RowBox[{"0", ",", "0", ",", "1.5", ",", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"Opacity", "[", "0.7", "]"}], ",", " ", "Red"}], "}"}]}], 
+     "}"}], ",", " ", 
     RowBox[{"{", 
-     RowBox[{"1", ",", "2", ",", "2", ",", "0"}], "}"}], ",", 
-    RowBox[{"{", 
-     RowBox[{"1", ",", "3", ",", "1", ",", "0"}], "}"}], ",", " ", 
-    RowBox[{"{", 
-     RowBox[{"2", ",", "1", ",", "1", ",", "1"}], "}"}]}], "}"}], 
-  "]"}]], "Input",
- CellChangeTimes->{{3.39194115325*^9, 3.391941262953125*^9}, {
-  3.391941303421875*^9, 3.391941314390625*^9}, {3.391941465671875*^9, 
-  3.39194146696875*^9}}],
+     RowBox[{"0", ",", "1", ",", "1.5", ",", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"Opacity", "[", "0.7", "]"}], ",", " ", "Red"}], "}"}]}], 
+     "}"}]}], "}"}], "]"}]}], "Input",
+ CellChangeTimes->{{3.3919408460625*^9, 3.391941085921875*^9}, {
+   3.391941128625*^9, 3.391941151015625*^9}, {3.39194134109375*^9, 
+   3.391941394109375*^9}, {3.3919414581875*^9, 3.391941462765625*^9}, {
+   3.391941833890625*^9, 3.391941891890625*^9}, {3.391942017734375*^9, 
+   3.39194207384375*^9}, {3.391942131171875*^9, 3.391942140921875*^9}, {
+   3.391942250390625*^9, 3.39194226978125*^9}, {3.420541001199375*^9, 
+   3.4205410224025*^9}, {3.420541078761875*^9, 3.420541107324375*^9}, {
+   3.420541532355625*^9, 3.420541567215*^9}, {3.420541758480625*^9, 
+   3.4205417849025*^9}, {3.420541920168125*^9, 3.420541971918125*^9}, {
+   3.420542045136875*^9, 3.42054216930875*^9}, {3.42054232718375*^9, 
+   3.420542408324375*^9}, {3.4205424459025*^9, 3.420542483793125*^9}, {
+   3.420542516449375*^9, 3.420542568543125*^9}, 3.420542928793125*^9, {
+   3.4205446911055*^9, 3.420544731464875*^9}, {3.42054481169925*^9, 
+   3.420544927902375*^9}, {3.420544997543*^9, 3.420545040183625*^9}, {
+   3.420545111293*^9, 3.420545112464875*^9}, {3.420545205918*^9, 
+   3.420545210183625*^9}, {3.42054609126175*^9, 3.420546171496125*^9}, {
+   3.420546351418*^9, 3.420546402714875*^9}, {3.420546567933625*^9, 
+   3.42054664363675*^9}, {3.420546699589875*^9, 3.420546809058625*^9}, {
+   3.420546915558625*^9, 3.4205469659805*^9}, {3.42054737376175*^9, 
+   3.420547379089875*^9}}],
 
 Cell[BoxData[
  Graphics3DBox[{
-   {GrayLevel[0.5], CuboidBox[{0, 0, 0}, {3, 4, -0.1}]}, 
-   {RGBColor[1, 0, 0], 
-    {Opacity[0.7], CuboidBox[{0.2, 0.2, 0}, {0.8, 0.8, 1}]}, 
-    {Opacity[0.1], CuboidBox[{0.2, 1.2, 0}, {0.8, 1.8, 0.8}]}, 
-    {Opacity[0.7], CuboidBox[{0.2, 2.2, 0}, {0.8, 2.8, 3}]}, 
-    {Opacity[0.7], CuboidBox[{1.2, 0.2, 0}, {1.8, 0.8, 1}]}, 
-    {Opacity[0.7], CuboidBox[{1.2, 1.2, 0}, {1.8, 1.8, 2}]}, 
-    {Opacity[0.1], CuboidBox[{1.2, 2.2, 0}, {1.8, 2.8, 2}]}, 
-    {Opacity[0.1], CuboidBox[{1.2, 3.2, 0}, {1.8, 3.8, 1}]}, 
-    {Opacity[0.7], CuboidBox[{2.2, 1.2, 0}, {2.8, 1.8, 1}]}}},
-  ImageSize->{563.8749852117201, 815.},
-  ViewPoint->{-1.319301820385094, -2.895355979356319, 1.1516755009698634`},
-  ViewVertical->{-0.2863928533181026, -0.31341275539911584`, 
-   1.1935558551712735`}]], "Output",
- CellChangeTimes->{{3.391941197140625*^9, 3.391941226375*^9}, {
-   3.391941256953125*^9, 3.391941263265625*^9}, {3.391941315578125*^9, 
-   3.391941397328125*^9}, 3.39194146740625*^9, {3.391941863421875*^9, 
-   3.39194189321875*^9}, {3.39194204496875*^9, 3.391942075296875*^9}, 
-   3.39194214278125*^9, {3.391942252859375*^9, 3.391942271171875*^9}}]
-}, Open  ]]
+   {GrayLevel[0.5], Opacity[0.1], CuboidBox[{0, 0, 0}, {3, 2, -0.1}], 
+    {RGBColor[0, 0, 1], Opacity[0.7], 
+     CuboidBox[{2.2, 0.2, 0}, {2.8, 0.8, 0.75}]}, 
+    {RGBColor[0, 0, 1], Opacity[0.3], 
+     CuboidBox[{2.2, 1.2, 0}, {2.8, 1.8, 0.5}]}, 
+    {RGBColor[0, 1, 0], Opacity[0.7], 
+     CuboidBox[{1.2, 0.2, 0}, {1.8, 0.8, 1}]}, 
+    {RGBColor[0, 1, 0], Opacity[0.7], 
+     CuboidBox[{1.2, 1.2, 0}, {1.8, 1.8, 1.25}]}, 
+    {RGBColor[1, 0, 0], Opacity[0.7], 
+     CuboidBox[{0.2, 0.2, 0}, {0.8, 0.8, 1.5}]}, 
+    {RGBColor[1, 0, 0], Opacity[0.7], 
+     CuboidBox[{0.2, 1.2, 0}, {0.8, 1.8, 1.5}]}}, 
+   {RGBColor[1, 1, 0], Opacity[0.7], 
+    Polygon3DBox[{{1.5, -1, 0}, {1, -3, 0}, {2, -3, 0}, {1.5, -1, 0}}], 
+    Polygon3DBox[{{1.5, -1, 0}, {1, -3, 0}, {1, -3, -0.1}, {1.5, -1, -0.1}}], 
+    Polygon3DBox[{{1, -3, 0}, {2, -3, 0}, {2, -3, -0.1}, {1, -3, -0.1}}], 
+    Polygon3DBox[{{2, -3, 0}, {1.5, -1, 0}, {1.5, -1, -0.1}, {2, -3, -0.1}}], 
+    Polygon3DBox[{{1.5, -1, -0.1}, {1, -3, -0.1}, {2, -3, -0.1}, {
+      1.5, -1, -0.1}}]}},
+  Boxed->False,
+  ImageSize->{519., 480.},
+  Lighting->"Neutral",
+  ViewPoint->{1.549130331172717, -2.7664120622021056`, 1.1820150249228667`},
+  ViewVertical->{0.23852680125585596`, -0.23169174564641862`, 
+   3.0068878001134953`}]], "Output",
+ CellChangeTimes->{
+  3.420545233793*^9, {3.420546149652375*^9, 3.420546172308625*^9}, {
+   3.42054635319925*^9, 3.420546403183625*^9}, {3.42054657882425*^9, 
+   3.420546606214875*^9}, 3.420546644168*^9, 3.420546712527375*^9, 
+   3.420546745543*^9, {3.420546779777375*^9, 3.420546809418*^9}, {
+   3.42054691744925*^9, 3.420546966652375*^9}, 3.420547379964875*^9}]
+}, Open  ]],
+
+Cell[BoxData[""], "Input",
+ CellChangeTimes->{{3.39194115325*^9, 3.391941262953125*^9}, {
+   3.391941303421875*^9, 3.391941314390625*^9}, {3.391941465671875*^9, 
+   3.39194146696875*^9}, {3.420540397011875*^9, 3.420540410418125*^9}, {
+   3.420540461965*^9, 3.420540502574375*^9}, {3.4205405327775*^9, 
+   3.4205405660275*^9}, 3.42054205830875*^9}],
+
+Cell[BoxData[""], "Input",
+ CellChangeTimes->{
+  3.420540615293125*^9, {3.420541095011875*^9, 3.420541109355625*^9}, {
+   3.420541538793125*^9, 3.420541569168125*^9}, {3.420541764855625*^9, 
+   3.420541786511875*^9}, {3.4205419475275*^9, 3.420541973480625*^9}, {
+   3.42054205312125*^9, 3.420542067480625*^9}}],
+
+Cell[BoxData[""], "Input",
+ CellChangeTimes->{{3.420540868418125*^9, 3.420540872480625*^9}}],
+
+Cell[BoxData[""], "Input",
+ CellChangeTimes->{{3.420540945949375*^9, 3.420540961215*^9}, {
+  3.420542209605625*^9, 3.42054232487125*^9}}]
 },
-WindowSize->{814, 968},
-WindowMargins->{{0, Automatic}, {Automatic, 0}},
+WindowSize->{904, 1128},
+WindowMargins->{{Automatic, 0}, {Automatic, 0}},
 ShowSelection->True,
 FrontEndVersion->"6.0 for Microsoft Windows (32-bit) (April 27, 2007)",
 StyleDefinitions->"Default.nb"
@@ -165,11 +281,14 @@ CellTagsIndex->{}
 *)
 (*NotebookFileOutline
 Notebook[{
-Cell[568, 21, 2993, 77, 152, "Input"],
 Cell[CellGroupData[{
-Cell[3586, 102, 930, 23, 52, "Input"],
-Cell[4519, 127, 1175, 20, 830, "Output"]
-}, Open  ]]
+Cell[590, 23, 7533, 184, 312, "Input"],
+Cell[8126, 209, 1680, 33, 495, "Output"]
+}, Open  ]],
+Cell[9821, 245, 347, 5, 31, "Input"],
+Cell[10171, 252, 310, 5, 31, "Input"],
+Cell[10484, 259, 92, 1, 31, "Input"],
+Cell[10579, 262, 137, 2, 31, "Input"]
 }
 ]
 *)

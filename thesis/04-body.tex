@@ -64,9 +64,7 @@
 \label{#3}%
 }}%
 
-
-\chapter{Introduction}
-\label{chap:introduction}
+\chapter{TODO}
 
 \section{TODO}
 \begin{itemize}
@@ -76,11 +74,31 @@
 \item \todo{show how Preference SQL ABOUT can be emulated}{}
 \end{itemize}
 
+\chapter{Introduction}
+\label{chap:introduction}
+
 \section{Introduction}
 \label{sec:introduction}
-\todo{}{take some parts from the research planning intro}
+When thinking of a \emph{skyline} images like
+Figure~\ref{fig:vienneseskyline} might come to ones mind, the
+popularity of such photographs is illustrated by following figures:
+\emph{Goolge images} returns $\approx 3{,}580{,}000$ hits, not
+counting the hits for the Nissan's skyline sports car, for the search
+term
+\emph{skyline -nissan}, and 
+%
+\href{http://www.istockphoto.com/}{istockphoto.com}, 
+a popular collection of member-generated royalty-free images websites,
+has $\approx 25{,}000$ photos in the stock for the search term
+\emph{skyline}, as of May 23 2008. 
+% http://www.merriam-webster.com/cgi-bin/dictionary?book=Dictionary&va=skyline
+The Merriam-Webster's online dictionary gives following definition for \emph{skyline}:
+\begin{enumerate}
+\item the apparent juncture of earth and sky: \emph{horizon}
+\item an outline (as of buildings or a mountain range) against the
+background of the sky
+\end{enumerate}
 
-\todo{lala skyline in the real world, photography, natural concept}{}
 
 \begin{figure}[htbp]
 % this is from: 
@@ -97,18 +115,31 @@
 \centering
 \includegraphics[scale=1.0]{photos/iStock_000002358169Large_100mm}%
 \caption{Viennese skyline (nightshot with long exposure time, 
-taken by Franz Pflügl / Vienna}%
+taken by Franz Pflügl / Vienna)}%
 \label{fig:vienneseskyline}%
 \end{figure}
 
+From a more abstract point of view a skyline is made up of objects
+(buildings, maintains and such) which do not have another object
+closer and taller to the eye of the beholder. If we are only
+interested in the objects that are ``touching the sky'', we consider
+only the tallest object in each direction of view. On the other hand
+if we care about visiblity, an object is visible as long as there is
+no object closer and taller. We ask the alerted reader to excuse the
+simplifications we made here, the authors are aware of the concept of
+perspective projection and of the fact that the earth is not a disk.
+However, we will shortly see how this intuition matches a precise
+mathematical definition and a concept in the real of databases.
+
+
+
 \todo{3d skyline blocks, mathematica}{}
 
-\todo{give the intuition.}{}
-
-The skyline operator is important for supporting multi-criteria
-decision making applications.  Given a set of $d$-dimensional data
-points, the skyline consists of the points, called skyline points,
-which are not {\em dominated} by another data point.
+In the realm of database systems the skyline operator is important for
+supporting multi-criteria decision making applications.  Given a set
+of $d$-dimensional data points, the skyline consists of the points,
+called skyline points, which are not {\em dominated} by another data
+point.
 \citet{Borzsonyi2001} proposed a {\em skyline} extension of the SQL
 syntax with the form:
 
@@ -333,9 +364,9 @@ asymmetric and transitive. These properties are formalized as usual:
 \end{itemize}
 
 Non-transitive\index{non-transitive} preferences can be compute with
-the \todo{Best}{special font for algo names?} algorithm
-(\citep{Torlone2002, Ciaccia2004}), we will not study this approach in
-this paper.
+the BEST algorithm (\citep{Torlone2002, Ciaccia2004}), we will not
+study this approach in this paper. \todo{$k$-skylines are also
+non-transitive?}{}
 
 \begin{definition}
 \todo{}{}Let \relation{R} be a relation of schema \schema{R}.
@@ -1070,9 +1101,9 @@ used (we slightly reformatted the output to make it fit into the page with
 constraint):
 
 \begin{interactive}
-\sqlprompt{EXPLAIN ANALZYE} \rcomment{see that query plan and stats}
-\sqlpromptcont{SELECT * FROM a15d1e5s0idx} \rcomment{on relation ad1e50idx is an index defined}
-\sqlpromptcont{SKYLINE OF d1 min, d2 min, d3 min} \rcomment{we do a 3 dim skyline}
+\sqlprompt{EXPLAIN ANALZYE} \rcomment{see the query plan and execution statistics}
+\sqlpromptcont{SELECT * FROM a15d1e5s0idx} \rcomment{note: on relation ad1e50idx an index is defined}
+\sqlpromptcont{SKYLINE OF d1 min, d2 min, d3 min} \rcomment{we do a 3 dim skyline query}
 \sqlpromptcont{WITH} \rcomment{options for \inlinesql{SKYLINE OF} follow}
 \sqlpromptcont{  EF} \rcomment{use an elimination filter (EF)}
 \sqlpromptcont{    EFWINDOWSIZE=16} \rcomment{use 16 KB RAM and policy \inlinesql{ENTROPY} for EF}

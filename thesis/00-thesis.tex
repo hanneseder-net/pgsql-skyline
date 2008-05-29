@@ -77,6 +77,7 @@
 % eliminationScheme
 % },
  basicstyle=\small\ttfamily,
+% commentstyle=\rmfamily\itshape, % looks ugly
  breaklines=true,
         prebreak={\hbox{ \textcolor{blue}{$\rightarrow$}}}, postbreak={\hbox{\textcolor{blue}{$\hookrightarrow$ }}},
  classoffset=0,
@@ -120,6 +121,7 @@
 
 %%% Table of contents: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %\renewcommand{\contentsname}{Table of Contents}
+\pagestyle{fancy}
 \setcounter{tocdepth}{3}
 \tableofcontents
 
@@ -133,7 +135,6 @@
 \newpage
 
 %%% Chapter 1: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\pagestyle{fancy}
 \pagenumbering{arabic}
 \include{04-body}
 

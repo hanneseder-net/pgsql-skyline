@@ -1,8 +1,6 @@
 %%%      1         2         3         4         5         6         7        8
 %%% 567890123456789012345678901234567890123456789012345687901234567890123456790
 %%%
-%%% Introduction.
-%%%
 
 \svnInfo $Id$
 
@@ -22,6 +20,7 @@
 \newcommand\intersection{\cap}
 \newcommand\difference{\backslash}
 \newcommand\dominates{\ensuremath{\succ}\xspace}
+\newcommand\domanatedby{\ensuremath{\prec}\xspace}
 \newcommand\weakdominates{\ensuremath{\succeq}\xspace}
 
 \newcommand\inlinesql[1]{{\tt #1}}
@@ -33,6 +32,7 @@
 \newtheorem{lemma}{Lemma}
 \newtheorem{theorem}{Theorem}
 \newtheorem{example}{Example}
+\newtheorem{property}{Property}
 
 \newcommand\nt[1]{\textit{#1}}
 
@@ -65,6 +65,21 @@
 \label{#3}%
 }}%
 
+\lstdefinelanguage{pseudo}{
+	language=C,
+	mathescape=true, 
+	literate={:=}{{$\gets$}}1, 
+	morekeywords={function,begin,end,foreach,then}
+}
+
+
+
+%%%
+%%% CHAPTER: TODO
+%%%
+
+
+
 \chapter{TODO}
 
 \section{TODO}
@@ -74,6 +89,14 @@
 \item \todo{has the order in which the skyline dimensions are checked an effect?}{}
 \item \todo{show how Preference SQL ABOUT can be emulated}{}
 \end{itemize}
+
+
+
+%%%
+%%% CHAPTER: Introduction
+%%%
+
+
 
 \chapter{Introduction}
 \label{chap:introduction}
@@ -129,17 +152,19 @@ if we care about visiblity, an object is visible as long as there is
 no object closer and taller. We ask the alerted reader to excuse the
 simplifications we made here, the authors are aware of the concept of
 perspective projection and of the fact that the earth is not a disk.
-However, we will shortly see how this intuition matches a precise
-mathematical definition and a concept in the real of databases.
+%However, we will shortly see how this intuition matches a precise
+%mathematical definition and a concept in the real of databases.
 
 \bigskip
-In the realm of database systems the skyline operator is important for
-supporting multi-criteria decision making applications.  Given a set
-of $d$-dimensional data points, the skyline consists of the points,
-called skyline points, which are not {\em dominated} by another data
-point.
+In the realm of database systems the \emph{skyline operator} is
+important for supporting multi-criteria decision making applications.
+Given a set of $d$-dimensional data points, the \emph{skyline}
+consists of the points, called \emph{skyline points}, which are not
+{\em dominated} by another data point. One data point $r$ dominates
+another data $s$ point if it is at least has good as $s$ in all
+dimensions and better in at least one.
 \citet{Borzsonyi2001} proposed a {\em skyline} extension of the SQL
-syntax with the form:
+syntax with this form:
 
 \begin{sql}
 SELECT ... FROM ... WHERE ... \\
@@ -148,31 +173,135 @@ SKYLINE OF \textnormal{[}DISTINCT\textnormal{]} $a_1$ \textnormal{[}MIN$|$MAX$|$
 ORDER BY ...
 \end{sql}
 
-Since the introduction of the skyline operator \cite{Borzsonyi2001}, a
-number of secondary-memory algorithms have been developed for
-efficient skyline computation. These algorithms can be classified into
-two categories. The first one involves solutions that do not require
-any preprocessing on the underlying dataset. Algorithms such as
-{\em Block Nested Loops} (BNL) \cite{Borzsonyi2001}, 
-{\em Divide and Conquer} (D\&C) \cite{Borzsonyi2001}, 
-{\em Sort First Skyline} (SFS) \cite{Chomicki2003}, and
-{\em Linear Elimination Sort for Skyline} (LESS) \cite{Godfrey2005}
-belong to this category.
-The algorithms in the second category utilize different index structures
-such as sorted lists and R-trees to reduce the query costs.
-Well-known algorithms in this category include 
-{\em Bitmap} \cite{Tan2001}, 
-{\em Index} \cite{Tan2001},
-{\em Nearest Neighbor} (NN) \cite{Kossmann2002}, and
-{\em Branch and Bound} (BBS) \cite{Papadias2003, Papadias2005}.
+Computing the skyline is also known as the \emph{maximum vector
+problem} \citep{Kung1975, Preparata1985}. The terms \emph{skyline} and
+\emph{skyline operator} in the realm of databases were coined by
+\citet{Borzsonyi2001}. The following examples give a motivation why 
+\emph{skyline operator} is a good name for this type of
+\emph{preference queries}, they also illustrate the usage of the
+\inlinesql{DIFF} and \inlinesql{DISTINCT} keyword.
 
-The advantage of index-based algorithms is that they need to access
-only a portion of the dataset to compute the skyline, while
-non-index-based algorithms have to visit the whole dataset at least
-once.  However, index-based algorithms have to incur additional time
-and space costs for building and maintaining the indexes.  Comparisons
-of these methods are presented in several works
-\cite{Tan2001, Kossmann2002, Chomicki2003}.
+In figure~\ref{fig:threeDskyline} the yellow arrow indicates the
+direction of view and the colored cuboids should illustrate
+buildings. Table~\ref{tab:threeDskyline} shows the coordinate of the
+lower left edge of each building and gives them names ($a, b,
+\ldots$). The same color indicates the same $x$ coordinate. For $y$ we
+have only to cases \emph{front} and
+\emph{back}.
+
+\begin{example}[Which buildings are touching the sky?]\label{ex:touchsky}
+For sure building $c$ (the green in the backline) and building $f$
+(the blue one in the frontline) are part of the answer and $d$ and $e$
+are not.  As $a$ and $b$ do have the same height, we could take them
+both or make an arbitrary choice amoung $a$ and $b$.  We will later
+see that this tacking both or choose an arbitrary one can be
+influenced by the keyword \inlinesql{DISTINCT}. So overall, possible
+answers are $\{a, c, f\}$, $\{b, c, f\}$, or $\{a, b, c, f\}$.
+\end{example}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=100mm]{plots-misc/PlotSkyline3D}%
+\caption{Skyline of buildings}%
+\label{fig:threeDskyline}%
+\end{figure}
+
+\begin{table}[htbp]
+\centering
+\begin{tabular}{l|rrrll}
+id & x & y & z & color & row\\
+\hline
+$a$ & 0 & 1 & 1.5 & red & back \\
+$b$ & 0 & 0 & 1.5 & red & front \\
+$c$ & 1 & 1 & 1.25 & green & back \\
+$d$ & 1 & 0 & 1.0 & green & front \\
+$e$ & 2 & 1 & 0.5 & blue & back \\
+$f$ & 2 & 0 & 0.75 & blue & front
+\end{tabular}
+\caption{Data for Figure~\ref{fig:threeDskyline}}
+\label{tab:threeDskyline}
+\end{table}
+
+\begin{example}[Which buildings are visible?]\label{ex:visibility}
+To answer this question we have also to take into account how close a
+building as, i.e. the $y$ coordinate.  Building $a$ is covered by $b$
+and $e$ by $f$, we will later call this property \emph{dominance}. It
+is obvious that $c$ and $d$ are part of the answer. The complete
+answer is $\{b, c, d, f\}$.
+\end{example}
+
+The question from example~\ref{ex:touchsky} could be formalized in the
+following way:
+
+\begin{interactive}
+SELECT * FROM building SKYLINE OF x DIFF, z MAX;
+\end{interactive}
+
+\noindent
+in above query $a$ and $b$ will be part of the answer, will in the following
+it is up to the database system to make a choice between $a$ or $b$, as they 
+are equally good:
+
+\begin{interactive}
+SELECT * FROM building SKYLINE OF DISTINCT x DIFF, z MAX;
+\end{interactive}
+
+\noindent
+On the other hand the query for example~\ref{ex:visibility} looks like:
+
+\begin{interactive}
+SELECT * FROM building SKYLINE OF x DIFF, y MIN, z MAX;
+\end{interactive}
+
+\subsection{Why extending SQL?}
+\begin{itemize}
+\item \todo{skyline is within the expressiveness of SQL}{}
+\item \todo{easier to spec. that a correleted query / sql with except}{}
+\item \todo{faster to evaluate}{}
+\item \todo{new optimization opportuinities}{}
+\end{itemize}
+
+\subsection{Fields of Application}
+motivation: green computing: less cpu time,
+less computers, less energy --> safe the planet
+
+stocks: risk vs. costs (--> streaming skyline see [Tao2006])
+
+example of skyline
+
+when travelling by airplane: time vs. costs
+
+TODO: more dim: \#stops, total dist travel by bus: \#of visited cities
+
+it is shown on some website. which?
+
+Credit To: Ali (room mate)
+
+employee (salary, revenue, years in the company)
+
+
+
+% Research Questions for this Thesis
+\section{Focus of this Thesis}
+\todo{}{}
+\todo{We consinder only BNL, SFS and variants}{}
+
+\todo{}{}
+from \citep{Chaudhuri2006}:
+
+Special algorithms have been proposed for the case the whole relation
+fits into main memory \citep{Preparata1985}, nevertheless we do not
+take them into account as memory is always a short resource in a
+database scenario, either due to the number of concurrent users or
+limited total main memory, e.g. on a handheld device.
+
+The skyline operator \citep{Borzsonyi2001} filters out the
+\emph{interesting} points from a potentially large set of data
+points. The skyline operator returns the pareto optimal\index{pareto
+optimal} elements of a set. This is also know as maximum vector
+problem\index{maximum vector problem}.
+
+
 
 %All of the algorithms are implemented as stand-alone algorithms,
 In this paper, we present our work on evaluating skyline algorithms in
@@ -224,6 +353,9 @@ performance of a skyline query is sensitive to a number of parameters
 \cite{Godfrey2007}.  To achieve this goal, we conducted extensive
 experiments on the skyline implementations.
 
+
+\section{Main Results}
+\todo{}{}
 We discovered several \emph{hidden rules}, which are remarkably simple
 and useful, but hard to obtain from the theoretical investigation.  We
 expect that our exposition of experimental results on skyline
@@ -235,140 +367,6 @@ For the purpose of repeatability we have set up a website to present
 our experimental results. The source code, and the log-files from our
 experiments are accessible via
 \url{http://skyline.dbai.tuwien.ac.at/}.
-
-
-
-\subsection{Motivation}
-
-motivation: green computing: less cpu time,
-less computers, less energy --> safe the planet
-
-stocks: risk vs. costs (--> streaming skyline see [Tao2006])
-
-example of skyline
-
-when travelling by airplane: time vs. costs
-
-TODO: more dim: \#stops, total dist travel by bus: \#of visited cities
-
-it is shown on some website. which?
-
-Credit To: Ali (room mate)
-
-employee (salary, revenue, years in the company)
-
-\todo{}{}
-from \citep{Chaudhuri2006}:
-
-Special algorithms have been proposed for the case the whole relation
-fits into main memory \citep{Preparata1985}, nevertheless we do not
-take them into account as memory is always a short resource in a
-database scenario, either due to the number of concurrent users or
-limited total main memory, e.g. on a handheld device.
-
-The skyline operator \citep{Borzsonyi2001} filters out the
-\emph{interesting} points from a potentially large set of data
-points. The skyline operator returns the pareto optimal\index{pareto
-optimal} elements of a set. This is also know as maximum vector
-problem\index{maximum vector problem}.
-
-\subsection{Name of the Game}
-In this subsection we would like to give a little motiviation
-why \emph{skyline operator} is a good name for this type of
-\emph{preference queries}, it also illustrates the usage of the
-\inlinesql{DIFF} and \inlinesql{DISTINCT} keyword. 
-
-In figure~\ref{fig:threeDskyline} the yellow arrow indicates the
-direction of view and the colored cuboids should illustrate
-buildings. Table~\ref{tab:threeDskyline} shows the coordinate of the
-lower left edge of each building and gives them names ($a, b,
-\ldots$). The same color indicates the same $x$ coordinate. For $y$ we
-have only to cases \emph{front} and
-\emph{back}.
-
-\begin{example}[Which buildings are touching the sky?]\label{ex:touchsky}
-For sure building $c$ (the green in the backline) and building $f$
-(the blue one in the frontline) are part of the answer and $d$ and $e$
-are not.  As $a$ and $b$ do have the same height, we could take them
-both or make an arbitrary choice amoung $a$ and $b$.  We will later
-see that this tacking both or choose an arbitrary one can be
-influenced by the keyword \inlinesql{DISTINCT}. So overall, possible
-answers are $\{a, c, f\}$, $\{b, c, f\}$, or $\{a, b, c, f\}$.
-\end{example}
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=100mm]{plots-misc/PlotSkyline3D}%
-\caption{Skyline of buildings}%
-\label{fig:threeDskyline}%
-\end{figure}
-
-\begin{table}[htbp]
-\centering
-\begin{tabular}{l|rrrll}
-id & x & y & z & color & row\\
-\hline
-$a$ & 0 & 1 & 1.5 & red & back \\
-$b$ & 0 & 0 & 1.5 & red & front \\
-$c$ & 1 & 1 & 1.25 & green & back \\
-$d$ & 1 & 0 & 1.0 & green & front \\
-$e$ & 2 & 1 & 0.5 & blue & back \\
-$f$ & 2 & 0 & 0.75 & blue & front
-\end{tabular}
-\label{tab:threeDskyline}
-\caption{Data for Figure~\ref{fig:threeDskyline}}
-\end{table}
-
-\begin{example}[Which buildings are visible?]\label{ex:visibility}
-To answer this question we have also to take into account how close a
-building as, i.e. the $y$ coordinate.  Building $a$ is covered by $b$
-and $e$ by $f$, we will later call this property \emph{dominance}. It
-is obvious that $c$ and $d$ are part of the answer. The complete
-answer is $\{b, c, d, f\}$.
-\end{example}
-
-The question from example~\ref{ex:touchsky} could be formalized in the
-following way:
-
-\begin{interactive}
-SELECT * FROM building SKYLINE OF x DIFF, z MAX;
-\end{interactive}
-
-\noindent
-in above query $a$ and $b$ will be part of the answer, will in the following
-it is up to the database system to make a choice between $a$ or $b$, as they 
-are equally good:
-
-\begin{interactive}
-SELECT * FROM building SKYLINE OF DISTINCT x DIFF, z MAX;
-\end{interactive}
-
-\noindent
-On the other hand the query for example~\ref{ex:visibility} looks like:
-
-\begin{interactive}
-SELECT * FROM building SKYLINE OF x DIFF, y MIN, z MAX;
-\end{interactive}
-
-% Research Questions for this Thesis
-\section{Focus of this Thesis}
-\todo{}{}
-
-\subsection{We consinder only BNL, SFS and variants}
-\todo{}{}
-
-from \citep{Chauduri2006}
-
-In this paper, our focus is on algorithms that can be directly
-implemented in today's commercial database systems without the
-addition of new access methods (which would require addressing the
-associated challenges of maintenance with updates, concurrency
-control, etc.). Specifically, we consider the Block-nested-loop
-Algorithm [15], and the Block-nested-loop with Presorting [5].
-
-
-\section{Main Results}
-\todo{}{}
 
 
 \section{Typographical Conventions}
@@ -409,6 +407,12 @@ Section~\ref{sec:analysis} presents the extensive experiments over
 various data settings, followed by the analysis of the
 results. Section~\ref{sec:conclusion} concludes the paper and
 discusses future work.
+
+
+
+%%
+%% CHAPTER: Preliminaries
+%%
 
 
 
@@ -566,7 +570,7 @@ Let $\relation{S} = \skyline_C(\relation{R})$, it is clear that condition (\ref{
 \end{lemma}
 
 
-\subsection{Further notions}
+\subsection{Dominance and Anti-dominance regions}
 dominance, anti dominance region
 
 \todo{If a point is a skyline point can be answered by checking of the
@@ -617,6 +621,30 @@ $\omega_C(\relation R)$ already contains only the maximal elements
 according $\succ$, \todo{...}{complete}
 \end{proof}
 Since the skyline operator is a special case of \emph{winnow} operator, theorem \ref{the:skyline-idempotent} holds as well.
+
+
+\subsection{Independence of Attribute Order}
+
+The following property is a well known fact about the skyline operator:
+
+\begin{property}[Independence of Attribute Order]\label{the:attributeorder}
+The semantics of the skyline operator is independent from the order
+in which the attributes are specified in the query.
+\end{property}
+\begin{proof}
+\todo{proof}{}
+see equation~\ref{equ:skylinepf}
+\end{proof}
+
+To give a simple example the following query will yield the same
+result:
+
+\begin{interactive}
+SELECT * FROM a15d1e5 SKYLINE OF d1 MIN, d2 MIN;
+SELECT * FROM a15d1e5 SKYLINE OF d2 MIN, d1 MIN;
+\end{interactive}
+
+
 
 \subsection{Composition of Skyline Operator}
 \todo{For means of simplicity we assume set semantics?}{} 
@@ -763,7 +791,21 @@ $k$ tuples are found, or the entire relation is returned.
 \subsection{Monoton vs. linear scoring functions}\label{subsec:scoring}
 see \citep{Chomicki2002a} page 5, Theorem 4
 
-\subsection{Properties of Skyline Algorithms}
+from \citep{Borzsonyi2001}: One of the nice properties of the Skyline
+of a set $\mathcal{M}$ is that for any monotone scoring function
+$\mathcal{M} \rightarrow \mathbb{R}$, if $p \in \mathcal{M}$ maximizes
+that scoring function, then $p$ is in the Skyline.  In other words, no
+matter how you weight your personal preferences towards price and
+distance of hotles, you will find your favorite hotl in the Skyline.
+In addition, for every point $op$ in the Skyline, there exists a
+monotone scoring function such that $p$ maximizes that scoring
+function.  In other words, the Skyline does not contain any hotels
+which are nobody's favorite.
+
+\subsection{\inlinesql{SKYLINE OF DISTINCT} is \emph{not} expressible in SQL}
+\todo{proof it}{}
+
+\subsection{Classification of Skyline Algorithms}
 
 \todo{\citet{Kossmann2002} suggested a set of criteria for evaluating skyline algorithms:}{rephrase}
 
@@ -791,15 +833,52 @@ that may be optimal only for linear preference functions (as opposed
 to any monotone function).\todo{from \citep{Papadias2005}}{rephrase}
 
 
+
+%%
+%% CHAPTER: Related Works
+%%
+
+
+
 \chapter{Related Works}
 \label{chap:relatedworks}
-\section{Skyline Algorithms}
+\todo{}{}
+Since the introduction of the skyline operator \cite{Borzsonyi2001}, a
+number of secondary-memory algorithms have been developed for
+efficient skyline computation. These algorithms can be classified into
+two categories. The first one involves solutions that do not require
+any preprocessing on the underlying dataset. Algorithms such as
+{\em Block Nested Loops} (BNL) \cite{Borzsonyi2001}, 
+{\em Divide and Conquer} (D\&C) \cite{Borzsonyi2001}, 
+{\em Sort First Skyline} (SFS) \cite{Chomicki2003}, and
+{\em Linear Elimination Sort for Skyline} (LESS) \cite{Godfrey2005}
+belong to this category.
+The algorithms in the second category utilize different index structures
+such as sorted lists and R-trees to reduce the query costs.
+Well-known algorithms in this category include 
+{\em Bitmap} \cite{Tan2001}, 
+{\em Index} \cite{Tan2001},
+{\em Nearest Neighbor} (NN) \cite{Kossmann2002}, and
+{\em Branch and Bound} (BBS) \cite{Papadias2003, Papadias2005}.
+
+The advantage of index-based algorithms is that they need to access
+only a portion of the dataset to compute the skyline, while
+non-index-based algorithms have to visit the whole dataset at least
+once.  However, index-based algorithms have to incur additional time
+and space costs for building and maintaining the indexes.  Comparisons
+of these methods are presented in several works
+\cite{Tan2001, Kossmann2002, Chomicki2003}.
+
+\section{Main Memory Only Skyline Algorithms}
+\todo{}{}
+
+\section{Non-indexed based Skyline Algorithms}
 The skyline algorithms we have implemented are: BNL, SFS,
 BNL+EF and SFS+EF. EF stands for {\em Elimination Filter},
 which was introduced in \cite{Godfrey2005} as an essential 
 routine for the LESS algorithm. 
 
-\subsection{BNL}
+\subsection{Block Nested Loops (BNL)}
 BNL was implemented according to the algorithm proposed in \cite{Borzsonyi2001}.
 A {\em tuple window} is maintained in the main memory for storing
 the potential skyline tuples. Once the window becomes full,
@@ -809,16 +888,96 @@ lies in the iterator tree between the \texttt{ORDER BY}
 and the \texttt{GROUP BY} node (see Figure~\ref{fig:qp-agg-bnl-sort}),
 to directly reflect the intended semantic of the \texttt{SKYLINE OF}-extension
 to the SQL syntax.
+
 % NOTE: it is actually between HAVING and ORDER BY, but HAVING is done 
 % more or less in the GROUP BY, as the WHERE clause to some
 % extend is directly used in the SeqScan/IndexScan node
 
-%NOTE: I think we do not need that
-%
-%To achieve this, some more state information has 
-%the be maintained \todo{which information? please specify}.
 
-\subsection{SFS}
+
+\begin{table}[htbp]
+\centering
+\begin{tabular}{cp{100mm}}
+Symbol & Description \\
+\hline
+$\mathcal{I}$ & input for skyline computation (\emph{type}: set of $d$-dimensional points) \\
+$\mathcal{O}$ & output of skyline computation (\emph{type}: set of $d$-dimensional points) \\
+$\mathcal{T}$ & temporary file (\emph{type}: set of $d$-dimensional points) \\
+$\mathbb{W}$ & tuple window in main memory (\emph{type}: set of $d$-dimensional points with a timestamp value for each point) \\
+% TODO: add a rank for the tuple window?
+$p \dominates q$ & point $p$ dominates point $q$
+\end{tabular}
+\caption{Symbols used throughout the pseudo code}
+\label{tab:pseudocodesymboles}
+\end{table}
+
+
+
+\begin{figure}[htbp]
+\begin{lstlisting}[language=pseudo]
+function SkylineBNL($\mathcal{I}$)
+begin
+	// initialization
+	$\mathcal{O} \gets \emptyset$; $\mathcal{T} \gets \emptyset$; $\mathbb{W} \gets \emptyset$; $timestampIn \gets 0$; $timestampOut \gets 0$;
+
+outer:
+	while $\neg$EOF($\mathcal{I}$) do begin
+		// propagate points that have been compared to all
+		foreach $q \in \mathbb{W}$ do
+			if $q_{timestamp}$=$timestampIn$ then begin
+				append($\mathcal{O}$, $q$);
+				release($\mathbb{W}$, $q$);
+			end
+
+		// fetch the next point
+		$p \gets$ next($\mathcal{I}$);
+		$p_{timestamp} \gets timestampOut$;
+		$timestampIn \gets timestampIn + 1$;
+
+		// compare $p$ to all points in the tuple window $\mathbb{W}$
+		foreach $q \in \mathbb{W}$ do begin
+			if $q \dominates p$ then begin
+				free($p$);
+				continue outer;
+			end
+			else if $p \dominates q$ then
+				release($\mathbb{W}$, $q$);
+		end
+
+		// note: $p$ is skyline candidate
+		if hasfreespace($\mathbb{W}$) then
+			// add $p$ to the tuple window $\mathbb{W}$
+			add($\mathbb{W}$, $p$);
+		else begin
+			// write $p$ to the tempfile $\mathcal{T}$
+			append($\mathcal{T}$, $p$);
+			free($p$);
+			$timestampOut \gets timestampOut + 1$;
+		end
+
+		// continue with next run if necassary
+		if EOF($\mathcal{I}$) then begin
+			// switch to tempfile $\mathcal{T}$
+			$\mathcal{I} \gets \mathcal{T}$; $\mathcal{T} \gets \emptyset$;
+			$timestampIn \gets 0$; $timestampOut \gets 0$;
+		end
+	end
+
+	// flushing the tuple window
+	foreach $q \in \mathbb{W}$ do begin
+		append($\mathcal{O}$, $q$);
+		release($\mathbb{W}$, $q$);
+	end
+
+	return ($\mathcal{O}$);
+end
+\end{lstlisting}
+\caption{Pseudo code for Block-Nested-Loops (BNL) Algorithm}
+\label{code:bnl}
+\end{figure}
+
+
+\subsection{Sort First Skyline (SFS)}
 The implementation of SFS is according to \cite{Chomicki2003}. 
 It differs from BNL in that the data is topologically sorted at start-up time.
 We realize the sorting by utilizing the same physical operator as for 
@@ -837,11 +996,21 @@ the order of attributes, more indexes can be considered by the
 query optimizer for the access path selection.  We modified the query
 optimizer accordingly.
 
-%It is well known fact that the skyline operator is insensitive to the order of attributes.
-%To versatile all suitable access paths (indexes) we modified the query
-%optimizer accordingly.
 
-\subsection{SFS+EF}
+\begin{figure}[htbp]
+\begin{lstlisting}
+
+\end{lstlisting}
+\caption{Pseudo code for Sort-First-Skyline (SFS) Algorithm}
+\label{code:sfs}
+\end{figure}
+
+
+\subsection{Linear Elimination Sort for Skyline (LESS)}
+\todo{}{}
+\subsubsection{Elimination Filter (EF)}
+
+\subsection{SFS+EF (move to Implementation)}
 In \cite{Godfrey2005} Godfrey et al. proposed the LESS
 algorithm, which is an improvement of SFS due to the introduction of
 the concept of {\em elimination filter} (EF). With the original LESS
@@ -867,7 +1036,7 @@ The difference between EF and BNL is that EF does not write tuples to a
 temporary file if the tuple window is full, and that the relative order of tuples 
 going through the EF is preserved.
 
-\subsection{BNL+EF}
+\subsection{BNL+EF (move to Implementation)}
 Inspired from the idea of the elimination filter in LESS, we experimented
 a new combination of BNL and EF. That is, the elimination filter 
 is executed before the BNL algorithm. Since our implementation of the
@@ -875,6 +1044,9 @@ elimination filter is independent from the external sort routine,
 the coding of this variant is straightforward.
 It turns out that the algorithm BNL+EF is a substantial improvement
 to BNL.
+
+\subsection{Divide and Conquer (D\&C)}
+\todo{}{}
 
 \subsection{TODO}
 We experimented with four window policies for both the tuple
@@ -903,6 +1075,38 @@ BNL, SFS, BNL+EF, SFS+EF, upon each of which four
 window policies were applied: \emph{append}, \emph{prepend}, \emph{entropy} and \emph{random}.
 For BNL+EF and SFS+EF, we applied on both windows
 the same window policy in our experiments.
+
+\section{Indexed based Skyline Algortihms}
+\todo{}{}
+
+\subsection{Bitmap}
+\citep{Tan2001}
+\todo{}{}
+
+\subsection{Index}
+\citep{Tan2001}
+\todo{}{}
+
+\subsection{Nearest Neighbor (NN)}
+\citep{Kossmann2002}
+\todo{}{}
+
+\subsection{Branch and Bound (BBS)}
+\citep{Papadias2003, Papadias2005}
+\todo{}{}
+
+\section{Continous Skyline Computation}
+This is a whole other class of skyline algorithms, the task is here
+the initialy compute the skyline and that update the skyline of tuples
+are added or removed from the dataset, e.g. in a streaming scenario.
+\todo{}{}
+
+
+
+%%
+%% CHAPTER: Implementation
+%%
+
 
 
 \chapter{Implementation}
@@ -1463,6 +1667,11 @@ has five main components:
 
 \subsection{Selecting Indexes}
 
+%It is well known fact that the skyline operator is insensitive to the order of attributes.
+%To versatile all suitable access paths (indexes) we modified the query
+%optimizer accordingly.
+
+
 \subsection{Preserving relative tuple order}
 \label{sec:relative-tuple-order}
 
@@ -1597,6 +1806,9 @@ ist, aber d=2 macht skyline sinn.
 \label{sec:mnl}
 
 \subsection{Tuple Window}
+
+\todo{write about timestamp needed for BNL}{}
+
 \subsubsection{Placement Policies}
 \label{sec:tuplewindowpolicies}
 
@@ -1620,6 +1832,14 @@ edit \& continue in msvc.
 \subsection{Regression Testing}
 \todo{see \srcref{test/....}}{}
 \todo{see more extensive see perl script}{}
+
+
+
+%%
+%% CHAPTER: Results
+%%
+
+
 
 \chapter{Results}
 \label{chap:Results}
@@ -2520,7 +2740,7 @@ the most effective EF window policy.
 \subsection{Mixing window policies}
 \todo{show some effects of using different window policies for EF and BNL/SFS nodes}{}
 
-\subsection{Window size}
+\subsection{Window Size}
 \label{sec:analysis-window-size}
 \todo{}{}
 
@@ -2528,9 +2748,85 @@ the most effective EF window policy.
 \todo{}{}
 
 
+
 %%
-%% Summary
+%% CHAPTER: Future Work
 %%
+
+
+
+\chapter{Future work}
+
+\section{Index-based algorithms}
+
+In the future work we plan to implement and evaluate index-based algorithms 
+such as 
+{\em Index} \cite{Tan2001}, 
+{\em Nearest Neighbor} (NN) \cite{Kossmann2002}, and
+{\em Branch and Bound} (BBS) \cite{Papadias2003, Papadias2005}.
+
+\section{Speedup Tuple Comparison}
+We believe the concept of EF is very promising and plan to further
+improve its efficiency and effectiveness, e.g. to integrate it as a
+filter in the index scan code, to use other data structures and
+policies for the EF window, and to optimize the order of attributes
+when comparing two tuples.
+
+\section{Index Scan and SFS}
+As for SFS algorithms using indexes, what remains open is to
+investigate the behavior in case all skyline attributes and attributes
+in the select clause are part of the index, such that it suffices only
+to access the indexes for the query processing.  We believe this could
+yield good results.
+
+\section{Index scan for one dimensional skylines}
+Since one dimensional skylines are a little bit of limited use anyway
+we did not yet make an attempt to make use of an suitable index for
+skyline computation in the one dimensional case. The computation of
+distinct and non-distinct one dimensional skyline could be speedup by
+performing an index scan. In the distinct case start at the minimum or
+maximum respectivly and read a sinlge tuple. For the non-distinct case
+start at the right end of the index and read as long as the value does
+not change.
+
+\section{Speedups for low cardinalty domains}
+%
+use special algorithms if we deal with domains with small
+cardinalites, \citep{Preisinger2006, Preisinger2007, Morse2007}
+
+\section{Speedups for \inlinesql{SKYLINE OF DIFF}}
+%
+Use a seperate tuple window for each \inlinesql{SKYLINE OF DIFF}
+group, so only the tuples with the same values on the
+\inlinesql{SKYLINE OF DIFF} attributes have to be compared to each
+other. This reduction of comparision would yield an overall speedup.
+In order to avoid an unbounded number of tuple windows instead of
+having a tuple window for each \inlinesql{SKYLINE OF DIFF} group
+hashing could be engaded, i.e. allocate a fixed number of tuple
+windows and hash each \inlinesql{SKYLINE OF DIFF} group into one tuple
+window.
+
+\section{Extensions}
+
+\subsection{Sampling}
+
+In the absence of statistics for the relation in questions, sampling
+could be engadged. \todo{cite}{Chaurduri2006}
+
+\subsection{$K$-skyband}
+implement $K$-skyband (maintaine dominance count in tuple window) do
+so for BNL and SFS.
+
+\subsection{$k$-dominance skyline}
+\todo{is this easy possible?}{}
+
+
+
+%%%
+%%% CHAPTER: Summary
+%%%
+
+
 
 \chapter{Summary}
 
@@ -2543,70 +2839,6 @@ elimination filter is effective only if the selectivity factor of the
 dataset is not more than $0.1$; (2) for datasets up to $500$ tuples
 and of relative small dimension (e.g. up to five), BNL performs the
 best in all aspects.
-
-\section{Futher work}
-
-In the future work we plan to implement and evaluate index-based algorithms 
-such as 
-{\em Index} \cite{Tan2001}, 
-{\em Nearest Neighbor} (NN) \cite{Kossmann2002}, and
-{\em Branch and Bound} (BBS) \cite{Papadias2003, Papadias2005}.
-%
-We believe the concept of EF is very promising and plan to further
-improve its efficiency and effectiveness, e.g. to integrate it as a
-filter in the index scan code, to use other data structures and
-policies for the EF window, and to optimize the order of attributes
-when comparing two tuples.
-
-As for SFS algorithms using indexes, what remains open is to
-investigate the behavior in case all skyline attributes and attributes
-in the select clause are part of the index, such that it suffices only
-to access the indexes for the query processing.  We believe this could
-yield good results.
-
-\subsection{Index scan for one dimensional skylines}
-Since one dimensional skylines are a little bit of limited use anyway
-we did not yet make an attempt to make use of an suitable index for
-skyline computation in the one dimensional case. The computation of
-distinct and non-distinct one dimensional skyline could be speedup by
-performing an index scan. In the distinct case start at the minimum or
-maximum respectivly and read a sinlge tuple. For the non-distinct case
-start at the right end of the index and read as long as the value does
-not change.
-
-\subsection{Speedups for low cardinalty domains}
-%
-use special algorithms if we deal with domains with small
-cardinalites, \citep{Preisinger2006, Preisinger2007, Morse2007}
-
-\subsection{Speedups for \inlinesql{SKYLINE OF DIFF}}
-%
-Use a seperate tuple window for each \inlinesql{SKYLINE OF DIFF}
-group, so only the tuples with the same values on the
-\inlinesql{SKYLINE OF DIFF} attributes have to be compared to each
-other. This reduction of comparision would yield an overall speedup.
-In order to avoid an unbounded number of tuple windows instead of
-having a tuple window for each \inlinesql{SKYLINE OF DIFF} group
-hashing could be engaded, i.e. allocate a fixed number of tuple
-windows and hash each \inlinesql{SKYLINE OF DIFF} group into one tuple
-window.
-
-\subsection{Extensions}
-
-\subsubsection{Sampling}
-
-In the absence of statistics for the relation in questions, sampling
-could be engadged. \todo{cite}{Chaurduri2006}
-
-\subsubsection{$K$-skyband}
-implement $K$-skyband (maintaine dominance count in tuple window) do
-so for BNL and SFS.
-
-\subsubsection{$k$-dominance skyline}
-\todo{is this easy possible?}{}
-
-
-
 
 
 

@@ -44,6 +44,12 @@
 \newcommand\sqlpromptcont[1]{db-\# {\textbf{##1}}}
 \newcommand\comment[1]{{\rmfamily\textit{##1}}}
 \newcommand\rcomment[1]{\hfill\comment{##1}}
+\newcommand\commentskip{{\vspace{3pt}}}
+%\newcommand\prebreak{\hbox to 1em{\textcolor{blue}{\ensuremath{\hookleftarrow}}}}
+%\newcommand\postbreak{\hbox to 1em{\textcolor{blue}{\ensuremath{\hookrightarrow}}}}
+\newcommand\prebreak{\textcolor{blue}{\ensuremath{\hookleftarrow}}}
+\newcommand\postbreak{ \kern-1em\hbox to 1em{\textcolor{blue}{\ensuremath{\rightarrow}}\hss}}
+\newcommand\ellipsis{\textcolor{blue}{\ensuremath{[\ldots]}}}%
 \begingroup\small\list{}{\listparindent 0\p@\itemindent\listparindent\leftmargin15\p@\rightmargin15\p@}\item[]\begin{alltt}}{\end{alltt}\endlist\endgroup}
 
 \newdimen\onecolumnwidth
@@ -383,20 +389,31 @@ For interactive input and output we will show our typed input in a \texttt{\bfse
 -------+-----------------------+-----------------------
    417 |     0.660430708919594 |    0.0734207719527077
   1329 |    0.0486199019148477 |     0.663867116113964
-...\rcomment{53 rows omitted}
+\ellipsis\rcomment{53 rows omitted}
  98953 |     0.136247931652335 |     0.607638615081091
 (56 rows)
+
+\sqlprompt{EXPLAIN ANALYZE SELECT * FROM a2d1e5s0} \prebreak \rcomment{long lines are wrapped with \prebreak and \textcolor{blue}{\ensuremath{\rightarrow}}}
+   \postbreak \textbf{SKYLINE OF d1 MIN, d2 MIN;}
+\ellipsis\rcomment{omitted output is indicated with \ellipsis}
 
 \sqlprompt{\ttbackslash{}q}\rcomment{quit psql}
 \shprompt{}\rcomment{back at the shell prompt}
 \end{interactive}
 
 The example above also illustrates two other concepts: ``\texttt{\$}''
-indicates a shell prompt and ``\texttt{db=\#}'' indicates the prompt for
-PostgreSQL interactive terminal \texttt{psql}. Furthermore
+indicates a shell prompt and ``\texttt{db=\#}'' indicates the prompt
+for PostgreSQL interactive terminal \texttt{psql}. Furthermore
 ``\texttt{db-\#}'' is displayed when \texttt{psql} is waiting for more
 input. All of them are used throughtout the text.
 
+As long as it did not change the sematics of the input or output we
+took the freedom to add and remove whitespace in order to increase
+readability, to emphasize a certain point, or just to work around the
+80 columns limitation.  Where extra long lines are wrapped we inserted
+``$\hookleftarrow$'' before the break and ``$\rightarrow$'' after the break.
+Furthermore at certain points we even allowed ourselfs to strip some
+output, we indicated such omissions by an ellipsis (``$[\ldots]$'').
 
 \section{Further Organization}
 \todo{}{}
@@ -835,13 +852,13 @@ to any monotone function).\todo{from \citep{Papadias2005}}{rephrase}
 
 
 %%
-%% CHAPTER: Related Works
+%% CHAPTER: Existing Skyline Algorithms
 %%
 
 
 
-\chapter{Related Works}
-\label{chap:relatedworks}
+\chapter{Existing Skyline Algorithms}
+%\label{chap:relatedworks}
 \todo{}{}
 Since the introduction of the skyline operator \cite{Borzsonyi2001}, a
 number of secondary-memory algorithms have been developed for
@@ -1101,6 +1118,8 @@ the initialy compute the skyline and that update the skyline of tuples
 are added or removed from the dataset, e.g. in a streaming scenario.
 \todo{}{}
 
+\section{Implemented Algorithms}
+\todo{talking about the methods you have implemented.}{}
 
 
 %%
@@ -1419,28 +1438,28 @@ constraint):
 \sqlpromptcont{    WINDOWPOLICY=PREPEND}
 \sqlpromptcont{  NOINDEX;} \rcomment{do not use an available index access path}
 
-                                     QUERY PLAN
------------------------------------------------------------------------------------
- Skyline  (cost=25106.90..25107.06 rows=9 width=124) \rcomment{estimated} 
-     (actual time=329.052..342.313 rows=196 loops=1) \rcomment{actual}
+                                    QUERY PLAN                                   
+---------------------------------------------------------------------------------
+ Skyline  (cost=25106.90..25107.06 rows=9 width=124) \prebreak\rcomment{estimated} 
+   \postbreak (actual time=329.052..342.313 rows=196 loops=1) \rcomment{actual}
    Skyline Attr: d1, d2, d3
    Skyline Method: sfs 3 dim \rcomment{3 dim and SFS}
    Skyline Stats: passes=1 rows=1303 \rcomment{some stats on the SFS node}
    Skyline Window: size=512k policy=prepend \rcomment{as requested}
    Skyline Cmps: tuples=25953 fields=62229 \rcomment{# of comparisons}
-   ->  Sort  (cost=25104.70..25104.86 rows=66 width=124) 
-           (actual time=329.046..329.564 rows=1303 loops=1)
+   ->  Sort  (cost=25104.70..25104.86 rows=66 width=124) \prebreak
+         \postbreak (actual time=329.046..329.564 rows=1303 loops=1)
          Sort Key: d1, d2, d3
          Sort Method:  quicksort  Memory: 368kB
-         ->  Elimination Filter  (cost=24852.69..25102.69 rows=66 width=124) 
-                 (actual time=0.088..325.329 rows=1303 loops=1)
+         ->  Elimination Filter  (cost=24852.69..25102.69 rows=66 width=124) \prebreak
+               \postbreak (actual time=0.088..325.329 rows=1303 loops=1)
                Elim Filter Attr: d1, d2, d3
                Elim Filter Method: elimfilter 3 dim
                Elim Filter Stats: passes=1 rows=
                Elim Filter Window: size=16k policy=entropy \rcomment{as requested}
                Elim Filter Cmps: tuples=313895 fields=828555
-               ->  Seq Scan on a15d1e5s0  (cost=0.00..2924.00 rows=100000 width=124) 
-                       (actual time=0.043..71.488 rows=100000 loops=1)
+               ->  Seq Scan on a15d1e5s0  (cost=0.00..2924.00 rows=100000 \prebreak
+                     \postbreak width=124) (actual time=0.043..71.488 rows=100000 loops=1)
 \rcomment{the effect of \inlinesql{NOINDEX} can be seen here as no \texttt{IndexScan} is used}
  Total runtime: 343.200 ms
 (17 rows)
@@ -1917,6 +1936,7 @@ this paper are based on version 8.3.0 of PostgreSQL with our patch for
 the skyline operator applied.
 
 \subsection{Lesson learned}
+\label{sec:lessonlearned}
 A lesson we have painfully learned during our experiments is to
 minimize all possible influences on the runs to avoid skewed
 results. This esspecially includes: screen savers, power saving or
@@ -2228,7 +2248,7 @@ CREATE TABLE "i3d10" (id int, d1 float, d2 float, d3 float);
 COPY "i3d10" (id, d1, d2, d3) FROM STDIN DELIMITERS ',' CSV QUOTE '''';
 1,0.000000000000000e+00,6.900010321708401e-01,5.054183972559023e-01
 2,5.914905399975788e-01,5.547849133400177e-01,3.784288188342139e-01
-...\rcomment{7 rows omitted}
+\ellipsis\rcomment{7 rows omitted}
 10,8.585111004572880e-01,9.898449857671955e-02,8.770675234855467e-01
 \ttbackslash.
 \end{interactive}
@@ -2277,7 +2297,7 @@ function can be used as follows:
 ----+--------------------+--------------------
   1 |  0.170828036112165 |  0.749901980510867
   2 | 0.0963716553972902 |  0.870465227342427
-...\rcomment{7 rows omitted}
+\ellipsis\rcomment{7 rows omitted}
  10 |  0.715538595204958 | 0.0830042460388524
 (10 rows)
 
@@ -2288,7 +2308,7 @@ function can be used as follows:
 ----+-------------------+-------------------+-------------------
   1 | 0.482522432069401 | 0.327330244422693 | 0.207248995528228
   2 | 0.448836206689892 | 0.512027726159258 | 0.600054676092416
-...\rcomment{7 rows omitted}
+\ellipsis\rcomment{7 rows omitted}
  10 | 0.319189108559988 | 0.407713612758059 |  0.30165467053249
 (10 rows)
 
@@ -2330,13 +2350,13 @@ following why (see \srcref{contrib/randdataset/randdataset.sql.in}):
 
 \begin{interactive}
 \sqlprompt{SELECT rds.* FROM rds2d('indep', 10, 0) AS rds;}
-\rcomment{output completely omitted, as it is the same as above}
+\ellipsis\rcomment{output completely omitted, as it is the same as above}
 
 \sqlprompt{SELECT rds.* FROM rds3d('corr', 10, 0) AS rds;}
-\rcomment{same here}
+\ellipsis\rcomment{same here}
 
 \sqlprompt{SELECT rds.* FROM rds3d('anti', 20, 0) AS rds;}
-\rcomment{same here}
+\ellipsis\rcomment{same here}
 \end{interactive}
 
 
@@ -2439,6 +2459,158 @@ in case the data are stored on disk
 \section{Experimental Environment}
 \todo{}{}
 
+In total we scheduled $301{,}196$ runs batched up in $18{,}072$ jobs
+consisting of $454{,}782$ queries in total with a total amount
+$17{,}154{,}401{,}205.424\textnormal{ms}
+\approx 200\textnormal{days}$ CPU time.  These figures do not include
+the work we had to repeat due to a bug we discovered in our code and
+the runs that have been skewed by automatic software update, screen
+savers and so and so forth (cf. section~\ref{sec:lessonlearned}).  The
+workload was spread across seven computers (SKY01, $\ldots$, SKY07),
+and these computers have been busy for about six weeks.
+
+SKY00 % DMDB2 ok we cheat here
+...\todo{directory layout}{}
+
+
+We are using the fact that ``\texttt{--}'' starts a single line
+comment in SQL, by means of that we can safely pass any extra
+information through SQL processor \texttt{psql} to the post processing
+steps. In our case to the programs that parse and analyze the log
+files.
+
+\todo{describe js.pl}{}
+
+\begin{figure}[htbp]
+\begin{interactive}
+--<comment>
+explain analyze select * from a15d1e5s0;
+--</comment>
+--<query runid=bnl.ef.entropy.entropy.a15d1e5s0.5>
+explain analyze select * from a15d1e5s0 \prebreak
+  \postbreak skyline of d1 min, d2 min, d3 min, d4 min, d5 min \prebreak
+  \postbreak with bnl windowpolicy=entropy ef efwindowpolicy=entropy;
+--</query>
+--<query runid=sfs.ef.entropy.entropy.a15d1e5s0.5>
+explain analyze select * from a15d1e5s0 \prebreak
+  \postbreak skyline of d1 min, d2 min, d3 min, d4 min, d5 min \prebreak
+  \postbreak with sfs windowpolicy=entropy ef efwindowpolicy=entropy;
+--</query>
+\end{interactive}
+\caption{A snipped from a job file, containing a setup query and two runs}
+\label{fig:jobfile}
+\end{figure}
+
+
+%%%      1         2         3         4         5         6         7        8
+%%% 567890123456789012345678901234567890123456789012345687901234567890123456790
+
+\begin{figure}[htbp]
+\begin{interactive}
+--<pid pid=SKY07/>\rcomment{the pid identifies the machine the job ran on}
+--<comment>
+explain analyze select * from a15d1e5s0;
+                                    QUERY PLAN                                   
+---------------------------------------------------------------------------------
+ Seq Scan on a15d1e5s0  (cost=0.00..2924.00 rows=100000 width=124) \prebreak
+   \postbreak (actual time=0.010..48.112 rows=100000 loops=1)
+ Total runtime: 79.093 ms
+(2 rows)
+
+--</comment>
+--<query runid=bnl.ef.entropy.entropy.a15d1e5s0.5>
+explain analyze select * from a15d1e5s0 \prebreak
+  \postbreak skyline of d1 min, d2 min, d3 min, d4 min, d5 min
+  \postbreak with bnl windowpolicy=entropy ef efwindowpolicy=entropy;
+                                    QUERY PLAN                                   
+---------------------------------------------------------------------------------
+ Skyline  (cost=457884.24..457886.07 rows=79 width=124) \prebreak
+   \postbreak (actual time=10618.204..11076.301 rows=4550 loops=1)
+... \rcomment{we skip this query plan here as the one below is more representative}
+--</query>
+--<query runid=sfs.ef.entropy.entropy.a15d1e5s0.5>
+explain analyze select * from a15d1e5s0 \prebreak
+  \postbreak skyline of d1 min, d2 min, d3 min, d4 min, d5 min \prebreak
+  \postbreak with sfs windowpolicy=entropy ef efwindowpolicy=entropy;
+                                    QUERY PLAN
+---------------------------------------------------------------------------------
+ Skyline  (cost=458169.07..458170.90 rows=79 width=124) \prebreak
+   \postbreak (actual time=672.662..5747.821 rows=4550 loops=1)
+   Skyline Attr: d1, d2, d3, d4, d5
+   Skyline Method: sfs 5 dim
+   Skyline Stats: passes=2 rows=27223, 1599
+   Skyline Window: size=1024k policy=entropy
+   Skyline Cmps: tuples=15109830 fields=37876691
+   ->  Sort  (cost=457807.96..457809.79 rows=732 width=124) \prebreak
+         \postbreak (actual time=672.653..712.584 rows=27223 loops=1)
+         Sort Key: d1, d2, d3, d4, d5
+         Sort Method:  external merge  Disk: 3816kB
+         ->  Elimination Filter  (cost=457523.13..457773.13 rows=732 width=124) \prebreak
+               \postbreak (actual time=0.014..597.068 rows=27223 loops=1)
+               Elim Filter Attr: d1, d2, d3, d4, d5
+               Elim Filter Method: elimfilter 5 dim
+               Elim Filter Stats: passes=1 rows=
+               Elim Filter Window: size=8k policy=entropy
+               Elim Filter Cmps: tuples=1263179 fields=3533862
+               ->  Seq Scan on a15d1e5s0  (cost=0.00..2924.00 rows=100000 \prebreak
+                     \postbreak width=124) (actual time=0.009..43.352 rows=100000 loops=1)
+ Total runtime: 5750.614 ms
+(17 rows)
+
+--</query>
+\end{interactive}
+\caption{An example for a raw log file}
+\label{fig:logfile}
+\end{figure}
+
+We wrote a little perl script \texttt{qp2log} which transforms the raw
+log files (cf. figure~\ref{fig:logfile} into CSV format with the
+columns \texttt{runid}, \texttt{name} and \texttt{value}, and the
+content of the raw log file is preserved as comment prefixed with
+``\texttt{\#}'' (cf. figure~\ref{fig:parsedlogfile}). This makes it
+easy to use
+\texttt{grep -v "\^{ }\#"} as filter in the pipeline, while on the other hand
+being able to verify \texttt{qp2log} is working correctly, which was
+helpful during the development of \texttt{qp2log}.
+
+\begin{figure}[htbp]
+\begin{interactive}
+\comment{All input is preserved as comment, where comment lines start with ``#''.\commentskip}
+#--<pid pid=SKY07/>\rcomment{the pid identifies the machine the job ran on}
+#--<comment>
+#explain analyze select * from a15d1e5s0;
+# \ellipsis\rcomment{the query plan is as in figure \ref{fig:logfile}}
+#--</comment>
+#--<query runid=bnl.ef.entropy.entropy.a15d1e5s0.5>\commentskip
+\comment{For the query sections all relevant information from the query plan is parsed into CSV format with the columns \texttt{runid}, \texttt{name} and \texttt{value}.\commentskip{}}
+"bnl.ef.entropy.entropy.a15d1e5s0.5","method","bnl.ef.entropy.entropy"
+\ellipsis
+"bnl.ef.entropy.entropy.a15d1e5s0.5","skyline.rows","4550"
+"bnl.ef.entropy.entropy.a15d1e5s0.5","skyline.passes","2"
+"bnl.ef.entropy.entropy.a15d1e5s0.5","skyline.passes.rows","27223, 1396"
+\ellipsis\commentskip
+\comment{Please note that the query and query plan are preserved below the data in CSV format.\commentskip{}}
+#<queryplan>
+#explain analyze select * from a15d1e5s0 skyline of d1 min, d2 min, \ellipsis
+#                                    QUERY PLAN
+#--------------------------------------------------------------------------------
+# Skyline  (cost=457884.24..457886.07 rows=79 width=124)
+# \ellipsis\rcomment{the query plan is as in figure \ref{fig:logfile}}
+#</queryplan>
+#--</query>
+#--<query runid=sfs.ef.entropy.entropy.a15d1e5s0.5>
+"sfs.ef.entropy.entropy.a15d1e5s0.5","method","sfs.ef.entropy.entropy"
+"sfs.ef.entropy.entropy.a15d1e5s0.5","skyline.est.cost","458169.07..458170.90"
+"sfs.ef.entropy.entropy.a15d1e5s0.5","skyline.est.cost.start","458169.07"
+\ellipsis\rcomment{similar for the second run}
+#<queryplan>
+# \ellipsis\rcomment{as above, original query plan is preserved as comment}
+#</queryplan>
+#--</query>
+\end{interactive}
+\caption{A log file parsed with \texttt{qp2log}}
+\label{fig:parsedlogfile}
+\end{figure}
 
 \section{Comparisons and Analysis}
 \label{sec:analysis}

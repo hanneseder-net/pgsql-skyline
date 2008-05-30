@@ -99,10 +99,55 @@
     \@starttoc{toc}%
     \if@restonecol\twocolumn\fi
     }
-\makeatother
+
+\newcommand\newpagechapter{\if@openright\cleardoublepage\else\clearpage\fi}
+
+\renewenvironment{thebibliography}[1]
+     {\chapter*{\bibname}%
+      \addcontentsline{toc}{chapter}{\bibname}%
+      \@mkboth{\MakeUppercase\bibname}{\MakeUppercase\bibname}%
+      \list{\@biblabel{\@arabic\c@enumiv}}%
+           {\settowidth\labelwidth{\@biblabel{#1}}%
+            \leftmargin\labelwidth
+            \advance\leftmargin\labelsep
+            \@openbib@code
+            \usecounter{enumiv}%
+            \let\p@enumiv\@empty
+            \renewcommand\theenumiv{\@arabic\c@enumiv}}%
+      \sloppy
+      \clubpenalty4000
+      \@clubpenalty \clubpenalty
+      \widowpenalty4000%
+      \sfcode`\.\@m}
+     {\def\@noitemerr
+       {\@latex@warning{Empty `thebibliography' environment}}%
+      \endlist}
 
 
 \makeindex
+
+\renewenvironment{theindex}
+               {\if@twocolumn
+                  \@restonecolfalse
+                \else
+                  \@restonecoltrue
+                \fi
+                %\twocolumn[\@makeschapterhead{\indexname}]%
+  \twocolumn%
+  \chapter*{\indexname}%
+  \addcontentsline{toc}{chapter}{\indexname}%
+                \@mkboth{\MakeUppercase\indexname}%
+                        {\MakeUppercase\indexname}%
+                \thispagestyle{plain}\parindent\z@
+                \parskip\z@ \@plus .3\p@\relax
+                \columnseprule \z@
+                \columnsep 35\p@
+                \let\item\@idxitem}
+               {\if@restonecol\onecolumn\else\clearpage\fi}
+
+\makeatother
+
+
 \begin{document}
 
 \svnInfo $Id$
@@ -132,20 +177,26 @@
 %%% TODO: Is a list of tables really required?
 \listoftables
 \addcontentsline{toc}{chapter}{List of Tables}
-\newpage
+\newpagechapter
 
 %%% Chapter 1: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \pagenumbering{arabic}
 \include{04-body}
 
 %%% Appendix: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\appendix
+%\appendix
 
-\skylinebibliography
-\addcontentsline{toc}{chapter}{Bibliography}
+\newpagechapter
+%\addcontentsline{toc}{chapter}{Bibliography}
+\bibliographystyle{plainnat}
+\bibliography{skyline}
 
-\newpage
-\addcontentsline{toc}{chapter}{Index}
+
+\newpagechapter
+\index{recursion|see{recursion}}
+\index{recursion!mutual|see{mutual recursion}}
+\index{mutual recursion|see{recursion, mutual}}
 \printindex
+
 
 \end{document}

@@ -1913,18 +1913,21 @@ The memory chunk used by the PostgreSQL memory allocation function
 
 For the experiments using an index, a duplicate of the same set of
 tables was used, including six indexes, where index $k$ is an index on
-$d_1, \ldots, d_k$. This all sums up to 126 tables and an database of
-approximately 1 GB.  
-For most of our experiments we did not consider tables with more than
-100k tuples, as the runtime for a 15 dimensional skyline query on 100k
-tuples went up to 30 minutes.
+$d_1, \ldots, d_k$.  This all sums up to 126 tables and an database of
+approximately 1 GB.  For most of our experiments we did not consider
+tables with more than 100k tuples, as the runtime for a 15 dimensional
+skyline query on 100k tuples went up to 30 minutes. Consult
+Section~\ref{sec:totalworkload} for the total computational workload
+done in the experiments.
 
 % TODO hot cache, we ensure the table is in the shared buffer, before
 % running the query, as each of the implemented methods has to read the
 % entire table anyway
 
-All experiments were carried out with a \emph{hot disk cache}, i.e. due to
-appropriate queries all pages were in the shared buffers.
+All experiments were carried out with a \emph{hot disk cache},
+i.e. due to appropriate queries all pages were in the shared
+buffers. See Section~\ref{sec:experimentalenvironment} for more
+details.
 
 
 \subsection{Source Code}
@@ -2457,41 +2460,105 @@ in case the data are stored on disk
 
 
 \section{Experimental Environment}
-\todo{}{}
+\label{sec:experimentalenvironment}
+We believe the systems environment in which we carried out our
+experiments is interessting on its own and therefore we sketch it in
+this section.
+%
+First of all we would like to give some definitions of terms we use to
+describe the experimental environment and how the relate to each
+other. To distigues these terms from the general terms with the same
+name we start them with an upper case letter, i.e. Job vs. job.
 
-In total we scheduled $301{,}196$ runs batched up in $18{,}072$ jobs
-consisting of $454{,}782$ queries in total with a total amount
-$17{,}154{,}401{,}205.424\textnormal{ms}
-\approx 200\textnormal{days}$ CPU time.  These figures do not include
-the work we had to repeat due to a bug we discovered in our code and
-the runs that have been skewed by automatic software update, screen
-savers and so and so forth (cf. section~\ref{sec:lessonlearned}).  The
-workload was spread across seven computers (SKY01, $\ldots$, SKY07),
-and these computers have been busy for about six weeks.
+\begin{definition}[Query]
+A Query corresponds to a single SQL query with meta data embedded in
+comments.
+\end{definition}
 
-SKY00 % DMDB2 ok we cheat here
-...\todo{directory layout}{}
+\noindent
+To embed meta data we are using the fact that ``\texttt{--}'' starts a
+single line comment in SQL, by means of that we can safely pass any
+extra information through SQL processor \texttt{psql} to the post
+processing steps. In our case to the programs that parse and analyze
+the log files. We use only the following types of meta data (see
+Figure~\ref{fig:jobfile}, \ref{fig:logfile}
+and~\ref{fig:parsedlogfile}):
 
+\begin{itemize}
+\item \texttt{--<pid pid=}\textit{pid}\texttt{/>}; \textit{pid} identifies the machine the Job ran on.
+\item \texttt{--<comment>} and \texttt{--</comment>}; a Setup Query, see next definition. Query between these tags are of course executed, but in a later stage just commented out.
+\item \texttt{--<query runid=}\textit{runid}\texttt{>} and \texttt{--</query>}; A Run cf. definition below.  Please not that the corresponding Setup Queries are not nested within the Run they just precede the Run.
+\item \texttt{--<queryplan>} and \texttt{--</queryplan>}; is used in a later stage to preserve the query plan in the comment, but its not used otherwise.
+\end{itemize}
 
-We are using the fact that ``\texttt{--}'' starts a single line
-comment in SQL, by means of that we can safely pass any extra
-information through SQL processor \texttt{psql} to the post processing
-steps. In our case to the programs that parse and analyze the log
-files.
+In our experimental studies our focus is on the execution
+plan\footnote{We use execution plan and query plan interchangeable.} 
+and the actual run times and not on the output of a query. The output
+of a query was of interesst for us, when we did regression testing to
+ensure our implementation is correct. To accomblish this we prefixed
+our queries with \inlinesql{EXPLAIN ANALYZE}. \inlinesql{EXPLAIN}
+alone just shows the execution plan of a statement without actually
+running it, while \inlinesql{EXPLAIN ANALYZE} carries out the command
+and shows the actual run times. See PostgreSQL documentation on
+\postgresdocu{sql-explain.html}{EXPLAIN} for more details.
 
-\todo{describe js.pl}{}
+\begin{definition}[Setup Query]
+A Setup Query is a query whos soly purpose is to setup things up for
+the query that is going to be profiled.
+\end{definition}
+
+\noindent
+We issued these types of query to prim the cache. Setup queries
+typically look like this:
+
+\begin{interactive}
+EXPLAIN ANALYZE SELECT * FROM a15d1e5s0;
+\end{interactive}
+
+\noindent
+or with an index
+
+\begin{interactive}
+EXPLAIN ANALYZE SELECT * FROM a15d1e5s0idx ORDER BY d1, d2;
+\end{interactive}
+
+\noindent
+and given enough shared buffers the entire relation and the used index
+will be in the disk cache afterwards. As we set the shared buffer size
+why larger than our biggest relation we the assoziated indexes this
+was always the case.
+
+\begin{definition}[Run]
+A Run comprises zero, one or more Setup Queries and the Query that is
+going to be profiled.
+\end{definition}
+
+\noindent
+Each Run is identified by unique \texttt{runid} and besides this
+general definition in our case a Run had zero or one Setup Query and
+we often grouped runs in such a way, that two runs share a single
+Setup Query (cf. Figure~\ref{fig:jobfile}).
+
+\begin{definition}[Job]
+A Job comprises of one or more Runs batched together in a file.
+\end{definition}
+
+\noindent
+A Job is the smallest unit subject to workload distribution (see
+Section~\ref{sec:jobscheduling}) and is stored in a \texttt{.sql} file
+and typically looks like displayed in Figure~\ref{fig:jobfile}.
 
 \begin{figure}[htbp]
 \begin{interactive}
---<comment>
+--<comment>\rcomment{the setup query}
 explain analyze select * from a15d1e5s0;
 --</comment>
---<query runid=bnl.ef.entropy.entropy.a15d1e5s0.5>
+--<query runid=bnl.ef.entropy.entropy.a15d1e5s0.5>\rcomment{first run}
 explain analyze select * from a15d1e5s0 \prebreak
   \postbreak skyline of d1 min, d2 min, d3 min, d4 min, d5 min \prebreak
   \postbreak with bnl windowpolicy=entropy ef efwindowpolicy=entropy;
 --</query>
---<query runid=sfs.ef.entropy.entropy.a15d1e5s0.5>
+--<query runid=sfs.ef.entropy.entropy.a15d1e5s0.5>\rcomment{second run}
 explain analyze select * from a15d1e5s0 \prebreak
   \postbreak skyline of d1 min, d2 min, d3 min, d4 min, d5 min \prebreak
   \postbreak with sfs windowpolicy=entropy ef efwindowpolicy=entropy;
@@ -2563,16 +2630,6 @@ explain analyze select * from a15d1e5s0 \prebreak
 \label{fig:logfile}
 \end{figure}
 
-We wrote a little perl script \texttt{qp2log} which transforms the raw
-log files (cf. Figure~\ref{fig:logfile} into CSV format with the
-columns \texttt{runid}, \texttt{name} and \texttt{value}, and the
-content of the raw log file is preserved as comment prefixed with
-``\texttt{\#}'' (cf. Figure~\ref{fig:parsedlogfile}). This makes it
-easy to use
-\texttt{grep -v "\^{ }\#"} as filter in the pipeline, while on the other hand
-being able to verify \texttt{qp2log} is working correctly, which was
-helpful during the development of \texttt{qp2log}.
-
 \begin{figure}[htbp]
 \begin{interactive}
 \comment{All input is preserved as comment, where comment lines start with ``#''.\commentskip}
@@ -2611,6 +2668,115 @@ helpful during the development of \texttt{qp2log}.
 \caption{A log file parsed with \texttt{qp2log}}
 \label{fig:parsedlogfile}
 \end{figure}
+
+\subsection{Machine and Network Configuration}
+SKY00 % DMDB2 ok we cheat here
+
+We cloned SKY02-SKY07 from SKY01 using a fine piece of free software
+namely PING (Partimage Is Not Ghost)\footnote{available at:
+\url{http://ping.windowsdream.com/}}.
+
+\todo{sysprep}{}
+
+
+\todo{directory layout}{}
+
+\todo{file sharing}{}
+
+
+\subsection{Life Cycle of a Run}
+
+\subsubsection{Creating the Jobs}
+\todo{describe gj.pl}{}
+
+\todo{xcopy /m}{}
+
+\subsubsection{Job Scheduling}
+\label{sec:jobscheduling}
+We will speak of it as \emph{job scheduling}.  The concept behind this is
+simply but very effective. We run a processes called \emph{job
+scheduler}, realized in the perl script \texttt{js.pl}, on each
+machine which is available to run some Jobs.
+
+\todo{describe js.lock}{}
+
+\todo{describe feed.pl}{}
+
+\todo{describe js.pl}{}
+
+By means of this easy concept we were able to add and remove machine
+as we liked.
+
+\subsubsection{To CSV Format}
+We wrote a little perl script \texttt{qp2log} which transforms the raw
+log files (cf. Figure~\ref{fig:logfile} into CSV format with the
+columns \texttt{runid}, \texttt{name} and \texttt{value}, and the
+content of the raw log file is preserved as comment prefixed with
+``\texttt{\#}'' (cf. Figure~\ref{fig:parsedlogfile}). This makes it
+easy to use
+\texttt{grep -v "\^{ }\#"} as filter in the pipeline, while on the other hand
+being able to verify \texttt{qp2log} is working correctly, which was
+helpful during the development of \texttt{qp2log}.
+
+\todo{describe qp2log}{}
+
+\todo{list in a table the values which are collected?}{}
+
+\subsubsection{Pivoting the CSV Files}
+\todo{}{}
+Our tool \texttt{pivot\_log} transforms a parse log file
+(cf. Figure~\ref{fig:parsedlogfile}) into CSV format, where each Run
+is represented by a single line and values for the selected names are
+the columns (cf. Figure~\ref{fig:pivot_log}).
+
+\begin{figure}[htbp]
+\begin{interactive}
+\shprompt{pivot_log --help}
+Usage: pivot_log [OPTIONS] [FILE] ...
+Pivot each parsed log file FILE or standard input.
+
+Options:
+        --c=NAME[=ALIAS]
+        --column=NAME[=ALIAS]
+                        include the VALUE of field NAME, if ALIAS is given
+                        use this as column name instead of NAME.
+        
+        --[no]header    output the CSV header. default is output it.
+
+        --help          display this help message and exit
+
+The columns are in the same order as specified by --c. Nevertheless the first
+column is always RUNID.
+
+\shprompt{unzip -p sql.zip | qp2log |} \prebreak
+ \postbreak \textbf{pivot_log --c=method --c=seqscan.o.on=table \ellipsis --c=total}
+"runid","method","table","outrows","dim","inrows","skyline.method", \ellipsis
+"sql.a15d1e1s0.10","sql","a15d1e1s0","10","10","10","sql","","","", \ellipsis
+"sql.a15d5e1s0.10","sql","a15d5e1s0","50","10","50","sql","","","", \ellipsis
+"sql.a15d1e2s0.10","sql","a15d1e2s0","100","10","100","sql","","","", \ellipsis
+\ellipsis
+\end{interactive}
+\caption{Typical tool chain for \texttt{pivot\_log}. Note that all the log files SQL-only runs are kept inside \texttt{sql.zip}.}
+\label{fig:pivot_log}
+\end{figure}
+
+\subsubsection{Aggregating and Analyzing in R}
+\todo{}{}
+
+
+\subsection{Total Computational Workload}
+\label{sec:totalworkload}
+In total we scheduled $301{,}196$ runs batched up in $18{,}072$ jobs
+consisting of $454{,}782$ queries in total with a total amount
+$17{,}154{,}401{,}205.424\textnormal{ms}
+\approx 200\textnormal{days}$ CPU time.  These figures do not include
+the work we had to repeat due to a bug we discovered in our code and
+the runs that have been skewed by automatic software update, screen
+savers and so and so forth (cf. section~\ref{sec:lessonlearned}).  The
+workload was spread across seven computers (SKY01, $\ldots$, SKY07),
+and these computers have been busy for about six weeks.
+
+
 
 \section{Comparisons and Analysis}
 \label{sec:analysis}

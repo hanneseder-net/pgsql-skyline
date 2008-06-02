@@ -155,7 +155,7 @@ closer and taller to the eye of the beholder. If we are only
 interested in the objects that are ``touching the sky'', we consider
 only the tallest object in each direction of view. On the other hand
 if we care about visiblity, an object is visible as long as there is
-no object closer and taller. We ask the alerted reader to excuse the
+no object closer and taller. We ask the alert reader to excuse the
 simplifications we made here, the authors are aware of the concept of
 perspective projection and of the fact that the earth is not a disk.
 %However, we will shortly see how this intuition matches a precise
@@ -187,7 +187,7 @@ problem} \citep{Kung1975, Preparata1985}. The terms \emph{skyline} and
 \emph{preference queries}, they also illustrate the usage of the
 \inlinesql{DIFF} and \inlinesql{DISTINCT} keyword.
 
-In figure~\ref{fig:threeDskyline} the yellow arrow indicates the
+In Figure~\ref{fig:threeDskyline} the yellow arrow indicates the
 direction of view and the colored cuboids should illustrate
 buildings. Table~\ref{tab:threeDskyline} shows the coordinate of the
 lower left edge of each building and gives them names ($a, b,
@@ -650,7 +650,7 @@ in which the attributes are specified in the query.
 \end{property}
 \begin{proof}
 \todo{proof}{}
-see equation~\ref{equ:skylinepf}
+see Equation~\ref{equ:skylinepf}
 \end{proof}
 
 To give a simple example the following query will yield the same
@@ -2110,7 +2110,7 @@ Due to the way it is computed an $x[d]$ could get out of the bound,
 \lstinline{is_vector_ok()} verifies that all coordinates of $x$ are
 within the interval $[0,1]$.
 
-Figure \ref{fig:density-2d-c2d1e5} shows a correlated dataset with
+Figure~\ref{fig:density-2d-c2d1e5} shows a correlated dataset with
 100k tuples for $d = 2$.
 
 \begin{figure}[htbp]
@@ -2167,7 +2167,7 @@ do
 } while (!is_vector_ok(dim, x));
 \end{lstlisting}
 
-Figure \ref{fig:density-2d-a2d1e5} shows an anti-correlated dataset
+Figure~\ref{fig:density-2d-a2d1e5} shows an anti-correlated dataset
 with 100k tuples for $d = 2$.
 \end{itemize}
 
@@ -2564,10 +2564,10 @@ explain analyze select * from a15d1e5s0 \prebreak
 \end{figure}
 
 We wrote a little perl script \texttt{qp2log} which transforms the raw
-log files (cf. figure~\ref{fig:logfile} into CSV format with the
+log files (cf. Figure~\ref{fig:logfile} into CSV format with the
 columns \texttt{runid}, \texttt{name} and \texttt{value}, and the
 content of the raw log file is preserved as comment prefixed with
-``\texttt{\#}'' (cf. figure~\ref{fig:parsedlogfile}). This makes it
+``\texttt{\#}'' (cf. Figure~\ref{fig:parsedlogfile}). This makes it
 easy to use
 \texttt{grep -v "\^{ }\#"} as filter in the pipeline, while on the other hand
 being able to verify \texttt{qp2log} is working correctly, which was
@@ -2579,7 +2579,7 @@ helpful during the development of \texttt{qp2log}.
 #--<pid pid=SKY07/>\rcomment{the pid identifies the machine the job ran on}
 #--<comment>
 #explain analyze select * from a15d1e5s0;
-# \ellipsis\rcomment{the query plan is as in figure \ref{fig:logfile}}
+# \ellipsis\rcomment{the query plan is as in Figure \ref{fig:logfile}}
 #--</comment>
 #--<query runid=bnl.ef.entropy.entropy.a15d1e5s0.5>\commentskip
 \comment{For the query sections all relevant information from the query plan is parsed into CSV format with the columns \texttt{runid}, \texttt{name} and \texttt{value}.\commentskip{}}
@@ -2595,7 +2595,7 @@ helpful during the development of \texttt{qp2log}.
 #                                    QUERY PLAN
 #--------------------------------------------------------------------------------
 # Skyline  (cost=457884.24..457886.07 rows=79 width=124)
-# \ellipsis\rcomment{the query plan is as in figure \ref{fig:logfile}}
+# \ellipsis\rcomment{the query plan is as in Figure \ref{fig:logfile}}
 #</queryplan>
 #--</query>
 #--<query runid=sfs.ef.entropy.entropy.a15d1e5s0.5>
@@ -2906,7 +2906,7 @@ However with the prepend policy, these tuples are successively pushed
 to the end of the window, which results in high time costs
 for checking whether a new tuple is dominated by
 the tuples in the window.
-Figure \ref{fig:ef-eff} shows that \emph{entropy} is
+Figure~\ref{fig:ef-eff} shows that \emph{entropy} is
 the most effective EF window policy. 
 
 \subsection{Mixing window policies}

@@ -19,9 +19,21 @@
 \newcommand\bigunion{\bigcup}
 \newcommand\intersection{\cap}
 \newcommand\difference{\backslash}
-\newcommand\dominates{\ensuremath{\succ}\xspace}
-\newcommand\domanatedby{\ensuremath{\prec}\xspace}
-\newcommand\weakdominates{\ensuremath{\succeq}\xspace}
+%\newcommand\dominates{\ensuremath{\succ}\xspace}
+%\newcommand\dominatedby{\ensuremath{\prec}\xspace}
+%\newcommand\weakdominates{\ensuremath{\succeq}\xspace}
+\newcommand\dominates{\ensuremath{\vartriangleright}\xspace}
+\newcommand\notdominates{\ensuremath{\ntriangleright}\xspace}
+\newcommand\dominatedby{\ensuremath{\vartriangleleft}\xspace}
+\newcommand\notdominatedby{\ensuremath{\ntriangleleft}\xspace}
+\newcommand\weakdominates{\ensuremath{\trianglerighteq}\xspace}
+\newcommand\notweakdominates{\ensuremath{\ntrianglerighteq}\xspace}
+\newcommand\weakdominatedby{\ensuremath{\trianglelefteq}\xspace}
+\newcommand\notweakdominatedby{\ensuremath{\ntrianglelefteq}\xspace}
+\newcommand\incomparable{\ensuremath{\parallel}\xspace}
+\newcommand\comparable{\ensuremath{\perp}\xspace}
+%\newcommand\nondistinct{\ensuremath{\doteq}\xspace}
+\newcommand\nondistinct{\ensuremath{\triangleq}\xspace} % todo: find another symbol
 
 \newcommand\inlinesql[1]{{\tt #1}}
 \newcommand\srcref[1]{{\tt #1}}
@@ -439,7 +451,10 @@ discusses future work.
 \todo{see \citep[Simkovics1998] section 1.1.1}{}
 
 \section{Basic definitions}
-\todo{We are in the context of relational model\index{relational model} of data}{\citep{Chomicki2002, Chomicki2003a}?}. As we aim at an implementation of the skyline operator into a relational database management system (RDBMS)\index{RDBMS} we restrict to finite database\index{finite database} instances.
+We are in the realm of the relational model\index{relational model} of
+data.  As we aim at an implementation of the skyline operator into a
+relational database management system (RDBMS)\index{RDBMS} we restrict
+to finite database\index{finite database} instances.
 
 We assume two \todo{infinite}{hm? although in a real computer is
 everything finte} domains: $N$ (numbers) and $D$ (uninterpreted
@@ -470,15 +485,18 @@ preference relation over \schema{R} if it is a subset of $\schema{R}
 \times \schema{R}$.
 \end{definition}
 
-To give an intuition, \dominates will be a binary relation between pairs of tuples from the same (database) relation, we say $r$ \emph{dominates} $s$ in \dominates iff $(r, s) \in \dominates$ (or in infix notation $r \dominates s$).
+To give an intuition, \dominates will be a binary relation between
+pairs of tuples from the same (database) relation, we say $r$
+\emph{dominates} $s$ in \dominates iff $(r, s) \in \dominates$ (or in
+infix notation $r \dominates s$).
 
 We require the relation \dominates to be a \emph{strict partial
 order}\index{strict partial order}, i.e. \dominates is irreflexive,
 asymmetric and transitive. These properties are formalized as usual:
 
 \begin{itemize}
-\item \emph{irreflexivity:} $\forall x: x \not\dominates x$
-\item \emph{asymmetry:} $\forall x, y: x \dominates y \imp y \not\dominates x$
+\item \emph{irreflexivity:} $\forall x: x \notdominates x$
+\item \emph{asymmetry:} $\forall x, y: x \dominates y \imp y \notdominates x$
 \item \emph{transitivity:} $\forall x, y, z: (x \dominates y \land y \dominates z) \imp x \dominates z$
 \end{itemize}
 
@@ -507,24 +525,31 @@ for \relation{R}, the skyline is non empty,
 i.e. $\skyline_\dominates(\relation{R}) \not= \emptyset$ holds.
 \end{lemma}
 
+\makeatletter
+\def\Bigggl{\mathopen\bBigg@{3.5}}
+\def\Bigggr{\mathclose\bBigg@{3.5}}
+\makeatother
 
 In a skyline query with the following skyline clause:
-\todo{}{add space between dim and direction}
 \[
-\texttt{SKYLINE OF} a_1 \texttt{MIN}, \ldots, a_k \texttt{MIN}, a_{k+1} \texttt{MAX}, \ldots, a_l \texttt{MAX}, a_{l+1} \texttt{DIFF}, \ldots, a_m \texttt{DIFF}
+\texttt{SKYLINE OF\ } a_1\,\texttt{MIN}, \ldots, a_k\,\texttt{MIN}, a_{k+1}\,\texttt{MAX}, \ldots, a_l\,\texttt{MAX}, a_{l+1}\,\texttt{DIFF}, \ldots, a_m\,\texttt{DIFF}
 \]
-a tuple 
-$r = (r_1, \ldots, r_k, r_{k+1}, \ldots, r_l, r_{l+1}, \ldots, r_m, r_{m+1}, \ldots, r_n)$
+a tuple
+\[
+r = (\underbrace{r_1, \ldots, r_k}_\texttt{MIN}, \underbrace{r_{k+1}, \ldots, r_l}_\texttt{MAX}, \underbrace{r_{l+1}, \ldots, r_m}_\texttt{DIFF}, \underbrace{r_{m+1}, \ldots, r_n}_\textit{extra})
+\]
 dominates a tuple
-$s = (r_1, \ldots, r_k, r_{k+1}, \ldots, r_l, r_{l+1}, \ldots, r_m, r_{m+1}, \ldots, r_n)$
-iff the following condition holds
+\[
+s = (\underbrace{s_1, \ldots, s_k}_\texttt{MIN}, \underbrace{s_{k+1}, \ldots, s_l}_\texttt{MAX}, \underbrace{s_{l+1}, \ldots, s_m}_\texttt{DIFF}, \underbrace{s_{m+1}, \ldots, s_n}_\textit{extra})
+\]
+\emph{if and only if} the following condition holds
 \begin{eqnarray}\label{equ:skylinepf}
-\left( \bigland_{1 \le i \le k} r_i \le s_i \right) \land
-\left( \bigland_{k+1 \le i \le l} r_i \ge s_i \right) \land
-\left( \bigland_{l+1 \le i \le m} r_i = s_i \right) \land \nonumber\\
-\land
-\left( \left( \biglor_{1 \le i \le k} r_i < s_i \right) \lor
-       \left( \biglor_{k+1 \le i \le l} r_i > s_i \right) \right).
+\overbrace{\left( \bigland_{1 \le i \le k} r_i \le s_i \right)}^{\textit{``\/}\texttt{MIN}\textit{ at least as good''}} \,\land\,
+\overbrace{\left( \bigland_{k+1 \le i \le l} r_i \ge s_i \right)}^{\textit{``\/}\texttt{MAX}\textit{ at least as good''}} \,\land\,
+\overbrace{\left( \bigland_{l+1 \le i \le m} r_i = s_i \right)}^{\textit{``\/}\texttt{DIFF}\textit{ equal''}} \,\land\, \nonumber\\
+\,\land\,
+\Bigggl(\,\underbrace{\left( \biglor_{1 \le i \le k} r_i < s_i \right)}_{\textit{``\/}\texttt{MIN}\textit{ better than''}} \,\lor\,
+       \underbrace{\left( \biglor_{k+1 \le i \le l} r_i > s_i \right)}_{\textit{``\/}\texttt{MAX}\textit{ better than''}}\,\Bigggr).
 \end{eqnarray}
 
 To state in an informal way, a tuple $r$ dominates a tuple $s$ if it
@@ -532,10 +557,69 @@ is equal in all \inlinesql{DIFF} dimensions, at least as good in all
 \inlinesql{MIN}/\inlinesql{MAX} dimensions and better than in at least
 one of the \inlinesql{MIN}/\inlinesql{MAX} dimensions.
 
-\todo{make \dominates equal to (\ref{equ:skylinepf}) and \weakdominates equal to just the $\le$ part, use $r \sim s := r \weakdominates s \land s \weakdominates r = \forall i \in \{1, \ldots, m\}: r_i = s_i$, i.e. equal on all skyline dimensions}{}
+\begin{equation}
+\succ_i\; := 
+\begin{cases}
+< & \text{if $1 \le i \le k$,} \\
+> & \text{if $k+1 \le i \le l$,} \\
+\text{undefined} & \text{otherwise}
+\end{cases}
+\end{equation}
+
+\begin{equation}
+\succeq_i\; := 
+\begin{cases}
+\le & \text{if $1 \le i \le k$,} \\
+\ge & \text{if $k+1 \le i \le l$,} \\
+\text{undefined} & \text{otherwise}
+\end{cases}
+\end{equation}
 
 
-If $\forall i \in \{1, \ldots, m\}: r_i = s_i$ holds, $r$ and $s$ are
+\begin{eqnarray}
+r \dominates s := 
+\underbrace{\left( \bigland_{l+1 \le i \le m} r_i = s_i \right)}_{\textit{``\/}\texttt{DIFF}\textit{ equal''}} \,\land\,
+\underbrace{\left( \bigland_{1 \le i \le l} r_i \succeq_i s_i \right)}_{\textit{``at least as good''}} \,\land\,
+\underbrace{\left( \biglor_{1 \le i \le l} r_i \succ_i s_i \right)}_{\textit{``better than''}}
+\end{eqnarray}
+
+\begin{eqnarray}
+r \weakdominates s := 
+\underbrace{\left( \bigland_{l+1 \le i \le m} r_i = s_i \right)}_{\textit{``\/}\texttt{DIFF}\textit{ equal''}} \,\land\,
+\underbrace{\left( \bigland_{1 \le i \le l} r_i \succeq_i s_i \right)}_{\textit{``at least as good''}}
+\end{eqnarray}
+
+We say $s$ is dominated by $r$ iff $r$ dominates $s$, formally:
+\[
+s \dominatedby r :\Leftrightarrow r \dominates s.
+\]
+
+\[
+s \weakdominatedby r :\Leftrightarrow r \weakdominates s.
+\]
+
+
+
+\todo{make \dominates equal to (\ref{equ:skylinepf}) and \weakdominates equal to just the $\le$ part, use $r \nondistinct s := r \weakdominates s \land s \weakdominates r = \forall i \in \{1, \ldots, m\}: r_i = s_i$, i.e. equal on all skyline dimensions}{}
+
+\[
+r \incomparable s := r \notdominates s \land s \notdominates r
+\]
+
+\[
+r \incomparable s = s \incomparable r
+\]
+
+
+\[
+r \comparable s := r \dominates s \lor s \dominates r
+\]
+
+\[
+r \comparable s = s \comparable r
+\]
+
+If $\forall i \in \{1, \ldots, m\}\colon r_i = s_i$ holds, $r$ and $s$ are
 \todo{\emph{incomparable}}{use an other term for this special case of
 incomparability}, if \inlinesql{DISTINCT} is specified it is left up
 to the implementation to include either $r$ or $s$ in the skyline, if
@@ -594,7 +678,7 @@ dominance, anti dominance region
 anti domiance region is empty. This can be done with a range query
 even fasilidating an index.}{}
 
-\subsection{How our implementation differs from the mathematical model}
+\subsection{How our implementation extends the mathematical model}
 Our implementation of the \inlinesql{SKYLINE OF} clause is actually a
 bit more flexible than the mathematical definition given above. With
 our implementation the skyline operator is not restricted to
@@ -2410,8 +2494,9 @@ configuration variable to 100~MB;
 \sqlprompt{SET function_scan_work_mem  = 102400;}
 \end{interactive}
 
-\todo{}{link to the patch function\_scan\_work\_mem.diff}
-
+\noindent
+A patch for this feature can be found at
+\srcref{patches/function\_scan\_work\_mem.diff}.
 
 
 \section{Parameter Space}
@@ -2670,23 +2755,51 @@ explain analyze select * from a15d1e5s0 \prebreak
 \end{figure}
 
 \subsection{Machine and Network Configuration}
-SKY00 % DMDB2 ok we cheat here
+In our experimental environment we had one machine (SKY00) to control
+and monitor the experiments and seven machines (SKY01, $\ldots$,
+SKY07), but this seven is just because of we did not have more.
+%
+To have exactly the same configuration, we cloned SKY02, $\ldots$, SKY07 from
+SKY01 using a fine piece of free software namely PING (Partimage Is
+Not Ghost)\footnote{available at: \url{http://ping.windowsdream.com/}}.
+We also used Windows XPs \texttt{sysprep} during the clone process.
 
-We cloned SKY02-SKY07 from SKY01 using a fine piece of free software
-namely PING (Partimage Is Not Ghost)\footnote{available at:
-\url{http://ping.windowsdream.com/}}.
+For interprocess communication we used file sharing and we use file
+locking for synchronization. The machine SKY00 shared a folder, which
+was mounted by SKY01, $\ldots$, SKY07 with a directory layout is
+described in Table~\ref{tab:tab:dirlayoutexpiriments}.
 
-\todo{sysprep}{}
-
-
-\todo{directory layout}{}
-
-\todo{file sharing}{}
+\begin{table}[!ht]
+\centering
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}p{2.2cm}@{\extracolsep{\fill}}p{\textwidth-2.2cm}}
+\verb|jobs/|      &  \\
+\verb|  js.pl|    & job scheduler, see Section~\ref{sec:jobscheduling} \\
+\verb|  feed.pl|  & batch feeder, moves prepared jobs into the \texttt{jobs/} directory once this gets empty, see Section~\ref{sec:jobscheduling} \\
+\verb|  js.lock|  & lock file used by \texttt{js.pl} and \texttt{feed.pl} to synchronize access to the \texttt{jobs/} directory \\
+\verb|  *.sql|    & jobs waiting to be scheduled by \texttt{js.pl} \\
+\verb|  prep/|    & \\
+\verb|    gj.pl|  & job generator, see Section~\ref{sec:generatejobs} \\
+\verb|    *.sql|  & prepared jobs \\
+\verb|    s0/|    & To this and to the directories below we copied the prepared jobs. We split the entire set of prepared jobs up into logical and smaller units of lets say a few hundred files.  The jobs from this directories where moved to \texttt{jobs/} once there where not jobs left there by \texttt{feed.pl}.  The same is true for the sibling directories \texttt{s1/} and \texttt{s2/}. \\
+\verb|      ws/|  & This one for example holds the jobs, when we were analyzing the effect of varing window size.\\
+\verb|      .../| & \\
+\verb|    s1/|    & \\
+\verb|    s2/|    & \\
+\verb|  SKY[xx]/| & While processing a job it resides inside a directory with the same name as the machine which is processing the job.\\
+\verb|  log/|     & \\
+\verb|    *.log|  & the raw log files \\
+\verb|  done/|    & Processed jobs end up here. \\
+\verb|    *.sql|   & processed jobs\\
+\end{tabular*}
+\caption{Directory layout for the experiments}
+\label{tab:dirlayoutexpiriments}
+\end{table}
 
 
 \subsection{Life Cycle of a Run}
 
-\subsubsection{Creating the Jobs}
+\subsubsection{Generating the Jobs}
+\label{sec:generatejobs}
 \todo{describe gj.pl}{}
 
 \todo{xcopy /m}{}
@@ -2818,7 +2931,10 @@ the relative values in Figure~\ref{fig:all-dim}.
 In the rest of the experiments, we only provide relative time measurements.
 
 \subsubsection{Special case: 1 dimensional skylines}
-\todo{}{}
+We believe the one dimensional case either distinct or non-distinct is
+of so limited use, that we decided not to perform any performance
+studies for this case. Furthermore the one dimensional case is not
+even mentioned most of the time in literature.
 
 \subsubsection{Special case: 2 dimensional skylines}
 \todo{}{}

@@ -451,6 +451,9 @@ discusses future work.
 \todo{see \citep[Simkovics1998] section 1.1.1}{}
 
 \section{Basic definitions}
+
+\todo{http://en.wikipedia.org/wiki/Relational_model}{}
+
 We are in the realm of the relational model\index{relational model} of
 data.  As we aim at an implementation of the skyline operator into a
 relational database management system (RDBMS)\index{RDBMS} we restrict
@@ -495,10 +498,63 @@ order}\index{strict partial order}, i.e. \dominates is irreflexive,
 asymmetric and transitive. These properties are formalized as usual:
 
 \begin{itemize}
-\item \emph{irreflexivity:} $\forall x: x \notdominates x$
-\item \emph{asymmetry:} $\forall x, y: x \dominates y \imp y \notdominates x$
-\item \emph{transitivity:} $\forall x, y, z: (x \dominates y \land y \dominates z) \imp x \dominates z$
+\item \emph{irreflexivity:} 
+$\forall x: \neg (x \dominates x)$
+
+\item \emph{asymmetry:} 
+$\forall x, y: x \dominates y \imp \neg (y \dominates x)$
+
+\item \emph{transitivity:} 
+$\forall x, y, z: (x \dominates y \land y \dominates z) \imp x \dominates z$
+
 \end{itemize}
+
+For \emph{partial order}:
+\begin{itemize}
+\item \emph{reflexivity:} 
+$\forall x: x \weakdominates x$
+
+\item \emph{anti-symmetry:} 
+$\forall x, y: x \weakdominates y \land y \weakdominates x \imp x \nondistinct y$
+
+\item \emph{transitivity:} 
+$\forall x, y, z: (x \weakdominates y \land y \weakdominates z) \imp x \weakdominates z$
+\end{itemize}
+
+\todo{
+In general a partial order is not a \emph{total order}, nor is a
+strict partial order a \emph{strict total order}, what distingueses
+partial orders ..... we have this in the 1 dim case}{}
+
+\begin{itemize}
+\item \emph{totality:} $\forall x, y: x \dominates y \lor y \dominates x$.
+\end{itemize}
+
+
+
+%\todo{some more properties, which hold}{}
+%\begin{itemize}
+%\item \emph{intranstivity} 
+%$\neg\forall x, y, z: (x \dominates y \land y \dominates z) \imp x \dominates z$
+%
+%\item \emph{anti-transtivity} 
+%$\forall x, y, z: (x \dominates y \land y \dominates z) \imp \neg x \dominates z$
+%\end{itemize}
+%
+%\begin{tabular}{lll}
+%E1  & reflexiv:             & $\forall s\ sRs$ \\
+%E2  & symmetric:            & $\forall s\forall t\ sRt \rightarrow tRs$ \\
+%E3  & serial:               & $\forall s\exists t\ sRt$\\
+%E4  & transitive:           & $\forall s\forall t\forall u\ (sRt \wedge tRu) \rightarrow sRu$ \\
+%E5  & euclidian:            & $\forall s\forall t\forall u\ (sRt \wedge sRu) \rightarrow tRu$ \\
+%E6  & partially functional: & $\forall s\forall t\forall u\ (sRt \wedge sRu) \rightarrow t=u$ \\
+%E7  & functional:           & $\forall s\exists!t\ sRt$ i.e. there exists exactly one:\\
+%    &                       & $\forall s\ (\exists t\ sRt \wedge \forall u\ (sRu \rightarrow u=t))$\\
+%E8  & (weakly) dense:       & $\forall s\forall t\ sRt \rightarrow \exists u\ (sRu \wedge uRt)$\\
+%E9  & (weakly) connected:   & $\forall s\forall t\forall u\ (sRt \wedge sRu) \rightarrow (tRu \vee t=u \vee uRt)$\\
+%E10 & (weakly) directed:     & $\forall s\forall t\forall u\ (sRt \wedge sRu) \rightarrow \exists v\ (tRv \wedge uRv)$\\
+%\end{tabular}
+
 
 Non-transitive\index{non-transitive} preferences can be compute with
 the BEST algorithm (\citep{Torlone2002, Ciaccia2004}), we will not
@@ -576,18 +632,26 @@ one of the \inlinesql{MIN}/\inlinesql{MAX} dimensions.
 \end{equation}
 
 
-\begin{eqnarray}
+\begin{equation}
 r \dominates s := 
 \underbrace{\left( \bigland_{l+1 \le i \le m} r_i = s_i \right)}_{\textit{``\/}\texttt{DIFF}\textit{ equal''}} \,\land\,
 \underbrace{\left( \bigland_{1 \le i \le l} r_i \succeq_i s_i \right)}_{\textit{``at least as good''}} \,\land\,
 \underbrace{\left( \biglor_{1 \le i \le l} r_i \succ_i s_i \right)}_{\textit{``better than''}}
-\end{eqnarray}
+\end{equation}
 
-\begin{eqnarray}
+\begin{equation}
 r \weakdominates s := 
 \underbrace{\left( \bigland_{l+1 \le i \le m} r_i = s_i \right)}_{\textit{``\/}\texttt{DIFF}\textit{ equal''}} \,\land\,
 \underbrace{\left( \bigland_{1 \le i \le l} r_i \succeq_i s_i \right)}_{\textit{``at least as good''}}
-\end{eqnarray}
+\end{equation}
+
+\begin{equation}
+r \nondistinct s := \left( \bigland_{1 \le i \le m} r_i = s_i \right)
+\end{equation}
+
+\[
+r \nondistinct s \Leftrightarrow r \weakdominates s \land r \weakdominatedby s
+\]
 
 We say $s$ is dominated by $r$ iff $r$ dominates $s$, formally:
 \[
@@ -598,6 +662,13 @@ s \dominatedby r :\Leftrightarrow r \dominates s.
 s \weakdominatedby r :\Leftrightarrow r \weakdominates s.
 \]
 
+\[
+r \weakdominates s \Leftrightarrow r \dominates s \lor r \nondistinct s
+\]
+
+\[
+r \dominates s \Leftrightarrow r \weakdominates s \land \neg (r \nondistinct s)
+\]
 
 
 \todo{make \dominates equal to (\ref{equ:skylinepf}) and \weakdominates equal to just the $\le$ part, use $r \nondistinct s := r \weakdominates s \land s \weakdominates r = \forall i \in \{1, \ldots, m\}: r_i = s_i$, i.e. equal on all skyline dimensions}{}
@@ -618,6 +689,22 @@ r \comparable s := r \dominates s \lor s \dominates r
 \[
 r \comparable s = s \comparable r
 \]
+
+
+% todo http://en.wikipedia.org/wiki/Strict_weak_order
+\todo{}{}
+Transitifity of equivalence does not hold for a strict partial order
+\[
+\neg \forall x, y, z: x \incomparable y \land y \incomparable z \imp x \incomparable z
+\]
+
+
+
+\todo{for a strict total order R the law (or axiom) of trichotomy holds:}{}
+\[
+\forall x, y: x R y \lor x = y \lor y R y
+\]
+
 
 If $\forall i \in \{1, \ldots, m\}\colon r_i = s_i$ holds, $r$ and $s$ are
 \todo{\emph{incomparable}}{use an other term for this special case of
@@ -673,6 +760,12 @@ Let $\relation{S} = \skyline_C(\relation{R})$, it is clear that condition (\ref{
 
 \subsection{Dominance and Anti-dominance regions}
 dominance, anti dominance region
+
+\begin{definition}[Dominance Region]
+\[
+DR_\dominates(r) := \{ x \in \schema R | r \dominates x \}
+\]
+\end{definition}
 
 \todo{If a point is a skyline point can be answered by checking of the
 anti domiance region is empty. This can be done with a range query

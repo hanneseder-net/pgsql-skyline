@@ -2817,7 +2817,7 @@ explain analyze select * from a15d1e5s0 \prebreak
 # \ellipsis\rcomment{the query plan is as in Figure \ref{fig:logfile}}
 #--</comment>
 #--<query runid=bnl.ef.entropy.entropy.a15d1e5s0.5>\commentskip
-\comment{For the query sections all relevant information from the query plan is parsed into CSV format with the columns \texttt{runid}, \texttt{name} and \texttt{value}.\commentskip{}}
+\comment{For the query sections all relevant information from the query plan is parsed into CSV format with the columns \texttt{runid}, \texttt{name} and \texttt{value}.  See Table~\ref{tab:queryplanfields} for a describtion of the name/value pairs.\commentskip{}}
 "bnl.ef.entropy.entropy.a15d1e5s0.5","method","bnl.ef.entropy.entropy"
 \ellipsis
 "bnl.ef.entropy.entropy.a15d1e5s0.5","skyline.rows","4550"
@@ -2843,7 +2843,7 @@ explain analyze select * from a15d1e5s0 \prebreak
 #</queryplan>
 #--</query>
 \end{interactive}
-\caption{A log file parsed with \texttt{qp2log}}
+\caption{A log file parsed with \texttt{qp2log}.  For the name and describtion of the extracted fields see Table~\ref{tab:queryplanfields}.}
 \label{fig:parsedlogfile}
 \end{figure}
 
@@ -2863,14 +2863,14 @@ was mounted by SKY01, $\ldots$, SKY07 with a directory layout is
 described in Table~\ref{tab:dirlayoutexpiriments}.
 
 \newdimen\fixedcolumnwidth
-\newdimen\paragraphccolumnwidth
+\newdimen\paragraphcolumnwidth
 \global\fixedcolumnwidth 2.2cm
-\global\paragraphccolumnwidth\textwidth
-\advance\paragraphccolumnwidth -\fixedcolumnwidth
+\global\paragraphcolumnwidth\textwidth
+\advance\paragraphcolumnwidth -\fixedcolumnwidth
 
 \begin{table}[!ht]
 \centering
-\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}p{\fixedcolumnwidth}@{\extracolsep{\fill}}p{\paragraphccolumnwidth}}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}p{\fixedcolumnwidth}@{\extracolsep{\fill}}p{\paragraphcolumnwidth}}
 \verb|jobs/|      &  \\
 \verb|  js.pl|    & job scheduler, see Section~\ref{sec:jobscheduling} \\
 \verb|  feed.pl|  & batch feeder, moves prepared jobs into the \texttt{jobs/} directory once this gets empty, see Section~\ref{sec:jobscheduling} \\
@@ -2910,7 +2910,7 @@ which is running \texttt{js.pl}, SKY01 to SKY07 in our case. The job
 was then executed and finally moved to the directory
 \texttt{done/}. See Section~\ref{sec:jobscheduling} for more details.
 As a result of the Job being executed a raw log file
-(cf. Figure~\ref{fig:logfile)} is generated in the \texttt(log/)
+(cf. Figure~\ref{fig:logfile}) is generated in the \texttt(log/)
 directory. We parse this raw log files to CSV format with comment
 lines (cf. Figure~\ref{fig:parsedlogfile}) with a script called
 \texttt{qp2log}, see Section~\ref{sec:tocsvformat}. The last step
@@ -2963,60 +2963,95 @@ helpful during the development of \texttt{qp2log}.
 \todo{describe qp2log}{}
 
 
-\global\fixedcolumnwidth 5.5cm
-\global\paragraphccolumnwidth\textwidth
-\advance\paragraphccolumnwidth -\fixedcolumnwidth
+\global\fixedcolumnwidth 5cm
+\global\paragraphcolumnwidth\textwidth
+\advance\paragraphcolumnwidth -\fixedcolumnwidth
+
+
+
 
 \begin{table}[htbp]
+\newcommand\splitter{\vspace{6pt}}
 \centering
-\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}p{\fixedcolumnwidth}@{\extracolsep{\fill}}p{\paragraphccolumnwidth}}
-Field name & Description \\
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}p{\fixedcolumnwidth}@{\extracolsep{\fill}}p{\paragraphcolumnwidth}}
+\emph{Field name} & \emph{Description} \\
 \hline
-\verb|[ANYNODE].est.cost|		& \\
-\verb|[ANYNODE].est.cost.start|		& \\
-\verb|[ANYNODE].est.cost.total|		& \\
-\verb|[ANYNODE].est.rows|		& \\
-\verb|[ANYNODE].width|			& \\
-\verb|[ANYNODE].cost|			& \\
-\verb|[ANYNODE].cost.start|		& \\
-\verb|[ANYNODE].cost.total|		& \\
-\verb|[ANYNODE].rows|			& \\
-\verb|[ANYNODE].loops|			& \\
+\begin{minipage}[t]{\fixedcolumnwidth}
+\verb|[ANYNODE].est.cost|		\\
+\verb|[ANYNODE].est.cost.start|		\\
+\verb|[ANYNODE].est.cost.total|		\\
+\verb|[ANYNODE].est.rows|		\\
+\verb|[ANYNODE].width|			\\
+\verb|[ANYNODE].cost|			\\
+\verb|[ANYNODE].cost.start|		\\
+\verb|[ANYNODE].cost.total|		\\
+\verb|[ANYNODE].rows|			\\
+\verb|[ANYNODE].loops|			
+\end{minipage}
 
-\smallskip
+&
+\begin{minipage}[t]{\paragraphcolumnwidth}
+For any node type in the executation plan we output these quantities.
+The node names are mapped to \texttt{skyline}, \texttt{elimfilter},
+\texttt{seqscan} and \texttt{idxscan}.  Although other node types do
+exist in general, they have not been of interesst in our studies.
 
-\verb|[SKYLINENODE].method|		& \\
-\verb|[SKYLINENODE].distinct|		& \\
-\verb|[SKYLINENODE].dim|		& \\
-\verb|[SKYLINENODE].attr|		& \\
-\verb|[SKYLINENODE].passes|		& \\
-\verb|[SKYLINENODE].passes.rows|	& \\
-\verb|[SKYLINENODE].windowsize|		& \\
-\verb|[SKYLINENODE].windowslots|	& \\
-\verb|[SKYLINENODE].windowpolicy|	& \\
-\verb|[SKYLINENODE].cmps.tuples|	& \\
-\verb|[SKYLINENODE].cmps.fields|	& \\
-\verb|[SKYLINENODE].cmps.ratio|		& \\
+The fields with \texttt{.est} correspond to the estimated values,
+while the other are actual values. The fields with \texttt{.cost} are
+costs split up into startup costs \texttt{.start}, the time needed to
+return the first tuple, and total costs \texttt{.total}, the time
+needed to return all the tuples. Please note that the estimated costs
+are in an arbitrary unit and that the actual cost are in milliconds,
+see PostgresSQL documentation on
+\postgresdocu{using-explain.html}{Using EXPLAIN}.
 
-\smallskip
+The estimated average width of a row \texttt{.width} is measured in
+bytes.
 
-\verb|seqscan{.ALIAS}.on|		& \\
-\verb|seqscan{.ALIAS}.tablesize|	& HACK: derived from the tablename \\
+The field \texttt{.rows} corresponds to the number of rows output by
+this node.
 
-\smallskip
+It can happen that in certain query plans a node is executed more than
+once, e.g. as part of a subplan, than this number is reported by
+\texttt{.loops}.
+\end{minipage} \\
 
-\verb|sort.method|			& \\
-\verb|sort.key|				& \\
+\hline
+					& For a skyline node either ``Skyline'' or ``Elimination Filter'' the following fields are reported: \\
+\verb|[SKYLINENODE].method|		& Currently one of \texttt{1dim}, \texttt{presort}, \texttt{mnl}, \texttt{bnl}, \texttt{sfs} and \texttt{elimfilter}. NOte there are actually differnt methodes for 1 dimensional distinct and non-distinct, but we distingues them only by the next field here.\\
+\verb|[SKYLINENODE].distinct|		& \texttt{SKYLINE OF \textbf{DISTINCT}}? 0/1\\
+\verb|[SKYLINENODE].dim|		& \# of dimensions: $1, 2, \ldots$ \\
+\verb|[SKYLINENODE].attr|		& The attributes the skyline is computed on.\\
+\verb|[SKYLINENODE].passes|		& \# of passes for BNL and SFS\\
+\verb|[SKYLINENODE].passes.rows|	& \# of rows in the input for each pass for BNL and SFS\\
+\verb|[SKYLINENODE].windowsize|		& tuple window size in KB\\
+\verb|[SKYLINENODE].windowslots|	& tuple window size in \# of slots\\
+\verb|[SKYLINENODE].windowpolicy|	& tuple window policy, one of: \texttt{append}, \texttt{prepend}, \texttt{entropy} and \texttt{random}\\
+\verb|[SKYLINENODE].cmps.tuples|	& \# of comparisons between two tuples\\
+\verb|[SKYLINENODE].cmps.fields|	& \# of comparisons between two fields\\
+\verb|[SKYLINENODE].cmps.ratio|		& = \texttt{.cmps.fields} / \texttt{.cmps.tuples}\\
 
-\smallskip
+\hline
 
-\verb|idxscan.idx|			& \\
-\verb|idxscan.table|			& \\
+\verb|seqscan{.ALIAS}.on|		& Name of the basetable, when an alias is used for the table it is given as \texttt{.ALIAS}, like when we express a skyline query only with SQL, we have an inner \texttt{.i} and an outer \texttt{.o} relation.\\
+\verb|seqscan{.ALIAS}.tablesize|	& Here we do a little hack and derive this value from the tablename (\# rows). \\
 
-\smallskip
+\hline
 
-\verb|total|				& \\
+\verb|sort.method|			& typically \texttt{quicksort} or \texttt{external merge}\\
+\verb|sort.key|				& sort is performed on this expressions\\
+
+\hline
+
+\verb|idxscan.idx|			& name of the index used\\
+\verb|idxscan.table|			& name of the table the index is on\\
+
+\hline
+
+\verb|total|				& The total runtime of the query in millisecondes (ms).\\
 \end{tabular*}
+\caption{Fields/Values from the execution plan}
+\label{tab:queryplanfields}
 \end{table}
 
 \subsubsection{Pivoting the CSV Files}
@@ -3024,7 +3059,8 @@ Field name & Description \\
 Our tool \texttt{pivot\_log} transforms a parse log file
 (cf. Figure~\ref{fig:parsedlogfile}) into CSV format, where each Run
 is represented by a single line and values for the selected names are
-the columns (cf. Figure~\ref{fig:pivot_log}).
+the columns (cf. Figure~\ref{fig:pivot_log}). For a list of fields
+with describtion see Table~\ref{tab:queryplanfields}.
 
 \begin{figure}[htbp]
 \begin{interactive}

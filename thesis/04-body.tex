@@ -2027,7 +2027,7 @@ edit \& continue in msvc.
 
 \subsection{Regression Testing}
 \todo{see \srcref{test/....}}{}
-\todo{see more extensive see perl script}{}
+\todo{see more extensive see Perl script}{}
 
 
 
@@ -2923,7 +2923,7 @@ see Section~\ref{sec:pivotlog}.
 
 \subsubsection{Generating the Jobs}
 \label{sec:generatejobs}
-The creation of the Jobs is done by an ordinary perl script called
+The creation of the Jobs is done by an ordinary Perl script called
 \texttt{gj.pl}.  The only argument to this script is the seed
 (\texttt{s0}, \texttt{s1}, $\ldots$) for which the Jobs should be
 generated. The only but noteworthy trick used in this script is to
@@ -2935,22 +2935,48 @@ files.
 \subsubsection{Job Scheduling}
 \label{sec:jobscheduling}
 We will speak of it as \emph{job scheduling}.  The concept behind this
-is simply but very effective. We run a processes called \emph{job
-scheduler}, realized in the perl script \texttt{js.pl}, on each
+is simply but very effective.  We run a processes called \emph{job
+scheduler}, realized in the Perl script \texttt{js.pl}, on each
 machine which is available to run some Jobs.
+
+A simple lesson learned here is not to use Perl's \texttt{glob}
+function to read the content of a directory with thousends of
+\texttt{*.sql} files, when you actually just want to pick one of
+them. Globbing a dirctory with thousends of files could take longer
+than running one of these jobs and instead of running them in
+parallel, they are processed serially.  Instead rely \texttt{opendir},
+\texttt{readdir} and \texttt{closedir}.
+
+\todo{describe js.pause}{}
 
 \todo{describe js.lock}{}
 
-\todo{describe feed.pl}{}
-
 \todo{describe js.pl}{}
+
+The Perl script \texttt{feed.pl} is another simple script engaged with
+job scheduling.  Its task is to move batches of Jobs into the
+\texttt{jobs} directory once this got empty.  The idea is to have
+more control in which sequence the Jobs are processed, as we where a
+little bit more interessted in some results than in some others.  The
+access to the \texttt{jobs} directory was once again synchronized via
+file locking \texttt{js.lock}.  A typical invocation of
+\texttt{feed.pl} looked like this:
+
+\begin{interactive}
+\shprompt{feed.pl prep/s0/ws prep/s1/ws prep/s2/ws}
+\end{interactive}
+
+Once the \texttt{jobs} directory did not contain any Jobs
+(\texttt{*.sql}-files), the Jobs from \texttt{prep/s0/ws},
+\texttt{prep/s1/ws} and \texttt{prep/s2/ws} are moved in turn to the
+\texttt{jobs} directory.
 
 By means of this easy concept we were able to add and remove machine
 as we liked.
 
 \subsubsection{To CSV Format}
 \label{sec:tocsvformat}
-We wrote a little perl script \texttt{qp2log} which transforms the raw
+We wrote a little Perl script \texttt{qp2log} which transforms the raw
 log files (cf. Figure~\ref{fig:logfile} into CSV format with the
 columns \texttt{runid}, \texttt{name} and \texttt{value}, and the
 content of the raw log file is preserved as comment prefixed with

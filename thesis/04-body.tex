@@ -1114,7 +1114,6 @@ begin
 	// initialization
 	$\mathcal{O} \gets \emptyset$; $\mathcal{T} \gets \emptyset$; $\mathbb{W} \gets \emptyset$; $timestampIn \gets 0$; $timestampOut \gets 0$;
 
-outer:
 	while $\neg$EOF($\mathcal{I}$) do begin
 		// propagate points that have been compared to all
 		foreach $q \in \mathbb{W}$ do
@@ -1127,26 +1126,29 @@ outer:
 		$p \gets$ next($\mathcal{I}$);
 		$p_{timestamp} \gets timestampOut$;
 		$timestampIn \gets timestampIn + 1$;
+		$isCandidate \gets true$;
 
 		// compare $p$ to all points in the tuple window $\mathbb{W}$
 		foreach $q \in \mathbb{W}$ do begin
 			if $q \dominates p$ then begin
 				free($p$);
-				continue outer;
+				$isCandidate \gets false$;
+				break;
 			end
 			else if $p \dominates q$ then
 				release($\mathbb{W}$, $q$);
 		end
 
-		// note: $p$ is skyline candidate
-		if hasfreespace($\mathbb{W}$) then
-			// add $p$ to the tuple window $\mathbb{W}$
-			add($\mathbb{W}$, $p$);
-		else begin
-			// write $p$ to the tempfile $\mathcal{T}$
-			append($\mathcal{T}$, $p$);
-			free($p$);
-			$timestampOut \gets timestampOut + 1$;
+		if $isCandidate$ then begin
+			if hasfreespace($\mathbb{W}$) then
+				// add $p$ to the tuple window $\mathbb{W}$
+				add($\mathbb{W}$, $p$);
+			else begin
+				// write $p$ to the tempfile $\mathcal{T}$
+				append($\mathcal{T}$, $p$);
+				free($p$);
+				$timestampOut \gets timestampOut + 1$;
+			end
 		end
 
 		// continue with next run if necassary
@@ -1872,6 +1874,33 @@ has five main components:
 \label{sec:relative-tuple-order}
 
 see \texttt{skyline\_method\_preserves\_tuple\_order} in \srcref{src/backend/utils/skyline/skyline.c}
+
+\begin{tabular}{rrr}
+\emph{id} & \emph{d1} & \emph{d2} \\
+\hline
+$a$ & $10$ & $ 1$ \\
+$b$ & $ 8$ & $ 8$ \\
+$c$ & $ 1$ & $10$ \\
+$d$ & $ 5$ & $ 5$ \\
+\end{tabular}
+
+Note that only $d$ dominates $b$ ($d \dominates b$) and that $a, c,
+\text{and} d$ are skyline points.
+
+\begin{tabular}{lcccccc}
+Iteration              & $p$ & Window $\mathbb{W}$ & tsIn & tsOut & Temp $\mathcal{T}$ & $\mathcal{O}$ \\
+\hline
+0 (Init)               &     & $\emptyset$          & 0 & 0 & $\emptyset$ & $\emptyset$\\
+1                      & $a$ & $\{a\;(0)\}$         & 1 & 0 & $\emptyset$ & $\emptyset$\\
+2                      & $b$ & $\{a\;(0), b\;(0)\}$ & 2 & 0 & $\emptyset$ & $\emptyset$\\
+3                      & $c$ & $\{a\;(0), b\;(0)\}$ & 3 & 1 & $\{c\}$     & $\emptyset$ \\
+4                      & $d$ & $\{a\;(0), d\;(1)\}$ & 4 & 1 & $\{c\}$     & $\emptyset$\\
+4 (Load $\mathcal{T}$) &     & $\{a\;(0), d\;(1)\}$ & 0 & 0 & $\emptyset$ & $\emptyset$\\
+5 (Propagate)          &     & $\{d\;(1)\}$         & 0 & 0 & $\emptyset$ & $\{a\}$ \\
+5                      & $c$ & $\{d\;(1), c\;(0)\}$ & 1 & 0 & $\emptyset$ & $\{a\}$ \\
+5 (Load $\mathcal{T}$) 
+
+\end{tabular}
 
 \subsection{Physical operator selection}
 \label{sec:operatorselection}

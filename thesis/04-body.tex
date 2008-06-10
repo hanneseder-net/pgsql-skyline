@@ -3510,6 +3510,18 @@ hashing could be engaded, i.e. allocate a fixed number of tuple
 windows and hash each \inlinesql{SKYLINE OF DIFF} group into one tuple
 window.
 
+\section{Project Tuples before inserting into SFS Tuple Window}
+SFS emits a tuple directly after it has survived the test against all
+tuples in the tuple window and the dominance check is only performed
+on the skyline attributes.  Because of this property it is possible to
+project the tuples only on the skyline attributes before inserting
+into the tuple window to safe space in the tuple window, but there is
+now free lunch, this projection comes at some CPU cost as memory has
+to be copied and manupilated.  Some cost estimation or some heuristics
+could be developt when to perform this projection.
+
+\todo{cite this has been mentioned in some Godfrey papers}{}
+
 \section{Extensions}
 
 \subsection{Sampling}

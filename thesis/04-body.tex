@@ -2937,7 +2937,15 @@ files.
 We will speak of it as \emph{job scheduling}.  The concept behind this
 is simply but very effective.  We run a processes called \emph{job
 scheduler}, realized in the Perl script \texttt{js.pl}, on each
-machine which is available to run some Jobs.
+machine which is available to run some Jobs. The script \texttt{js.pl}
+waits to get an exclusive file lock on \texttt{js.lock}, checks for
+\texttt{*.sql} files, i.e. Jobs in the \texttt{jobs/} directory, moves
+the first of these files, given one was found, to a directory with the
+same name as the machine \texttt{js.pl} is running one, next release
+the exclusive lock on \texttt{js.lock} and finally starts to work in
+the dequeued job by piping it through PostgreSQL interactive SQL
+processor \texttt{psql}. The ouptut is redirected to a log file in the
+\texttt{log/} directory.  This steps are performed in a endless loop.
 
 A simple lesson learned here is not to use Perl's \texttt{glob}
 function to read the content of a directory with thousends of
@@ -2946,12 +2954,6 @@ them. Globbing a dirctory with thousends of files could take longer
 than running one of these jobs and instead of running them in
 parallel, they are processed serially.  Instead rely \texttt{opendir},
 \texttt{readdir} and \texttt{closedir}.
-
-\todo{describe js.pause}{}
-
-\todo{describe js.lock}{}
-
-\todo{describe js.pl}{}
 
 The Perl script \texttt{feed.pl} is another simple script engaged with
 job scheduling.  Its task is to move batches of Jobs into the
@@ -2971,8 +2973,14 @@ Once the \texttt{jobs} directory did not contain any Jobs
 \texttt{prep/s1/ws} and \texttt{prep/s2/ws} are moved in turn to the
 \texttt{jobs} directory.
 
-By means of this easy concept we were able to add and remove machine
-as we liked.
+There is more little thing to tell, \texttt{js.pl} and
+\texttt{feed.pl} pause their operation if a file named \texttt{js.pause} exists
+in the \texttt{jobs/} directory.  This is very handy, do reconfigure
+the system like temporary remove some Jobs from the queue to schedule
+others first.
+
+By means of this simple arragement of files, directory and scripts we
+were able to add and remove machines as we liked.
 
 \subsubsection{To CSV Format}
 \label{sec:tocsvformat}
@@ -2981,19 +2989,25 @@ log files (cf. Figure~\ref{fig:logfile} into CSV format with the
 columns \texttt{runid}, \texttt{name} and \texttt{value}, and the
 content of the raw log file is preserved as comment prefixed with
 ``\texttt{\#}'' (cf. Figure~\ref{fig:parsedlogfile}). This makes it
-easy to use
-\texttt{grep -v "\^{ }\#"} as filter in the pipeline, while on the other hand
-being able to verify \texttt{qp2log} is working correctly, which was
-helpful during the development of \texttt{qp2log}.
+easy to use \texttt{grep -v "\^{ }\#"} as filter in the pipeline,
+while on the other hand being able to verify \texttt{qp2log} is
+working correctly, which was helpful during the development of
+\texttt{qp2log}.
 
-\todo{describe qp2log}{}
+The script \texttt{qp2log} makes extensive use of Perl's regular
+expressions to do its task.  All the fields that are extracted from
+the queries executation plan are listet in
+Table~\ref{tab:queryplanfields}.  We would like to point out a feature
+of Perl's regex support which was very handy for us, it is the
+combination of ``\texttt{m//g}'' and ``\texttt{\ttbackslash
+G}''. ``\texttt{\ttbackslash G}'' matches only at the end-of-match
+position of the prior \texttt{m//g}.  By means of that one can build a
+very \texttt{lex}/\texttt{flex} like scanner.
 
 
 \global\fixedcolumnwidth 5cm
 \global\paragraphcolumnwidth\textwidth
 \advance\paragraphcolumnwidth -\fixedcolumnwidth
-
-
 
 
 \begin{table}[htbp]

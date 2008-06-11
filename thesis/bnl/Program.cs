@@ -19,9 +19,22 @@ namespace bnl
             this.ts = 0;
         }
 
+        public Tuple(string id)
+        {
+            this.id = id;
+            d1 = 0;
+            d2 = 0;
+            ts = 0;
+        }
+
+        //public bool dominates(Tuple q)
+        //{
+        //    return d1 <= q.d1 && d2 <= q.d2 && (d1 < q.d1 || d2 < q.d2);
+        //}
+
         public bool dominates(Tuple q)
         {
-            return d1 <= q.d1 && d2 <= q.d2 && (d1 < q.d1 || d2 < q.d2);
+            return id.StartsWith("c") && q.id.StartsWith("a");
         }
     }
 
@@ -29,15 +42,25 @@ namespace bnl
     {
         static void Main(string[] args)
         {
-            int windowsize = 2;
+            int windowsize = 3;
+            int temptuples = 4;
             Queue<Tuple> I = new Queue<Tuple>();
 
-            //I.Enqueue(new Tuple("a", 10, 1));
-            I.Enqueue(new Tuple("b1", 2, 10));
-            I.Enqueue(new Tuple("b2", 4, 8));
-            I.Enqueue(new Tuple("c", 10, 1));
-            I.Enqueue(new Tuple("d1", 1, 9));
-            I.Enqueue(new Tuple("d2", 3, 7));
+
+            for (int i = 1; i <= windowsize; i++)
+                I.Enqueue(new Tuple(String.Format("a{0}", i)));
+
+            for (int i = 1; i <= temptuples; i++)
+                I.Enqueue(new Tuple(String.Format("b{0}", i)));
+
+            for (int i = 1; i <= windowsize; i++)
+                I.Enqueue(new Tuple(String.Format("c{0}", i)));
+
+            //I.Enqueue(new Tuple("b1", 2, 10));
+            //I.Enqueue(new Tuple("b2", 4, 8));
+            //I.Enqueue(new Tuple("c", 10, 1));
+            //I.Enqueue(new Tuple("d1", 1, 9));
+            //I.Enqueue(new Tuple("d2", 3, 7));
 
             List<Tuple> W = new List<Tuple>();
             Queue<Tuple> T = new Queue<Tuple>();
@@ -90,6 +113,9 @@ namespace bnl
                         I.Enqueue(q);
                     }
                     T.Clear();
+
+                    Propagate(W, O, tsIn);
+
                     tsIn = 0;
                     tsOut = 0;
                 }

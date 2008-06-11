@@ -42,8 +42,8 @@ namespace bnl
     {
         static void Main(string[] args)
         {
-            int windowsize = 3;
-            int temptuples = 4;
+            int windowsize = 1;
+            int temptuples = 1;
             Queue<Tuple> I = new Queue<Tuple>();
 
 
@@ -69,11 +69,30 @@ namespace bnl
             int tsIn = 0;
             int tsOut = 0;
             
-            while (I.Count > 0)
+            while (true)
             {
                 Propagate(W, O, tsIn);
 
-                Tuple p = I.Dequeue();
+                Tuple p;
+
+                if (I.Count == 0)
+                {
+                    if (tsOut == 0)
+                        break;
+
+                    foreach (Tuple q in T)
+                    {
+                        I.Enqueue(q);
+                    }
+                    T.Clear();
+
+                    tsIn = 0;
+                    tsOut = 0;
+
+                    continue;
+                }
+
+                p = I.Dequeue();
                 tsIn++;
                 p.ts = tsOut;
                 bool iscandiate = true;
@@ -106,19 +125,7 @@ namespace bnl
                     }
                 }
 
-                if (I.Count == 0)
-                {
-                    foreach (Tuple q in T)
-                    {
-                        I.Enqueue(q);
-                    }
-                    T.Clear();
-
-                    Propagate(W, O, tsIn);
-
-                    tsIn = 0;
-                    tsOut = 0;
-                }
+                
             }
 
             foreach (Tuple q in W)

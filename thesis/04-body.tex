@@ -876,7 +876,8 @@ decompossied to singletons.
 \todo{copy proof from manuscript}{}
 \end{proof}
 
-This property could be of interest in a distributed setting to reduce data transfer between servers.
+This property could be of interest in a distributed setting to reduce
+data transfer between servers.
 
 
 \begin{equation}
@@ -1168,8 +1169,133 @@ begin
 	return ($\mathcal{O}$);
 end
 \end{lstlisting}
-\caption{Pseudo code for Block-Nested-Loops (BNL) Algorithm}
+\caption{Pseudo code for Original Block-Nested-Loops (BNL) Algorithm}
 \label{code:bnl}
+\end{figure}
+
+
+\subsubsection{Nontermination of Block-Nested-Loops (BNL) Algorithm}
+During the implemention of BNL into PostgreSQL we discovered a flaw in
+the algorithm from the original paper \citep{Borzsonyi2001}.  Besides
+a little difference in notation and the fact that a tuple is only
+added to the tuple window when there is actual space in the tuple
+window and not like in \citep{Borzsonyi2001} where a tuple is first
+added and than removed if there is no more space the code of
+\citep{Borzsonyi2001} for BNL is the same is in Figure~\ref{code:bnl}.
+Under certain condition the code from Figure~\ref{code:bnl} does not
+terminate.  To show this property, we construct a data set like this:
+
+\begin{eqnarray}
+\mathcal{I} = \{a_1, \ldots, a_n, b_1, \ldots, b_m, c_1, \ldots, c_n\}
+\end{eqnarray}
+
+\noindent
+where $n$ is number of tuples that fit into the tuple window
+$\mathbb{W}$ and $m \ge 1$, with following dominance structure:
+
+\begin{eqnarray}
+\forall i \in \{1, \ldots, n\}\colon && c_i \dominates a_i \label{eqn:bnlntds1} \\
+\forall i, j \in \{1, \ldots, n\}\colon && i \neq j \imp a_i \incomparable a_j \land c_i \incomparable c_j \land a_i \incomparable c_j \label{eqn:bnlntds2} \\
+\forall i \in \{1, \ldots, n\}, j \in \{1, \ldots, m\}\colon && a_i \incomparable b_j \land c_i \incomparable b_j. \label{eqn:bnlntds3} 
+\end{eqnarray}
+
+\noindent
+In terms of a dominance relation this can be expressed as:
+
+\begin{equation}
+\dominates = \{(c_i, a_i) | i \in \{1, \ldots, n\}\},
+\end{equation}
+
+\noindent
+in essence this means every $a_i$ is dominated by $c_i$ and all other
+tuples are incomparable.  To construct such a dataset, generate $a_1,
+\ldots, a_n, b_1, \ldots b_m$ anti-correlated and let the $c_i$'s just by
+a little better in each dimension than the $a_i$'s.
+
+\noindent
+It is easy to see that following identities hold:
+
+\begin{eqnarray}
+\skyline_\dominates(\{a_1, \ldots, a_n, b_1, \ldots, b_m\}) &=& \{a_1, \ldots, a_n, b_1, \ldots, b_m\} \\
+\skyline_\dominates(\{a_1, \ldots, a_n, c_1, \ldots, c_n\}) &=& \{c_1, \ldots, c_n\} \\
+\skyline_\dominates(\mathcal{I}) &=& \skyline_\dominates(\{b_1, \ldots, b_m, c_1, \ldots, b_n\}) \\
+                      &=& \{b_1, \ldots, b_m, c_1, \ldots, c_n\}
+\end{eqnarray}
+
+\todo{explain non termination}{}
+
+Note that a relation or a set does not have the concept of
+\emph{nextness}, but we treat it here like a physical table, where
+the tuples do have a sequence.
+
+
+\begin{figure}[htbp]
+\begin{lstlisting}[language=pseudo]
+function SkylineBNL($\mathcal{I}$)
+begin
+	// initialization
+	$\mathcal{O} \gets \emptyset$; $\mathcal{T} \gets \emptyset$; $\mathbb{W} \gets \emptyset$; $timestampIn \gets 0$; $timestampOut \gets 0$;
+
+	while true do begin
+		// propagate points that have been compared to all
+		foreach $q \in \mathbb{W}$ do
+			if $q_{timestamp}$=$timestampIn$ then begin
+				append($\mathcal{O}$, $q$);
+				release($\mathbb{W}$, $q$);
+			end
+
+		// continue with next run if necassary
+		if EOF($\mathcal{I}$) then begin
+			if EOF($\mathcal{T}$)
+				break; // we are done
+
+			// switch to tempfile $\mathcal{T}$
+			$\mathcal{I} \gets \mathcal{T}$; $\mathcal{T} \gets \emptyset$;
+			$timestampIn \gets 0$; $timestampOut \gets 0$;
+			continue;
+		end
+
+		// fetch the next point
+		$p \gets$ next($\mathcal{I}$);
+		$p_{timestamp} \gets timestampOut$;
+		$timestampIn \gets timestampIn + 1$;
+		$isCandidate \gets true$;
+
+		// compare $p$ to all points in the tuple window $\mathbb{W}$
+		foreach $q \in \mathbb{W}$ do begin
+			if $q \dominates p$ then begin
+				free($p$);
+				$isCandidate \gets false$;
+				break;
+			end
+			else if $p \dominates q$ then
+				release($\mathbb{W}$, $q$);
+		end
+
+		if $isCandidate$ then begin
+			if hasfreespace($\mathbb{W}$) then
+				// add $p$ to the tuple window $\mathbb{W}$
+				add($\mathbb{W}$, $p$);
+			else begin
+				// write $p$ to the tempfile $\mathcal{T}$
+				append($\mathcal{T}$, $p$);
+				free($p$);
+				$timestampOut \gets timestampOut + 1$;
+			end
+		end
+	end
+
+	// flushing the tuple window
+	foreach $q \in \mathbb{W}$ do begin
+		append($\mathcal{O}$, $q$);
+		release($\mathbb{W}$, $q$);
+	end
+
+	return ($\mathcal{O}$);
+end
+\end{lstlisting}
+\caption{Pseudo code for Fixed Block-Nested-Loops (BNL) Algorithm}
+\label{code:fixedbnl}
 \end{figure}
 
 

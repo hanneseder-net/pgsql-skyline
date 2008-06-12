@@ -1200,20 +1200,18 @@ $\mathbb{W}$ and $m \ge 1$, with following dominance structure:
 \end{eqnarray}
 
 \noindent
-In terms of a dominance relation this can be expressed as:
+In terms of a binary relation the dominance can be expressed as:
 
 \begin{equation}
-\dominates = \{(c_i, a_i) | i \in \{1, \ldots, n\}\},
+\dominates\; = \{(c_i, a_i) | i \in \{1, \ldots, n\}\} \subset \mathcal{I} \times \mathcal{I},
 \end{equation}
 
 \noindent
 in essence this means every $a_i$ is dominated by $c_i$ and all other
 tuples are incomparable.  To construct such a dataset, generate $a_1,
 \ldots, a_n, b_1, \ldots b_m$ anti-correlated and let the $c_i$'s just by
-a little better in each dimension than the $a_i$'s.
-
-\noindent
-It is easy to see that following identities hold:
+a little better in each dimension than the $a_i$'s.  It is easy to see
+that following identities hold:
 
 \begin{eqnarray}
 \skyline_\dominates(\{a_1, \ldots, a_n, b_1, \ldots, b_m\}) &=& \{a_1, \ldots, a_n, b_1, \ldots, b_m\} \\
@@ -1222,19 +1220,58 @@ It is easy to see that following identities hold:
                       &=& \{b_1, \ldots, b_m, c_1, \ldots, c_n\}
 \end{eqnarray}
 
-\todo{explain non termination}{}
-
-Note that a relation or a set does not have the concept of
-\emph{nextness}, but we treat it here like a physical table, where
+In the following we outline the cause of non-termination of the
+original BNL for the dataset $\mathcal{I}$ and dominance relation
+$\dominates$.  Note that a relation or a set does not have the concept
+of \emph{nextness}, but we treat it here like a physical table, where
 the tuples do have a sequence.
 
+\begin{enumerate}
+\item 
+the tuples $\{a_1, \ldots, a_n\}$ are processed, this entirely fills up
+the tuple window of size $n$ slots with this tuples as they are all
+incomparable
+
+\item 
+the tuples $\{b_1, \ldots, b_m\}$ are processed, as they are all
+incomparable to the $a_i$'s they all end up in the temp file
+$\mathcal{T}$; at this point $timestampOut = m$.
+
+\item
+the tuples $\{c_1, \ldots, c_n\}$ are processed, as each $c_i$
+dominates $a_i$, all $a_i$ are removed from the tuple window and
+replaced by the $c_i$; the timestamp for the $c_i$'s is $m$ and the
+tuple window is completly filled with the $c_i$'s tuples
+
+\item
+end of input $\mathcal{I}$ is reached, so switch to temp file
+$\mathcal{T}$ containing $\{b_1, \ldots, b_m\}$, $timestampIn$ is
+reset to $0$
+
+\item
+the tuples $\{b_1, \ldots, b_m\}$ are processed, they will all end up
+in the temp file again, as they are all incomparable to the $c_i$'s;
+at this point $timestampIn = m$ but at the same time the end of input
+is reached, resulting in a switch to the temp file and reseting
+$timestampIn$ and $timestampOut$ to zero, no tuple $c_i$ from the
+tuple window will be propageted to the output as they have a timestamp
+of $m$ but the propagate code will not be reached with $timestampIn =
+m$;
+\emph{the result is that this last step will be repeated over and over again}
+\end{enumerate}
+
+The simplest case to reconstruct this nontermination behaviour is with
+$n=m=1$. Nevertheless it is not very had to fix this issue, a slight
+modification in the control flow solves the problem, see
+Figure~\ref{code:fixedbnl}, and of course our implementation into
+PostgreSQL is based on our fixed version.
 
 \begin{figure}[htbp]
 \begin{lstlisting}[language=pseudo]
-function SkylineBNL($\mathcal{I}$)
-begin
-	// initialization
-	$\mathcal{O} \gets \emptyset$; $\mathcal{T} \gets \emptyset$; $\mathbb{W} \gets \emptyset$; $timestampIn \gets 0$; $timestampOut \gets 0$;
+function SkylineBNL($\mathcal{I}$) begin // initialization
+$\mathcal{O} \gets \emptyset$; $\mathcal{T} \gets \emptyset$;
+$\mathbb{W} \gets \emptyset$; $timestampIn \gets 0$; $timestampOut
+\gets 0$;
 
 	while true do begin
 		// propagate points that have been compared to all
@@ -1320,8 +1357,58 @@ optimizer accordingly.
 
 
 \begin{figure}[htbp]
-\begin{lstlisting}
+\begin{lstlisting}[language=pseudo]
+function SkylineSFS($\mathcal{I}$) begin 
+	// presort input
+	$\mathcal{I}_{presorted} \gets$ sort($\mathcal{I}$);
 
+	// initialization
+	$\mathcal{O} \gets \emptyset$; $\mathcal{T} \gets \emptyset$; $\mathbb{W} \gets \emptyset$;
+
+	while $\neg$EOF($\mathcal{I}_{presorted}$) do begin
+		// loop invariant: $\mathcal{I}_{presorted}$ and $\mathcal{T}$ are sorted
+
+		// fetch the next point
+		$p \gets$ next($\mathcal{I}_{presorted}$);
+		$isSkyline \gets true$;
+
+		// compare $p$ to all points in the tuple window $\mathbb{W}$
+		foreach $q \in \mathbb{W}$ do begin
+			if $q \dominates p$ then begin
+				free($p$);
+				$isSkyline \gets false$;
+				break;
+			end
+			else if $p \dominates q$ then
+				release($\mathbb{W}$, $q$);
+		end
+
+		if $isSkyline$ then begin
+			// add tuple to the output
+			append($\mathcal{O}$, $p$);
+	
+			if hasfreespace($\mathbb{W}$) then
+				// add $p$ to the tuple window $\mathbb{W}$
+				add($\mathbb{W}$, $p$);
+			else begin
+				// write $p$ to the tempfile $\mathcal{T}$
+				append($\mathcal{T}$, $p$);
+				free($p$);
+			end
+		end
+
+		// continue with next run if necassary
+		if EOF($\mathcal{I}_{presorted}$) then begin
+			// switch to tempfile $\mathcal{T}$
+			$\mathcal{I}_{presorted} \gets \mathcal{T}$; $\mathcal{T} \gets \emptyset$;
+
+			// clean tuple window
+			$\mathbb{W} \gets \emptyset$;
+		end
+	end
+
+	return ($\mathcal{O}$);
+end
 \end{lstlisting}
 \caption{Pseudo code for Sort-First-Skyline (SFS) Algorithm}
 \label{code:sfs}

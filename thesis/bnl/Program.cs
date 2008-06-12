@@ -43,9 +43,21 @@ namespace bnl
         static void Main(string[] args)
         {
             int windowsize = 1;
-            int temptuples = 1;
-            Queue<Tuple> I = new Queue<Tuple>();
+            int temptuples = 2;
+            Queue<Tuple> I = CreateDataset(windowsize, temptuples);
+            Queue<Tuple> O = new Queue<Tuple>();
+            FixedBNL(windowsize, I, O);
+            PipeOut(O);
 
+            I = CreateDataset(windowsize, temptuples);
+            O = new Queue<Tuple>();
+            OriginalBNL(windowsize, I, O); // will not return 
+            PipeOut(O);
+        }
+
+        private static Queue<Tuple> CreateDataset(int windowsize, int temptuples)
+        {
+            Queue<Tuple> I = new Queue<Tuple>();
 
             for (int i = 1; i <= windowsize; i++)
                 I.Enqueue(new Tuple(String.Format("a{0}", i)));
@@ -56,16 +68,15 @@ namespace bnl
             for (int i = 1; i <= windowsize; i++)
                 I.Enqueue(new Tuple(String.Format("c{0}", i)));
 
-            //I.Enqueue(new Tuple("b1", 2, 10));
-            //I.Enqueue(new Tuple("b2", 4, 8));
-            //I.Enqueue(new Tuple("c", 10, 1));
-            //I.Enqueue(new Tuple("d1", 1, 9));
-            //I.Enqueue(new Tuple("d2", 3, 7));
+            return I;
+        }
 
+
+        private static void FixedBNL(int windowsize, Queue<Tuple> I, Queue<Tuple> O)
+        {
             List<Tuple> W = new List<Tuple>();
             Queue<Tuple> T = new Queue<Tuple>();
-            Queue<Tuple> O = new Queue<Tuple>();
-
+            
             int tsIn = 0;
             int tsOut = 0;
             
@@ -97,7 +108,7 @@ namespace bnl
                 p.ts = tsOut;
                 bool iscandiate = true;
                 
-            dominancecheck:
+                dominancecheck:
                 foreach (Tuple q in W)
                 {
                     if (q.dominates(p))
@@ -132,15 +143,84 @@ namespace bnl
             {
                 O.Enqueue(q);
             }
+        }
 
+
+        private static void OriginalBNL(int windowsize, Queue<Tuple> I, Queue<Tuple> O)
+        {
+            List<Tuple> W = new List<Tuple>();
+            Queue<Tuple> T = new Queue<Tuple>();
+
+            int tsIn = 0;
+            int tsOut = 0;
+
+            while (I.Count > 0)
+            {
+                Propagate(W, O, tsIn);
+
+                Tuple p = I.Dequeue();
+                tsIn++;
+                p.ts = tsOut;
+                bool iscandiate = true;
+
+            dominancecheck:
+                foreach (Tuple q in W)
+                {
+                    if (q.dominates(p))
+                    {
+                        iscandiate = false;
+                        break;
+                    }
+                    else if (p.dominates(q))
+                    {
+                        W.Remove(q);
+                        goto dominancecheck;
+                    }
+                }
+
+                if (iscandiate)
+                {
+                    if (W.Count < windowsize)
+                    {
+                        W.Add(p);
+                    }
+                    else
+                    {
+                        T.Enqueue(p);
+                        tsOut++;
+                    }
+                }
+
+                if (I.Count == 0)
+                {
+                    if (tsOut == 0)
+                        break;
+
+                    foreach (Tuple q in T)
+                    {
+                        I.Enqueue(q);
+                    }
+                    T.Clear();
+
+                    tsIn = 0;
+                    tsOut = 0;
+                }
+            }
+
+            foreach (Tuple q in W)
+            {
+                O.Enqueue(q);
+            }
+        }
+
+        private static void PipeOut(Queue<Tuple> O)
+        {
             foreach (Tuple q in O)
             {
                 Console.WriteLine(q.id);
             }
             Console.WriteLine();
-
         }
-
         private static void Propagate(List<Tuple> W, Queue<Tuple> O, int tsIn)
         {
             propagte:

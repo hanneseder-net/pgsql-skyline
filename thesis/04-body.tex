@@ -33,7 +33,11 @@
 \newcommand\incomparable{\ensuremath{\parallel}\xspace}
 \newcommand\comparable{\ensuremath{\perp}\xspace}
 %\newcommand\nondistinct{\ensuremath{\doteq}\xspace}
-\newcommand\nondistinct{\ensuremath{\triangleq}\xspace} % todo: find another symbol
+%\newcommand\nondistinct{\ensuremath{\triangleq}\xspace}
+%\newcommand\nondistinct{\ensuremath{\stackrel{\vartriangleright}{\thicksim}}\xspace}
+\newcommand\nondistinct{\ensuremath{\stackrel{\vartriangleright}{=}}\xspace}
+
+
 
 \newcommand\inlinesql[1]{{\tt #1}}
 \newcommand\srcref[1]{{\tt #1}}
@@ -489,9 +493,9 @@ preference relation over \schema{R} if it is a subset of $\schema{R}
 \end{definition}
 
 To give an intuition, \dominates will be a binary relation between
-pairs of tuples from the same (database) relation, we say $r$
-\emph{dominates} $s$ in \dominates iff $(r, s) \in \dominates$ (or in
-infix notation $r \dominates s$).
+pairs of tuples from the same (database) relation \relation{R} with
+schema \schema{R}, we say $r$ \emph{dominates} $s$ in \schema{R} iff
+$(r, s) \in \dominates$ (or in infix notation $r \dominates s$).
 
 We require the relation \dominates to be a \emph{strict partial
 order}\index{strict partial order}, i.e. \dominates is irreflexive,
@@ -1152,7 +1156,7 @@ begin
 			end
 		end
 
-		// continue with next run if necassary
+		// continue with next pass if necassary
 		if EOF($\mathcal{I}$) then begin
 			// switch to tempfile $\mathcal{T}$
 			$\mathcal{I} \gets \mathcal{T}$; $\mathcal{T} \gets \emptyset$;
@@ -1169,7 +1173,7 @@ begin
 	return ($\mathcal{O}$);
 end
 \end{lstlisting}
-\caption{Pseudo code for Original Block-Nested-Loops (BNL) Algorithm}
+\caption{Pseudo code for Original Block-Nested-Loops (BNL) Algorithm, which does not terminate in all cases.}
 \label{code:bnl}
 \end{figure}
 
@@ -1193,11 +1197,11 @@ terminate.  To show this property, we construct a data set like this:
 where $n$ is number of tuples that fit into the tuple window
 $\mathbb{W}$ and $m \ge 1$, with following dominance structure:
 
-\begin{eqnarray}
-\forall i \in \{1, \ldots, n\}\colon && c_i \dominates a_i \label{eqn:bnlntds1} \\
-\forall i, j \in \{1, \ldots, n\}\colon && i \neq j \imp a_i \incomparable a_j \land c_i \incomparable c_j \land a_i \incomparable c_j \label{eqn:bnlntds2} \\
-\forall i \in \{1, \ldots, n\}, j \in \{1, \ldots, m\}\colon && a_i \incomparable b_j \land c_i \incomparable b_j. \label{eqn:bnlntds3} 
-\end{eqnarray}
+\begin{align}
+\forall i \in \{1, \ldots, n\}\colon & c_i \dominates a_i \label{eqn:bnlntds1} \\
+\forall i, j \in \{1, \ldots, n\}\colon & i \neq j \imp a_i \incomparable a_j \land c_i \incomparable c_j \land a_i \incomparable c_j \label{eqn:bnlntds2} \\
+\forall i \in \{1, \ldots, n\}, j \in \{1, \ldots, m\}\colon & a_i \incomparable b_j \land c_i \incomparable b_j. \label{eqn:bnlntds3} 
+\end{align}
 
 \noindent
 In terms of a binary relation the dominance can be expressed as:
@@ -1261,10 +1265,11 @@ m$;
 \end{enumerate}
 
 The simplest case to reconstruct this nontermination behaviour is with
-$n=m=1$. Nevertheless it is not very had to fix this issue, a slight
-modification in the control flow solves the problem, see
-Figure~\ref{code:fixedbnl}, and of course our implementation into
-PostgreSQL is based on our fixed version.
+$n=m=1$.  A possible fix is to duplicate the lines 7--12 between 44
+and 45 in Figure~\ref{code:bnl}, so the propagation is done once EOF
+is reached.  Nevertheless we fixed it with a slight modification in
+the control flow, see Figure~\ref{code:fixedbnl}.  And of course, our
+implementation in PostgreSQL is based on our fixed version.
 
 \begin{figure}[htbp]
 \begin{lstlisting}[language=pseudo]
@@ -1281,7 +1286,7 @@ $\mathbb{W} \gets \emptyset$; $timestampIn \gets 0$; $timestampOut
 				release($\mathbb{W}$, $q$);
 			end
 
-		// continue with next run if necassary
+		// continue with next pass if necassary
 		if EOF($\mathcal{I}$) then begin
 			if EOF($\mathcal{T}$)
 				break; // we are done
@@ -1335,25 +1340,46 @@ end
 \label{code:fixedbnl}
 \end{figure}
 
+\subsubsection{Non-preservation of relative Tuple Order}
+It is not completly obious that BNL does not preserve the relative
+order of tuples from the input in the output, even when the tuple
+window policy \emph{append} is used.  To examplify this property
+we use a dataset as in the previous section with $n=m=1$, i.e.
+\[
+\mathcal{I} = \{a_1, b_1, c_1\},\quad\text{with}\ a_1 \incomparable b_1,\: b_1 \incomparable c_1,\: c_1 \dominates a_1.
+\]
+After the first pass the tuple window contains $c_1$ and $b_1$ is in
+the temp file, $a_1$ was eliminated by $c_1$. In the text pass $b_1$
+and $c_1$ are compared against each other, but as the are incomparable
+$b_1$ ends up in the temp file again, but this time $c_1$ can be
+propagated to the output as it was compared against all other tuples.
+In the final pass $b_1$ is propagated to the output.  Hence the output
+is
+\[
+\mathcal{O} = \{c_1, b_1\}, 
+\]
+where $b_1$ and $c_1$ have changed their relative order.  It is easy
+to imagine that this can happen in other configurations as well and
+therefor BNL does not preserve the relative order of tuples.  This
+physical property of BNL is important during query planing, as the
+relative order of tuples is an important aspect here, e.g. if a prior
+operator in the query plan establishes a certain order or preserves it
+an explicit sort can be ommited or for instance consider differnt
+phyiscal operators for aggregation or joining.
 
 \subsection{Sort First Skyline (SFS)}
-The implementation of SFS is according to \cite{Chomicki2003}. 
-It differs from BNL in that the data is topologically sorted at start-up time.
-We realize the sorting by utilizing the same physical operator as for 
-the \texttt{ORDER BY}-clause.
+The implementation of SFS is according to \citep{Chomicki2003}.  It
+differs from BNL in that the data is topologically sorted at start-up
+time.  We realize the sorting by utilizing the same physical operator
+as for the \texttt{ORDER BY}-clause.
 %
 In the presence of a suitable index, an explicit sort phase can be
 omitted.
 %The skyline operator can make use of more indexes than the \texttt{ORDER BY}-clause,
 %since the semantic of the skyline operator is insensitive to the order of attributes.
-While 
-%the \texttt{ORDER BY}-clause requires that the order of the
-%fields, and direction (\texttt{ASC}/\texttt{DESC}) of the index match
-%the \texttt{ORDER BY}-clause, 
-the skyline operator is insensitive to
-the order of attributes, more indexes can be considered by the
-query optimizer for the access path selection.  We modified the query
-optimizer accordingly.
+While the skyline operator is insensitive to the order of attributes,
+more indexes can be considered by the query optimizer for the access
+path selection.  We modified the query optimizer accordingly.
 
 
 \begin{figure}[htbp]
@@ -1384,9 +1410,6 @@ function SkylineSFS($\mathcal{I}$) begin
 		end
 
 		if $isSkyline$ then begin
-			// add tuple to the output
-			append($\mathcal{O}$, $p$);
-	
 			if hasfreespace($\mathbb{W}$) then
 				// add $p$ to the tuple window $\mathbb{W}$
 				add($\mathbb{W}$, $p$);
@@ -1395,9 +1418,12 @@ function SkylineSFS($\mathcal{I}$) begin
 				append($\mathcal{T}$, $p$);
 				free($p$);
 			end
+
+			// add tuple to the output
+			append($\mathcal{O}$, $p$);
 		end
 
-		// continue with next run if necassary
+		// continue with next pass if necassary
 		if EOF($\mathcal{I}_{presorted}$) then begin
 			// switch to tempfile $\mathcal{T}$
 			$\mathcal{I}_{presorted} \gets \mathcal{T}$; $\mathcal{T} \gets \emptyset$;
@@ -1414,76 +1440,185 @@ end
 \label{code:sfs}
 \end{figure}
 
+\subsubsection{Preservation of relative Tuple Order}
+Please note that in the output of SFS the relative order of tuples
+from $\mathcal{I}_{presorted}$ is preserved.  SFS has this physical
+property independent from the tuple window placement policies used.
+This is because if a tuple survives the dominance check it is appended
+to the output.
+
+
 
 \subsection{Linear Elimination Sort for Skyline (LESS)}
-\todo{}{}
+In \citep{Godfrey2005} proposed the LESS algorithm, an improvement
+over SFS \cite{Chomicki2003}, where the essential differences between
+SFS and LESS are:
+
+\begin{enumerate}
+\item 
+it uses a so called \emph{elimination filter} in pass zero of the
+external sort routine toeliminate tuples early, hence less tuples left
+to sort; and
+\item
+the skyline-filter is interweaved in the final pass of the external
+sort routine
+\end{enumerate}
+
 \subsubsection{Elimination Filter (EF)}
 
+
+\begin{figure}[htbp]
+\begin{lstlisting}[language=pseudo]
+function EliminationFilter($\mathcal{I}$, var $state$) begin 
+	while true do begin
+		switch state begin
+		case INIT:
+			$\mathbb{W} \gets \emptyset$;
+			$state \gets $ PROCESS;
+			break;
+
+		case PROCESS:
+			if EOF($\mathcal{I}$) then begin
+				$state \gets $ DONE;
+				break;
+			end
+	
+			$p \gets$ next($\mathcal{I}$);
+			$isCandidate \gets true$;
+
+			// compare $p$ to all points in the tuple window $\mathbb{W}$
+			foreach $q \in \mathbb{W}$ do begin
+				if $q \dominates p$ then begin
+					free($p$);
+					$isCandidate \gets false$;
+					break;
+				end
+				else if $p \dominates q$ then
+					release($\mathbb{W}$, $q$);
+			end
+
+			if $isCandidate$ then begin
+				if hasfreespace($\mathbb{W}$) then begin
+					// add $p$ to the tuple window $\mathbb{W}$
+					add($\mathbb{W}$, $p$);
+				end
+
+				return $p$;
+			end
+
+			break;
+
+		case DONE:
+			return NULL;
+		end
+	end
+end
+\end{lstlisting}
+\caption{Pseudo code for Elimination Filter (EF)}
+\label{code:ef}
+\end{figure}
+
+
+\begin{figure}[htbp]
+\begin{lstlisting}[language=pseudo]
+program EliminationFilter() begin 
+	$\mathbb{W} \gets \emptyset$;
+	while $\neg$EOF($\mathcal{I}$) begin
+		$p \gets$ read($\mathcal{I}$);
+		$isCandidate \gets true$;
+
+		// compare $p$ to all points in the tuple window $\mathbb{W}$
+		foreach $q \in \mathbb{W}$ do begin
+			if $q \dominates p$ then begin
+				free($p$);
+				$isCandidate \gets false$;
+				break;
+			end
+			else if $p \dominates q$ then
+				release($\mathbb{W}$, $q$);
+		end
+	
+		if $isCandidate$ then
+			if hasfreespace($\mathbb{W}$) then begin
+				// add $p$ to the tuple window $\mathbb{W}$
+				add($\mathbb{W}$, $p$);
+			end
+
+			write($\mathcal{O}$, $p$);
+		end
+	end
+end
+\end{lstlisting}
+\caption{Pseudo code for Elimination Filter (EF) as filter program}
+\label{code:efprogram}
+\end{figure}
+
+
+
+
+
 \subsection{SFS+EF (move to Implementation)}
-In \cite{Godfrey2005} Godfrey et al. proposed the LESS
+In \citep{Godfrey2005} Godfrey et al. proposed the LESS
 algorithm, which is an improvement of SFS due to the introduction of
 the concept of {\em elimination filter} (EF). With the original LESS
 algorithm the elimination filtering is carried out in the pass zero of
 the external sort routine to eliminate records quickly.
 
-In our case, in order to integrate the elimination filter into the SFS algorithm,
-while at the same time preserving the utilization of the  
-physical sort operator, 
-we implemented the elimination filter {\em before} the sort routine.
-Speaking in terms of the iterator tree, the EF node is a child of the sort node,
-which in turn is a child of the SFS node (see Figure~\ref{fig:qp-sfs-ef}).
-Furthermore, we do not integrate the skyline computation into the final pass 
-of the merge sort phase, as described in \cite{Godfrey2005}.
-Therefore, technically speaking, SFS+EF is not an equivalent implementation of LESS.
-However, the elimination filter is preserved in SFS+EF,
-which is essentially the gist of LESS.
+In our case, in order to integrate the elimination filter into the SFS
+algorithm, while at the same time preserving the utilization of the
+physical sort operator, we implemented the elimination filter {\em
+before} the sort routine.  Speaking in terms of the iterator tree, the
+EF node is a child of the sort node, which in turn is a child of the
+SFS node (see Figure~\ref{fig:qp-sfs-ef}).  Furthermore, we do not
+integrate the skyline computation into the final pass of the merge
+sort phase, as described in \cite{Godfrey2005}.  Therefore,
+technically speaking, SFS+EF is not an equivalent implementation of
+LESS.  However, the elimination filter is preserved in SFS+EF, which
+is essentially the gist of LESS.
 
-The implementation of EF is similar to BNL.
-An elimination filter window is maintained in the main memory.
-We use 8 KB as default window size.
-The difference between EF and BNL is that EF does not write tuples to a
-temporary file if the tuple window is full, and that the relative order of tuples 
-going through the EF is preserved.
+The implementation of EF is similar to BNL.  An elimination filter
+window is maintained in the main memory.  We use 8 KB as default
+window size.  The difference between EF and BNL is that EF does not
+write tuples to a temporary file if the tuple window is full, and that
+the relative order of tuples going through the EF is preserved.
 
 \subsection{BNL+EF (move to Implementation)}
-Inspired from the idea of the elimination filter in LESS, we experimented
-a new combination of BNL and EF. That is, the elimination filter 
-is executed before the BNL algorithm. Since our implementation of the
-elimination filter is independent from the external sort routine,
-the coding of this variant is straightforward.
-It turns out that the algorithm BNL+EF is a substantial improvement
-to BNL.
+Inspired from the idea of the elimination filter in LESS, we
+experimented a new combination of BNL and EF. That is, the elimination
+filter is executed before the BNL algorithm. Since our implementation
+of the elimination filter is independent from the external sort
+routine, the coding of this variant is straightforward.  It turns out
+that the algorithm BNL+EF is a substantial improvement to BNL.
 
 \subsection{Divide and Conquer (D\&C)}
 \todo{}{}
 
 \subsection{TODO}
-We experimented with four window policies for both the tuple
-window (applied for BNL and SFS) and the EF window (for elimination filter): 
+We experimented with four window policies for both the tuple window
+(applied for BNL and SFS) and the EF window (for elimination filter):
 \emph{append}, \emph{prepend}, \emph{entropy} and \emph{random} \cite{Godfrey2007}.
-We implemented both windows with doubly linked lists with a sentinel, thus
-the time cost for insertion and deletion was in $O(1)$.
-Furthermore, as the insert 
-position for the \emph{entropy} and \emph{random} window policy was determined while iterating 
-over the tuple window, the insert operation was also in $O(1)$.
+We implemented both windows with doubly linked lists with a sentinel,
+thus the time cost for insertion and deletion was in $O(1)$.
+Furthermore, as the insert position for the \emph{entropy} and
+\emph{random} window policy was determined while iterating over the
+tuple window, the insert operation was also in $O(1)$.
 
 If the EF window is full, in case of EF window policy 
 \emph{entropy} or \emph{random}, the tuple with the lowest ranking is 
-evicted to make space for a higher ranked tuple. 
-Instead of calculating the entropy, a random value is used for ranking by
-the window policy \emph{random}.
-With EF window 
-policy \emph{append} and \emph{prepend}, once the EF window is full, space
-in the EF window is only gained if a tuple in the EF window is dominated by
-the incoming tuple and thus removed.
-In our implementation the window policy \emph{entropy} can only be used if 
-statistics for basetables is available.
+evicted to make space for a higher ranked tuple. Instead of
+calculating the entropy, a random value is used for ranking by the
+window policy \emph{random}.  With EF window policy \emph{append} and
+\emph{prepend}, once the EF window is full, space in the EF window is
+only gained if a tuple in the EF window is dominated by the incoming
+tuple and thus removed.  In our implementation the window policy
+\emph{entropy} can only be used if statistics for basetables is
+available.
 
 In summary, we conducted experiments of the four skyline algorithms:
-BNL, SFS, BNL+EF, SFS+EF, upon each of which four 
-window policies were applied: \emph{append}, \emph{prepend}, \emph{entropy} and \emph{random}.
-For BNL+EF and SFS+EF, we applied on both windows
-the same window policy in our experiments.
+BNL, SFS, BNL+EF, SFS+EF, upon each of which four window policies were
+applied: \emph{append}, \emph{prepend}, \emph{entropy} and
+\emph{random}.  For BNL+EF and SFS+EF, we applied on both windows the
+same window policy in our experiments.
 
 \section{Indexed based Skyline Algortihms}
 \todo{}{}

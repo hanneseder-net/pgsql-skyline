@@ -351,7 +351,7 @@ We have so far implemented the non-index based algorithms
 BNL, SFS, and a variant of LESS in PostgreSQL.
 %To the best of our knowledge, this is the first work of building
 %skyline operators in an open source RDBMS. 
-%\todo{there are implementations: see \cite{Chaudhuri2006, Goncalves2005, Brando2007}}
+%\todo{there are implementations: see \citep{Chaudhuri2006, Goncalves2005, Brando2007}}
 In addition, 
 we extended the standard syntax to specify
 \begin{itemize}
@@ -370,9 +370,9 @@ we extended the standard syntax to specify
 The ultimate goal of our work is building a skyline query optimizer to
 automatically generate a good query plan w.r.t. I/O, time, and memory
 consumption.  It is well known that the cost estimation of the skyline
-queries is a non-trivial task \cite{Chaudhuri2006} since the
+queries is a non-trivial task \citep{Chaudhuri2006} since the
 performance of a skyline query is sensitive to a number of parameters
-\cite{Godfrey2007}.  To achieve this goal, we conducted extensive
+\citep{Godfrey2007}.  To achieve this goal, we conducted extensive
 experiments on the skyline implementations.
 
 
@@ -1042,23 +1042,23 @@ to any monotone function).\todo{from \citep{Papadias2005}}{rephrase}
 \chapter{Existing Skyline Algorithms}
 %\label{chap:relatedworks}
 \todo{}{}
-Since the introduction of the skyline operator \cite{Borzsonyi2001}, a
+Since the introduction of the skyline operator \citep{Borzsonyi2001}, a
 number of secondary-memory algorithms have been developed for
 efficient skyline computation. These algorithms can be classified into
 two categories. The first one involves solutions that do not require
 any preprocessing on the underlying dataset. Algorithms such as
-{\em Block Nested Loops} (BNL) \cite{Borzsonyi2001}, 
-{\em Divide and Conquer} (D\&C) \cite{Borzsonyi2001}, 
-{\em Sort First Skyline} (SFS) \cite{Chomicki2003}, and
-{\em Linear Elimination Sort for Skyline} (LESS) \cite{Godfrey2005}
+{\em Block Nested Loops} (BNL) \citep{Borzsonyi2001}, 
+{\em Divide and Conquer} (D\&C) \citep{Borzsonyi2001}, 
+{\em Sort First Skyline} (SFS) \citep{Chomicki2003}, and
+{\em Linear Elimination Sort for Skyline} (LESS) \citep{Godfrey2005}
 belong to this category.
 The algorithms in the second category utilize different index structures
 such as sorted lists and R-trees to reduce the query costs.
 Well-known algorithms in this category include 
-{\em Bitmap} \cite{Tan2001}, 
-{\em Index} \cite{Tan2001},
-{\em Nearest Neighbor} (NN) \cite{Kossmann2002}, and
-{\em Branch and Bound} (BBS) \cite{Papadias2003, Papadias2005}.
+{\em Bitmap} \citep{Tan2001}, 
+{\em Index} \citep{Tan2001},
+{\em Nearest Neighbor} (NN) \citep{Kossmann2002}, and
+{\em Branch and Bound} (BBS) \citep{Papadias2003, Papadias2005}.
 
 The advantage of index-based algorithms is that they need to access
 only a portion of the dataset to compute the skyline, while
@@ -1066,19 +1066,25 @@ non-index-based algorithms have to visit the whole dataset at least
 once.  However, index-based algorithms have to incur additional time
 and space costs for building and maintaining the indexes.  Comparisons
 of these methods are presented in several works
-\cite{Tan2001, Kossmann2002, Chomicki2003}.
+\citep{Tan2001, Kossmann2002, Chomicki2003}.
+
+Furthermore from an relational algebraic point of view, index-based
+skyline algorithms can only be placed an the leaves of an algobraic
+expresion, where the non-indexed based sklyine algorithms are first
+order citizens and can be placed any where in the relational algebra 
+expression, so they are full general.
+\todo{}{}
 
 \section{Main Memory Only Skyline Algorithms}
 \todo{}{}
 
 \section{Non-indexed based Skyline Algorithms}
-The skyline algorithms we have implemented are: BNL, SFS,
-BNL+EF and SFS+EF. EF stands for {\em Elimination Filter},
-which was introduced in \cite{Godfrey2005} as an essential 
-routine for the LESS algorithm. 
+The skyline algorithms we have implemented are: BNL, SFS, BNL+EF and
+SFS+EF. EF stands for {\em Elimination Filter}, which was introduced
+in \citep{Godfrey2005} as an essential routine for the LESS algorithm.
 
 \subsection{Block Nested Loops (BNL)}
-BNL was implemented according to the algorithm proposed in \cite{Borzsonyi2001}.
+BNL was implemented according to the algorithm proposed in \citep{Borzsonyi2001}.
 A {\em tuple window} is maintained in the main memory for storing
 the potential skyline tuples. Once the window becomes full,
 an overflow file has to be generated.
@@ -1341,6 +1347,7 @@ end
 \end{figure}
 
 \subsubsection{Non-preservation of relative Tuple Order}
+\label{sec:bnl-tuple-order}
 It is not completly obious that BNL does not preserve the relative
 order of tuples from the input in the output, even when the tuple
 window policy \emph{append} is used.  To examplify this property
@@ -1441,6 +1448,7 @@ end
 \end{figure}
 
 \subsubsection{Preservation of relative Tuple Order}
+\label{sec:sfs-tuple-order}
 Please note that in the output of SFS the relative order of tuples
 from $\mathcal{I}_{presorted}$ is preserved.  SFS has this physical
 property independent from the tuple window placement policies used.
@@ -1451,8 +1459,9 @@ to the output.
 
 \subsection{Linear Elimination Sort for Skyline (LESS)}
 In \citep{Godfrey2005} proposed the LESS algorithm, an improvement
-over SFS \cite{Chomicki2003}, where the essential differences between
-SFS and LESS are:
+over SFS \citep{Chomicki2003}. LESS is generally considered as fastest
+known non-index based skyline algorithm in literature. The essential
+differences between SFS and LESS are:
 
 \begin{enumerate}
 \item 
@@ -1464,8 +1473,50 @@ the skyline-filter is interweaved in the final pass of the external
 sort routine
 \end{enumerate}
 
-\subsubsection{Elimination Filter (EF)}
+In the following we describe the elimination filter (EF) as the second
+difference is mere an implementation detail.
 
+\subsubsection{Elimination Filter (EF)}
+\label{sec:ef-tuple-order}
+The concept of elimination Filter (EF) is simply but effective.  It
+tries to eliminate as many non-skyline tuples in an early stage.  To
+do so it compares every incomming tuple $p$ against a tuple window
+$\mathbb{W}$, if $p$ is dominated by any tuple in the tuple window,
+then $p$ is dropped and the next tuple is read, otherwise $p$ is piped
+out and the next tuple is read.  Of course elimination filter does not
+garantee to filter out all non-skyline tuples, but a skyline candiate
+is garanteed to survive the elimination filter.  An other noteable
+difference to BNL and SFS is that EF does not produce any temporary
+file once the tuple window gets full.  This makes EF suffer in the
+same way as BNL from a bad distribution of tuples in the input, e.g.
+the tuple window gets filled up by skyline tuples with a low dominance
+factor.
+
+\citet{Godfrey2005} do not give pseudo code for the elimination
+filter in there paper. In Figure~\ref{code:ef} we give a sketch for
+the code as we used it in our implementation. Note that we are give
+the algorithm in a form that fits into a pipelined architecture liked
+it is used in the PostgreSQL quey execution engine. The function
+\texttt{EliminationFilter} has to be called for each output tuple,
+until \texttt{NULL} is returned. While doing so
+\texttt{EliminationFilter} consumes the entire input $\mathcal{I}$.
+Please also note that the variable \texttt{state} has to be preserved
+over calles to \texttt{EliminationFilter} as it keeps the internal
+state of function, later we will call such a function an iterator.
+
+Tunable parameters for the elimination filter are the tuple window size
+and the tuple window placement policy, in the same way as this parameters
+are tunable for BNL and SFS.
+
+In \Citep{Godfrey2005} the elimination filter is only used in
+conjunction with as SFS style algorithm, in this paper we demonstrate
+that this concept is also very effective when used with an BNL style
+algortihm, we call it BNL+EF, cf. Section~\ref{sec:analysis}
+
+Furthermore it should be noted that the elimination filter preserves
+the relative order of tuples from the input in the output, i.e. does
+tuples that do survive the elimination filter are in the same relative
+order as in the input.
 
 \begin{figure}[htbp]
 \begin{lstlisting}[language=pseudo]
@@ -1519,44 +1570,6 @@ end
 \end{figure}
 
 
-\begin{figure}[htbp]
-\begin{lstlisting}[language=pseudo]
-program EliminationFilter() begin 
-	$\mathbb{W} \gets \emptyset$;
-	while $\neg$EOF($\mathcal{I}$) begin
-		$p \gets$ read($\mathcal{I}$);
-		$isCandidate \gets true$;
-
-		// compare $p$ to all points in the tuple window $\mathbb{W}$
-		foreach $q \in \mathbb{W}$ do begin
-			if $q \dominates p$ then begin
-				free($p$);
-				$isCandidate \gets false$;
-				break;
-			end
-			else if $p \dominates q$ then
-				release($\mathbb{W}$, $q$);
-		end
-	
-		if $isCandidate$ then
-			if hasfreespace($\mathbb{W}$) then begin
-				// add $p$ to the tuple window $\mathbb{W}$
-				add($\mathbb{W}$, $p$);
-			end
-
-			write($\mathcal{O}$, $p$);
-		end
-	end
-end
-\end{lstlisting}
-\caption{Pseudo code for Elimination Filter (EF) as filter program}
-\label{code:efprogram}
-\end{figure}
-
-
-
-
-
 \subsection{SFS+EF (move to Implementation)}
 In \citep{Godfrey2005} Godfrey et al. proposed the LESS
 algorithm, which is an improvement of SFS due to the introduction of
@@ -1571,7 +1584,7 @@ before} the sort routine.  Speaking in terms of the iterator tree, the
 EF node is a child of the sort node, which in turn is a child of the
 SFS node (see Figure~\ref{fig:qp-sfs-ef}).  Furthermore, we do not
 integrate the skyline computation into the final pass of the merge
-sort phase, as described in \cite{Godfrey2005}.  Therefore,
+sort phase, as described in \citep{Godfrey2005}.  Therefore,
 technically speaking, SFS+EF is not an equivalent implementation of
 LESS.  However, the elimination filter is preserved in SFS+EF, which
 is essentially the gist of LESS.
@@ -1596,7 +1609,7 @@ that the algorithm BNL+EF is a substantial improvement to BNL.
 \subsection{TODO}
 We experimented with four window policies for both the tuple window
 (applied for BNL and SFS) and the EF window (for elimination filter):
-\emph{append}, \emph{prepend}, \emph{entropy} and \emph{random} \cite{Godfrey2007}.
+\emph{append}, \emph{prepend}, \emph{entropy} and \emph{random} \citep{Godfrey2007}.
 We implemented both windows with doubly linked lists with a sentinel,
 thus the time cost for insertion and deletion was in $O(1)$.
 Furthermore, as the insert position for the \emph{entropy} and
@@ -1802,8 +1815,8 @@ skyline query optimizer to automatically generate a good query plan
 w.r.t. I/O, time, and memory consumption and decide all operational
 aspects of the query evaluation.  It is well known that the cost
 estimation of the skyline queries is a non-trivial task
-\cite{Chaudhuri2006} since the performance of a skyline query is
-sensitive to a number of parameters \cite{Godfrey2007}.
+\citep{Chaudhuri2006} since the performance of a skyline query is
+sensitive to a number of parameters \citep{Godfrey2007}.
 
 To be able to study different query plans, differnt physical
 operators, and various options for the physical operators we
@@ -2182,7 +2195,7 @@ ERROR:  column "e2d100.d1" must appear in the GROUP BY clause or be used in an a
 
 \todo{}{explain more}
 
-\section{PostgreSQL Architecture}
+\section{PostgreSQL Architecture and Concepts}
 
 Before we go into the details we would like to give a brief overview
 of PostgreSQL architecture. According to \citep{Conway2006a} PostreSQL
@@ -2205,6 +2218,23 @@ has five main components:
 
 \todo{changeset: [140] \texttt{is\_simple\_subquery}, do not pull up subqueries with a skyline query}{}
 
+\todo{changeset: [657], \texttt{subquery\_is\_pushdown\_safe} @ \srcref{src/backend/optimizer/path/allpaths.c}, If the subquery contains SKYLINE OF we cannot push quals into
+ * it, because that would change the results ... FIXME: is it true?}{}
+
+
+
+\subsection{Pathkeys}
+\todo{we could describe it here as we use it more at a couple of placed below?}{}
+
+
+\subsection{The iterator model in the executor}
+
+PostgreSQL query execution engine has a pipelined architecture,
+i.e. in general no intermediate results are materialized. \todo{}{}
+
+\todo{It is coded in the fashion of a state machine.  Do somthing in each state and then proceed to another state.  The state is stored in the node's execution state information and is preserved acress calls.}{}
+
+
 \section{Parsing the Skyline Query}
 
 \section{Query Analyzing}
@@ -2213,42 +2243,110 @@ has five main components:
 
 \subsection{Selecting Indexes}
 
-%It is well known fact that the skyline operator is insensitive to the order of attributes.
+It is well known fact that the skyline operator is insensitive to the
+order of attributes, i.e. the query
+
+\begin{interactive}
+SELECT * FROM a15d1e4s0 SKLYINE OF d1 MIN, d2 MIN;
+\end{interactive}
+
+\noindent
+and
+
+\begin{interactive}
+SELECT * FROM a15d1e4s0 SKLYINE OF d2 MIN, d1 MIN;
+\end{interactive}
+
+\noindent
+produce the same result. SKLYINE OF d2 MIN, d1 MIN;Clearly the same is not true in general for
+
+\begin{interactive}
+SELECT * FROM a15d1e4s0 ORDER BY d1, d2;
+\end{interactive}
+
+\noindent
+and
+
+\begin{interactive}
+SELECT * FROM a15d1e4s0 ORDER BY d2, d1;
+\end{interactive}
+
+
+
 %To versatile all suitable access paths (indexes) we modified the query
 %optimizer accordingly.
 
 
+\texttt{query\_planner} \srcref{src/backend/optimizer/plan/planmain.c}
+\texttt{grouping\_planner} \srcref{src/backend/optimizer/plan/planner.c}
+
+
 \subsection{Preserving relative tuple order}
 \label{sec:relative-tuple-order}
+In a sole set oriented algebra there is no concept of \emph{nextness}
+or \emph{order of tuples}, but in an RDBMS the relative order of
+tuples is an important \emph{physical property} of a tuple stream.
+PostgreSQL term to express this property is called \emph{pathkeys},
+they arise naturally in conjunction with an access path, e.g.  when
+scanning a tuple via a clustered index or using an index scan.
+\emph{Pathkeys} are essentially a list of \emph{pathkey}'s, where a single
+pathkey encodes the sort order on a single column, actually this can
+be an arbitrary expression and a pathkey contains a reference to the
+according target list entry, furthermore the sort operator and a flag
+on how to treat NULL values (cf. \texttt{NULLS FIRST}/\texttt{NULLS
+LAST}). The information if the sort order is asceding (\texttt{ASC})
+or descending (\texttt{DESC}) is encoded in the sort operator used, as
+sort operator always appear in pairs an operator and its commutator,
+i.e. the same order just reversed.  This pathkeys information plays an
+important role troughout the query plan.  A note within the query plan
+might creates, can make use of, or destroys a certain pathkey.  If
+created or preserved the nodes higher up in the query plan can make
+use of it.  This information is considered by the query planner when
+deciding amough different physical operators, e.g. \emph{stream
+aggregate operator} vs. \emph{hash aggregate operator}, or different
+forms of the \emph{join operator}, for \emph{duplicate elimination}
+and so forth. \emph{Selection}, \emph{projection} and their like
+typically preserve pathkey, i.e. relative tuple order remains the
+same. Others like \emph{index scan} and \emph{sort operator} establish
+a certain relative order.
 
-see \texttt{skyline\_method\_preserves\_tuple\_order} in \srcref{src/backend/utils/skyline/skyline.c}
+As a fullblown operator we have to provide this information for the
+skyline operator es well.  In the Sections~\ref{sec:bnl-tuple-order},
+\ref{sec:sfs-tuple-order}, and \ref{sec:ef-tuple-order} in subsections
+respectivly, we bring forward arguments why BNL does \emph{not}
+preserve the relative tuple order, independent from the tuple window
+policy used, and that SFS and EF \emph{do} preserve the relative tuple
+order.  As the two dimensional with presort algorithm is a special
+case of SFS it shares the same properties.  For the one dimensional
+case and for our na\"{\i}ve algorithms it is easy to see that they
+preserve the relative tuple order.  The properties are summariezed in
+Table~\ref{tab:tuple-order-preserving}. Note that for the
+\emph{established pathkeys} property we cheat a bit here, as the order
+is actually established by an extra planned sort node and this is only
+done when the required order is not prior established, for instance by
+an index scan.
 
-\begin{tabular}{rrr}
-\emph{id} & \emph{d1} & \emph{d2} \\
+This knowledge is encoded in the function
+\texttt{skyline\_method\_preserves\_tuple\_order}\footnote{in \srcref{src/backend/utils/skyline/skyline.c}} and \texttt{grouping\_planner}\footnote{in \srcref{src/backend/optimizer/plan/planner.c}}.
+
+\begin{table}[htbp]
+\centering
+\begin{tabular}{lcc}
+\emph{Physical Operator} & \emph{Preserves Pathkeys} & \emph{Establishes Pathkeys}\\
 \hline
-$a$ & $10$ & $ 1$ \\
-$b$ & $ 8$ & $ 8$ \\
-$c$ & $ 1$ & $10$ \\
-$d$ & $ 5$ & $ 5$ \\
+1DIM            & yes & no  \\
+1DIM\_DISTINCT  & yes & no  \\
+MNL             & yes & no  \\
+2DIM\_PRESORT   & yes & yes \\
+BNL             & no  & no  \\
+SFS             & yes & yes \\
+EF              & yes & no  \\
 \end{tabular}
+\caption{Tuple Order (Pathkeys) preserving / establishing Property}
+\label{tab:tuple-order-preserving}
+\end{table}
 
-Note that only $d$ dominates $b$ ($d \dominates b$) and that $a, c,
-\text{and} d$ are skyline points.
 
-\begin{tabular}{lcccccc}
-Iteration              & $p$ & Window $\mathbb{W}$ & tsIn & tsOut & Temp $\mathcal{T}$ & $\mathcal{O}$ \\
-\hline
-0 (Init)               &     & $\emptyset$          & 0 & 0 & $\emptyset$ & $\emptyset$\\
-1                      & $a$ & $\{a\;(0)\}$         & 1 & 0 & $\emptyset$ & $\emptyset$\\
-2                      & $b$ & $\{a\;(0), b\;(0)\}$ & 2 & 0 & $\emptyset$ & $\emptyset$\\
-3                      & $c$ & $\{a\;(0), b\;(0)\}$ & 3 & 1 & $\{c\}$     & $\emptyset$ \\
-4                      & $d$ & $\{a\;(0), d\;(1)\}$ & 4 & 1 & $\{c\}$     & $\emptyset$\\
-4 (Load $\mathcal{T}$) &     & $\{a\;(0), d\;(1)\}$ & 0 & 0 & $\emptyset$ & $\emptyset$\\
-5 (Propagate)          &     & $\{d\;(1)\}$         & 0 & 0 & $\emptyset$ & $\{a\}$ \\
-5                      & $c$ & $\{d\;(1), c\;(0)\}$ & 1 & 0 & $\emptyset$ & $\{a\}$ \\
-5 (Load $\mathcal{T}$) 
-
-\end{tabular}
 
 \subsection{Physical operator selection}
 \label{sec:operatorselection}
@@ -2284,6 +2382,8 @@ results see section~\ref{sec:analysis-window-size}.
 how top k interacts with skyline, no special measures have to be taken
 as the upper node will stop fetching tuples. only in cost estimation.
 
+\texttt{skyline\_methode\_can\_use\_limit}\footnote{in \srcref{src/backend/utils/skyline/skyline.c}}
+
 
 \section{Query Execution}
 
@@ -2295,7 +2395,8 @@ authors. Moore's law and enabling cross-platform portability, every
 system now compiles queries into some kind of interpretable data
 structure; the only difference across systems these days is the level
 of abstraction \citep{Hellerstein2005}. We stick to the represenation
-as a tree, as it is used by PostgreSQL (see Figure~\ref{fig:qp-agg-bnl-sort}).
+as a tree, as it is used by PostgreSQL (see
+Figure~\ref{fig:qp-agg-bnl-sort}).
 
 \begin{figure}[htbp]
 \centering
@@ -2357,8 +2458,6 @@ ORDER BY AVG(e.Salary) DESC
 \texttt{SELECT * FROM hotel SKYLINE OF price MIN, dist MIN;}}%
 \end{figure}
 
-
-\subsection{The iterator model in the executor}
 
 \subsection{Special case: one dimensional}
 \label{sec:onedim-nondistinct}
@@ -2439,8 +2538,8 @@ the PostgreSQL \texttt{work\_mem} setting), and an EF tuple window
 size of 8~KB (equal to the PostgreSQL block size) were used.
 
 The tables for the test runs have been generated using the extended
-version \cite{Eder2007a} of the dataset generated presented in
-\cite{Borzsonyi2001}, which allows to generate tables with
+version \citep{Eder2007a} of the dataset generated presented in
+\citep{Borzsonyi2001}, which allows to generate tables with
 different initial seeds for the random generator. All experiments
 were carried out on three different sets with varying initial seed, for each
 distribution type (independent, correlated, and anti-correlated), and
@@ -3585,7 +3684,7 @@ even mentioned most of the time in literature.
 Figure~\ref{fig:all-dim} shows the time performance of the skyline
 algorithms vs. dimension with 100k tuples. It shows clearly that the
 SFS+EF algorithm has the best time performance with all the data
-distributions.  This conforms with the results in \cite{Godfrey2007},
+distributions.  This conforms with the results in \citep{Godfrey2007},
 where it was shown that LESS outperforms the SFS algorithm with 1M
 tuples.
 
@@ -3856,9 +3955,9 @@ the most effective EF window policy.
 
 In the future work we plan to implement and evaluate index-based algorithms 
 such as 
-{\em Index} \cite{Tan2001}, 
-{\em Nearest Neighbor} (NN) \cite{Kossmann2002}, and
-{\em Branch and Bound} (BBS) \cite{Papadias2003, Papadias2005}.
+{\em Index} \citep{Tan2001}, 
+{\em Nearest Neighbor} (NN) \citep{Kossmann2002}, and
+{\em Branch and Bound} (BBS) \citep{Papadias2003, Papadias2005}.
 
 \section{Speedup Tuple Comparison}
 We believe the concept of EF is very promising and plan to further
@@ -3910,6 +4009,14 @@ into the tuple window to safe space in the tuple window, but there is
 now free lunch, this projection comes at some CPU cost as memory has
 to be copied and manupilated.  Some cost estimation or some heuristics
 could be developt when to perform this projection.
+
+\section{Heuristics}
+\subsection{Flush Elimination Filter}
+\todo{}{}
+If the elimination filter does not eliminate a certain amout of tuples
+an heuristic could be engaged to drop some tuples form the tuple window
+to make space for some new ones to get a better distribution in the tuple
+window so it is more effective.
 
 \todo{cite this has been mentioned in some Godfrey papers}{}
 

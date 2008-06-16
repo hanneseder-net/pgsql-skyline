@@ -2100,6 +2100,14 @@ wenn mehr als ein column in der result list ist
 
 \subsection{\inlinesql{USING}~\emph{qualOp}}
 \label{sec:using-qualop}
+PostgreSQL has the feature to use user defined ordering operators for
+the \inlinesql{ORDER BY}-clause, where \texttt{ASC} is equivalent to
+\texttt{USING <} and \texttt{DESC} is equivalent to \texttt{USING >}, 
+but the create of a the user-defined ordering operator can give it
+any name.
+
+see PostgreSQL documentation on
+\postgresdocu{sql-select.html#SQL-ORDERBY}{ORDER BY-clause}
 
 \todo{lala}{}
 
@@ -2224,10 +2232,38 @@ has five main components:
 
 
 \subsection{Pathkeys}
-\todo{we could describe it here as we use it more at a couple of placed below?}{}
+\label{sec:pathkeys}
+In a sole set oriented algebra there is no concept of \emph{nextness}
+or \emph{order of tuples}, but in an RDBMS the relative order of
+tuples is an important \emph{physical property} of a tuple stream.
+The knowledge about this is encoded in PostgreSQL in terms of so
+called \emph{pathkeys}, they arise naturally in conjunction with an
+access path, e.g.  when scanning a tuple via a clustered index or
+using an index scan.
+\emph{Pathkeys} are essentially a list of \emph{pathkey}'s, where a single
+pathkey encodes the sort order on a single column, actually this can
+be an arbitrary expression and a pathkey contains a reference to the
+according target list entry, furthermore the sort operator and a flag
+on how to treat NULL values (cf. \texttt{NULLS FIRST}/\texttt{NULLS
+LAST}). The information if the sort order is asceding (\texttt{ASC})
+or descending (\texttt{DESC}) is encoded in the sort operator used, as
+sort operator always appear in pairs an operator and its commutator,
+i.e. the same order just reversed.  This pathkeys information plays an
+important role troughout the query plan.  A note within the query plan
+might creates, can make use of, or destroys a certain pathkey.  If
+created or preserved the nodes higher up in the query plan can make
+use of it.  This information is considered by the query planner when
+deciding amough different physical operators, e.g. \emph{stream
+aggregate operator} vs. \emph{hash aggregate operator}, or different
+forms of the \emph{join operator}, for \emph{duplicate elimination}
+and so forth. \emph{Selection}, \emph{projection} and their like
+typically preserve pathkey, i.e. relative tuple order remains the
+same. Others like \emph{index scan} and \emph{sort operator} establish
+a certain relative order.
 
+\subsection{Pipelined execution}
 
-\subsection{The iterator model in the executor}
+\todo{The iterator model in the executor}{}
 
 PostgreSQL query execution engine has a pipelined architecture,
 i.e. in general no intermediate results are materialized. \todo{}{}
@@ -2258,7 +2294,7 @@ SELECT * FROM a15d1e4s0 SKLYINE OF d2 MIN, d1 MIN;
 \end{interactive}
 
 \noindent
-produce the same result. SKLYINE OF d2 MIN, d1 MIN;Clearly the same is not true in general for
+produce the same result.  Clearly the same is not true in general for
 
 \begin{interactive}
 SELECT * FROM a15d1e4s0 ORDER BY d1, d2;
@@ -2271,10 +2307,12 @@ and
 SELECT * FROM a15d1e4s0 ORDER BY d2, d1;
 \end{interactive}
 
+\noindent
+Yet alone from this example one get the intuition that the
+\inlinesql{SKYLINE OF}-clause can versatily a richer set of indexes
+(access paths) than the \inlinesql{ORDER BY}-clause can.  To be
+precise we must speak of \emph{pathkeys}.
 
-
-%To versatile all suitable access paths (indexes) we modified the query
-%optimizer accordingly.
 
 
 \texttt{query\_planner} \srcref{src/backend/optimizer/plan/planmain.c}
@@ -2283,35 +2321,11 @@ SELECT * FROM a15d1e4s0 ORDER BY d2, d1;
 
 \subsection{Preserving relative tuple order}
 \label{sec:relative-tuple-order}
-In a sole set oriented algebra there is no concept of \emph{nextness}
-or \emph{order of tuples}, but in an RDBMS the relative order of
-tuples is an important \emph{physical property} of a tuple stream.
-PostgreSQL term to express this property is called \emph{pathkeys},
-they arise naturally in conjunction with an access path, e.g.  when
-scanning a tuple via a clustered index or using an index scan.
-\emph{Pathkeys} are essentially a list of \emph{pathkey}'s, where a single
-pathkey encodes the sort order on a single column, actually this can
-be an arbitrary expression and a pathkey contains a reference to the
-according target list entry, furthermore the sort operator and a flag
-on how to treat NULL values (cf. \texttt{NULLS FIRST}/\texttt{NULLS
-LAST}). The information if the sort order is asceding (\texttt{ASC})
-or descending (\texttt{DESC}) is encoded in the sort operator used, as
-sort operator always appear in pairs an operator and its commutator,
-i.e. the same order just reversed.  This pathkeys information plays an
-important role troughout the query plan.  A note within the query plan
-might creates, can make use of, or destroys a certain pathkey.  If
-created or preserved the nodes higher up in the query plan can make
-use of it.  This information is considered by the query planner when
-deciding amough different physical operators, e.g. \emph{stream
-aggregate operator} vs. \emph{hash aggregate operator}, or different
-forms of the \emph{join operator}, for \emph{duplicate elimination}
-and so forth. \emph{Selection}, \emph{projection} and their like
-typically preserve pathkey, i.e. relative tuple order remains the
-same. Others like \emph{index scan} and \emph{sort operator} establish
-a certain relative order.
-
-As a fullblown operator we have to provide this information for the
-skyline operator es well.  In the Sections~\ref{sec:bnl-tuple-order},
+The relative order of tuples is an important physical property of a
+tuple stream, knowledge about this is encoded in terms of
+\emph{pathkeys} as described in Section~\ref{sec:pathkeys}. As a
+fullblown operator we have to provide this information for the skyline
+operator es well.  In the Sections~\ref{sec:bnl-tuple-order},
 \ref{sec:sfs-tuple-order}, and \ref{sec:ef-tuple-order} in subsections
 respectivly, we bring forward arguments why BNL does \emph{not}
 preserve the relative tuple order, independent from the tuple window

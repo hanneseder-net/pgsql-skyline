@@ -776,13 +776,13 @@ anti domiance region is empty. This can be done with a range query
 even fasilidating an index.}{}
 
 \subsection{How our implementation extends the mathematical model}
-Our implementation of the \inlinesql{SKYLINE OF} clause is actually a
+Our implementation of the \inlinesql{SKYLINE~OF} clause is actually a
 bit more flexible than the mathematical definition given above. With
 our implementation the skyline operator is not restricted to
 attributes with a numerical domain, it can be applied to any
 attribute, as long as a \emph{sort function} is defined for the domain
-in question, i.e.\/ any expression valid in a SQL \inlinesql{ORDER BY}
-clause is valid as an expression in a \inlinesql{SKYLINE OF} clause.
+in question, i.e.\/ any expression valid in a SQL \inlinesql{ORDER~BY}
+clause is valid as an expression in a \inlinesql{SKYLINE~OF} clause.
 
 This gives the opportunity to include expressions of almost any data
 type in a skyline query, even user defined ones, since it is possible
@@ -794,7 +794,8 @@ Operator Families}
 
 Anyway it is somewhat questionable what it is good for the include a
 e.g. \inlinesql{VARCHAR} column in a skyline query, still it is
-possible.
+possible, nevertheless this might be a good use case for a user
+defined ordering operator.
 
 Furthermore our implementation allows arbitrary expressions instead of
 a single attribute, e.g.
@@ -822,6 +823,7 @@ Since the skyline operator is a special case of \emph{winnow} operator, theorem 
 
 
 \subsection{Independence of Attribute Order}
+\label{sec:attributeorder}
 
 The following property is a well known fact about the skyline operator:
 
@@ -1671,7 +1673,8 @@ are added or removed from the dataset, e.g. in a streaming scenario.
 \chapter{Implementation}
 \section{SQL Extension}
 
-\citet{Borzsonyi2001} proposed the following extension to the SQL's \inlinesql{SELECT} statement with an optional \inlinesql{SKYLINE OF}-clause:
+\citet{Borzsonyi2001} proposed the following extension to the SQL's
+\inlinesql{SELECT} statement with an optional \inlinesql{SKYLINE~OF}-clause:
 \begin{sql}
 SELECT ... FROM ... WHERE ... \\
 GROUP BY ... HAVING ...       \\
@@ -2101,15 +2104,18 @@ wenn mehr als ein column in der result list ist
 \subsection{\inlinesql{USING}~\emph{qualOp}}
 \label{sec:using-qualop}
 PostgreSQL has the feature to use user defined ordering operators for
-the \inlinesql{ORDER BY}-clause, where \texttt{ASC} is equivalent to
-\texttt{USING <} and \texttt{DESC} is equivalent to \texttt{USING >}, 
-but the create of a the user-defined ordering operator can give it
-any name.
+the \inlinesql{ORDER~BY}-clause, where \inlinesql{ASC} is equivalent to
+\inlinesql{USING <} and \inlinesql{DESC} is equivalent to \inlinesql{USING >}, 
+but the create of a the user-defined ordering operator can give it any
+name.  We borrowed this concept and integreated it into SQL extension
+for the \inlinesql{SKYLINE~OF}-clause, where \inlinesql{MIN} is equivalent
+to \inlinesql{USING <} and \inlinesql{MAX} is equivalent to \inlinesql{USING >}.
+
+
+\citep{Chomicki2002} for red/white wine, meat/fish
 
 see PostgreSQL documentation on
 \postgresdocu{sql-select.html#SQL-ORDERBY}{ORDER BY-clause}
-
-\todo{lala}{}
 
 \subsection{Skyline in the presents of NULL values}
 \label{sec:nullvalues}
@@ -2261,8 +2267,10 @@ typically preserve pathkey, i.e. relative tuple order remains the
 same. Others like \emph{index scan} and \emph{sort operator} establish
 a certain relative order.
 
+
 \subsection{Pipelined execution}
 
+see \srcref{src/backend/executor/README}
 \todo{The iterator model in the executor}{}
 
 PostgreSQL query execution engine has a pipelined architecture,
@@ -2271,6 +2279,8 @@ i.e. in general no intermediate results are materialized. \todo{}{}
 \todo{It is coded in the fashion of a state machine.  Do somthing in each state and then proceed to another state.  The state is stored in the node's execution state information and is preserved acress calls.}{}
 
 
+\srcref{src/backend/executor/execProcnode.c} 
+
 \section{Parsing the Skyline Query}
 
 \section{Query Analyzing}
@@ -2278,7 +2288,6 @@ i.e. in general no intermediate results are materialized. \todo{}{}
 \section{Query Planning}
 
 \subsection{Selecting Indexes}
-
 It is well known fact that the skyline operator is insensitive to the
 order of attributes, i.e. the query
 
@@ -2309,15 +2318,23 @@ SELECT * FROM a15d1e4s0 ORDER BY d2, d1;
 
 \noindent
 Yet alone from this example one get the intuition that the
-\inlinesql{SKYLINE OF}-clause can versatily a richer set of indexes
-(access paths) than the \inlinesql{ORDER BY}-clause can.  To be
-precise we must speak of \emph{pathkeys}.
+\inlinesql{SKYLINE~OF}-clause can versatily a richer set of indexes
+(access paths) than the \inlinesql{ORDER~BY}-clause can.  To be
+precise we must speak of \emph{pathkeys}, i.e. both of the above skyline
+queries can make use of the following index, but only the first query
+with a \inlinesql{ORDER~BY}-clause:
 
+\begin{interactive}
+CREATE INDEX ix_a15d1e4s0_d1 ON a15d1e4s0 (d1, d2);
+\end{interactive}
 
+A proof for this property is given in
+Section~\ref{sec:attributeorder}. We modified the query planner
+accordingly, c.f.  function \texttt{query\_planner}\footnote{in
+\srcref{src/backend/optimizer/plan/planmain.c}} and
+\texttt{grouping\_planner}\footnote{in \srcref{src/backend/optimizer/plan/planner.c}}.
 
-\texttt{query\_planner} \srcref{src/backend/optimizer/plan/planmain.c}
-\texttt{grouping\_planner} \srcref{src/backend/optimizer/plan/planner.c}
-
+\todo{lookup make slyline pathkey, what is the name of the function that mathces a pathkey agains a skyline pathey}
 
 \subsection{Preserving relative tuple order}
 \label{sec:relative-tuple-order}
@@ -3096,7 +3113,11 @@ There is a large number of parameters that can be varied:
 
 in case the data are stored on disk
 \begin{itemize}
-\item \emph{sequencial scan vs. index scan} SFS can benefit from index scan (ommit sort phase), BNL and SFS could benefit from a index scan if DIFF groups are used.
+\item 
+\emph{sequencial scan vs. index scan} SFS can benefit from index scan
+(ommit sort phase), BNL and SFS could benefit from a index scan if
+DIFF groups are used.
+
 \item \emph{sequence of tuples in tuple stream} (random, high entropy first/last) for BNL and EF if a very good tuple is very early in the tuple stream it will eliminate a lot of tuples in a very early stage
 \end{itemize}
 \item \emph{methods}
@@ -3120,10 +3141,19 @@ in case the data are stored on disk
 
 
 \begin{itemize}
-\item use 90\% percentile (\citep{Gray1993}[page 315]) vs, average / variance (box-plots?)
-\item describe software (operating system: Windows XP + SP 2, Microsoft Visual Studio 2005 + SP1, based on PostgreSQL 8.3.0) and hardware (CPU, RAM, Disk config, File System) used for benchmarking
+\item 
+use 90\% percentile (\citep{Gray1993}[page 315]) vs, average /
+variance (box-plots?)
 
-\item describe the configuration of PostgreSQL (flags used for \texttt{configure --enable-asserts --enable-checks, ...}, it is recommended to turn asserts and co. off for benchmarking
+\item
+describe software (operating system: Windows XP + SP 2, Microsoft
+Visual Studio 2005 + SP1, based on PostgreSQL 8.3.0) and hardware
+(CPU, RAM, Disk config, File System) used for benchmarking
+
+\item
+describe the configuration of PostgreSQL (flags used for
+\texttt{configure --enable-asserts --enable-checks, ...}, it is
+recommended to turn asserts and co. off for benchmarking
 \end{itemize}
 
 
@@ -3153,14 +3183,29 @@ Figure~\ref{fig:jobfile}, \ref{fig:logfile}
 and~\ref{fig:parsedlogfile}):
 
 \begin{itemize}
-\item \texttt{--<pid pid=}\textit{pid}\texttt{/>}; \textit{pid} identifies the machine the Job ran on.
-\item \texttt{--<comment>} and \texttt{--</comment>}; a Setup Query, see next definition. Query between these tags are of course executed, but in a later stage just commented out.
-\item \texttt{--<query runid=}\textit{runid}\texttt{>} and \texttt{--</query>}; A Run cf. definition below.  Please note that the corresponding Setup Queries are not nested within the Run they just precede the Run.
-\item \texttt{--<queryplan>} and \texttt{--</queryplan>}; is used in a later stage to preserve the query plan in the comment, but its not used otherwise.
+\item 
+\texttt{--<pid pid=}\textit{pid}\texttt{/>}; \textit{pid} identifies
+the machine the Job ran on.
+
+\item 
+\texttt{--<comment>} and \texttt{--</comment>}; a Setup Query, see
+next definition. Query between these tags are of course executed, but
+in a later stage just commented out.
+
+\item 
+\texttt{--<query runid=}\textit{runid}\texttt{>} and
+\texttt{--</query>}; A Run cf. definition below.  Please note that the
+corresponding Setup Queries are not nested within the Run they just
+precede the Run.
+
+\item 
+\texttt{--<queryplan>} and \texttt{--</queryplan>}; is used in a
+later stage to preserve the query plan in the comment, but its not
+used otherwise.
 \end{itemize}
 
 In our experimental studies our focus is on the execution
-plan\footnote{We use execution plan and query plan interchangeable.} 
+plan\footnote{We use execution plan and query plan interchangeable.}
 and the actual run times and not on the output of a query. The output
 of a query was of interesst for us, when we did regression testing to
 ensure our implementation is correct. To accomblish this we prefixed
@@ -3363,18 +3408,33 @@ described in Table~\ref{tab:dirlayoutexpiriments}.
 \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}p{\fixedcolumnwidth}@{\extracolsep{\fill}}p{\paragraphcolumnwidth}}
 \verb|jobs/|      &  \\
 \verb|  js.pl|    & job scheduler, see Section~\ref{sec:jobscheduling} \\
-\verb|  feed.pl|  & batch feeder, moves prepared jobs into the \texttt{jobs/} directory once this gets empty, see Section~\ref{sec:jobscheduling} \\
-\verb|  js.lock|  & lock file used by \texttt{js.pl} and \texttt{feed.pl} to synchronize access to the \texttt{jobs/} directory \\
+\verb|  feed.pl|  & batch feeder, moves prepared jobs into the
+                    \texttt{jobs/} directory once this gets empty, see
+                    Section~\ref{sec:jobscheduling} \\
+\verb|  js.lock|  & lock file used by \texttt{js.pl} and
+                    \texttt{feed.pl} to synchronize access to the
+                    \texttt{jobs/} directory \\
 \verb|  *.sql|    & jobs waiting to be scheduled by \texttt{js.pl} \\
 \verb|  prep/|    & \\
 \verb|    gj.pl|  & job generator, see Section~\ref{sec:generatejobs} \\
 \verb|    *.sql|  & prepared jobs \\
-\verb|    s0/|    & To this and to the directories below we copied the prepared jobs. We split the entire set of prepared jobs up into logical and smaller units of lets say a few hundred files.  The jobs from this directories where moved to \texttt{jobs/} once there where not jobs left there by \texttt{feed.pl}.  The same is true for the sibling directories \texttt{s1/} and \texttt{s2/}. \\
-\verb|      ws/|  & This one for example holds the jobs, when we were analyzing the effect of varing window size.\\
+\verb|    s0/|    & To this and to the directories below we copied the
+                    prepared jobs. We split the entire set of prepared
+                    jobs up into logical and smaller units of lets say
+                    a few hundred files.  The jobs from this
+                    directories where moved to \texttt{jobs/} once
+                    there where not jobs left there by
+                    \texttt{feed.pl}.  The same is true for the
+                    sibling directories \texttt{s1/} and
+                    \texttt{s2/}. \\
+\verb|      ws/|  & This one for example holds the jobs, when we were
+                    analyzing the effect of varing window size.\\
 \verb|      .../| & \\
 \verb|    s1/|    & \\
 \verb|    s2/|    & \\
-\verb|  SKY[xx]/| & While processing a job it resides inside a directory with the same name as the machine which is processing the job.\\
+\verb|  SKY[xx]/| & While processing a job it resides inside a
+                    directory with the same name as the machine which
+                    is processing the job.\\
 \verb|  log/|     & \\
 \verb|    *.log|  & the raw log files \\
 \verb|  done/|    & Processed jobs end up here. \\
@@ -3744,69 +3804,69 @@ in the 2 dimensional case}%
 \end{minipage}%
 \end{figure}
 
-Figure~\ref{fig:all-dim-onek}
-depicts the time-dimensionality performance regarding to datasets with 1k number of tuples.
-One interesting observation is that the performance of SFS 
-is surprisingly better than others, except for the extremely low dimension values
-(three for independent, anti-correlated, and six for correlated distributions).
-As illustrated by Figure~\ref{fig:sf}, 
-there exists a causal relation with the skyline selectivity factors.
-It shows clearly that as the data cardinality decreases,
-the skyline selectivity factor increases. Therefore, in general, the EF operator is less effective 
-with lower data cardinalities. To be more accurate, if the skyline selectivity factor
-is higher than 0.1, the benefit gained from EF is marginal. 
-This is confirmed by the results shown in Figure~\ref{fig:all-dim} as well.
+Figure~\ref{fig:all-dim-onek} depicts the time-dimensionality
+performance regarding to datasets with 1k number of tuples.  One
+interesting observation is that the performance of SFS is surprisingly
+better than others, except for the extremely low dimension values
+(three for independent, anti-correlated, and six for correlated
+distributions).  As illustrated by Figure~\ref{fig:sf}, there exists a
+causal relation with the skyline selectivity factors.  It shows
+clearly that as the data cardinality decreases, the skyline
+selectivity factor increases. Therefore, in general, the EF operator
+is less effective with lower data cardinalities. To be more accurate,
+if the skyline selectivity factor is higher than 0.1, the benefit
+gained from EF is marginal.  This is confirmed by the results shown in
+Figure~\ref{fig:all-dim} as well.
 
-The result is somehow contradictory to the claim that SFS+EF should 
-perform consistently better than SFS, because at the EF stage there should be always 
-some tuples eliminated. However, one should not ignore the cost of the EF operation,
-where comparisons are executed. Moreover, if the \emph{entropy} window 
-policy is applied, the time consumption is even higher. Hence, there exist
-data settings where EF does not pay off anymore.
+The result is somehow contradictory to the claim that SFS+EF should
+perform consistently better than SFS, because at the EF stage there
+should be always some tuples eliminated. However, one should not
+ignore the cost of the EF operation, where comparisons are
+executed. Moreover, if the \emph{entropy} window policy is applied,
+the time consumption is even higher. Hence, there exist data settings
+where EF does not pay off anymore.
 
 \subsection{Time performance w.r.t. cardinality}
 
 To better understand the time performance of the skyline algorithm
-with respect to the data cardinality, 
-we conducted experiments for each dimension $k \in \{2, \ldots, 15\}$
-with the number of tuples ranging from 100 to 100k. 
-For each data distribution we have chosen four to five representative
-dimension values.
-Figure~\ref{fig:inde}, \ref{fig:corre}, and \ref{fig:anti}
-illustrate the test results for independent, correlated,
-and anti-correlated datasets, respectively.
+with respect to the data cardinality, we conducted experiments for
+each dimension $k \in \{2, \ldots, 15\}$ with the number of tuples
+ranging from 100 to 100k.  For each data distribution we have chosen
+four to five representative dimension values.  Figure~\ref{fig:inde},
+\ref{fig:corre}, and \ref{fig:anti} illustrate the test results for
+independent, correlated, and anti-correlated datasets, respectively.
 
-Surprisingly, the \emph{rule of the selectivity factor} 
-is proven to be true in all the datasets. 
-That is, 
-if the selectivity factor is higher than 0.1, the elimination filter
-does not have any advantage. 
+Surprisingly, the \emph{rule of the selectivity factor} is proven to
+be true in all the datasets.  That is, if the selectivity factor is
+higher than 0.1, the elimination filter does not have any advantage.
 
 \subsubsection{Independent and anti-correlated datasets}
-Let us first consider the independent datasets (Figure~\ref{fig:inde}).
-As the dimension is higher than four, SFS is superior for all datasets,
-except for data cardinality of 50k and 100k, where SFS+EF outperforms SFS.
-If we examine again the selectivity factor for independent datasets in Figure~\ref{fig:sf},
-these datasets are in the category where the selectivity factor 
-is higher than 0.1. This result confirms our observation in Section~\ref{sec:small-datasets}.
-Note that the same observation holds for BNL+EF vs. BNL as well.
+Let us first consider the independent datasets
+(Figure~\ref{fig:inde}).  As the dimension is higher than four, SFS is
+superior for all datasets, except for data cardinality of 50k and
+100k, where SFS+EF outperforms SFS.  If we examine again the
+selectivity factor for independent datasets in Figure~\ref{fig:sf},
+these datasets are in the category where the selectivity factor is
+higher than 0.1. This result confirms our observation in
+Section~\ref{sec:small-datasets}.  Note that the same observation
+holds for BNL+EF vs. BNL as well.
 
 With dimension three there is an exception, where BNL performs best.
-This can be justified as follows: 
-the sorting cost remains constant w.r.t. dimensions,
-thus it becomes dominant with low dimension (such as three). 
+This can be justified as follows: the sorting cost remains constant
+w.r.t. dimensions, thus it becomes dominant with low dimension (such
+as three).
 
-The performance of anti-correlated datasets in Figure~\ref{fig:anti} 
-behaves similarly to that of independent datasets, 
-thus the above analysis can be applied as well.
+The performance of anti-correlated datasets in Figure~\ref{fig:anti}
+behaves similarly to that of independent datasets, thus the above
+analysis can be applied as well.
 
 \subsubsection{Correlated datasets}
 For correlated datasets in Figure~\ref{fig:corre}, SFS+EF is superior
-with a few exceptions. This again, can be perfectly explained by
-the selectivity factors for correlated datasets (cf. Figure~\ref{fig:sf-c}).
-Except for the data cardinality of 100 and 500, all
-the selectivity factors are remarkably low (most of them are less than 0.1),
-thus the EF operation pays off.
+with a few exceptions. This again, can be perfectly explained by the
+selectivity factors for correlated datasets
+(cf. Figure~\ref{fig:sf-c}).  Except for the data cardinality of 100
+and 500, all the selectivity factors are remarkably low (most of them
+are less than 0.1), thus the EF operation pays off.
 
 \begin{figure}[htbp]
 \centering%
@@ -3895,55 +3955,53 @@ thus the EF operation pays off.
 \end{figure}
 
 \subsection{SFS using indexes}
-The idea is to leverage the index structure for SFS in order to avoid an explicit sort.
-For SFS+EF w/ index this is illustrated in Figure~\ref{fig:qp-sfs-index-ef}.
-It is up to the query optimizer to decide by means of cost estimation 
-whether to use an index or not.
-We analyzed the usage of indexes for SFS in detail for 100k tuples 
-(see Figure~\ref{fig:sfs-index}).
+The idea is to leverage the index structure for SFS in order to avoid
+an explicit sort.  For SFS+EF w/ index this is illustrated in
+Figure~\ref{fig:qp-sfs-index-ef}.  It is up to the query optimizer to
+decide by means of cost estimation whether to use an index or not.  We
+analyzed the usage of indexes for SFS in detail for 100k tuples (see
+Figure~\ref{fig:sfs-index}).
 
-It turns out that SFS w/ index consistently outperforms SFS, 
-independent from the window policy used, with a single exception (cf. 
-Figure~\ref{fig:sfs-index-a} when dim=6). 
-This is clearly an argument for using an index.
+It turns out that SFS w/ index consistently outperforms SFS,
+independent from the window policy used, with a single exception (cf.
+Figure~\ref{fig:sfs-index-a} when dim=6).  This is clearly an argument
+for using an index.
 
-However, SFS+EF w/ index performs worse than SFS w/ index. 
-This is somehow counterintuitive, because for 100k tuples 
-SFS+EF performs better than SFS, as we have discussed
-in Section~\ref{sec:big-datasets} (cf. Figure~\ref{fig:all-dim}).
-We argue that, the effectiveness of EF deteriorates
-in the presence of the index structure.
-The data is physically ordered according to one of the indexed attributes,
-which is not guaranteed to be beneficial for the elimination filtering.
-Therefore, one should be careful with applying EF in the presence of index,
-even on the datasets with low selectivity factors.
+However, SFS+EF w/ index performs worse than SFS w/ index.  This is
+somehow counterintuitive, because for 100k tuples SFS+EF performs
+better than SFS, as we have discussed in
+Section~\ref{sec:big-datasets} (cf. Figure~\ref{fig:all-dim}).  We
+argue that, the effectiveness of EF deteriorates in the presence of
+the index structure.  The data is physically ordered according to one
+of the indexed attributes, which is not guaranteed to be beneficial
+for the elimination filtering.  Therefore, one should be careful with
+applying EF in the presence of index, even on the datasets with low
+selectivity factors.
 %
-The only significant exception is for correlated data, window policy append, and dim 
-$\le 3$ (cf. Figure~\ref{fig:sfs-index-c}).
-We argue this is due to the general low selectivity factor and high EF effectiveness in 
-this case (cf. Figure~\ref{fig:sf-c} and \ref{fig:ef-eff-100k}).
+The only significant exception is for correlated data, window policy
+append, and dim $\le 3$ (cf. Figure~\ref{fig:sfs-index-c}).  We argue
+this is due to the general low selectivity factor and high EF
+effectiveness in this case (cf. Figure~\ref{fig:sf-c} and
+\ref{fig:ef-eff-100k}).
 
-In all aspects, SFS w/ index and SFS+EF w/ index are outperformed
-by SFS+EF using window policy entropy or prepend. This can
-be explained with the same argument as above, EF eliminates
-so many tuples prior to sorting that this becomes cheaper than
-using an index.
+In all aspects, SFS w/ index and SFS+EF w/ index are outperformed by
+SFS+EF using window policy entropy or prepend. This can be explained
+with the same argument as above, EF eliminates so many tuples prior to
+sorting that this becomes cheaper than using an index.
 
 %\pagebreak[4]
 \subsection{Window policy}
-All experimental results show that the \emph{entropy} is
-the most efficient and effective window policy.
-One might notice that on correlated datasets, the \emph{prepend}
-window policy performs the worst in the SFS algorithm. 
-The explanation is obvious: if the correlated data is sorted,
-the most effective skyline tuples (that is, the tuples dominate 
-most of the other tuples) tend to enter the widow earlier. 
-However with the prepend policy, these tuples are successively pushed
-to the end of the window, which results in high time costs
-for checking whether a new tuple is dominated by
-the tuples in the window.
-Figure~\ref{fig:ef-eff} shows that \emph{entropy} is
-the most effective EF window policy. 
+All experimental results show that the \emph{entropy} is the most
+efficient and effective window policy.  One might notice that on
+correlated datasets, the \emph{prepend} window policy performs the
+worst in the SFS algorithm.  The explanation is obvious: if the
+correlated data is sorted, the most effective skyline tuples (that is,
+the tuples dominate most of the other tuples) tend to enter the widow
+earlier.  However with the prepend policy, these tuples are
+successively pushed to the end of the window, which results in high
+time costs for checking whether a new tuple is dominated by the tuples
+in the window.  Figure~\ref{fig:ef-eff} shows that \emph{entropy} is
+the most effective EF window policy.
 
 \subsection{Mixing window policies}
 \todo{show some effects of using different window policies for EF and BNL/SFS nodes}{}
@@ -4028,16 +4086,24 @@ could be developt when to perform this projection.
 \subsection{Flush Elimination Filter}
 \todo{}{}
 If the elimination filter does not eliminate a certain amout of tuples
-an heuristic could be engaged to drop some tuples form the tuple window
-to make space for some new ones to get a better distribution in the tuple
-window so it is more effective.
+an heuristic could be engaged to drop some tuples form the tuple
+window to make space for some new ones to get a better distribution in
+the tuple window so it is more effective.
 
 \todo{cite this has been mentioned in some Godfrey papers}{}
 
 \section{Extensions}
 
-\subsection{Sampling}
+\subsection{\inlinesql{USING} \emph{op} for \inlinesql{SKYLINE OF DIFF}}
+While we do provide syntax to use user defined ordering operators
+instead for \inlinesql{SKYLINE OF MIN/MAX}, we do not do it yet for
+\inlinesql{SKYLINE OF DIFF}, which is used to partion the input
+into groups.  For the moment only equality for the given data type is
+used, but in general any equality relation could be used, to provide
+syntax, e.g. \dots \inlinesql{SKYLINE OF d3 DIFF USING myOp}, for this
+is subject to future work.
 
+\subsection{Sampling}
 In the absence of statistics for the relation in questions, sampling
 could be engadged. \todo{cite}{Chaurduri2006}
 

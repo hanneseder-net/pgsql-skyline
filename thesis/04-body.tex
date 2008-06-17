@@ -43,6 +43,7 @@
 \newcommand\srcref[1]{{\tt #1}}
 \newcommand\postgresdocu[2]{\href{http://www.postgresql.org/docs/8.3/static/#1}{#2}\footnote{\url{http://www.postgresql.org/docs/8.3/static/#1}}}
 \newcommand\ttbackslash{{\char92}}
+\newcommand\ttdolar{{\char36}}
 
 \newtheorem{definition}{Definition}
 \newtheorem{lemma}{Lemma}
@@ -1887,14 +1888,16 @@ skyline computation algorithm, i.e. skylines of any dimensionality,
 distinct and non-distinct with the same type of expressions and
 directions (\inlinesql{MIN}, \inlinesql{MAX}, $\ldots$) can be
 computed. The approach is very simple: materialize all tuples from the
-outer query plan node in a tuple store and compare one tuple after the
-other agains all other tuples in the tuple store. It is obvious that
-this algorithm has $O(n^2)$ run time complexity and very poor I/O
-behaviour. Nevertheless it was easy to implement and gave us something
-to play with while implementing other parts of the system and of
-course for regression testing, because this method was just easier to
-get right and later on use it to verify the results from other
-algorithms. See section~\ref{sec:mnl}.
+outer query plan node in a tuple store\index{tuple
+store}\footnote{Tuple store is PostgreSQL concept for temporary files
+to store tuples.} and compare one tuple after the other agains all
+other tuples in the tuple store. It is obvious that this algorithm has
+$O(n^2)$ run time complexity and very poor I/O behaviour. Nevertheless
+it was easy to implement and gave us something to play with while
+implementing other parts of the system and of course for regression
+testing, because this method was just easier to get right and later on
+use it to verify the results from other algorithms. See
+section~\ref{sec:mnl}.
 
 Two other special methods do exist, namely \texttt{1DIM} and
 \texttt{1DIMDISTINCT}, as the names suggest they are only for the 1
@@ -2115,7 +2118,7 @@ to \inlinesql{USING <} and \inlinesql{MAX} is equivalent to \inlinesql{USING >}.
 \citep{Chomicki2002} for red/white wine, meat/fish
 
 see PostgreSQL documentation on
-\postgresdocu{sql-select.html#SQL-ORDERBY}{ORDER BY-clause}
+\postgresdocu{sql-select.html\#SQL-ORDERBY}{ORDER BY-clause}
 
 \subsection{Skyline in the presents of NULL values}
 \label{sec:nullvalues}
@@ -2237,7 +2240,7 @@ has five main components:
 
 
 
-\subsection{Pathkeys}
+\subsection{Pathkeys\index{pathkeys}}
 \label{sec:pathkeys}
 In a sole set oriented algebra there is no concept of \emph{nextness}
 or \emph{order of tuples}, but in an RDBMS the relative order of
@@ -2320,9 +2323,9 @@ SELECT * FROM a15d1e4s0 ORDER BY d2, d1;
 Yet alone from this example one get the intuition that the
 \inlinesql{SKYLINE~OF}-clause can versatily a richer set of indexes
 (access paths) than the \inlinesql{ORDER~BY}-clause can.  To be
-precise we must speak of \emph{pathkeys}, i.e. both of the above skyline
-queries can make use of the following index, but only the first query
-with a \inlinesql{ORDER~BY}-clause:
+precise we must speak of \emph{pathkeys}\index{pathkeys}, i.e. both of
+the above skyline queries can make use of the following index, but
+only the first query with a \inlinesql{ORDER~BY}-clause:
 
 \begin{interactive}
 CREATE INDEX ix_a15d1e4s0_d1 ON a15d1e4s0 (d1, d2);
@@ -2340,7 +2343,7 @@ accordingly, c.f.  function \texttt{query\_planner}\footnote{in
 \label{sec:relative-tuple-order}
 The relative order of tuples is an important physical property of a
 tuple stream, knowledge about this is encoded in terms of
-\emph{pathkeys} as described in Section~\ref{sec:pathkeys}. As a
+\emph{pathkeys}\index{pathkeys} as described in Section~\ref{sec:pathkeys}. As a
 fullblown operator we have to provide this information for the skyline
 operator es well.  In the Sections~\ref{sec:bnl-tuple-order},
 \ref{sec:sfs-tuple-order}, and \ref{sec:ef-tuple-order} in subsections
@@ -2490,20 +2493,309 @@ ORDER BY AVG(e.Salary) DESC
 \end{figure}
 
 
+\subsection{Comments on the Pseudo Code}
+All the pseudo code presented in the following subsections is in a
+form of state machines, as required for the PostgreSQL query execution
+engine.
+
+\todo{write about slot, resultSlot that they are preserved over calles
+write about how pseudo code is related to the real implementation,
+we changed names an removed some nasty details}{}
+
 \subsection{Special case: one dimensional}
 \label{sec:onedim-nondistinct}
-use is limited
+Altought this case is of limited use, the general case algorithms like
+BNL and SFS can handle this case, and more over it is expressible in
+SQL in a very natural way, we have a special implementation for this
+case.  A skyline query of this type typically looks like:
+
+\begin{interactive}
+\textbf{SELECT * FROM a15d1e4s0 SKYLINE OF d1 MIN;}
+\end{interactive}
+
+\noindent
+which rewrites to the following standard SQL query:
+
+\begin{interactive}
+\textbf{SELECT * FROM a15d1e4s0 WHERE d1 = (SELECT MIN(d1) FROM a15d1e4s0);}
+\end{interactive}
+
+\noindent
+As can be seen from the query plan below the standard SQL query takes
+to passes over the input, first finding the minimum by means of
+aggregation and than filtering the input with the found minimum.
+
+\begin{interactive}
+                                    QUERY PLAN                                   
+---------------------------------------------------------------------------------
+ Seq Scan on a15d1e4s0  (cost=318.01..636.01 rows=1 width=124)
+   Filter: (d1 = \ttdolar0)
+   InitPlan
+     ->  Aggregate  (cost=318.00..318.01 rows=1 width=8)
+           ->  Seq Scan on a15d1e4s0  (cost=0.00..293.00 rows=10000 width=8)
+\end{interactive}
+
+\noindent
+Another way to express this query in standard SQL is:
+
+\begin{interactive}
+\textbf{SELECT * FROM a15d1e4s0 o WHERE NOT EXISTS
+    (SELECT * FROM a15d1e4s0 i WHERE i.d1 < o.d1);}
+\end{interactive}
+
+\noindent
+but this is even worse, and has a runtime complexity of $O(n^2)$, this
+approach corresponds to a na\"{\i}ve nested-loop, the query plan is
+accordingly:
+
+\todo{maybe skip this plan}{}
+\begin{interactive}
+                                    QUERY PLAN                                   
+---------------------------------------------------------------------------------
+ Seq Scan on a15d1e4s0 o  (cost=0.00..1247.10 rows=5000 width=4)
+   Filter: (NOT (subplan))
+   SubPlan
+     ->  Seq Scan on a15d1e4s0 i  (cost=0.00..318.00 rows=3333 width=124)
+           Filter: (d1 < \ttdolar0)
+\end{interactive}
+
+We took a different approach, while scanning over the input we collect
+all minimal tuples in a tuple store\index{tuple store}.  For
+comparison we need to keep just one tuple.  If a tuple is equal to
+this, i.e. another potential minimal/maximal tuple we add it to the
+tuple store.  On the other hand, if this tuple is dominated we clean
+the tuple store, and keep the dominating tuple.  After the initial
+scan over the input we pipe out the tuple store,
+cf. Figure~\ref{code:1dim}.  For the sake of a clearer pseudo code we
+gave our self the freedom to present the tuple store interface
+(\texttt{tuplestore\_*}) a little different to the actual
+implementation.  A functionalty we added to the tuple store is to
+remove all tuples from the tuple store, which is cheaper than
+recreating it.  In the pseudo code this function is called
+\texttt{tuplestore\_clearall}, while in the real implementation its name
+is \texttt{tuplestore\_catchup}, which fits better as we are just
+modifing read and write pointers.
+
+\begin{figure}[htbp]
+\begin{lstlisting}[language=pseudo]
+function ExecSkyline_1Dim(var $state$)
+begin
+	switch $state.status$ begin
+	case INIT:
+		tuplestore_init($state.tuplestore$);
+
+		$resultSlot \gets$ ExecProcNode(outerPlanState(state));
+
+		if $resultSlot \not=$ NULL then begin
+			// input contains at least one tuple
+			$slot \gets$ ExecProcNode(outerPlanState(state));
+
+			// while not end of input reached
+			while $slot \not=$ NULL do begin
+				if $slot \nondistinct resultSlot$ then
+					// we found another potential minimal tuple
+					tuplestore_put($state.tuplestore$, $slot$);
+				else if $slot \dominates resultSlot$ then begin
+					// we found a new lower bound
+					$resultSlot \gets slot$;
+					tuplestore_clearall($state.tuplestore$);
+					tuplestore_put($state.tuplestore$, $slot$);
+				end
+
+				$slot \gets$ ExecProcNode(outerPlanState(state));
+			end
+		end
+
+		$state.status \gets$ PIPEOUT;
+		/* fall through */
+
+	case PIPEOUT:
+		if $\neg$tuplestore_eof($state.tuplestore$) then
+			return tuplestore_get($state.tuplestore$);
+		else begin
+			tuplestore_done($state.tuplestore$);
+			$state.status \gets$ DONE;
+			return NULL;
+		end
+		break;
+
+	case DONE:
+		return NULL;
+		break;
+	end
+end
+\end{lstlisting}
+\caption{Pseudo code for Special case: 1 dimensional}
+\label{code:1dim}
+\end{figure}
 
 \subsection{Special case: one dimensional with distinct}
 \label{sec:onedim-distinct}
+Again this case is of limited use and all general skyline algorithms
+can deal with it, we implemented a specialized algorithm for this
+case.  It is even simpler than the non-distinct case and it easy to
+see that a single scan over to input while keeping the current
+minimal/maximal tuple suffices to compute the skyline in this case,
+one just has to take care of border cases, such as no tuples in the
+input, see Figure~\ref{code:1dimdistinct}. A skyline query of this type looks
+like:
+
+\begin{interactive}
+\textbf{SELECT * FROM a15d1e4s0 SKYLINE OF DISTINCT d1 MIN;}
+\end{interactive}
+
+\noindent
+and will return at most one tuple, if more than one minimal tuple
+exists our implementation returns the first.
+
+The SQL:2003 Standard \citep{SQL2003} does not provide a way
+to limit the size of a result set. Nevertheless PostgreSQL and other
+RDBMS do provide syntax for this and consider it during query
+planning. The query and the query plan for the above query in without
+the skyline operator would look like:
+
+\begin{interactive}
+\textbf{SELECT * FROM a15d1e4s0 WHERE d1 = (SELECT MIN(d1) FROM a15d1e4s0) LIMIT 1;}
+\comment{output omitted}
+
+\textbf{EXPLAIN SELECT * FROM a15d1e4s0 WHERE d1 = }\ellipsis
+
+                                    QUERY PLAN                                   
+---------------------------------------------------------------------------------
+ Limit  (cost=318.01..636.01 rows=1 width=124)
+   InitPlan
+     ->  Aggregate  (cost=318.00..318.01 rows=1 width=8)
+           ->  Seq Scan on a15d1e4s0  (cost=0.00..293.00 rows=10000 width=8)
+   ->  Seq Scan on a15d1e4s0  (cost=0.00..318.00 rows=1 width=124)
+         Filter: (d1 = \ttdolar0)
+\end{interactive}
+
+\noindent
+Please note that again two scans over the input are done, altought the
+second might stop earlier. For Microsoft SQL Server to same query
+would look like this:
+
+\begin{interactive}
+\textbf{SELECT TOP 1 * FROM a15d1e4s0 WHERE d1 = (SELECT MIN(d1) FROM a15d1e4s0);}
+\end{interactive}
+
+\todo{execution plan for sql server}{}
+
+If the relation in question contains a unique identifier with a total
+order, let us call it \texttt{id}, then the following solution in
+standard SQL can be found:
+
+\begin{interactive}
+\textbf{SELECT * FROM a15d1e4s0 o WHERE NOT EXISTS
+    (SELECT * FROM a15d1e4s0 i WHERE i.d1 < o.d1 OR (i.d1 = o.d1 AND i.id < o.id));}
+\end{interactive}
+
+\noindent
+Note that condition \texttt{i.d1 = o.d1 AND i.id < o.id} is used to
+select the first, accoring to the order induced by \texttt{id}, of the
+minimal tuples. The runtime complexity of this query is also in $O(n^2)$.
+
+\begin{figure}[htbp]
+\begin{lstlisting}[language=pseudo]
+function ExecSkyline_1DimDistinct(var $state$)
+begin
+	switch $state.status$ begin
+	case INIT:
+		$resultSlot \gets$ ExecProcNode(outerPlanState(state));
+
+		if $resultSlot \not=$ NULL then begin
+			$slot \gets$ ExecProcNode(outerPlanState(state));
+
+			// while not end of input reached
+			while $slot \not=$ NULL do begin
+				if $slot \dominates resultSlot$ then
+					$resultSlot \gets slot$;
+
+				$slot \gets$ ExecProcNode(outerPlanState(state));
+			end
+		end
+
+		$state.status \gets$ DONE;
+		return $resultSlot$;
+		break;
+
+	case DONE:
+		return NULL;
+		break;
+	end
+end
+\end{lstlisting}
+\caption{Pseudo code for Special case: 1 dimensional distinct}
+\label{code:1dimdistinct}
+\end{figure}
+
 
 \subsection{Special case: two dimensional with presort}
 \label{sec:presort}
+The two dimensional case of skyline computation is usually the
+smallest case considered in literature and of course BNL and SFS can
+deal with it.  Nevertheless as pointed out in \citep{Borzsonyi2001}
+skylines for the two dimensional case can be computed in a simple way; first ... \todo{}{}
 
-in case a suitable access path, no sort is needed,
+\todo{in case a suitable access path, no sort is needed,}{}
 
-brauchbar, da es unserer vermutung nach ein ein gut anzuwendender fall
-ist, aber d=2 macht skyline sinn.
+\todo{brauchbar, da es unserer vermutung nach ein ein gut anzuwendender fall
+ist, aber d=2 macht skyline sinn.}
+
+In interesting aspect of this algorithm is how it deals with the
+distinct and non-distinct case of \inlinesql{SKYLINE OF}.
+\todo{}{}
+$q \dominates p \lor (q \nondistinct p \land \text{DISTINCT})$
+
+
+\begin{figure}[htbp]
+\begin{lstlisting}[language=pseudo]
+function ExecSkyline_2DimPresort(var $state$)
+begin
+	switch $state.status$ begin
+	case INIT:
+		$resultSlot \gets$ ExecProcNode(outerPlanState(state));
+
+		if $resultSlot\ =$ NULL then begin
+			// input does not contain a single tuple
+			$state.status \gets$ DONE;
+			return NULL;
+		end
+
+		$state.status \gets$ PROCESS
+		// the first tuple is already a skyline tuple
+		return $resultSlot$;
+		break;
+
+	case PROCESS:
+		forever do begin
+			$slot \gets$ ExecProcNode(outerPlanState(state));
+
+			if $slot\ =$ NULL then begin
+				// end of input reached
+				$state.status \gets$ DONE;
+				return NULL;
+			end
+
+			if $slot \dominates returnSlot \lor (slot \nondistinct returnSlot\ \land$ DISTINCT$)$ then begin
+				// found another skyline tuple
+				$returnSlot \gets slot$;
+				return $returnSlot$;
+			end
+		end
+		break;
+
+	case DONE:
+		return NULL;
+		break;
+	end
+end
+\end{lstlisting}
+\caption{Pseudo code for Special case: 2 dimensional with presort}
+\label{code:2dimpresort}
+\end{figure}
+
+\todo{such queries can not be unnested \citep{Grust1997, Braumandl1998}, from \citep[Page 4]{Borzsonyi2001}}{}
 
 \subsection{Na\"{\i}ve method: \emph{MNL: materialized nested loop}}
 \label{sec:mnl}

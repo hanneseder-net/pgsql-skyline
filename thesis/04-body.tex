@@ -38,12 +38,12 @@
 \newcommand\nondistinct{\ensuremath{\stackrel{\vartriangleright}{=}}\xspace}
 
 
-
 \newcommand\inlinesql[1]{{\tt #1}}
 \newcommand\srcref[1]{{\tt #1}}
 \newcommand\postgresdocu[2]{\href{http://www.postgresql.org/docs/8.3/static/#1}{#2}\footnote{\url{http://www.postgresql.org/docs/8.3/static/#1}}}
 \newcommand\ttbackslash{{\char92}}
 \newcommand\ttdolar{{\char36}}
+\newcommand\ttspace[1]{{\hbox to #1em{\hfil}}}%
 
 \newtheorem{definition}{Definition}
 \newtheorem{lemma}{Lemma}
@@ -283,6 +283,8 @@ SELECT * FROM building SKYLINE OF x DIFF, y MIN, z MAX;
 \item \todo{faster to evaluate}{}
 \item \todo{new optimization opportuinities}{}
 \end{itemize}
+
+\todo{see \citep[Page 3]{Godfrey2004}}{}
 
 \subsection{Fields of Application}
 motivation: green computing: less cpu time,
@@ -1004,10 +1006,107 @@ monotone scoring function such that $p$ maximizes that scoring
 function.  In other words, the Skyline does not contain any hotels
 which are nobody's favorite.
 
+
+\subsection{Rewrite Skyline Queries into Standard SQL}
+\label{sec:rewrite-to-sql}
+
+A skyline query with following schema:
+%
+\begin{sql}
+SELECT * FROM $rel$ AS $r$ WHERE $condition$ \\
+SKYLINE OF $a_1$ MIN$, \ldots, a_k$ MIN$, a_{k+1}$ MAX$, \ldots, a_l$ MAX$, a_{l+1}$ DIFF$, \ldots, a_m$ DIFF
+\end{sql}
+%
+can be rewritten into \citep{Borzsonyi2001}
+%
+\begin{sql}
+\newcommand\abox[1]{\hbox to 2.5em{#1\hfil}}%
+\newcommand\bbox[1]{\hbox to 2em{#1\hfil}}%
+SELECT * FROM $rel$ AS $o$ WHERE ($condition\{r \gets o\}$) AND NOT EXISTS \\
+\ttspace{1}(SELECT * FROM $rel$ AS $i$ WHERE ($condition\{r \gets i\}$) \\
+\ttspace{2}AND \abox{$i.a_1$} <= \abox{$o.a_1$} AND $\ldots$ AND \bbox{$i.a_k$} <= \bbox{$o.a_k$} \ttspace{2}-- "MIN" as good\footnote{Note that \texttt{--} starts a single line comment in SQL.}\\
+\ttspace{2}AND \abox{$i.a_{k+1}$} >= \abox{$o.a_{k+1}$} AND $\ldots$ AND \bbox{$i.a_l$} >= \bbox{$o.a_l$} \ttspace{2}-- "MAX" as good\\
+\ttspace{2}AND \abox{$i.a_{l+1}$} { }= \abox{$o.a_m$} AND $\ldots$ AND \bbox{$i.a_m$} { }= \bbox{$o.a_m$} \ttspace{2}-- "DIFF" equal \\
+\ttspace{2}AND (\\
+\ttspace{3}\phantom{{ }{ }{ }}\abox{$i.a_1$} < \abox{$o.a_1$} OR $\ldots$ OR \bbox{$i.a_k$} < \bbox{$o.a_k$} \ttspace{3.5}-- "MIN" better \\
+\ttspace{3}OR \abox{$i.a_{k+1}$} > \abox{$o.a_{k+1}$} OR $\ldots$ OR \bbox{$i.a_l$} > \bbox{$o.a_l$} \ttspace{3.5}-- "MAX" better \\
+\ttspace{2})\\
+\ttspace{1})
+\end{sql}
+
+The correspondence with the basic defintion of the skyline operator
+(cf. Equation \todo{reference}{}) and with the defition of the binary
+preference releation (cf. Equation~\ref{equ:skylinepf}) is obvious.
+
+The join is a $\theta$-join and not an equi-join.
+
+\todo{in the condition replace r with o resp. i}{}
+
+Another way to rewrite the query is \citep[Page 3]{Godfrey2004}:
+
+\begin{sql}
+\newcommand\abox[1]{\hbox to 2.5em{#1\hfil}}%
+\newcommand\bbox[1]{\hbox to 2em{#1\hfil}}%
+SELECT * FROM $rel$ WHERE ($condition$) \\
+EXCEPT \\
+SELECT $o.$* FROM $rel$ AS $i$, $rel$ AS $o$\\
+WHERE ($condition\{r \gets i\}$) AND ($condition\{r \gets o\}$)\\
+\ttspace{1}AND \abox{$i.a_1$} <= \abox{$o.a_1$} AND $\ldots$ AND \bbox{$i.a_k$} <= \bbox{$o.a_k$} \ttspace{2}-- "MIN" as good\\
+\ttspace{1}AND \abox{$i.a_{k+1}$} >= \abox{$o.a_{k+1}$} AND $\ldots$ AND \bbox{$i.a_l$} >= \bbox{$o.a_l$} \ttspace{2}-- "MAX" as good\\
+\ttspace{1}AND \abox{$i.a_{l+1}$} { }= \abox{$o.a_m$} AND $\ldots$ AND \bbox{$i.a_m$} { }= \bbox{$o.a_m$} \ttspace{2}-- "DIFF" equal \\
+\ttspace{1}AND (\\
+\ttspace{2}\phantom{{ }{ }{ }}\abox{$i.a_1$} < \abox{$o.a_1$} OR $\ldots$ OR \bbox{$i.a_k$} < \bbox{$o.a_k$} \ttspace{3.5}-- "MIN" better \\
+\ttspace{2}OR \abox{$i.a_{k+1}$} > \abox{$o.a_{k+1}$} OR $\ldots$ OR \bbox{$i.a_l$} > \bbox{$o.a_l$} \ttspace{3.5}-- "MAX" better \\
+\ttspace{1})
+\end{sql}
+
+
+
 \subsection{\inlinesql{SKYLINE OF DISTINCT} is \emph{not} expressible in SQL}
 \todo{proof it}{}
 
 \subsection{Classification of Skyline Algorithms}
+
+
+\begin{verbatim}
+from \citep[Page 8]{Godfrey2007}
+
+There are additional criteria by which wemight judge
+maximal-vector algorithms. In [28], a useful categorization
+of existing skyline algorithms is presented (which
+followsonthework in [21,24]).They use the criteria enumerated
+below to characterize the behavior and appli-
+cability of the algorithms. These are properties that they
+and we would like a maximal-vector algorithm to have.
+
+1. progressiveness. The first results should be returned
+almost instantly, and the output size should gradually
+increase.
+2. absence of false hits. The output should contain only
+the skyline points (maximals).
+3. absence of temporary false hits. The algorithm
+should not discover temporary ~skyline~ points
+(~maximals~) that will be later discarded.
+4. fairness. The algorithm should not favor points that
+are particularly good on one dimension (but not
+necessarily others).
+5. incorporation of preference. It should be possible to
+specify an order by which the skyline points (maximals)
+are reported.
+6. universality. The algorithm should be applicable to
+any data-set distribution and dimensionality
+
+28. Papadias, D., Tao, Y., Fu, G., Seeger, B.: Progressive skyline computation in database systems.ACMTrans. Database Syst.
+30(1), 41~82 (2005)
+
+21. Hellerstein, J.M., Avnur, R., Chou, A., Hidber, C., Olston, C., Raman, V., Roth, T., Haas, P.J.: Interactive data analysis: The control project. IEEE Comput. 32(8), 51~59 (1999)
+
+24. Kossmann, D., Ramask, F., Rost, S.: Shooting stars in the
+sky: An online algorithm for skyline queries. In: Proceedings
+of 28th International Conference on Very Large Data Bases
+(VLDB-2002), pp. 275~286 (2002)
+\end{verbatim}
+
 
 \todo{\citet{Kossmann2002} suggested a set of criteria for evaluating skyline algorithms:}{rephrase}
 
@@ -2747,6 +2846,13 @@ distinct and non-distinct case of \inlinesql{SKYLINE OF}.
 \todo{}{}
 $q \dominates p \lor (q \nondistinct p \land \text{DISTINCT})$
 
+\todo{show also a query plan when using EXCEPT}{}
+\begin{verbatim}
+explain select * from a15d1e3s0
+except
+select i.* from a15d1e3s0 o, a15d1e3s0 i 
+where i.d1 >= o.d1 and i.d2 >= o.d2 and (i.d1 > o.d1 or i.d2 > o.d2);
+\end{verbatim}
 
 \begin{figure}[htbp]
 \begin{lstlisting}[language=pseudo]

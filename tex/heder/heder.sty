@@ -98,34 +98,6 @@
 %\newcommand{\revision}[0]{{\ifshowrevisions{\small{\ rev:\svnInfoRevision}}\fi}}
 \newcommand{\revision}[0]{}
 
-
-%\newtheoremstyle{sql}% name
-%     {\topsep}%      Space above
-%     {\topsep}%      Space below
-%     {\ttseries}%         Body font
-%     {}%         Indent amount (empty = no indent, \parindent = para indent)
-%     {\bfseries}% Thm head font
-%     {}%        Punctuation after thm head
-%     {\newline}%     Space after thm head: " " = normal interword space;
-%           %       \newline = linebreak
-%     {...}%         Thm head spec (can be left empty, meaning `normal')
-%\newtheorem{sql}{SQL}[subsection]
-
-%\newtheormstyle{sql}{\topsep}{\topsep}{
-\newenvironment{sql}{%
- \list{}{%
-    \listparindent 0\p@
-    \itemindent\listparindent
-    \leftmargin15\p@
-    \rightmargin15\p@
-    \parsep \z@ \@plus\p@
-    \tt
- }%
- \item[]%
-}{%
- \endlist
-}%
-
 \DeclareOption{revisions}{\showrevisionstrue}
 \DeclareOption{norevisions}{\showrevisionsfalse}
 \DeclareOption{final}{\hypersetupfinal}

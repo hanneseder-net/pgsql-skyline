@@ -75,6 +75,35 @@
 \divide\onecolumnwidth\tw@
 \newsavebox\tempbox
 
+%\newtheoremstyle{sql}% name
+%     {\topsep}%      Space above
+%     {\topsep}%      Space below
+%     {\ttseries}%         Body font
+%     {}%         Indent amount (empty = no indent, \parindent = para indent)
+%     {\bfseries}% Thm head font
+%     {}%        Punctuation after thm head
+%     {\newline}%     Space after thm head: " " = normal interword space;
+%           %       \newline = linebreak
+%     {...}%         Thm head spec (can be left empty, meaning `normal')
+%\newtheorem{sql}{SQL}[subsection]
+
+%\newtheormstyle{sql}{\topsep}{\topsep}{
+\newenvironment{sql}{%
+\list{}{%
+    \refstepcounter{equation}%
+    \listparindent 0\p@
+    \itemindent\listparindent
+    \leftmargin15\p@
+%    \rightmargin15\p@
+    \parsep \z@ \@plus\p@
+    \tt
+ }%
+\item[]%
+}{%
+\hfill\hbox{{\normalfont\normalcolor(\theequation)}}%
+\endlist
+}%
+
 \makeatother
 
 \newcommand\subplotprofile[2][todo]{%
@@ -573,11 +602,12 @@ non-transitive?}{}
 \end{definition}
 
 \begin{definition}[Skyline]
+\label{def:skyline}
 The skyline of a relation \relation{R} with respect to the preference
 relation \dominates is the set of tuples $r \in \relation{R}$ which
 are not dominate by any other tuple $s \in \relation{R}$, formally
 $\skyline_\dominates(\relation{R}) := \{ r \in \relation{R} | \nexists
-s \in \relation{R} : s \dominates r \}$
+s \in \relation{R}\colon s \dominates r \}$
 \end{definition}
 
 \begin{lemma}
@@ -678,7 +708,7 @@ r \dominates s \Leftrightarrow r \weakdominates s \land \neg (r \nondistinct s)
 \]
 
 
-\todo{make \dominates equal to (\ref{equ:skylinepf}) and \weakdominates equal to just the $\le$ part, use $r \nondistinct s := r \weakdominates s \land s \weakdominates r = \forall i \in \{1, \ldots, m\}: r_i = s_i$, i.e. equal on all skyline dimensions}{}
+\todo{make \dominates equal to (\ref{equ:skylinepf}) and \weakdominates equal to just the $\le$ part, use $r \nondistinct s := r \weakdominates s \land s \weakdominates r = \forall i \in \{1, \ldots, m\}\colon r_i = s_i$, i.e. equal on all skyline dimensions}{}
 
 \[
 r \incomparable s := r \notdominates s \land s \notdominates r
@@ -702,14 +732,14 @@ r \comparable s = s \comparable r
 \todo{}{}
 Transitifity of equivalence does not hold for a strict partial order
 \[
-\neg \forall x, y, z: x \incomparable y \land y \incomparable z \imp x \incomparable z
+\neg \forall x, y, z\colon x \incomparable y \land y \incomparable z \imp x \incomparable z
 \]
 
 
 
 \todo{for a strict total order R the law (or axiom) of trichotomy holds:}{}
 \[
-\forall x, y: x R y \lor x = y \lor y R y
+\forall x, y\colon x R y \lor x = y \lor y R y
 \]
 
 
@@ -805,7 +835,8 @@ a single attribute, e.g.
 
 \begin{sql}
 SELECT * FROM nba.players \\
-SKYLINE OF (h\_feet * 12 + h\_inches) MAX NULLS LAST, weight MAX NULLS LAST
+SKYLINE OF (h\_feet * 12 + h\_inches) MAX NULLS LAST, \\
+\ttspace{1}weight MAX NULLS LAST
 \end{sql}
 
 \subsection{Skyline Operator is Idempotent}
@@ -836,7 +867,7 @@ in which the attributes are specified in the query.
 \end{property}
 \begin{proof}
 \todo{proof}{}
-see Equation~\ref{equ:skylinepf}
+see \eqref{equ:skylinepf}
 \end{proof}
 
 To give a simple example the following query will yield the same
@@ -1010,21 +1041,24 @@ which are nobody's favorite.
 \subsection{Rewrite Skyline Queries into Standard SQL}
 \label{sec:rewrite-to-sql}
 
-A skyline query with following schema:
+Let $rel$ by a relation with the attributes $a_1, \ldots, a_n$, a non
+empty target list $\emptyset \not= target\_list \subseteq \{a_1,
+\ldots, a_n\}$, then a skyline query with at least one criterion ($0
+\le k \le l \le m \le n$ and $1 \le m \le n$) and following schema:
 %
 \begin{sql}
-SELECT * FROM $rel$ AS $r$ WHERE $condition$ \\
+SELECT $target\_list$ FROM $rel$ AS $r$ WHERE $condition$ \\
 SKYLINE OF $a_1$ MIN$, \ldots, a_k$ MIN$, a_{k+1}$ MAX$, \ldots, a_l$ MAX$, a_{l+1}$ DIFF$, \ldots, a_m$ DIFF
 \end{sql}
 %
-can be rewritten into \citep{Borzsonyi2001}
+can be rewritten, as examplified in \citep{Borzsonyi2001}, into
 %
 \begin{sql}
 \newcommand\abox[1]{\hbox to 2.5em{#1\hfil}}%
 \newcommand\bbox[1]{\hbox to 2em{#1\hfil}}%
-SELECT * FROM $rel$ AS $o$ WHERE ($condition\{r \gets o\}$) AND NOT EXISTS \\
+SELECT $o.target\_list$ FROM $rel$ AS $o$ WHERE ($condition\{r \gets o\}$) AND NOT EXISTS \\
 \ttspace{1}(SELECT * FROM $rel$ AS $i$ WHERE ($condition\{r \gets i\}$) \\
-\ttspace{2}AND \abox{$i.a_1$} <= \abox{$o.a_1$} AND $\ldots$ AND \bbox{$i.a_k$} <= \bbox{$o.a_k$} \ttspace{2}-- "MIN" as good\footnote{Note that \texttt{--} starts a single line comment in SQL.}\\
+\ttspace{2}AND \abox{$i.a_1$} <= \abox{$o.a_1$} AND $\ldots$ AND \bbox{$i.a_k$} <= \bbox{$o.a_k$} \ttspace{2}-- "MIN" as good\footnote{Note that ``\texttt{--}'' starts a single line comment in SQL.}\\
 \ttspace{2}AND \abox{$i.a_{k+1}$} >= \abox{$o.a_{k+1}$} AND $\ldots$ AND \bbox{$i.a_l$} >= \bbox{$o.a_l$} \ttspace{2}-- "MAX" as good\\
 \ttspace{2}AND \abox{$i.a_{l+1}$} { }= \abox{$o.a_m$} AND $\ldots$ AND \bbox{$i.a_m$} { }= \bbox{$o.a_m$} \ttspace{2}-- "DIFF" equal \\
 \ttspace{2}AND (\\
@@ -1034,22 +1068,26 @@ SELECT * FROM $rel$ AS $o$ WHERE ($condition\{r \gets o\}$) AND NOT EXISTS \\
 \ttspace{1})
 \end{sql}
 
+Note that the attributes specified as a criterion in the skyline query
+need not neccessarly appear in the $target\_list$.
+
 The correspondence with the basic defintion of the skyline operator
-(cf. Equation \todo{reference}{}) and with the defition of the binary
-preference releation (cf. Equation~\ref{equ:skylinepf}) is obvious.
+(cf. Defition~\ref{def:skyline}) and with the defition of the binary
+preference releation \eqref{equ:skylinepf} is obvious.
 
 The join is a $\theta$-join and not an equi-join.
 
 \todo{in the condition replace r with o resp. i}{}
 
-Another way to rewrite the query is \citep[Page 3]{Godfrey2004}:
+Another way to rewrite the query is given in
+\citep[Page~3]{Godfrey2004}:
 
 \begin{sql}
 \newcommand\abox[1]{\hbox to 2.5em{#1\hfil}}%
 \newcommand\bbox[1]{\hbox to 2em{#1\hfil}}%
-SELECT * FROM $rel$ WHERE ($condition$) \\
+SELECT $target\_list$ FROM $rel$ WHERE ($condition$) \\
 EXCEPT \\
-SELECT $o.$* FROM $rel$ AS $i$, $rel$ AS $o$\\
+SELECT $o.target\_list$ FROM $rel$ AS $i$, $rel$ AS $o$\\
 WHERE ($condition\{r \gets i\}$) AND ($condition\{r \gets o\}$)\\
 \ttspace{1}AND \abox{$i.a_1$} <= \abox{$o.a_1$} AND $\ldots$ AND \bbox{$i.a_k$} <= \bbox{$o.a_k$} \ttspace{2}-- "MIN" as good\\
 \ttspace{1}AND \abox{$i.a_{k+1}$} >= \abox{$o.a_{k+1}$} AND $\ldots$ AND \bbox{$i.a_l$} >= \bbox{$o.a_l$} \ttspace{2}-- "MAX" as good\\
@@ -1060,7 +1098,14 @@ WHERE ($condition\{r \gets i\}$) AND ($condition\{r \gets o\}$)\\
 \ttspace{1})
 \end{sql}
 
+\noindent
+The principle use here is different, the skyline of a set is the set
+without those tuples that have a \emph{wittness}\index{wittness}. This
+can be formally expressed as:
 
+\begin{equation}
+\skyline(R) = R \backslash \{r \in R|\exists s \in R\colon s \dominates r\}
+\end{equation}
 
 \subsection{\inlinesql{SKYLINE OF DISTINCT} is \emph{not} expressible in SQL}
 \todo{proof it}{}
@@ -1781,8 +1826,8 @@ GROUP BY ... HAVING ...       \\
 SKYLINE OF \textnormal{[}DISTINCT\textnormal{]} $a_1$ \textnormal{[}MIN$|$MAX$|$DIFF\textnormal{]}, ..., $a_m$ \textnormal{[}MIN$|$MAX$|$DIFF\textnormal{]} \\
 ORDER BY ...
 \end{sql}
-
-In addition, we extended the standard syntax to specify
+\noindent
+In addition, we extended the standard syntax to specify:
 \begin{itemize}
 \item The treatment of NULL values (\texttt{NULLS FIRST} and \texttt{NULLS LAST})
 \item The usage of order relations other than $<$ and $>$ (\texttt{USING \emph{Op}})
@@ -2018,7 +2063,7 @@ computation.
 skylineoptions : 
     'WITH' 
     ( 'EF' efwindowoptions ?) ? \\
-    ( ( ( () | 'BNL' | 'SFS' ) windowoptions ? ) | 'MNL' | 'PRESORT' ) ? \\
+    ( ( ( () | 'BNL' | 'SFS' ) windowoptions ? ) | 'MNL' | 'PRESORT' ) ? 
     ( 'NOINDEX' ) ? ;
 \end{rail}
 
@@ -2778,7 +2823,9 @@ would look like this:
 \textbf{SELECT TOP 1 * FROM a15d1e4s0 WHERE d1 = (SELECT MIN(d1) FROM a15d1e4s0);}
 \end{interactive}
 
-\todo{execution plan for sql server}{}
+\noindent
+An adhoc experiment that we conducted showed that Microsoft SQL Server
+2005 produces a very similar execution plan.
 
 If the relation in question contains a unique identifier with a total
 order, let us call it \texttt{id}, then the following solution in

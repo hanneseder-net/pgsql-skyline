@@ -54,6 +54,8 @@
 \newcommand\nt[1]{\textit{#1}}
 
 \makeatletter
+\newcommand\ellipsis{\textcolor{blue}{\ensuremath{[\ldots]}}}%
+
 \newenvironment{interactive}
 {%
 \newcommand\shprompt[1]{\$\ {\textbf{##1}}}
@@ -66,7 +68,6 @@
 %\newcommand\postbreak{\hbox to 1em{\textcolor{blue}{\ensuremath{\hookrightarrow}}}}
 \newcommand\prebreak{\textcolor{blue}{\ensuremath{\hookleftarrow}}}
 \newcommand\postbreak{ \kern-1em\hbox to 1em{\textcolor{blue}{\ensuremath{\rightarrow}}\hss}}
-\newcommand\ellipsis{\textcolor{blue}{\ensuremath{[\ldots]}}}%
 \begingroup\small\list{}{\listparindent 0\p@\itemindent\listparindent\leftmargin15\p@\rightmargin15\p@}\item[]\begin{alltt}}{\end{alltt}\endlist\endgroup}
 
 \newdimen\onecolumnwidth
@@ -682,7 +683,7 @@ r \weakdominates s :=
 \underbrace{\left( \bigland_{1 \le i \le l} r_i \succeq_i s_i \right)}_{\textit{``at least as good''}}
 \end{equation}
 
-\begin{equation}
+\begin{equation}\label{eqn:nondistinct}
 r \nondistinct s := \left( \bigland_{1 \le i \le m} r_i = s_i \right)
 \end{equation}
 
@@ -981,7 +982,7 @@ to beach)}, a barrack on the beach is cheaper and closer to the beach
 than any other accommodation, but might to meet our
 standards. \todo{restaurat, close, good, tiered of eating there}{}
 
-A \emph{$K$-skyband}\index{$K$-skyband} query, introduced by
+A \emph{$K$-skyband}\index{K-skyband@$K$-skyband} query, introduced by
 \citet{Papadias2005}, is a simlar concept as skyline stratum. A
 $K$-skyband query reports all tuples which are dominated by at most
 $K$ points.
@@ -1024,7 +1025,7 @@ $k$ tuples are found, or the entire relation is returned.
 
 
 \subsection{Monoton vs. linear scoring functions}\label{subsec:scoring}
-see \citep{Chomicki2002a} page 5, Theorem 4
+see \citep[Page 5, Theorem 4]{Chomicki2002a}
 
 from \citep{Borzsonyi2001}: One of the nice properties of the Skyline
 of a set $\mathcal{M}$ is that for any monotone scoring function
@@ -1053,7 +1054,7 @@ SKYLINE OF $a_1$ MIN$, \ldots, a_k$ MIN$, a_{k+1}$ MAX$, \ldots, a_l$ MAX$, a_{l
 %
 can be rewritten, as examplified in \citep{Borzsonyi2001}, into
 %
-\begin{sql}
+\begin{sql}\label{sql:rewritten-non-distinct}
 \newcommand\abox[1]{\hbox to 2.5em{#1\hfil}}%
 \newcommand\bbox[1]{\hbox to 2em{#1\hfil}}%
 SELECT $o.target\_list$ FROM $rel$ AS $o$ WHERE ($condition\{r \gets o\}$) AND NOT EXISTS \\
@@ -1077,7 +1078,9 @@ preference releation \eqref{equ:skylinepf} is obvious.
 
 The join is a $\theta$-join and not an equi-join.
 
-\todo{in the condition replace r with o resp. i}{}
+A little notion we use here is $condition\{r \gets o\}$ to express
+that a any reference to the releation alias $r$ must be replace with
+the alias $o$.
 
 Another way to rewrite the query is given in
 \citep[Page~3]{Godfrey2004}:
@@ -1099,16 +1102,153 @@ WHERE ($condition\{r \gets i\}$) AND ($condition\{r \gets o\}$)\\
 \end{sql}
 
 \noindent
-The principle use here is different, the skyline of a set is the set
-without those tuples that have a \emph{wittness}\index{wittness}. This
-can be formally expressed as:
+The principle used here is different, the skyline of a set is the set
+without those tuples that have a \emph{wittness}\index{wittness} that
+they are dominated. This can be formally expressed as:
 
 \begin{equation}
 \skyline(R) = R \backslash \{r \in R|\exists s \in R\colon s \dominates r\}
 \end{equation}
 
-\subsection{\inlinesql{SKYLINE OF DISTINCT} is \emph{not} expressible in SQL}
-\todo{proof it}{}
+Computing the skyline in this way is expensive. \todo{}{}
+
+\subsubsection{\inlinesql{SKYLINE OF DISTINCT} is generally \emph{not} expressible in SQL}
+In the presents of the optional \inlinesql{DISTINCT} modifier in the
+\inlinesql{SKYLINE~OF}-clause situation is changed, such a query has
+following schema:
+%
+\begin{sql}\label{sql:rewrite-distinct}
+SELECT $target\_list$ FROM $rel$ AS $r$ WHERE $condition$ \\
+SKYLINE OF \textbf{DISTINCT} $a_1$ MIN$, \ldots, a_k$ MIN$, a_{k+1}$ MAX$, \ldots, a_l$ MAX$,$  \\
+\ttspace{1}$a_{l+1}$ DIFF$, \ldots, a_m$ DIFF
+\end{sql}
+%
+Before we describe how to rewrite such a query into standard SQL and
+where the limits of this transformation are, we shall repeat what the
+intended sematics of \inlinesql{SKyLINE~OF DISTINCT} is
+\citep{Borzsonyi2001}.  If the \inlinesql{DISTINCT} modifier is
+present, then duplicates are eliminated in the following way; if for
+two tuples $r$ and $s$ the condition
+\[
+\bigland_{1 \le i \le m} r_i = s_i,
+\]
+i.e. they are equal on all skyline critiria, in other terms $r
+\nondistinct s$ (cf. \eqref{eqn:nondistinct}), holds then either $r$
+or $s$ is retained, the choice is left to the implementation. Note
+that the attributes $a_{m+1}, \ldots, a_n$ are not effected by this,
+there are still part of the retained tuple, i.e no implicit projection
+is performed. This indicates some difficulties, standard SQL does not
+have some non-deterministic feature, so we some how have to express if
+a set of tuples coincide on the sklyine criteria $\{a_1, \ldots,
+a_m\}$, i.e. $r \nondistinct s$, how to:
+
+\begin{enumerate}
+\item
+if target list is \emph{not} a subset of the skyline criteria $target\_list
+\not\subseteq \{a_1, \ldots, a_m\}$, then how to pick just one tuple,
+the first, the last, an arbitrary one, but just one, or
+
+\item
+otherwise $target\_list \subseteq \{a_1, \ldots, a_m\}$, how to
+eliminate duplicats.
+\end{enumerate}
+
+\noindent
+The later is easy, as we just of to eliminate duplicates, which can be
+done with the \inlinesql{DISTINCT} keyword in the
+\inlinesql{SELECT}-clause. The rewritten query of
+\eqref{sql:rewrite-distinct} is besides an additional
+\inlinesql{DISTINCT} the same as in \eqref{sql:rewritten-non-distinct}:
+%
+\begin{sql}
+\newcommand\abox[1]{\hbox to 2.5em{#1\hfil}}%
+\newcommand\bbox[1]{\hbox to 2em{#1\hfil}}%
+SELECT \textbf{DISTINCT} $o.target\_list$ FROM $rel$ AS $o$ \\
+\ttspace{1}WHERE ($condition\{r \gets o\}$) AND NOT EXISTS \\
+\ttspace{2}(SELECT * FROM $rel$ AS $i$ WHERE ($condition\{r \gets i\}$) \ellipsis
+\end{sql}
+%
+The same effect can be achieved by aggregating over all attributes in
+the target list.
+
+Matters get more involved in the first case. We would like to
+distigues two subcases. First if the relation $rel$ has an orderable
+attribute which uniquelly identifies a tuple, such as \emph{rowid} are
+an other key let use call it \texttt{id}\footnote{On some RDBMS system
+special pseudocolumns might be used for this propose.} and be one of
+the $\{a_{m+1}, \ldots, a_n\}$ attributes, then
+\eqref{sql:rewrite-distinct} can be rewritten into:
+%
+\begin{sql}
+\newcommand\abox[1]{\hbox to 2.5em{#1\hfil}}%
+\newcommand\bbox[1]{\hbox to 2em{#1\hfil}}%
+SELECT $o.target\_list$ FROM $rel$ AS $o$ WHERE ($condition\{r \gets o\}$) AND NOT EXISTS \\
+\ttspace{1}(SELECT * FROM $rel$ AS $i$ WHERE ($condition\{r \gets i\}$)\\
+\ttspace{2}AND (\\
+\ttspace{3}({ }{ }{ }{ }{ }\abox{$i.a_1$} <= \abox{$o.a_1$} AND $\ldots$ AND \bbox{$i.a_k$} <= \bbox{$o.a_k$} \ttspace{2}-- "MIN" as good\\
+\ttspace{4}AND \abox{$i.a_{k+1}$} >= \abox{$o.a_{k+1}$} AND $\ldots$ AND \bbox{$i.a_l$} >= \bbox{$o.a_l$} \ttspace{2}-- "MAX" as good\\
+\ttspace{4}AND \abox{$i.a_{l+1}$} { }= \abox{$o.a_m$} AND $\ldots$ AND \bbox{$i.a_m$} { }= \bbox{$o.a_m$} \ttspace{2}-- "DIFF" equal \\
+\ttspace{4}AND (\\
+\ttspace{5}\phantom{{ }{ }{ }}\abox{$i.a_1$} < \abox{$o.a_1$} OR $\ldots$ OR \bbox{$i.a_k$} < \bbox{$o.a_k$} \ttspace{3.5}-- "MIN" better \\
+\ttspace{5}OR \abox{$i.a_{k+1}$} > \abox{$o.a_{k+1}$} OR $\ldots$ OR \bbox{$i.a_l$} > \bbox{$o.a_l$} \ttspace{3.5}-- "MAX" better \\
+\ttspace{4})\\
+\ttspace{3})\ttspace{24}-- i dominates o\\
+\ttspace{3}OR (\\
+\ttspace{4}\phantom{AND }\abox{$i.a_1$} { }= \abox{$o.a_1$} AND $\ldots$ AND \bbox{$i.a_m$} { }= \bbox{$o.a_m$}\ttspace{2} -- non distinct\\
+\ttspace{4}AND \abox{$i$.id} { }< \abox{$o$.id}\ttspace{14} -- pick the first\\
+\ttspace{3})\\
+\ttspace{2})\\
+\ttspace{1})
+\end{sql}
+%
+In the above query we retain the first tuple, with an easy principle
+of we have a wittness with a lower \texttt{id} we drop the later
+tuple. Also note all the addition pairs of paranthesis neccessary.
+
+If the attributes not part of the skyline criteria are orderable, one
+could establish a lexikographic order, pick the smallest as above with
+\texttt{id} and to ensure no duplicates are left do a duplicate
+elimintition over the entire query.
+
+The second subcase is the more difficult one, where we do not have a
+unique and orderable identifier for a tuple.  Let the target list be
+$\{a_{j_1}, \ldots, a_{j_h}\}$, $\{j_1, \ldots, j_h\} = J$, with $J \subseteq \{1, \ldots, n\}$ and $J \cap \{m+1, \ldots, n\} \neq \emptyset$, i.e
+the target list contains at least one attribute not part of the
+skyline criteria. In Microsoft SQL Server there are special aggregate
+functions \inlinesql{FIRST} and \inlinesql{LAST} one can use in this
+case, the rewritten query of \eqref{sql:rewrite-distinct} is as:
+%
+\begin{sql}
+\newcommand\abox[1]{\hbox to 2.5em{#1\hfil}}%
+\newcommand\bbox[1]{\hbox to 2em{#1\hfil}}%
+SELECT \textbf{FIRST}($t.a_{j_1}$)$, \ldots, $ \textbf{FIRST}($t.a_{j_h}$) \\
+FROM (\\
+\ttspace{1}SELECT $o.a_{j_1}, \ldots, o.a_{j_h}$ FROM $rel$ AS $o$ WHERE ($condition\{r \gets o\}$) AND NOT EXISTS \\
+\ttspace{2}(SELECT * FROM $rel$ AS $i$ WHERE ($condition\{r \gets i\}$) \\
+\ttspace{3}AND \abox{$i.a_1$} <= \abox{$o.a_1$} AND $\ldots$ AND \bbox{$i.a_k$} <= \bbox{$o.a_k$} \ttspace{2}-- "MIN" as good\\
+\ttspace{1}{\normalfont \ellipsis{ } (\emph{same as in \eqref{sql:rewritten-non-distinct}})} \\
+) AS $t$ \\
+\textbf{GROUP BY} $t.a_{j_1}, \ldots, t.a_{j_h}$
+\end{sql}
+
+%Or in Oracle \inlinesql{HAVING GROUP\_ID() < 1}
+%(cf. \citep{Oracle2005}) could be fascilitated, but 
+%^^^ thats not true, because all fields have to be part of the aggregate
+In the absence of such a feature or a feature that can be used to
+accoblish such a task, like there is nothing in the SQL 2003 standard
+\citep{SQL2003} the skyline query is \emph{not} expressible.
+
+\todo{
+select (select id from foo as i where d1 = o.d1 limit 1), (select d2 from foo as i where d1 = o.d1 limit 1) from (select distinct d1 from foo) as o;
+}{}
+\todo{credit to chris :) }{}
+
+For the border case $m = 1$, i.e. one dimensional skyline, other
+methods do exist, we show them in Section~\ref{sec:onedim-nondistinct}
+and \ref{sec:onedim-distinct}.  Nevertheless the \inlinesql{DISTINCT}
+case relies on SQL features not part of the SQL 2003 standard and are
+implementation dependant.
+
 
 \subsection{Classification of Skyline Algorithms}
 
@@ -2827,6 +2967,9 @@ would look like this:
 An adhoc experiment that we conducted showed that Microsoft SQL Server
 2005 produces a very similar execution plan.
 
+In Oracle the pseudocolumn \inlinesql{ROWNUM}\index{ROWNUM@\texttt{ROWNUM}}
+can be used the limit the number of tuples returned by a query.
+
 If the relation in question contains a unique identifier with a total
 order, let us call it \texttt{id}, then the following solution in
 standard SQL can be found:
@@ -2895,10 +3038,29 @@ $q \dominates p \lor (q \nondistinct p \land \text{DISTINCT})$
 
 \todo{show also a query plan when using EXCEPT}{}
 \begin{verbatim}
-explain select * from a15d1e3s0
+explain select * from a15d1e4s0
 except
-select i.* from a15d1e3s0 o, a15d1e3s0 i 
+select i.* from a15d1e4s0 o, a15d1e4s0 i 
 where i.d1 >= o.d1 and i.d2 >= o.d2 and (i.d1 > o.d1 or i.d2 > o.d2);
+
+
+
+
+ SetOp Except  (cost=5366230.75..5629001.45 rows=618284 width=124)
+   ->  Sort  (cost=5366230.75..5381687.85 rows=6182840 width=124)
+         Sort Key: "*SELECT* 1".id, "*SELECT* 1".d1, "*SELECT* 1".d2, "*SELECT* 1".d3, \ellipsis
+         ->  Append  (cost=0.00..3062717.40 rows=6182840 width=124)
+               ->  Subquery Scan "*SELECT* 1"  (cost=0.00..393.00 rows=10000 width=124)
+                     ->  Seq Scan on a15d1e4s0  (cost=0.00..293.00 rows=10000 width=124)
+               ->  Subquery Scan "*SELECT* 2"  (cost=303.00..3062324.40 rows=6172840 width=124)
+                     ->  Nested Loop  (cost=303.00..3000596.00 rows=6172840 width=124)
+                           Join Filter: ((i.d1 >= o.d1) AND (i.d2 >= o.d2) AND ((i.d1 > o.d1) OR (i.d2 > o.d2)))
+                           ->  Seq Scan on a15d1e4s0 i  (cost=0.00..293.00 rows=10000 width=124)
+                           ->  Materialize  (cost=303.00..403.00 rows=10000 width=16)
+                                 ->  Seq Scan on a15d1e4s0 o  (cost=0.00..293.00 rows=10000 width=16)
+
+
+
 \end{verbatim}
 
 \begin{figure}[htbp]
@@ -4467,6 +4629,23 @@ the most effective EF window policy.
 
 
 \chapter{Future work}
+
+\section{Differnt syntax for \inlinesql{SKYLINE OF DIFF}}
+We believe the syntax of \inlinesql{SKYLINE OF DIFF} is a bit
+cumbersom for the intended semantic to partition the input relation
+into partitions, so that the skyline is computed with these
+partitions. Instead of \inlinesql{DIFF} a construct like this could be
+used:
+
+\begin{rail}
+skylineclause : 
+    'SKYLINE OF' ( skylineofexpr + ',' ) \\ 'OVER' '(' 'PARTITION BY' (expr + ',') ')';
+\end{rail}
+
+\noindent
+With the intended semantic to compute the skyline within the
+partitions as induced by the \inlinesql{PARTITION BY} subclause. This
+syntax was inspired by Oracle's analytic functions \citep[Page~5-10]{Oracle2005}.
 
 \section{Index-based algorithms}
 

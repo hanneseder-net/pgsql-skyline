@@ -700,9 +700,9 @@ s \dominatedby r :\Leftrightarrow r \dominates s.
 s \weakdominatedby r :\Leftrightarrow r \weakdominates s.
 \]
 
-\[
+\begin{equation}\label{eqn:weakdominats-dom-nondistinct}
 r \weakdominates s \Leftrightarrow r \dominates s \lor r \nondistinct s
-\]
+\end{equation}
 
 \[
 r \dominates s \Leftrightarrow r \weakdominates s \land \neg (r \nondistinct s)
@@ -1041,6 +1041,8 @@ which are nobody's favorite.
 
 \subsection{Rewrite Skyline Queries into Standard SQL}
 \label{sec:rewrite-to-sql}
+
+\todo{such queries can not be unnested \citep{Grust1997, Braumandl1998}, from \citep[Page 4]{Borzsonyi2001}}{}
 
 Let $rel$ by a relation with the attributes $a_1, \ldots, a_n$, a non
 empty target list $\emptyset \not= target\_list \subseteq \{a_1,
@@ -1580,9 +1582,11 @@ implementation in PostgreSQL is based on our fixed version.
 
 \begin{figure}[htbp]
 \begin{lstlisting}[language=pseudo]
-function SkylineBNL($\mathcal{I}$) begin // initialization
-$\mathcal{O} \gets \emptyset$; $\mathcal{T} \gets \emptyset$;
-$\mathbb{W} \gets \emptyset$; $timestampIn \gets 0$; $timestampOut
+function SkylineBNL($\mathcal{I}$) 
+begin 
+	// initialization
+	$\mathcal{O} \gets \emptyset$; $\mathcal{T} \gets \emptyset$;
+	$\mathbb{W} \gets \emptyset$; $timestampIn \gets 0$; $timestampOut
 \gets 0$;
 
 	while true do begin
@@ -2791,6 +2795,8 @@ ORDER BY AVG(e.Salary) DESC
 \end{figure}
 
 
+\todo{explain ExecRestrPos, ExecMarkPos, ExecReScan, ExecProcNode}{}
+
 \subsection{Comments on the Pseudo Code}
 All the pseudo code presented in the following subsections is in a
 form of state machines, as required for the PostgreSQL query execution
@@ -2882,11 +2888,11 @@ begin
 	case INIT:
 		tuplestore_init($state.tuplestore$);
 
-		$resultSlot \gets$ ExecProcNode(outerPlanState(state));
+		$resultSlot \gets$ ExecProcNode(outerPlanState($state$));
 
 		if $resultSlot \not=$ NULL then begin
 			// input contains at least one tuple
-			$slot \gets$ ExecProcNode(outerPlanState(state));
+			$slot \gets$ ExecProcNode(outerPlanState($state$));
 
 			// while not end of input reached
 			while $slot \not=$ NULL do begin
@@ -2900,12 +2906,13 @@ begin
 					tuplestore_put($state.tuplestore$, $slot$);
 				end
 
-				$slot \gets$ ExecProcNode(outerPlanState(state));
+				$slot \gets$ ExecProcNode(outerPlanState($state$));
 			end
 		end
 
 		$state.status \gets$ PIPEOUT;
-		/* fall through */
+
+		// fall through
 
 	case PIPEOUT:
 		if $\neg$tuplestore_eof($state.tuplestore$) then
@@ -3004,17 +3011,17 @@ function ExecSkyline_1DimDistinct(var $state$)
 begin
 	switch $state.status$ begin
 	case INIT:
-		$resultSlot \gets$ ExecProcNode(outerPlanState(state));
+		$resultSlot \gets$ ExecProcNode(outerPlanState($state$));
 
 		if $resultSlot \not=$ NULL then begin
-			$slot \gets$ ExecProcNode(outerPlanState(state));
+			$slot \gets$ ExecProcNode(outerPlanState($state$));
 
 			// while not end of input reached
 			while $slot \not=$ NULL do begin
 				if $slot \dominates resultSlot$ then
 					$resultSlot \gets slot$;
 
-				$slot \gets$ ExecProcNode(outerPlanState(state));
+				$slot \gets$ ExecProcNode(outerPlanState($state$));
 			end
 		end
 
@@ -3038,52 +3045,52 @@ end
 The two dimensional case of skyline computation is usually the
 smallest case considered in literature and of course BNL and SFS can
 deal with it.  Nevertheless as pointed out in \citep{Borzsonyi2001}
-skylines for the two dimensional case can be computed in a simple way; first ... \todo{}{}
+skylines for the two dimensional case can be computed in a simple way
+if the input relation is ordered according to the skyline criteria,
+then then the skyline can be computed with a single scan over the
+input, while keeping just the most recently found skyline tuple, see
+Figure~\ref{code:2dimpresort}.  Of course in the presents of an
+suitable access path the input need not to be sorted, just perform an
+index scan.  This method is simple to implement, and we believe the
+two dimensional case is already a quite useful one, from a users
+perspective.
 
-\todo{in case a suitable access path, no sort is needed,}{}
+An interesting aspect of this algorithm is how it deals with the
+\inlinesql{DISTINCT} modifier for the \inlinesql{SKYLINE~OF}-clause.
+\todo{}{give reference to semantics of distinct keyword}
+In the pseude code in Figure~\ref{code:2dimpresort} \texttt{DISTINCT}
+is a boolean variable, which is \emph{true} if the
+\inlinesql{DISTINCT} modifier is present, and \emph{false}
+otherwise. Let $p$ be the current skyline tuple, then a tuple $q$
+becomes the next skyline if the following condintion holds:
 
-\todo{brauchbar, da es unserer vermutung nach ein ein gut anzuwendender fall
-ist, aber d=2 macht skyline sinn.}
+\begin{equation}\label{eqn:2dimpf}
+q \dominates p \lor (q \nondistinct p \land \text{\texttt{DISTINCT}}).
+\end{equation}
 
-In interesting aspect of this algorithm is how it deals with the
-distinct and non-distinct case of \inlinesql{SKYLINE OF}.
-\todo{}{}
-$q \dominates p \lor (q \nondistinct p \land \text{DISTINCT})$
+\noindent
+If \texttt{DISTINCT} is \emph{true}, then \eqref{eqn:2dimpf} simplifies to:
 
-\todo{show also a query plan when using EXCEPT}{}
-\begin{verbatim}
-explain select * from a15d1e4s0
-except
-select i.* from a15d1e4s0 o, a15d1e4s0 i 
-where i.d1 >= o.d1 and i.d2 >= o.d2 and (i.d1 > o.d1 or i.d2 > o.d2);
+\begin{eqnarray}
+q \dominates p \lor (q \nondistinct p \land \top) &=& q \dominates p \lor q \nondistinct p \nonumber\\
+&\stackrel{\textnormal{by \eqref{eqn:weakdominats-dom-nondistinct}}}{=}& q \weakdominates p
+\end{eqnarray}
 
+\noindent
+Otherwise if \texttt{DISTINCT} is \emph{false}:
+%
+\begin{equation}
+q \dominates p \lor (q \nondistinct p \land \bot) = q \dominates p
+\end{equation}
 
-
-
- SetOp Except  (cost=5366230.75..5629001.45 rows=618284 width=124)
-   ->  Sort  (cost=5366230.75..5381687.85 rows=6182840 width=124)
-         Sort Key: "*SELECT* 1".id, "*SELECT* 1".d1, "*SELECT* 1".d2, "*SELECT* 1".d3, \ellipsis
-         ->  Append  (cost=0.00..3062717.40 rows=6182840 width=124)
-               ->  Subquery Scan "*SELECT* 1"  (cost=0.00..393.00 rows=10000 width=124)
-                     ->  Seq Scan on a15d1e4s0  (cost=0.00..293.00 rows=10000 width=124)
-               ->  Subquery Scan "*SELECT* 2"  (cost=303.00..3062324.40 rows=6172840 width=124)
-                     ->  Nested Loop  (cost=303.00..3000596.00 rows=6172840 width=124)
-                           Join Filter: ((i.d1 >= o.d1) AND (i.d2 >= o.d2) AND ((i.d1 > o.d1) OR (i.d2 > o.d2)))
-                           ->  Seq Scan on a15d1e4s0 i  (cost=0.00..293.00 rows=10000 width=124)
-                           ->  Materialize  (cost=303.00..403.00 rows=10000 width=16)
-                                 ->  Seq Scan on a15d1e4s0 o  (cost=0.00..293.00 rows=10000 width=16)
-
-
-
-\end{verbatim}
 
 \begin{figure}[htbp]
 \begin{lstlisting}[language=pseudo]
 function ExecSkyline_2DimPresort(var $state$)
 begin
 	switch $state.status$ begin
-	case INIT:
-		$resultSlot \gets$ ExecProcNode(outerPlanState(state));
+        case INIT:
+		$resultSlot \gets$ ExecProcNode(outerPlanState($state$));
 
 		if $resultSlot\ =$ NULL then begin
 			// input does not contain a single tuple
@@ -3098,7 +3105,7 @@ begin
 
 	case PROCESS:
 		forever do begin
-			$slot \gets$ ExecProcNode(outerPlanState(state));
+			$slot \gets$ ExecProcNode(outerPlanState($state$));
 
 			if $slot\ =$ NULL then begin
 				// end of input reached
@@ -3124,10 +3131,82 @@ end
 \label{code:2dimpresort}
 \end{figure}
 
-\todo{such queries can not be unnested \citep{Grust1997, Braumandl1998}, from \citep[Page 4]{Borzsonyi2001}}{}
-
 \subsection{Na\"{\i}ve method: \emph{MNL: materialized nested loop}}
 \label{sec:mnl}
+This method is the first general method which can deal with any
+dimensionalty and treat the \inlinesql{DISTINCT} modifier.  In
+directly corresponds to the na\"{\i}ve $O(n^2)$ nested loop approach,
+compare every tuple to all others as long no wittness is found, which
+dominates the current tuple.  Why is it called \emph{materialized}
+nested loop?  This \emph{materialized} stem from the fact that we
+materialize the tuples from the outer plan, to be able to read them
+over and over again, this is because the skyline operator can sit at
+any non leave node in the query plan and not only on top of a table or
+index scan.  The handle the \inlinesql{DISTINCT} case, we just use a
+the counters $state.pos$ and $innerPos$ and favor the first tuple.
+
+
+\begin{figure}[htbp]
+\begin{lstlisting}[language=pseudo]
+function ExecSkyline_MaterializedNestedLoop(var $state$)
+begin
+	switch $state.status$ begin
+        case INIT:
+		ExecMarkPos(outerPlanState($state$));
+		$state.pos \gets 0$;
+		$state.status \gets$ PROCESS
+
+		// fall through
+
+	case PROCESS:
+		forever do begin
+			// get next current tuple
+			ExecRestrPos(outerPlanState($state$));
+			$slot \gets$ ExecProcNode(outerPlanState($state$));
+			$state.pos \gets state.pos + 1$;
+			ExecMarkPos(outerPlanState($state$));
+
+			if $slot\ =$ NULL then begin
+				// end of input reached
+				$state.status \gets$ DONE;
+				return NULL;
+			end
+
+			// dominance check
+			ExecReScan(outerPlanState($state$));
+
+			$innerPos \gets 0$;
+
+			forever do begin
+				$innerSlot \gets$ ExecProcNode(outerPlanState($state$));
+				$innerPos \gets innerPos + 1$;
+
+				if $innerSlot\ =$ NULL then begin
+					// no wittness found
+					return $slot$;
+				end
+
+				if $innerSlot \dominates slot$ then
+					break;
+				else if $innserSlot \nondistinct slot \land$ DISTINCT then begin
+					// favor the first
+					if $innerPos < state.pos$ then
+						break;
+				end
+			end
+		end
+		break;
+
+	case DONE:
+		return NULL;
+		break;
+	end
+end
+\end{lstlisting}
+\caption{Pseudo code for MNL}
+\label{code:mnl}
+\end{figure}
+
 
 \subsection{Tuple Window}
 
@@ -3138,11 +3217,53 @@ end
 
 \subsection{BNL}
 
+
+\todo{rewrite into state machine}{}
+
+\begin{figure}[htbp]
+\begin{lstlisting}[language=pseudo] %, caption={Pseudo code for BNL}, label={code:fixedbnl-statemachine}]
+function ExecSkyline_BlockNestedLoop(var $state$)
+begin
+	forever do begin
+		switch $state.status$ begin
+        	case INIT:
+			$state.status \gets$ PROCESS;
+			break;
+
+		case FINALPIPEOUT:
+			if $\neg$tuplewindow_ateof($state.window$) then
+				return tuplewindow_get($state.window$);
+
+			$state.status \gets$ DONE;
+			return NULL;
+			break;
+
+		case DONE:
+			return NULL;
+			break;
+		end
+	end
+end
+\end{lstlisting}
+\caption{Pseudo code for BNL}
+\label{code:fixedbnl-statemachine}]
+\end{figure}
+
+% fake caption
+%\begingroup
+%\makeatletter
+%\def \@captype {figure}%
+%\makeatother
+%\caption{lala}
+%\endgroup
+
 \subsection{SFS}
 
 \subsection{Elimination Filter (EF)}
 
 \subsection{SFS+EF (a LESS Variant)}
+
+\subsubsection{Presort+EF (for 2 dim only)}
 
 \subsection{BNL+EF}
 
@@ -4777,3 +4898,31 @@ best in all aspects.
 
 
 
+\chapter{Spareparts}
+
+\todo{show also a query plan when using EXCEPT}{}
+\begin{verbatim}
+explain select * from a15d1e4s0
+except
+select i.* from a15d1e4s0 o, a15d1e4s0 i 
+where i.d1 >= o.d1 and i.d2 >= o.d2 and (i.d1 > o.d1 or i.d2 > o.d2);
+
+
+
+
+ SetOp Except  (cost=5366230.75..5629001.45 rows=618284 width=124)
+   ->  Sort  (cost=5366230.75..5381687.85 rows=6182840 width=124)
+         Sort Key: "*SELECT* 1".id, "*SELECT* 1".d1, "*SELECT* 1".d2, "*SELECT* 1".d3, \ellipsis
+         ->  Append  (cost=0.00..3062717.40 rows=6182840 width=124)
+               ->  Subquery Scan "*SELECT* 1"  (cost=0.00..393.00 rows=10000 width=124)
+                     ->  Seq Scan on a15d1e4s0  (cost=0.00..293.00 rows=10000 width=124)
+               ->  Subquery Scan "*SELECT* 2"  (cost=303.00..3062324.40 rows=6172840 width=124)
+                     ->  Nested Loop  (cost=303.00..3000596.00 rows=6172840 width=124)
+                           Join Filter: ((i.d1 >= o.d1) AND (i.d2 >= o.d2) AND ((i.d1 > o.d1) OR (i.d2 > o.d2)))
+                           ->  Seq Scan on a15d1e4s0 i  (cost=0.00..293.00 rows=10000 width=124)
+                           ->  Materialize  (cost=303.00..403.00 rows=10000 width=16)
+                                 ->  Seq Scan on a15d1e4s0 o  (cost=0.00..293.00 rows=10000 width=16)
+
+
+
+\end{verbatim}

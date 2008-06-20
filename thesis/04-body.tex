@@ -1112,7 +1112,7 @@ they are dominated. This can be formally expressed as:
 
 Computing the skyline in this way is expensive. \todo{}{}
 
-\subsubsection{\inlinesql{SKYLINE OF DISTINCT} is generally \emph{not} expressible in SQL}
+\subsubsection{Rewrite queries with \inlinesql{SKYLINE OF DISTINCT}}
 In the presents of the optional \inlinesql{DISTINCT} modifier in the
 \inlinesql{SKYLINE~OF}-clause situation is changed, such a query has
 following schema:
@@ -1156,7 +1156,7 @@ eliminate duplicats.
 \noindent
 The later is easy, as we just of to eliminate duplicates, which can be
 done with the \inlinesql{DISTINCT} keyword in the
-\inlinesql{SELECT}-clause. The rewritten query of
+\inlinesql{SELECT}-clause.  The rewritten query of
 \eqref{sql:rewrite-distinct} is besides an additional
 \inlinesql{DISTINCT} the same as in \eqref{sql:rewritten-non-distinct}:
 %
@@ -1171,18 +1171,30 @@ SELECT \textbf{DISTINCT} $o.target\_list$ FROM $rel$ AS $o$ \\
 The same effect can be achieved by aggregating over all attributes in
 the target list.
 
-Matters get more involved in the first case. We would like to
-distigues two subcases. First if the relation $rel$ has an orderable
-attribute which uniquelly identifies a tuple, such as \emph{rowid} are
-an other key let use call it \texttt{id}\footnote{On some RDBMS system
-special pseudocolumns might be used for this propose.} and be one of
-the $\{a_{m+1}, \ldots, a_n\}$ attributes, then
-\eqref{sql:rewrite-distinct} can be rewritten into:
+Matters get more involved in the first case.  If we can establish a
+order on the tuples, then we are able to pick the first or the
+last\footnote{Of course we can also express to pick the second, the
+third and so forth, but all we know is that within a group we have at
+least one tuple.}.  In the presents of a unique and orderable
+key\footnote{On some RDBMS special pseudocolums for such proposes do
+exist.} this is obvious, in the other case as long as on each
+attribute a total order exists, we can construct a lexicographic
+order\index{lexicographic order}.  Duplicate elimination with
+\inlinesql{SELECT DISTINCT} might still be necessary.
+
+To examplify this, let the target list be $\{a_{j_1}, \ldots,
+a_{j_h}\}$, $\{j_1, \ldots, j_h\} = J$, with $J \subseteq \{1, \ldots,
+n\}$ and $J \cap \{m+1, \ldots, n\} \neq \emptyset$, i.e the target
+list contains at least one attribute not part of the skyline
+criteria. Then the query~\eqref{sql:rewrite-distinct} can be rewritten
+into:
+
 %
 \begin{sql}
 \newcommand\abox[1]{\hbox to 2.5em{#1\hfil}}%
 \newcommand\bbox[1]{\hbox to 2em{#1\hfil}}%
-SELECT $o.target\_list$ FROM $rel$ AS $o$ WHERE ($condition\{r \gets o\}$) AND NOT EXISTS \\
+SELECT \textbf{DISTINCT} $o.a_{j_1}, \ldots, o.a_{j_h}$ \\
+FROM $rel$ AS $o$ WHERE ($condition\{r \gets o\}$) AND NOT EXISTS \\
 \ttspace{1}(SELECT * FROM $rel$ AS $i$ WHERE ($condition\{r \gets i\}$)\\
 \ttspace{2}AND (\\
 \ttspace{3}({ }{ }{ }{ }{ }\abox{$i.a_1$} <= \abox{$o.a_1$} AND $\ldots$ AND \bbox{$i.a_k$} <= \bbox{$o.a_k$} \ttspace{2}-- "MIN" as good\\
@@ -1195,28 +1207,21 @@ SELECT $o.target\_list$ FROM $rel$ AS $o$ WHERE ($condition\{r \gets o\}$) AND N
 \ttspace{3})\ttspace{24}-- i dominates o\\
 \ttspace{3}OR (\\
 \ttspace{4}\phantom{AND }\abox{$i.a_1$} { }= \abox{$o.a_1$} AND $\ldots$ AND \bbox{$i.a_m$} { }= \bbox{$o.a_m$}\ttspace{2} -- non distinct\\
-\ttspace{4}AND \abox{$i$.id} { }< \abox{$o$.id}\ttspace{14} -- pick the first\\
+\ttspace{4}AND ($i.a_{j_1}$ < $o.a_{j_1}$\\
+\ttspace{5}OR ($i.a_{j_1}$ = $o.a_{j_1}$ AND $i.a_{j_2}$ < $o.a_{j_2}$\\
+\ttspace{6}OR ($i.a_{j_2}$ = $o.a_{j_2}$ AND $i.a_{j_3}$ < $o.a_{j_3}$\\
+\ttspace{6}$\ddots$\\
+\ttspace{8}OR ($i.a_{j_{h-1}}$ = $o.a_{j_{h-1}}$ AND $i.a_{j_h}$ < $o.a_{j_h}$)$\ldots$) -- order lexical.\\
 \ttspace{3})\\
 \ttspace{2})\\
 \ttspace{1})
 \end{sql}
 %
-In the above query we retain the first tuple, with an easy principle
-of we have a wittness with a lower \texttt{id} we drop the later
-tuple. Also note all the addition pairs of paranthesis neccessary.
-
-If the attributes not part of the skyline criteria are orderable, one
-could establish a lexikographic order, pick the smallest as above with
-\texttt{id} and to ensure no duplicates are left do a duplicate
-elimintition over the entire query.
-
-The second subcase is the more difficult one, where we do not have a
-unique and orderable identifier for a tuple.  Let the target list be
-$\{a_{j_1}, \ldots, a_{j_h}\}$, $\{j_1, \ldots, j_h\} = J$, with $J \subseteq \{1, \ldots, n\}$ and $J \cap \{m+1, \ldots, n\} \neq \emptyset$, i.e
-the target list contains at least one attribute not part of the
-skyline criteria. In Microsoft SQL Server there are special aggregate
-functions \inlinesql{FIRST} and \inlinesql{LAST} one can use in this
-case, the rewritten query of \eqref{sql:rewrite-distinct} is as:
+In the above query we retain the first tuple. In case such an order
+can not be established, e.g. an order operator is not defined for the
+used data type, then in Microsoft SQL we can work around this with the
+special aggregate functions \inlinesql{FIRST} and \inlinesql{LAST},
+which results in a query like this:
 %
 \begin{sql}
 \newcommand\abox[1]{\hbox to 2.5em{#1\hfil}}%
@@ -1231,23 +1236,32 @@ FROM (\\
 \textbf{GROUP BY} $t.a_{j_1}, \ldots, t.a_{j_h}$
 \end{sql}
 
-%Or in Oracle \inlinesql{HAVING GROUP\_ID() < 1}
-%(cf. \citep{Oracle2005}) could be fascilitated, but 
-%^^^ thats not true, because all fields have to be part of the aggregate
-In the absence of such a feature or a feature that can be used to
-accoblish such a task, like there is nothing in the SQL 2003 standard
-\citep{SQL2003} the skyline query is \emph{not} expressible.
+In PostgreSQL subselects which return at most one value can be used as
+expression, by means of that duplicates can be eliminate in a way we
+just like to sketch\footnote{We would like to thank Chris Roschger,
+who came up with this idea.}:
 
-\todo{
-select (select id from foo as i where d1 = o.d1 limit 1), (select d2 from foo as i where d1 = o.d1 limit 1) from (select distinct d1 from foo) as o;
-}{}
-\todo{credit to chris :) }{}
+\begin{sql}
+SELECT \\
+\ttspace{1}(SELECT $a_{j_1}$ FROM $rel$ WHERE $a_1$ = $o.a_1$ AND \ldots AND $a_m$ = $o.a_m$ LIMIT 1), \\
+\ttspace{1}(SELECT $a_{j_2}$ FROM $rel$ WHERE $a_1$ = $o.a_1$ AND \ldots AND $a_m$ = $o.a_m$ LIMIT 1), \\
+\ttspace{1}$\vdots$ \\
+FROM\\
+\ttspace{1}(SELECT DISTINCT $a_1, \ldots, a_m$ FROM $rel$ WHERE NOT EXISTS\\
+\ttspace{2}\ellipsis{ }{\normalfont \emph{condition for skyline query}} \\
+\ttspace{1}) as $o$
+\end{sql}
 
-For the border case $m = 1$, i.e. one dimensional skyline, other
-methods do exist, we show them in Section~\ref{sec:onedim-nondistinct}
-and \ref{sec:onedim-distinct}.  Nevertheless the \inlinesql{DISTINCT}
-case relies on SQL features not part of the SQL 2003 standard and are
-implementation dependant.
+This returns only the correct result of all the subselects will return
+the attribute form the same tuple, which can be expected as the same
+filter condition on the same relation is used, then almost for sure
+the same access path will be used.  The \inlinesql{LIMIT}-clause is
+used, which is not part of the SQL 2003 standard. We conjecture that
+such a query can not be expressed with standard SQL.
+
+For the border case of one dimensional skyline queryies, i.e. $m = 1$,
+other methods do exist, we show them in
+Section~\ref{sec:onedim-nondistinct} and \ref{sec:onedim-distinct}.
 
 
 \subsection{Classification of Skyline Algorithms}
@@ -4695,6 +4709,9 @@ having a tuple window for each \inlinesql{SKYLINE OF DIFF} group
 hashing could be engaded, i.e. allocate a fixed number of tuple
 windows and hash each \inlinesql{SKYLINE OF DIFF} group into one tuple
 window.
+
+For SFS differenciate between CMP\_INCOMPAREABLE\_SAME\_GROUP and
+CMP\_INCOMPAREABLE\_DIFFERENT\_GROUP.
 
 \section{Project Tuples before inserting into SFS Tuple Window}
 SFS emits a tuple directly after it has survived the test against all

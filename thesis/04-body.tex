@@ -1411,8 +1411,7 @@ Symbol & Description \\
 $\mathcal{I}$ & input for skyline computation (\emph{type}: set of $d$-dimensional points) \\
 $\mathcal{O}$ & output of skyline computation (\emph{type}: set of $d$-dimensional points) \\
 $\mathcal{T}$ & temporary file (\emph{type}: set of $d$-dimensional points) \\
-$\mathbb{W}$ & tuple window in main memory (\emph{type}: set of $d$-dimensional points with a timestamp value for each point) \\
-% TODO: add a rank for the tuple window?
+$\mathbb{W}$ & tuple window in main memory (\emph{type}: set of $d$-dimensional points with a timestamp value for each point and if the window policies \emph{entroy} or \emph{random} are used, then each point has an associated \emph{rank}) \\
 $p \dominates q$ & point $p$ dominates point $q$
 \end{tabular}
 \caption{Symbols used throughout the pseudo code}
@@ -1963,8 +1962,6 @@ the initialy compute the skyline and that update the skyline of tuples
 are added or removed from the dataset, e.g. in a streaming scenario.
 \todo{}{}
 
-\section{Implemented Algorithms}
-\todo{talking about the methods you have implemented.}{}
 
 
 %%
@@ -3145,7 +3142,6 @@ any non leave node in the query plan and not only on top of a table or
 index scan.  The handle the \inlinesql{DISTINCT} case, we just use a
 the counters $state.pos$ and $innerPos$ and favor the first tuple.
 
-
 \begin{figure}[htbp]
 \begin{lstlisting}[language=pseudo]
 function ExecSkyline_MaterializedNestedLoop(var $state$)
@@ -3207,26 +3203,192 @@ end
 \label{code:mnl}
 \end{figure}
 
-
 \subsection{Tuple Window}
+A tuple window is a data structure used by BNL, SFS and EF to store
+skyline (candiate) points. As internal representation we used a double
+linked list with a sentinel (cf. \citep[Page 204--209]{Cormen2002}).
+Using a sentinel simplifies the code to manipulate a double linked
+list alot.
 
-\todo{write about timestamp needed for BNL}{}
+The external interface is simple iterator interface with a few more
+functions\footnote{see \srcref{src/include/utils/tuplewindow.h}}:
+
+\begin{itemize}
+\item \lstinline|TupleWindowState *tuplewindow_begin(int maxKBytes, int maxSlots, TupleWindowPolicy policy)|
+creates a tuple window with the maximum size of \lstinline|maxKBytes|
+KBs or if a a maximum of \lstinline|maxSlosts| slots. The number of
+slots is the stronger limit. For policy see
+Section~\ref{sec:tuplewindowpolicies}.  The returned value must be
+used in all subsequent calles to the tuple window interface functions.
+
+\item \lstinline|void tuplewindow_end(TupleWindowState *state)| 
+destroys a tuple window and frees all recources.
+
+\item \lstinline|void tuplewindow_clean(TupleWindowState *state)|
+removes all tuples from the tuple window.
+
+\item \lstinline|bool tuplewindow_has_freespace(TupleWindowState *state)|
+returns true of the tuple window can hold at least one more tuple.
+Note that we are ignore the fact that the tuple that is going to be
+inserted might consume a little more space than is actually left, but
+this eases the implementation and an exising PostgreSQL interface the
+\lstinline|tuplestore| interface is designed in the same way.
+
+\item \lstinline|void tuplewindow_setinsertrank(TupleWindowState *state, double rank)|
+when policy \emph{entropy} or \emph{ranked} is used, the rank of the
+new tuple has to be set with this function before starting to scan
+over the tuple window, so ensure to call
+\lstinline|tuplewindow_rewind| prior to this call.
+
+\item \lstinline|void tuplewindow_puttupleslot(TupleWindowState *state, TupleTableSlot *slot, int64 timestamp, bool forced)|
+insert the tuple in the tuple table slot \lstinline|slot| into the
+tuple window with the given timestamp.  For a ranked window policy
+\lstinline|forced| can be set to true, i.e. if the new tuple has a
+higher rank than the lowest ranked tuple in the window that this
+lowest ranked tuple is removed, if the space for the higher ranked
+tuple is needed.  We use this especially for the implemention of the
+elimination filter. We speak of a \emph{foreced insert}\index{forced
+insert}.  Currently the \lstinline|timespace| argument is only used
+by BNL all other algorithms set it to zero.
+
+\item \lstinline|void tuplewindow_rewind(TupleWindowState *state)|
+set the \emph{cursor} to the first tuple.
+
+\item \lstinline|bool tuplewindow_ateof(TupleWindowState *state)|
+return true of cursor is at the end of the tuple window.
+
+\item \lstinline|void tuplewindow_movenext(TupleWindowState *state)|
+move the cursor to the next tuple.
+
+\item \lstinline|void tuplewindow_removecurrent(TupleWindowState *state)|
+remove the current tuple.  Note that this also modifies the cursor.
+So when calling \lstinline|tuplewindow_removecurrent|, calling
+\lstinline|tuplewindow_movenext| afterwards skips over a tuple.
+
+\item \lstinline|bool tuplewindow_gettupleslot(TupleWindowState *state, TupleTableSlot *slot, bool removeit)|
+get the tuple a the current position of the cursor.  When called with
+\lstinline|removeit| true, the returned tuple is removed from the
+tuple window.  Note that this is not the same as calling
+\lstinline|tuplewindow_gettupleslot| and
+\lstinline|tuplewindow_removecurrent|, as
+\lstinline|tuplewindow_removecurrent| also frees the tuple it self and
+not only removing it from the tuple window.
+
+\item \lstinline|int64 tuplewindow_timestampcurrent(TupleWindowState *state)|
+returns the timestamp of the tuple at cursor position.  Currently only
+used by BNL.
+
+\end{itemize}
+
+
 
 \subsubsection{Placement Policies}
 \label{sec:tuplewindowpolicies}
+With tuple window placement policy we want to express how tuples are
+orginized in the window and in which order the are compared against
+each other \citep{Godfrey2007}. The implementation supports four
+different placement policies:
+\begin{enumerate}
+\item \emph{append:} 
+a new tuple is always inserted at the \emph{end} of the list
+
+\item \emph{prepend:}
+instead at the end, new tuples are inserted at the \emph{beginning} of
+the list
+
+\item \emph{entropy:}
+tuples are keep in \emph{rank descanding order}. The inserted position
+is found in $O(n)$, this is done by computing the rank before starting
+to scan over the window and the pointer is only incremented as long as
+the rank of the tuple to be inserted is smaller or equal to the rank
+of the current tuple. We choose this approach because the tuple window
+is scanned anyway. With this policy and a \emph{forced insert}, in
+case the tuple window is full, the tuple with the lowest ranking is
+removed from the window to make space for a higher ranked tuple.
+
+\item \emph{random: }
+belaves like \emph{entropy} but instead of a an computed entropy value
+for a tuple a random value is used
+
+\end{enumerate}
 
 \subsection{BNL}
 
-
-\todo{rewrite into state machine}{}
-
+\todo{fix overfull page}{}
 \begin{figure}[htbp]
 \begin{lstlisting}[language=pseudo] %, caption={Pseudo code for BNL}, label={code:fixedbnl-statemachine}]
-function ExecSkyline_BlockNestedLoop(var $state$)
-begin
-	forever do begin
-		switch $state.status$ begin
-        	case INIT:
+function ExecSkyline_BlockNestedLoop(var $state$) begin forever do
+begin switch $state.status$ begin case INIT: $state.source \gets$
+OUTER; tuplestore_init($state.tempOut$);
+tuplewindow_init($state.window$); $state.tsIn \gets 0$; $state.tsOut
+\gets 0$; $state.status \gets$ PROCESS; break;
+
+		case PROCESS:
+			if $state.source$ = OUTER then
+				$slot \gets$ ExecProcNode(outerPlanState($state$));
+			else
+				$slot \gets$ tuplestore_get($state.tempIn$);
+
+			if $slot =$ NULL then begin
+				if $state.source$ = TEMP then
+					tuplestore_done($state.tempIn$);
+
+				if $state.tsOut = 0$ then begin
+					// nothing written to temp -> done
+					tuplestore_done($state.tempOut$);
+					tuplewindow_rewind($state.window$);
+					$state.status \gets$ FINALPIPEOUT;
+					break;
+				end
+
+				$state.source \gets$ TEMP;
+				$state.tempIn \gets state.tempOut$;
+				tuplestore_init($state.tempOut$);
+				$state.tsIn \gets 0$;
+				$state.tsOut \gets 0$;
+				tuplewindow_rewind($state.window$);
+				$state.status \gets$ PIPEOUT;
+				break;
+			end
+
+			$state.tsIn \gets state.tsIn + 1$;
+
+			tuplewindow_rewwind($state.window$);
+			if $state.ranked$ then
+				tuplewindow_setinsertrank($state.window$, ExecSkylineRank($state$, $slot$);
+
+			forever do begin
+				if tuplewindow_ateof($state.window$) then begin
+					if tupelwindow_hasfreespace($state.window$) then
+						tuplewindow_put($state.window$, $slot$);
+					else begin
+						tupelstore_put($state.tempOut$, $slot$);
+						$state.tsOut \gets state.tsOut$;
+					end
+					break;
+				end
+
+				$innerSlot \gets$ tuplewindow_current($state.window$);
+
+				if $innerSlot \dominates slot \lor (innerSlot \nondistinct slot \land \text{DISTINCT})$
+					break;
+				else if $slot \dominates innerSlot$ then
+					tuplewindow_removecurrent($state.window$);
+				else
+					tuplewindow_movenext($state.window$);
+			end
+
+			tuplewindow_rewind($state.window$);
+			$state.status \gets$ PIPEOUT;
+			break;
+
+		case PIPEOUT:
+			while $\neg$tuplewindow_ateof($state.window$) do begin
+				if tuplewindow_timestampcurrent($state.window$) = $state.tsIn$ then
+					return tuplewindow_get($state.window$);
+				
+				tuplewindow_movenext($state.window$);
+			end
 			$state.status \gets$ PROCESS;
 			break;
 
@@ -3234,6 +3396,7 @@ begin
 			if $\neg$tuplewindow_ateof($state.window$) then
 				return tuplewindow_get($state.window$);
 
+			tuplewindow_done($state.window$);
 			$state.status \gets$ DONE;
 			return NULL;
 			break;
@@ -3246,7 +3409,7 @@ begin
 end
 \end{lstlisting}
 \caption{Pseudo code for BNL}
-\label{code:fixedbnl-statemachine}]
+\label{code:fixedbnl-statemachine}
 \end{figure}
 
 % fake caption

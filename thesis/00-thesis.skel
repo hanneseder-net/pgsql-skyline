@@ -79,7 +79,7 @@
 	basicstyle=\small\ttfamily,
 %	commentstyle=\rmfamily\itshape, % looks ugly
 	breaklines=true,
-        prebreak={\hbox{ \textcolor{blue}{$\rightarrow$}}}, postbreak={\hbox{\textcolor{blue}{$\hookrightarrow$ }}},
+        prebreak={\hbox{ \textcolor{blue}{\ensuremath{\hookleftarrow}}}}, postbreak={\hbox{\textcolor{blue}{\ensuremath{\rightarrow}} }},
 	classoffset=0,
 	morecomment=[l]{//},
 	moredelim=[is][\bf]{|}{|}

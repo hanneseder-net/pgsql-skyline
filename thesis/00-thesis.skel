@@ -177,6 +177,9 @@
 %%% TODO: Is a list of tables really required?
 \listoftables
 \addcontentsline{toc}{chapter}{List of Tables}
+
+\lstlistoflistings
+\addcontentsline{toc}{chapter}{List of Listings}
 \newpagechapter
 
 %%% Chapter 1: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

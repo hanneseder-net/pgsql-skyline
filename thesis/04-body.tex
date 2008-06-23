@@ -1347,6 +1347,10 @@ to any monotone function).\todo{from \citep{Papadias2005}}{rephrase}
 \chapter{Existing Skyline Algorithms}
 %\label{chap:relatedworks}
 \todo{}{}
+
+
+\todo{FLET(Fast Linear Expected-time), [BCL90]:}{}
+
 Since the introduction of the skyline operator \citep{Borzsonyi2001}, a
 number of secondary-memory algorithms have been developed for
 efficient skyline computation. These algorithms can be classified into
@@ -1421,9 +1425,10 @@ $p \dominates q$ & point $p$ dominates point $q$
 \end{table}
 
 
-
-\begin{figure}[htbp]
-\begin{lstlisting}[language=pseudo]
+%\begin{figure}[htbp]
+\begin{lstlisting}[language=pseudo, 
+caption={Pseudo code for Original Block-Nested-Loops (BNL) Algorithm, which does not terminate in all cases.},
+label={code:bnl}]
 function SkylineBNL($\mathcal{I}$)
 begin
 	// initialization
@@ -1483,9 +1488,9 @@ begin
 	return ($\mathcal{O}$);
 end
 \end{lstlisting}
-\caption{Pseudo code for Original Block-Nested-Loops (BNL) Algorithm, which does not terminate in all cases.}
-\label{code:bnl}
-\end{figure}
+%\caption{Pseudo code for Original Block-Nested-Loops (BNL) Algorithm, which does not terminate in all cases.}
+%\label{code:bnl}
+%\end{figure}
 
 
 \subsubsection{Nontermination of Block-Nested-Loops (BNL) Algorithm}
@@ -1581,8 +1586,11 @@ is reached.  Nevertheless we fixed it with a slight modification in
 the control flow, see \autoref{code:fixedbnl}.  And of course, our
 implementation in PostgreSQL is based on our fixed version.
 
-\begin{figure}[htbp]
-\begin{lstlisting}[language=pseudo]
+%\begin{figure}[htbp]
+\begin{lstlisting}[language=pseudo,
+caption={Pseudo code for Fixed Block-Nested-Loops (BNL) Algorithm},
+label={code:fixedbnl}
+]
 function SkylineBNL($\mathcal{I}$) 
 begin 
 	// initialization
@@ -1648,9 +1656,9 @@ begin
 	return ($\mathcal{O}$);
 end
 \end{lstlisting}
-\caption{Pseudo code for Fixed Block-Nested-Loops (BNL) Algorithm}
-\label{code:fixedbnl}
-\end{figure}
+%\caption{Pseudo code for Fixed Block-Nested-Loops (BNL) Algorithm}
+%\label{code:fixedbnl}
+%\end{figure}
 
 \subsubsection{Non-preservation of relative Tuple Order}
 \label{sec:bnl-tuple-order}
@@ -1695,8 +1703,11 @@ more indexes can be considered by the query optimizer for the access
 path selection.  We modified the query optimizer accordingly.
 
 
-\begin{figure}[htbp]
-\begin{lstlisting}[language=pseudo]
+%\begin{figure}[htbp]
+\begin{lstlisting}[language=pseudo,
+caption={Pseudo code for Sort-First-Skyline (SFS) Algorithm},
+label={code:sfs}
+]
 function SkylineSFS($\mathcal{I}$) begin 
 	// presort input
 	$\mathcal{I}_{presorted} \gets$ sort($\mathcal{I}$);
@@ -1749,9 +1760,9 @@ function SkylineSFS($\mathcal{I}$) begin
 	return ($\mathcal{O}$);
 end
 \end{lstlisting}
-\caption{Pseudo code for Sort-First-Skyline (SFS) Algorithm}
-\label{code:sfs}
-\end{figure}
+%\caption{Pseudo code for Sort-First-Skyline (SFS) Algorithm}
+%\label{code:sfs}
+%\end{figure}
 
 \subsubsection{Preservation of relative Tuple Order}
 \label{sec:sfs-tuple-order}
@@ -1824,8 +1835,11 @@ the relative order of tuples from the input in the output, i.e. does
 tuples that do survive the elimination filter are in the same relative
 order as in the input.
 
-\begin{figure}[htbp]
-\begin{lstlisting}[language=pseudo]
+%\begin{figure}[htbp]
+\begin{lstlisting}[language=pseudo,
+caption={Pseudo code for Elimination Filter (EF)},
+label={code:ef}
+]
 function EliminationFilter($\mathcal{I}$, var $state$) begin 
 	while true do begin
 		switch state begin
@@ -1871,9 +1885,9 @@ function EliminationFilter($\mathcal{I}$, var $state$) begin
 	end
 end
 \end{lstlisting}
-\caption{Pseudo code for Elimination Filter (EF)}
-\label{code:ef}
-\end{figure}
+%\caption{Pseudo code for Elimination Filter (EF)}
+%\label{code:ef}
+%\end{figure}
 
 
 \subsection{SFS+EF (move to Implementation)}
@@ -2700,7 +2714,7 @@ cite \citep{Buchta1989}
 One could be tempted to set the tuple window size according to the
 outcome of the cardinality estimation, but the assumtion that at no
 time more than \texttt{output\_tuples} will be in the window does not
-hold. To see this image the BNL algorithm running on a uniformly
+hold. To see this imagine the BNL algorithm running on a uniformly
 distributed dataset, which implies the expected result set size is
 $\Theta(\log(n)^{d-1} / (d-1)!)$ but the order of the tuple stream is
 as such that before seeing the actual skyline tuples a lot of
@@ -2879,8 +2893,11 @@ recreating it.  In the pseudo code this function is called
 is \texttt{tuplestore\_catchup}, which fits better as we are just
 modifing read and write pointers.
 
-\begin{figure}[htbp]
-\begin{lstlisting}[language=pseudo]
+%\begin{figure}[htbp]
+\begin{lstlisting}[language=pseudo,
+caption={Pseudo code for Special case: 1 dimensional},
+label={code:1dim}
+]
 function ExecSkyline_1Dim(var $state$)
 begin
 	switch $state.status$ begin
@@ -2929,9 +2946,9 @@ begin
 	end
 end
 \end{lstlisting}
-\caption{Pseudo code for Special case: 1 dimensional}
-\label{code:1dim}
-\end{figure}
+%\caption{Pseudo code for Special case: 1 dimensional}
+%\label{code:1dim}
+%\end{figure}
 
 \subsection{Special case: one dimensional with distinct}
 \label{sec:onedim-distinct}
@@ -3004,8 +3021,11 @@ Note that condition \texttt{i.d1 = o.d1 AND i.id < o.id} is used to
 select the first, accoring to the order induced by \texttt{id}, of the
 minimal tuples. The runtime complexity of this query is also in $O(n^2)$.
 
-\begin{figure}[htbp]
-\begin{lstlisting}[language=pseudo]
+%\begin{figure}[htbp]
+\begin{lstlisting}[language=pseudo,
+caption={Pseudo code for Special case: 1 dimensional distinct},
+label={code:1dimdistinct}
+]
 function ExecSkyline_1DimDistinct(var $state$)
 begin
 	switch $state.status$ begin
@@ -3034,9 +3054,9 @@ begin
 	end
 end
 \end{lstlisting}
-\caption{Pseudo code for Special case: 1 dimensional distinct}
-\label{code:1dimdistinct}
-\end{figure}
+%\caption{Pseudo code for Special case: 1 dimensional distinct}
+%\label{code:1dimdistinct}
+%\end{figure}
 
 
 \subsection{Special case: two dimensional with presort}
@@ -3083,8 +3103,11 @@ q \dominates p \lor (q \nondistinct p \land \bot) = q \dominates p
 \end{equation}
 
 
-\begin{figure}[htbp]
-\begin{lstlisting}[language=pseudo]
+%\begin{figure}[htbp]
+\begin{lstlisting}[language=pseudo,
+caption={Pseudo code for Special case: 2 dimensional with presort},
+label={code:2dimpresort}
+]
 function ExecSkyline_2DimPresort(var $state$)
 begin
 	switch $state.status$ begin
@@ -3126,9 +3149,9 @@ begin
 	end
 end
 \end{lstlisting}
-\caption{Pseudo code for Special case: 2 dimensional with presort}
-\label{code:2dimpresort}
-\end{figure}
+%\caption{Pseudo code for Special case: 2 dimensional with presort}
+%\label{code:2dimpresort}
+%\end{figure}
 
 \subsection{Na\"{\i}ve method: \emph{MNL: materialized nested loop}}
 \label{sec:mnl}
@@ -3144,8 +3167,11 @@ any non leave node in the query plan and not only on top of a table or
 index scan.  The handle the \inlinesql{DISTINCT} case, we just use a
 the counters $state.pos$ and $innerPos$ and favor the first tuple.
 
-\begin{figure}[htbp]
-\begin{lstlisting}[language=pseudo]
+%\begin{figure}[htbp]
+\begin{lstlisting}[language=pseudo,
+caption={Pseudo code for MNL},
+label={code:mnl}
+]
 function ExecSkyline_MaterializedNestedLoop(var $state$)
 begin
 	switch $state.status$ begin
@@ -3201,9 +3227,9 @@ begin
 	end
 end
 \end{lstlisting}
-\caption{Pseudo code for MNL}
-\label{code:mnl}
-\end{figure}
+%\caption{Pseudo code for MNL}
+%\label{code:mnl}
+%\end{figure}
 
 \subsection{Tuple Window}
 A tuple window is a data structure used by BNL, SFS and EF to store
@@ -3315,15 +3341,32 @@ for a tuple a random value is used
 \end{enumerate}
 
 \subsection{BNL}
+The implementation of the BNL algorithm is based on our fixed version
+of \citep{Borzsonyi2001}, see \autoref{code:fixedbnl}. In the
+following we give a pseudo code in terms of a state machine as
+required by the PostgreSQL query execution engine, see
+\autoref{code:fixedbnl-statemachine}. This implementation is fully general, it can deal with any dimension $\ge 1$ and can treat the \inlinesql{DISTINCT} modifier. To ensure BNL is used for query execution specify the \inlinesql{BNL}
+keyword as an option to the skyline clause.  All other options that
+can be specified effect the tuple window.
 
-\todo{fix overfull page}{}
-\begin{figure}[htbp]
-\begin{lstlisting}[language=pseudo] %, caption={Pseudo code for BNL}, label={code:fixedbnl-statemachine}]
-function ExecSkyline_BlockNestedLoop(var $state$) begin forever do
-begin switch $state.status$ begin case INIT: $state.source \gets$
-OUTER; tuplestore_init($state.tempOut$);
-tuplewindow_init($state.window$); $state.tsIn \gets 0$; $state.tsOut
-\gets 0$; $state.status \gets$ PROCESS; break;
+
+%\begin{figure}[htbp]
+\begin{lstlisting}[language=pseudo,
+caption={Pseudo code for BNL},
+label={code:fixedbnl-statemachine}
+]
+function ExecSkyline_BlockNestedLoop(var $state$)
+begin
+	forever do begin
+		switch $state.status$ begin
+		case INIT: 
+			$state.source \gets$ OUTER; 
+			tuplestore_init($state.tempOut$);
+			tuplewindow_init($state.window$);
+			$state.tsIn \gets 0$; 
+			$state.tsOut \gets 0$; 
+			$state.status \gets$ PROCESS; 
+			break;
 
 		case PROCESS:
 			if $state.source$ = OUTER then
@@ -3410,9 +3453,9 @@ tuplewindow_init($state.window$); $state.tsIn \gets 0$; $state.tsOut
 	end
 end
 \end{lstlisting}
-\caption{Pseudo code for BNL}
-\label{code:fixedbnl-statemachine}
-\end{figure}
+%\caption{Pseudo code for BNL}
+%\label{code:fixedbnl-statemachine}
+%\end{figure}
 
 % fake caption
 %\begingroup
@@ -3423,16 +3466,127 @@ end
 %\endgroup
 
 \subsection{SFS}
+\autoref{code:sfs} translates straight forward into a state machine,
+the way it fits into the query execution engine, see
+\autoref{code:sfs-statemachine}.
+
+\begin{lstlisting}[language=pseudo,
+caption={Pseudo code for SFS},
+label={code:sfs-statemachine}
+]
+function ExecSkyline_SortFilterSkyline(var $state$)
+begin
+	forever do begin
+		switch $state.status$ begin
+		case INIT: 
+			$state.source \gets$ OUTER; 
+			tuplestore_init($state.tempOut$);
+			tuplewindow_init($state.window$);
+			$state.neednextrun \gets false$;
+			$state.status \gets$ PROCESS; 
+			break;
+
+		case PROCESS:
+			if $state.source$ = OUTER then
+				$slot \gets$ ExecProcNode(outerPlanState($state$));
+			else
+				$slot \gets$ tuplestore_get($state.tempIn$);
+
+			if $slot =$ NULL then begin
+				if $state.source$ = TEMP then
+					tuplestore_done($state.tempIn$);
+
+				if $\neg state.neednextrun$ then begin
+					// nothing written to temp -> done
+					tuplestore_done($state.tempOut$);
+					tuplewindow_rewind($state.window$);
+					$state.status \gets$ DONE;
+					return NULL;
+					break;
+				end
+
+				$state.source \gets$ TEMP;
+				$state.tempIn \gets state.tempOut$;
+				tuplestore_init($state.tempOut$);
+				tuplewindow_clean($state.window$);
+				$state.neednextrun \gets false$;
+				break;
+			end
+
+			tuplewindow_rewwind($state.window$);
+			if $state.ranked$ then
+				tuplewindow_setinsertrank($state.window$, ExecSkylineRank($state$, $slot$);
+
+			forever do begin
+				if tuplewindow_ateof($state.window$) then begin
+					if tupelwindow_hasfreespace($state.window$) then begin
+						tuplewindow_put($state.window$, $slot$);
+						return $slot$;
+					end
+					else begin
+						tupelstore_put($state.tempOut$, $slot$);
+						$state.neednextrun \gets true$;
+					end
+					break;
+				end
+
+				$innerSlot \gets$ tuplewindow_current($state.window$);
+
+				if $innerSlot \dominates slot \lor (innerSlot \nondistinct slot \land \text{DISTINCT})$
+					break;
+
+				tuplewindow_movenext($state.window$);
+			end
+			break;
+
+		case DONE:
+			return NULL;
+			break;
+		end
+	end
+end
+\end{lstlisting}
 
 \subsection{Elimination Filter (EF)}
+The pseudo code is already given in \autoref{sec:ef-tuple-order},
+cf. \autoref{code:ef}. 
+\todo{To complete the picture we describe here 
+the options that can be specified.}{?}
 
-\subsection{SFS+EF (a LESS Variant)}
+\subsubsection{SFS+EF (a LESS Variant)}
+
+\subsubsection{BNL+EF}
 
 \subsubsection{Presort+EF (for 2 dim only)}
 
-\subsection{BNL+EF}
+
 
 \section{Development}
+In this section we would share some of the experience we have made 
+during development.
+
+\subsection{Source Code and Version Control}
+We started out our implemention efford of the sklyine operator, when
+\texttt{CSV HEAD} of the PostgreSQL source repository was
+\texttt{8.3-devel}, i.e. the version 8.3 of PostgreSQL was currently
+under development.  PostgreSQL's source is kept in Concurrent Versions
+System CVS.  We have used the very handy
+\href{http://www.tortoisecvs.org/}{Tortoise CVS} to checkout and
+update the PostgreSQL source.  We keep our source in a
+\href{http://subversion.tigris.org/}{SubVersion} repository, and use
+\href{http://tortoisesvn.tigris.org/}{TortoiseSVN} to interact with our
+repository.
+
+\todo{write about keeping cvs in subversion tree}{}
+\todo{write about our scripts for cvs date manipulation}{}
+
+Although we continously merging \texttt{CSV HEAD} of PostgreSQL source
+repository into our main development branch, we decided to base this
+paper on branch \texttt{REL8\_3\_STABLE}, in order to have a more
+stable and reproducibly setting, i.e. all experiments in this paper
+are based on version 8.3.0 of PostgreSQL with our patch for the
+skyline operator applied.
+
 \subsection{Debugging PostgreSQL}
 During development it was very helpful to run the PostgreSQL backend
 in \texttt{--single} mode. A single backend, enter the query directly,
@@ -3440,8 +3594,26 @@ edit \& continue in msvc.
 
 
 \subsection{Regression Testing}
-\todo{see \srcref{test/....}}{}
-\todo{see more extensive see Perl script}{}
+To fasilitate regression testing we also integrated a test case in
+PostgreSQL regression test suite.  This test case tests just a few
+very basic scenarios, as a throughout test would take quite some time,
+and this would be appriciated as part of a checked build.  For the
+basic regression test see
+\srcref{src/test/regress/sql/skyline\_base.sql} and
+\srcref{src/test/regress/expected/skyline\_base.out}.
+
+For a more extensive test see the Perl script \texttt{slregress.pl},
+here a larger set of test cases is produced and the result is always
+checked against the query expressed in standard SQL.  Instead of a
+table the random dataset returning function as described in
+\autoref{sec:set-returning-function}.
+
+We ran both, the PostgreSQL regression test suite and our Perl script
+\texttt{slregress.pl}, very frequently during development, to ensure that
+we do not break other parts of PostgreSQL and an already implemented
+feature of the skyline operator implementation, while we were
+integrating new parts or optimize and/or refactor other parts.
+
 
 
 
@@ -3520,14 +3692,6 @@ i.e. due to appropriate queries all pages were in the shared
 buffers. See \autoref{sec:experimentalenvironment} for more
 details.
 
-
-\subsection{Source Code}
-Although we continously merging \texttt{CSV HEAD} of \fixme{PostgreSQL
-source repository}{ref} into our main development branch, we decided
-to base this paper on branch \texttt{REL8\_3\_STABLE}, in order to
-have a more stable and reproducibly setting, i.e. all experiments in
-this paper are based on version 8.3.0 of PostgreSQL with our patch for
-the skyline operator applied.
 
 \subsection{Lesson learned}
 \label{sec:lessonlearned}
@@ -3848,6 +4012,7 @@ COPY "i3d10" (id, d1, d2, d3) FROM STDIN DELIMITERS ',' CSV QUOTE '''';
 \end{interactive}
 
 \subsubsection{PostgreSQL Random Dataset Generator Function}
+\label{sec:set-returning-function}
 
 To be able to generate test datasets on the fly, i.e. with out
 explicitly creating tables and filling them up, we create a PostgreSQL

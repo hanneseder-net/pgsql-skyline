@@ -157,7 +157,7 @@
 \section{General Introduction}
 \label{sec:generalintroduction}
 When thinking of a \emph{skyline} images like
-Figure~\ref{fig:vienneseskyline} might come to ones mind, the
+\autoref{fig:vienneseskyline} might come to ones mind, the
 popularity of such photographs is illustrated by following figures:
 \emph{Goolge images} returns $\approx 3{,}580{,}000$ hits, not
 counting the hits for the Nissan's skyline sports car, for the search
@@ -234,9 +234,9 @@ problem} \citep{Kung1975, Preparata1985}. The terms \emph{skyline} and
 \emph{preference queries}, they also illustrate the usage of the
 \inlinesql{DIFF} and \inlinesql{DISTINCT} keyword.
 
-In Figure~\ref{fig:threeDskyline} the yellow arrow indicates the
+In \autoref{fig:threeDskyline} the yellow arrow indicates the
 direction of view and the colored cuboids should illustrate
-buildings. Table~\ref{tab:threeDskyline} shows the coordinate of the
+buildings. \autoref{tab:threeDskyline} shows the coordinate of the
 lower left edge of each building and gives them names ($a, b,
 \ldots$). The same color indicates the same $x$ coordinate. For $y$ we
 have only to cases \emph{front} and
@@ -271,7 +271,7 @@ $d$ & 1 & 0 & 1.0 & green & front \\
 $e$ & 2 & 1 & 0.5 & blue & back \\
 $f$ & 2 & 0 & 0.75 & blue & front
 \end{tabular}
-\caption{Data for Figure~\ref{fig:threeDskyline}}
+\caption{Data for \autoref{fig:threeDskyline}}
 \label{tab:threeDskyline}
 \end{table}
 
@@ -373,7 +373,7 @@ algorithms we have so far implemented reveal that there does not exist
 a clear winner in all aspects.  The efficiency of the algorithms
 depend on the properties of the datasets such as dimension,
 distribution, cardinality and so on.
-%(more details are given in Section~\ref{sec:contribution}).
+%(more details are given in \autoref{sec:contribution}).
 For instance, BNL is more efficient than SFS and even LESS, if the
 dimension of the data is less than 5 and the number of tuples is
 relatively small.
@@ -466,12 +466,12 @@ output, we indicated such omissions by an ellipsis (``$[\ldots]$'').
 
 \section{Further Organization}
 \todo{}{}
-The paper is organized as follows: In Section~\ref{sec:algorithms} we
+The paper is organized as follows: In \autoref{sec:algorithms} we
 introduce briefly the implemented skyline algorithms.
-Section~\ref{sec:configuration} describes the experimental setup.
-Section~\ref{sec:analysis} presents the extensive experiments over
+\autoref{sec:configuration} describes the experimental setup.
+\autoref{sec:analysis} presents the extensive experiments over
 various data settings, followed by the analysis of the
-results. Section~\ref{sec:conclusion} concludes the paper and
+results. \autoref{sec:conclusion} concludes the paper and
 discusses future work.
 
 
@@ -709,7 +709,7 @@ r \dominates s \Leftrightarrow r \weakdominates s \land \neg (r \nondistinct s)
 \]
 
 
-\todo{make \dominates equal to (\ref{equ:skylinepf}) and \weakdominates equal to just the $\le$ part, use $r \nondistinct s := r \weakdominates s \land s \weakdominates r = \forall i \in \{1, \ldots, m\}\colon r_i = s_i$, i.e. equal on all skyline dimensions}{}
+\todo{make \dominates equal to \eqref{equ:skylinepf} and \weakdominates equal to just the $\le$ part, use $r \nondistinct s := r \weakdominates s \land s \weakdominates r = \forall i \in \{1, \ldots, m\}\colon r_i = s_i$, i.e. equal on all skyline dimensions}{}
 
 \[
 r \incomparable s := r \notdominates s \land s \notdominates r
@@ -751,12 +751,12 @@ to the implementation to include either $r$ or $s$ in the skyline, if
 \inlinesql{DISTINCT} is not specified $r$ and $s$ are included.
 
 
-In case condition (\ref{equ:skylinepf}) does not hold $r$ and $s$ are
+In case condition \eqref{equ:skylinepf} does not hold $r$ and $s$ are
 \emph{incomparable} and may both be part of the skyline if not
 dominated by any other tuple from \relation{R}.
 
-Please note that the following subformula (\ref{equ:skylinepfdiff}) of
-formula (\ref{equ:skylinepf}) induces an equality relation on
+Please note that the following subformula \eqref{equ:skylinepfdiff} of
+formula \eqref{equ:skylinepf} induces an equality relation on
 \relation{R}, i.e. \relation{R} is partitioned into groups where the
 attributes $a_{l+1}, \ldots, a_m$ are equal:
 \begin{equation}\label{equ:skylinepfdiff}
@@ -775,7 +775,7 @@ can be flushed each time the group is changed.
 The skyline operator is a special case of the \emph{winnow
 operator}\index{winnow operator} \citep{Chomicki2002}, where the
 preference formula has exactly the form of formula
-(\ref{equ:skylinepf}).
+\eqref{equ:skylinepf}.
 
 Since the preference relation induced by the skyline criteria is a
 strict partial order, the following theorem (a special case of a
@@ -792,7 +792,9 @@ contains all natural numbers and the standard ordering $<$ is used.
 
 
 \begin{lemma}
-Let $\relation{S} = \skyline_C(\relation{R})$, it is clear that condition (\ref{equ:skylinepf}) does not for any two tuples in \relation{S}.
+Let $\relation{S} = \skyline_C(\relation{R})$, it is clear that
+condition \eqref{equ:skylinepf} does not for any two tuples in
+\relation{S}.
 \end{lemma}
 
 
@@ -902,7 +904,7 @@ is it really worth? what direction of the identity is actually iteresseting?
 \skyline(\relation{R} \union \relation{S}) \not= \skyline(\relation{R}) \union \skyline(\relation{S})
 \end{equation}
 It is easy to see that an equality in
-(\ref{equ:skyline-composition-union}) would not hold, as e.g. a single
+\eqref{equ:skyline-composition-union} would not hold, as e.g. a single
 tuple $r_1$ could dominate the entire relation \relation{S}.
 
 If the last property would hold, easy decompose, but due to theorem
@@ -964,7 +966,7 @@ e.g., database relations.}{rephrase or cite}.
 In the context of \emph{winnow} operator this is references as
 \emph{ranking}\index{ranking}, we prefer to use the term
 \emph{stratum}\index{stratum}, as we reserve the term ranking for
-scoring functions (see \ref{subsec:scoring}).
+scoring functions (see \autoref{subsec:scoring}).
 
 The $n$th skyline startum $\skyline_C^n$ is recursifly defined as:
 
@@ -1263,7 +1265,7 @@ such a query can not be expressed with standard SQL.
 
 For the border case of one dimensional skyline queryies, i.e. $m = 1$,
 other methods do exist, we show them in
-Section~\ref{sec:onedim-nondistinct} and \ref{sec:onedim-distinct}.
+\autoref{sec:onedim-nondistinct} and \ref{sec:onedim-distinct}.
 
 
 \subsection{Classification of Skyline Algorithms}
@@ -1393,7 +1395,7 @@ the potential skyline tuples. Once the window becomes full,
 an overflow file has to be generated.
 In the PostgreSQL execution engine, the BNL operator 
 lies in the iterator tree between the \texttt{ORDER BY} 
-and the \texttt{GROUP BY} node (see Figure~\ref{fig:qp-agg-bnl-sort}),
+and the \texttt{GROUP BY} node (see \autoref{fig:qp-agg-bnl-sort}),
 to directly reflect the intended semantic of the \texttt{SKYLINE OF}-extension
 to the SQL syntax.
 
@@ -1493,8 +1495,8 @@ a little difference in notation and the fact that a tuple is only
 added to the tuple window when there is actual space in the tuple
 window and not like in \citep{Borzsonyi2001} where a tuple is first
 added and than removed if there is no more space the code of
-\citep{Borzsonyi2001} for BNL is the same is in Figure~\ref{code:bnl}.
-Under certain condition the code from Figure~\ref{code:bnl} does not
+\citep{Borzsonyi2001} for BNL is the same is in \autoref{code:bnl}.
+Under certain condition the code from \autoref{code:bnl} does not
 terminate.  To show this property, we construct a data set like this:
 
 \begin{eqnarray}
@@ -1574,9 +1576,9 @@ m$;
 
 The simplest case to reconstruct this nontermination behaviour is with
 $n=m=1$.  A possible fix is to duplicate the lines 7--12 between 44
-and 45 in Figure~\ref{code:bnl}, so the propagation is done once EOF
+and 45 in \autoref{code:bnl}, so the propagation is done once EOF
 is reached.  Nevertheless we fixed it with a slight modification in
-the control flow, see Figure~\ref{code:fixedbnl}.  And of course, our
+the control flow, see \autoref{code:fixedbnl}.  And of course, our
 implementation in PostgreSQL is based on our fixed version.
 
 \begin{figure}[htbp]
@@ -1797,7 +1799,7 @@ the tuple window gets filled up by skyline tuples with a low dominance
 factor.
 
 \citet{Godfrey2005} do not give pseudo code for the elimination
-filter in there paper. In Figure~\ref{code:ef} we give a sketch for
+filter in there paper. In \autoref{code:ef} we give a sketch for
 the code as we used it in our implementation. Note that we are give
 the algorithm in a form that fits into a pipelined architecture liked
 it is used in the PostgreSQL quey execution engine. The function
@@ -1815,7 +1817,7 @@ are tunable for BNL and SFS.
 In \Citep{Godfrey2005} the elimination filter is only used in
 conjunction with as SFS style algorithm, in this paper we demonstrate
 that this concept is also very effective when used with an BNL style
-algortihm, we call it BNL+EF, cf. Section~\ref{sec:analysis}
+algortihm, we call it BNL+EF, cf. \autoref{sec:analysis}
 
 Furthermore it should be noted that the elimination filter preserves
 the relative order of tuples from the input in the output, i.e. does
@@ -1886,7 +1888,7 @@ algorithm, while at the same time preserving the utilization of the
 physical sort operator, we implemented the elimination filter {\em
 before} the sort routine.  Speaking in terms of the iterator tree, the
 EF node is a child of the sort node, which in turn is a child of the
-SFS node (see Figure~\ref{fig:qp-sfs-ef}).  Furthermore, we do not
+SFS node (see \autoref{fig:qp-sfs-ef}).  Furthermore, we do not
 integrate the skyline computation into the final pass of the merge
 sort phase, as described in \citep{Godfrey2005}.  Therefore,
 technically speaking, SFS+EF is not an equivalent implementation of
@@ -2063,9 +2065,9 @@ The \nt{skyline\_clause} itself is preluded by keywords
 The essential part is the comma seperated list of
 \nt{skyline\_of\_expr}, and it is closed by the optional 
 \nt{skyline\_options} part. For the semantics of \inlinesql{DISTINCT}
-see section~\ref{sec:distinct}. For the entire skyline clause we
+see \autoref{sec:distinct}. For the entire skyline clause we
 introduced just a single new reserved keyword, see
-section~\ref{sec:reservedkeywords}.
+\autoref{sec:reservedkeywords}.
 
 \begin{rail}
 skylineclause : 
@@ -2085,12 +2087,12 @@ FIRST} and \inlinesql{NULLS LAST}.  We have to same concept for the
 \inlinesql{ORDER BY}-clause, where this special treatment of null values 
 was introduced in PostgreSQL 8.3.0 (see
 \postgresdocu{sql-select.html\#SQL-ORDERBY}{SQL SELECT/ORDER BY}. For
-the sementics of this see Section~\ref{sec:nullvalues}.
+the sementics of this see \autoref{sec:nullvalues}.
 
 The indroduction of \inlinesql{USING}~\emph{qualOp} to skyline queries
 is our idea, but as for the treatment of null values it was inspired
 by a PostgreSQL extension to \inlinesql{ORDER~BY}-clause. See
-section~\ref{sec:using-qualop} for more details.
+\autoref{sec:using-qualop} for more details.
 
 In the \nt{target\_list} of the \nt{select\_clause} and in many other
 places \nt{a\_expr} is used. This is the concept of a general expression
@@ -2171,7 +2173,7 @@ BNL or SFS can be specified with the \nt{windowoptions}, see below.
 In fact the options for the tuple window could be specified, while
 leaving the decision which physical operator to take to the query
 optimizer, but nevertheless these \nt{windowoptions} only have an
-effect on BNL and SFS. See section~\ref{sec:operatorselection} for
+effect on BNL and SFS. See \autoref{sec:operatorselection} for
 more details on how the physical operator is selected.
 
 
@@ -2179,7 +2181,7 @@ The \inlinesql{PRESORT} method is more or less a special case of SFS,
 which only works in the 2 dimensional case it was pointed out by 
 \citet{Borzsonyi2001}. In the 2 dimensional case once the data
 are ordered according to the two skyline expressions a single tuple is
-enough to compute the skyline. See section~\ref{sec:presort}.
+enough to compute the skyline. See \autoref{sec:presort}.
 
 \inlinesql{MNL} stands for \emph{materialized nested loop}, which
 is our own very basic and experipental nevertheless full general
@@ -2196,7 +2198,7 @@ it was easy to implement and gave us something to play with while
 implementing other parts of the system and of course for regression
 testing, because this method was just easier to get right and later on
 use it to verify the results from other algorithms. See
-section~\ref{sec:mnl}.
+\autoref{sec:mnl}.
 
 Two other special methods do exist, namely \texttt{1DIM} and
 \texttt{1DIMDISTINCT}, as the names suggest they are only for the 1
@@ -2204,8 +2206,8 @@ dimensional non-distinct and distinct case.  These methods are
 directly selected by the query planner and no options can be set for
 them.  The tuplestore used by the method \texttt{1DIM} uses the
 default \texttt{work\_mem} setting. See
-section~\ref{sec:onedim-nondistinct} and
-section~\ref{sec:onedim-distinct}.
+\autoref{sec:onedim-nondistinct} and
+\autoref{sec:onedim-distinct}.
 
 We modified the query optimizer to decided in a cost based way to use
 a \texttt{IndexScan} instead of a \texttt{SeqScan}, in case a suitable
@@ -2260,7 +2262,7 @@ As indicated above a tuple window is used by the elimenation filter
 (EF) and the BNL and SFS algorithm. For each of them the order in
 which tuples are placed into the window is set by this option, where
 the default is \inlinesql{APPEND}. See
-section~\ref{sec:tuplewindowpolicies} for details.
+\autoref{sec:tuplewindowpolicies} for details.
 
 \begin{rail}
 windowpolicy : 'APPEND' | 'PREPEND' | 'ENTROPY' | 'RANDOM' ;
@@ -2631,7 +2633,7 @@ CREATE INDEX ix_a15d1e4s0_d1 ON a15d1e4s0 (d1, d2);
 \end{interactive}
 
 A proof for this property is given in
-Section~\ref{sec:attributeorder}. We modified the query planner
+\autoref{sec:attributeorder}. We modified the query planner
 accordingly, c.f.  function \texttt{query\_planner}\footnote{in
 \srcref{src/backend/optimizer/plan/planmain.c}} and
 \texttt{grouping\_planner}\footnote{in \srcref{src/backend/optimizer/plan/planner.c}}.
@@ -2642,7 +2644,7 @@ accordingly, c.f.  function \texttt{query\_planner}\footnote{in
 \label{sec:relative-tuple-order}
 The relative order of tuples is an important physical property of a
 tuple stream, knowledge about this is encoded in terms of
-\emph{pathkeys}\index{pathkeys} as described in Section~\ref{sec:pathkeys}. As a
+\emph{pathkeys}\index{pathkeys} as described in \autoref{sec:pathkeys}. As a
 fullblown operator we have to provide this information for the skyline
 operator es well.  In the Sections~\ref{sec:bnl-tuple-order},
 \ref{sec:sfs-tuple-order}, and \ref{sec:ef-tuple-order} in subsections
@@ -2653,7 +2655,7 @@ order.  As the two dimensional with presort algorithm is a special
 case of SFS it shares the same properties.  For the one dimensional
 case and for our na\"{\i}ve algorithms it is easy to see that they
 preserve the relative tuple order.  The properties are summariezed in
-Table~\ref{tab:tuple-order-preserving}. Note that for the
+\autoref{tab:tuple-order-preserving}. Note that for the
 \emph{established pathkeys} property we cheat a bit here, as the order
 is actually established by an extra planned sort node and this is only
 done when the required order is not prior established, for instance by
@@ -2709,7 +2711,7 @@ We would like to also point out, that larger window and and less
 passes do not always mean better runtime, as with larger windows the
 number of comparisons per tuple could increase and therefore more CPU
 time is required, so there is a break even point. For experimental
-results see section~\ref{sec:analysis-window-size}.
+results see \autoref{sec:analysis-window-size}.
 
 \subsection{\inlinesql{LIMIT} / \inlinesql{TOP $k$}}
 how top k interacts with skyline, no special measures have to be taken
@@ -2729,7 +2731,7 @@ system now compiles queries into some kind of interpretable data
 structure; the only difference across systems these days is the level
 of abstraction \citep{Hellerstein2005}. We stick to the represenation
 as a tree, as it is used by PostgreSQL (see
-Figure~\ref{fig:qp-agg-bnl-sort}).
+\autoref{fig:qp-agg-bnl-sort}).
 
 \begin{figure}[htbp]
 \centering
@@ -2867,7 +2869,7 @@ this, i.e. another potential minimal/maximal tuple we add it to the
 tuple store.  On the other hand, if this tuple is dominated we clean
 the tuple store, and keep the dominating tuple.  After the initial
 scan over the input we pipe out the tuple store,
-cf. Figure~\ref{code:1dim}.  For the sake of a clearer pseudo code we
+cf. \autoref{code:1dim}.  For the sake of a clearer pseudo code we
 gave our self the freedom to present the tuple store interface
 (\texttt{tuplestore\_*}) a little different to the actual
 implementation.  A functionalty we added to the tuple store is to
@@ -2939,7 +2941,7 @@ case.  It is even simpler than the non-distinct case and it easy to
 see that a single scan over to input while keeping the current
 minimal/maximal tuple suffices to compute the skyline in this case,
 one just has to take care of border cases, such as no tuples in the
-input, see Figure~\ref{code:1dimdistinct}. A skyline query of this type looks
+input, see \autoref{code:1dimdistinct}. A skyline query of this type looks
 like:
 
 \begin{interactive}
@@ -3046,7 +3048,7 @@ skylines for the two dimensional case can be computed in a simple way
 if the input relation is ordered according to the skyline criteria,
 then then the skyline can be computed with a single scan over the
 input, while keeping just the most recently found skyline tuple, see
-Figure~\ref{code:2dimpresort}.  Of course in the presents of an
+\autoref{code:2dimpresort}.  Of course in the presents of an
 suitable access path the input need not to be sorted, just perform an
 index scan.  This method is simple to implement, and we believe the
 two dimensional case is already a quite useful one, from a users
@@ -3055,7 +3057,7 @@ perspective.
 An interesting aspect of this algorithm is how it deals with the
 \inlinesql{DISTINCT} modifier for the \inlinesql{SKYLINE~OF}-clause.
 \todo{}{give reference to semantics of distinct keyword}
-In the pseude code in Figure~\ref{code:2dimpresort} \texttt{DISTINCT}
+In the pseude code in \autoref{code:2dimpresort} \texttt{DISTINCT}
 is a boolean variable, which is \emph{true} if the
 \inlinesql{DISTINCT} modifier is present, and \emph{false}
 otherwise. Let $p$ be the current skyline tuple, then a tuple $q$
@@ -3218,7 +3220,7 @@ functions\footnote{see \srcref{src/include/utils/tuplewindow.h}}:
 creates a tuple window with the maximum size of \lstinline|maxKBytes|
 KBs or if a a maximum of \lstinline|maxSlosts| slots. The number of
 slots is the stronger limit. For policy see
-Section~\ref{sec:tuplewindowpolicies}.  The returned value must be
+\autoref{sec:tuplewindowpolicies}.  The returned value must be
 used in all subsequent calles to the tuple window interface functions.
 
 \item \lstinline|void tuplewindow_end(TupleWindowState *state)| 
@@ -3506,7 +3508,7 @@ $d_1, \ldots, d_k$.  This all sums up to 126 tables and an database of
 approximately 1 GB.  For most of our experiments we did not consider
 tables with more than 100k tuples, as the runtime for a 15 dimensional
 skyline query on 100k tuples went up to 30 minutes. Consult
-Section~\ref{sec:totalworkload} for the total computational workload
+\autoref{sec:totalworkload} for the total computational workload
 done in the experiments.
 
 % TODO hot cache, we ensure the table is in the shared buffer, before
@@ -3515,7 +3517,7 @@ done in the experiments.
 
 All experiments were carried out with a \emph{hot disk cache},
 i.e. due to appropriate queries all pages were in the shared
-buffers. See Section~\ref{sec:experimentalenvironment} for more
+buffers. See \autoref{sec:experimentalenvironment} for more
 details.
 
 
@@ -3702,7 +3704,7 @@ Due to the way it is computed an $x[d]$ could get out of the bound,
 \lstinline{is_vector_ok()} verifies that all coordinates of $x$ are
 within the interval $[0,1]$.
 
-Figure~\ref{fig:density-2d-c2d1e5} shows a correlated dataset with
+\autoref{fig:density-2d-c2d1e5} shows a correlated dataset with
 100k tuples for $d = 2$.
 
 \begin{figure}[htbp]
@@ -3759,7 +3761,7 @@ do
 } while (!is_vector_ok(dim, x));
 \end{lstlisting}
 
-Figure~\ref{fig:density-2d-a2d1e5} shows an anti-correlated dataset
+\autoref{fig:density-2d-a2d1e5} shows an anti-correlated dataset
 with 100k tuples for $d = 2$.
 \end{itemize}
 
@@ -4084,7 +4086,7 @@ single line comment in SQL, by means of that we can safely pass any
 extra information through SQL processor \texttt{psql} to the post
 processing steps. In our case to the programs that parse and analyze
 the log files. We use only the following types of meta data (see
-Figure~\ref{fig:jobfile}, \ref{fig:logfile}
+\autoref{fig:jobfile}, \ref{fig:logfile}
 and~\ref{fig:parsedlogfile}):
 
 \begin{itemize}
@@ -4155,7 +4157,7 @@ going to be profiled.
 Each Run is identified by unique \texttt{runid} and besides this
 general definition in our case a Run had zero or one Setup Query and
 we often grouped runs in such a way, that two runs share a single
-Setup Query (cf. Figure~\ref{fig:jobfile}).
+Setup Query (cf. \autoref{fig:jobfile}).
 
 \begin{definition}[Job]
 A Job comprises of one or more Runs batched together in a file.
@@ -4163,8 +4165,8 @@ A Job comprises of one or more Runs batched together in a file.
 
 \noindent
 A Job is the smallest unit subject to workload distribution (see
-Section~\ref{sec:jobscheduling}) and is stored in a \texttt{.sql} file
-and typically looks like displayed in Figure~\ref{fig:jobfile}.
+\autoref{sec:jobscheduling}) and is stored in a \texttt{.sql} file
+and typically looks like displayed in \autoref{fig:jobfile}.
 
 \begin{figure}[htbp]
 \begin{interactive}
@@ -4257,7 +4259,7 @@ explain analyze select * from a15d1e5s0 \prebreak
 # \ellipsis\rcomment{the query plan is as in Figure \ref{fig:logfile}}
 #--</comment>
 #--<query runid=bnl.ef.entropy.entropy.a15d1e5s0.5>\commentskip
-\comment{For the query sections all relevant information from the query plan is parsed into CSV format with the columns \texttt{runid}, \texttt{name} and \texttt{value}.  See Table~\ref{tab:queryplanfields} for a describtion of the name/value pairs.\commentskip{}}
+\comment{For the query sections all relevant information from the query plan is parsed into CSV format with the columns \texttt{runid}, \texttt{name} and \texttt{value}.  See \autoref{tab:queryplanfields} for a describtion of the name/value pairs.\commentskip{}}
 "bnl.ef.entropy.entropy.a15d1e5s0.5","method","bnl.ef.entropy.entropy"
 \ellipsis
 "bnl.ef.entropy.entropy.a15d1e5s0.5","skyline.rows","4550"
@@ -4283,7 +4285,7 @@ explain analyze select * from a15d1e5s0 \prebreak
 #</queryplan>
 #--</query>
 \end{interactive}
-\caption{A log file parsed with \texttt{qp2log}.  For the name and describtion of the extracted fields see Table~\ref{tab:queryplanfields}.}
+\caption{A log file parsed with \texttt{qp2log}.  For the name and describtion of the extracted fields see \autoref{tab:queryplanfields}.}
 \label{fig:parsedlogfile}
 \end{figure}
 
@@ -4300,7 +4302,7 @@ We also used Windows XPs \texttt{sysprep} during the clone process.
 For interprocess communication we used file sharing and we use file
 locking for synchronization. The machine SKY00 shared a folder, which
 was mounted by SKY01, $\ldots$, SKY07 with a directory layout is
-described in Table~\ref{tab:dirlayoutexpiriments}.
+described in \autoref{tab:dirlayoutexpiriments}.
 
 \newdimen\fixedcolumnwidth
 \newdimen\paragraphcolumnwidth
@@ -4312,16 +4314,16 @@ described in Table~\ref{tab:dirlayoutexpiriments}.
 \centering
 \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}p{\fixedcolumnwidth}@{\extracolsep{\fill}}p{\paragraphcolumnwidth}}
 \verb|jobs/|      &  \\
-\verb|  js.pl|    & job scheduler, see Section~\ref{sec:jobscheduling} \\
+\verb|  js.pl|    & job scheduler, see \autoref{sec:jobscheduling} \\
 \verb|  feed.pl|  & batch feeder, moves prepared jobs into the
                     \texttt{jobs/} directory once this gets empty, see
-                    Section~\ref{sec:jobscheduling} \\
+                    \autoref{sec:jobscheduling} \\
 \verb|  js.lock|  & lock file used by \texttt{js.pl} and
                     \texttt{feed.pl} to synchronize access to the
                     \texttt{jobs/} directory \\
 \verb|  *.sql|    & jobs waiting to be scheduled by \texttt{js.pl} \\
 \verb|  prep/|    & \\
-\verb|    gj.pl|  & job generator, see Section~\ref{sec:generatejobs} \\
+\verb|    gj.pl|  & job generator, see \autoref{sec:generatejobs} \\
 \verb|    *.sql|  & prepared jobs \\
 \verb|    s0/|    & To this and to the directories below we copied the
                     prepared jobs. We split the entire set of prepared
@@ -4352,7 +4354,7 @@ described in Table~\ref{tab:dirlayoutexpiriments}.
 
 \subsection{Life Cycle of a Run}
 A Job is born by a script called \texttt{gj.pl} (see
-Section~\ref{sec:generatejobs}) in the \texttt{prep/} directory. We
+\autoref{sec:generatejobs}) in the \texttt{prep/} directory. We
 distributed the Jobs to serveral directories below
 \texttt{prep/}, namely to \texttt{s0}, \texttt{s1} and \texttt{s2} and
 there subdirectories. Using \texttt{xcopy /m} makes this task easy, as
@@ -4363,17 +4365,17 @@ to the \texttt{jobs/} directory once this had no more Jobs. The Jobs in
 moved the next Job into a directory with the same name as the machine
 which is running \texttt{js.pl}, SKY01 to SKY07 in our case. The job
 was then executed and finally moved to the directory
-\texttt{done/}. See Section~\ref{sec:jobscheduling} for more details.
+\texttt{done/}. See \autoref{sec:jobscheduling} for more details.
 As a result of the Job being executed a raw log file
-(cf. Figure~\ref{fig:logfile}) is generated in the \texttt(log/)
+(cf. \autoref{fig:logfile}) is generated in the \texttt(log/)
 directory. We parse this raw log files to CSV format with comment
-lines (cf. Figure~\ref{fig:parsedlogfile}) with a script called
-\texttt{qp2log}, see Section~\ref{sec:tocsvformat}. The last step
+lines (cf. \autoref{fig:parsedlogfile}) with a script called
+\texttt{qp2log}, see \autoref{sec:tocsvformat}. The last step
 before aggregating and analyzing the data (see
-Section~\ref{sec:aggregatingandanalyzing}) is to pivot and project the
+\autoref{sec:aggregatingandanalyzing}) is to pivot and project the
 CSV files to a more compact representation
-(cf. Figure~\ref{fig:pivot_log}) by script called \texttt{pivot\_log},
-see Section~\ref{sec:pivotlog}.
+(cf. \autoref{fig:pivot_log}) by script called \texttt{pivot\_log},
+see \autoref{sec:pivotlog}.
 
 
 \subsubsection{Generating the Jobs}
@@ -4440,10 +4442,10 @@ were able to add and remove machines as we liked.
 \subsubsection{To CSV Format}
 \label{sec:tocsvformat}
 We wrote a little Perl script \texttt{qp2log} which transforms the raw
-log files (cf. Figure~\ref{fig:logfile} into CSV format with the
+log files (cf. \autoref{fig:logfile} into CSV format with the
 columns \texttt{runid}, \texttt{name} and \texttt{value}, and the
 content of the raw log file is preserved as comment prefixed with
-``\texttt{\#}'' (cf. Figure~\ref{fig:parsedlogfile}). This makes it
+``\texttt{\#}'' (cf. \autoref{fig:parsedlogfile}). This makes it
 easy to use \texttt{grep -v "\^{ }\#"} as filter in the pipeline,
 while on the other hand being able to verify \texttt{qp2log} is
 working correctly, which was helpful during the development of
@@ -4452,7 +4454,7 @@ working correctly, which was helpful during the development of
 The script \texttt{qp2log} makes extensive use of Perl's regular
 expressions to do its task.  All the fields that are extracted from
 the queries executation plan are listet in
-Table~\ref{tab:queryplanfields}.  We would like to point out a feature
+\autoref{tab:queryplanfields}.  We would like to point out a feature
 of Perl's regex support which was very handy for us, it is the
 combination of ``\texttt{m//g}'' and ``\texttt{\ttbackslash
 G}''. ``\texttt{\ttbackslash G}'' matches only at the end-of-match
@@ -4552,10 +4554,10 @@ once, e.g. as part of a subplan, than this number is reported by
 \subsubsection{Pivoting the CSV Files}
 \label{sec:pivotlog}
 Our tool \texttt{pivot\_log} transforms a parse log file
-(cf. Figure~\ref{fig:parsedlogfile}) into CSV format, where each Run
+(cf. \autoref{fig:parsedlogfile}) into CSV format, where each Run
 is represented by a single line and values for the selected names are
-the columns (cf. Figure~\ref{fig:pivot_log}). For a list of fields
-with describtion see Table~\ref{tab:queryplanfields}.
+the columns (cf. \autoref{fig:pivot_log}). For a list of fields
+with describtion see \autoref{tab:queryplanfields}.
 
 \begin{figure}[htbp]
 \begin{interactive}
@@ -4593,7 +4595,7 @@ column is always RUNID.
 For further aggregatation and analysis we imported the CSV files
 generated in the last step into the statistics software R
 (\url{http://www.r-project.org/}). The results of this effort can be
-seen in Section~\ref{sec:analysis}
+seen in \autoref{sec:analysis}
 
 
 \subsection{Total Computational Workload}
@@ -4604,7 +4606,7 @@ $17{,}154{,}401{,}205.424\textnormal{ms}
 \approx 200\textnormal{days}$ CPU time.  These figures do not include
 the work we had to repeat due to a bug we discovered in our code and
 the runs that have been skewed by automatic software update, screen
-savers and so and so forth (cf. section~\ref{sec:lessonlearned}).  The
+savers and so and so forth (cf. \autoref{sec:lessonlearned}).  The
 workload was spread across seven computers (SKY01, $\ldots$, SKY07),
 and these computers have been busy for about six weeks.
 
@@ -4644,9 +4646,9 @@ For this set of experiments we fix the number of tuples of the input data.
 Note that generally the absolute time measurements are not proportional 
 throughout the dimensions, we thus deploy the relative values by setting one measurement as
 the reference. 
-In Figure~\ref{fig:all-dim-absolute}
+In \autoref{fig:all-dim-absolute}
 we illustrate the absolute time measurements which are corresponding to
-the relative values in Figure~\ref{fig:all-dim}. 
+the relative values in \autoref{fig:all-dim}. 
 In the rest of the experiments, we only provide relative time measurements.
 
 \subsubsection{Special case: 1 dimensional skylines}
@@ -4660,7 +4662,7 @@ even mentioned most of the time in literature.
 
 \subsubsection{Big datasets}
 \label{sec:big-datasets}
-Figure~\ref{fig:all-dim} shows the time performance of the skyline
+\autoref{fig:all-dim} shows the time performance of the skyline
 algorithms vs. dimension with 100k tuples. It shows clearly that the
 SFS+EF algorithm has the best time performance with all the data
 distributions.  This conforms with the results in \citep{Godfrey2007},
@@ -4676,14 +4678,14 @@ selectivity.}  is low as well. Therefore, EF operation is effective,
 i.e., a number of tuples could be removed at this stage. However, this
 does not explain why SFS performs worse than BNL on datasets of low
 dimensions. This can be clarified when considering the absolute time
-measurement in Figure~\ref{fig:all-dim-absolute}.  It is shown that
+measurement in \autoref{fig:all-dim-absolute}.  It is shown that
 the sorting routine of SFS has a nearly constant cost for all
 dimensions. Therefore, for low dimensional datasets, the sorting cost
 is dominant.
 
 BNL+EF performs consistently better than BNL, due to the low skyline
 selectivity factor for datasets with 100k tuples
-(cf. Figure~\ref{fig:sf}).  As far as the window policy is concerned,
+(cf. \autoref{fig:sf}).  As far as the window policy is concerned,
 \emph{entropy} has consistently better performance for all the
 algorithms.
 
@@ -4709,19 +4711,19 @@ in the 2 dimensional case}%
 \end{minipage}%
 \end{figure}
 
-Figure~\ref{fig:all-dim-onek} depicts the time-dimensionality
+\autoref{fig:all-dim-onek} depicts the time-dimensionality
 performance regarding to datasets with 1k number of tuples.  One
 interesting observation is that the performance of SFS is surprisingly
 better than others, except for the extremely low dimension values
 (three for independent, anti-correlated, and six for correlated
-distributions).  As illustrated by Figure~\ref{fig:sf}, there exists a
+distributions).  As illustrated by \autoref{fig:sf}, there exists a
 causal relation with the skyline selectivity factors.  It shows
 clearly that as the data cardinality decreases, the skyline
 selectivity factor increases. Therefore, in general, the EF operator
 is less effective with lower data cardinalities. To be more accurate,
 if the skyline selectivity factor is higher than 0.1, the benefit
 gained from EF is marginal.  This is confirmed by the results shown in
-Figure~\ref{fig:all-dim} as well.
+\autoref{fig:all-dim} as well.
 
 The result is somehow contradictory to the claim that SFS+EF should
 perform consistently better than SFS, because at the EF stage there
@@ -4737,7 +4739,7 @@ To better understand the time performance of the skyline algorithm
 with respect to the data cardinality, we conducted experiments for
 each dimension $k \in \{2, \ldots, 15\}$ with the number of tuples
 ranging from 100 to 100k.  For each data distribution we have chosen
-four to five representative dimension values.  Figure~\ref{fig:inde},
+four to five representative dimension values.  \autoref{fig:inde},
 \ref{fig:corre}, and \ref{fig:anti} illustrate the test results for
 independent, correlated, and anti-correlated datasets, respectively.
 
@@ -4747,13 +4749,13 @@ higher than 0.1, the elimination filter does not have any advantage.
 
 \subsubsection{Independent and anti-correlated datasets}
 Let us first consider the independent datasets
-(Figure~\ref{fig:inde}).  As the dimension is higher than four, SFS is
+(\autoref{fig:inde}).  As the dimension is higher than four, SFS is
 superior for all datasets, except for data cardinality of 50k and
 100k, where SFS+EF outperforms SFS.  If we examine again the
-selectivity factor for independent datasets in Figure~\ref{fig:sf},
+selectivity factor for independent datasets in \autoref{fig:sf},
 these datasets are in the category where the selectivity factor is
 higher than 0.1. This result confirms our observation in
-Section~\ref{sec:small-datasets}.  Note that the same observation
+\autoref{sec:small-datasets}.  Note that the same observation
 holds for BNL+EF vs. BNL as well.
 
 With dimension three there is an exception, where BNL performs best.
@@ -4761,15 +4763,15 @@ This can be justified as follows: the sorting cost remains constant
 w.r.t. dimensions, thus it becomes dominant with low dimension (such
 as three).
 
-The performance of anti-correlated datasets in Figure~\ref{fig:anti}
+The performance of anti-correlated datasets in \autoref{fig:anti}
 behaves similarly to that of independent datasets, thus the above
 analysis can be applied as well.
 
 \subsubsection{Correlated datasets}
-For correlated datasets in Figure~\ref{fig:corre}, SFS+EF is superior
+For correlated datasets in \autoref{fig:corre}, SFS+EF is superior
 with a few exceptions. This again, can be perfectly explained by the
 selectivity factors for correlated datasets
-(cf. Figure~\ref{fig:sf-c}).  Except for the data cardinality of 100
+(cf. \autoref{fig:sf-c}).  Except for the data cardinality of 100
 and 500, all the selectivity factors are remarkably low (most of them
 are less than 0.1), thus the EF operation pays off.
 
@@ -4862,20 +4864,20 @@ are less than 0.1), thus the EF operation pays off.
 \subsection{SFS using indexes}
 The idea is to leverage the index structure for SFS in order to avoid
 an explicit sort.  For SFS+EF w/ index this is illustrated in
-Figure~\ref{fig:qp-sfs-index-ef}.  It is up to the query optimizer to
+\autoref{fig:qp-sfs-index-ef}.  It is up to the query optimizer to
 decide by means of cost estimation whether to use an index or not.  We
 analyzed the usage of indexes for SFS in detail for 100k tuples (see
-Figure~\ref{fig:sfs-index}).
+\autoref{fig:sfs-index}).
 
 It turns out that SFS w/ index consistently outperforms SFS,
 independent from the window policy used, with a single exception (cf.
-Figure~\ref{fig:sfs-index-a} when dim=6).  This is clearly an argument
+\autoref{fig:sfs-index-a} when dim=6).  This is clearly an argument
 for using an index.
 
 However, SFS+EF w/ index performs worse than SFS w/ index.  This is
 somehow counterintuitive, because for 100k tuples SFS+EF performs
 better than SFS, as we have discussed in
-Section~\ref{sec:big-datasets} (cf. Figure~\ref{fig:all-dim}).  We
+\autoref{sec:big-datasets} (cf. \autoref{fig:all-dim}).  We
 argue that, the effectiveness of EF deteriorates in the presence of
 the index structure.  The data is physically ordered according to one
 of the indexed attributes, which is not guaranteed to be beneficial
@@ -4884,9 +4886,9 @@ applying EF in the presence of index, even on the datasets with low
 selectivity factors.
 %
 The only significant exception is for correlated data, window policy
-append, and dim $\le 3$ (cf. Figure~\ref{fig:sfs-index-c}).  We argue
+append, and dim $\le 3$ (cf. \autoref{fig:sfs-index-c}).  We argue
 this is due to the general low selectivity factor and high EF
-effectiveness in this case (cf. Figure~\ref{fig:sf-c} and
+effectiveness in this case (cf. \autoref{fig:sf-c} and
 \ref{fig:ef-eff-100k}).
 
 In all aspects, SFS w/ index and SFS+EF w/ index are outperformed by
@@ -4905,7 +4907,7 @@ the tuples dominate most of the other tuples) tend to enter the widow
 earlier.  However with the prepend policy, these tuples are
 successively pushed to the end of the window, which results in high
 time costs for checking whether a new tuple is dominated by the tuples
-in the window.  Figure~\ref{fig:ef-eff} shows that \emph{entropy} is
+in the window.  \autoref{fig:ef-eff} shows that \emph{entropy} is
 the most effective EF window policy.
 
 \subsection{Mixing window policies}

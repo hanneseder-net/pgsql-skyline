@@ -1143,7 +1143,7 @@ that the attributes $a_{m+1}, \ldots, a_n$ are not effected by this,
 there are still part of the retained tuple, i.e no implicit projection
 is performed. This indicates some difficulties, standard SQL does not
 have some non-deterministic feature, so we some how have to express if
-a set of tuples coincide on the sklyine criteria $\{a_1, \ldots,
+a set of tuples coincide on the skyline criteria $\{a_1, \ldots,
 a_m\}$, i.e. $r \nondistinct s$, how to:
 
 \begin{enumerate}
@@ -1379,7 +1379,7 @@ of these methods are presented in several works
 
 Furthermore from an relational algebraic point of view, index-based
 skyline algorithms can only be placed an the leaves of an algobraic
-expresion, where the non-indexed based sklyine algorithms are first
+expresion, where the non-indexed based skyline algorithms are first
 order citizens and can be placed any where in the relational algebra 
 expression, so they are full general.
 \todo{}{}
@@ -2350,7 +2350,7 @@ semantics of assigning the integer const 1 to the name.
 To tell the whole truth the grammar for \nt{select\_clause} is defined
 a little bit different\footnote{see \srcref{src/backend/parser/gram.y}
 for details} but only in the aspect of the assozitivity of the entire
-\inlinesql{SKLYINE OF} clause, this is because the SQL:1992 Standard
+\inlinesql{SKYLINE OF} clause, this is because the SQL:1992 Standard
 \citep{SQL92} requires the following statement:
 
 \begin{sql}SELECT foo UNION SELECT bar ORDER BY baz\end{sql}
@@ -2610,14 +2610,14 @@ It is well known fact that the skyline operator is insensitive to the
 order of attributes, i.e. the query
 
 \begin{interactive}
-SELECT * FROM a15d1e4s0 SKLYINE OF d1 MIN, d2 MIN;
+SELECT * FROM a15d1e4s0 SKYLINE OF d1 MIN, d2 MIN;
 \end{interactive}
 
 \noindent
 and
 
 \begin{interactive}
-SELECT * FROM a15d1e4s0 SKLYINE OF d2 MIN, d1 MIN;
+SELECT * FROM a15d1e4s0 SKYLINE OF d2 MIN, d1 MIN;
 \end{interactive}
 
 \noindent
@@ -3566,32 +3566,63 @@ In this section we would share some of the experience we have made
 during development.
 
 \subsection{Source Code and Version Control}
-We started out our implemention efford of the sklyine operator, when
+We started out our implemention efford of the skyline operator, when
 \texttt{CSV HEAD} of the PostgreSQL source repository was
 \texttt{8.3-devel}, i.e. the version 8.3 of PostgreSQL was currently
-under development.  PostgreSQL's source is kept in Concurrent Versions
-System CVS.  We have used the very handy
+under development.  PostgreSQL's source is kept in a Concurrent Versions
+System (CVS) repository.  We have used the very handy
 \href{http://www.tortoisecvs.org/}{Tortoise CVS} to checkout and
 update the PostgreSQL source.  We keep our source in a
-\href{http://subversion.tigris.org/}{SubVersion} repository, and use
+\href{http://subversion.tigris.org/}{SubVersion} (SVN) repository, and use
 \href{http://tortoisesvn.tigris.org/}{TortoiseSVN} to interact with our
 repository.
 
-\todo{write about keeping cvs in subversion tree}{}
-\todo{write about our scripts for cvs date manipulation}{}
+For each CVS tag we are interested in, namly \texttt{CVS HEAD} and
+\texttt{REL8\_3\_STABLE}, we keep the entire source tree as a branch 
+in our SVN repostory, including the CVS metadata directories
+\texttt{CVS}.  By means of that we continiously merged \texttt{CVS HEAD}
+into our main development branch, called \texttt{trunk} in the
+SubVersion terminology.  In order to have a more stable and
+reproducibly setting we decided to base this paper on the branch
+\texttt{REL8\_3\_STABLE}, i.e. all experiments in this paper are based
+von Version 8.3.0 of PostgreSQL with our patch for the skyline
+operator applied.
 
-Although we continously merging \texttt{CSV HEAD} of PostgreSQL source
-repository into our main development branch, we decided to base this
-paper on branch \texttt{REL8\_3\_STABLE}, in order to have a more
-stable and reproducibly setting, i.e. all experiments in this paper
-are based on version 8.3.0 of PostgreSQL with our patch for the
-skyline operator applied.
+Having the entire CVS source tree in the SVN repository is handy, it
+was quite easy to merge in the changes from \texttt{CVS HEAD} into
+\texttt{trunk}.  To support this task we wrote two scripts, as CVS
+detects changes based on the file modification date/time, where SVN
+really looks at the file content.
+
+\begin{itemize}
+\item \texttt{cvs-entiers-normalize.sh:}
+sorts the content of the \texttt{CVS/Entries*} files, to have a
+normalized form, and minimize the changes that are commited to the
+SVN repository.
+
+\item \texttt{resetcvsts.pl:}
+sets the file date/time according to the values in \texttt{CVS/Entries},
+this allowes to easly move around the working copy accross different machines.
+\end{itemize}
+
+Another benefit of using SVN was the smooth integration with an
+issue/bug-tracker called \href{http://trac.edgewall.org/}{Trac}.  Trac
+has a wiki, milestones, all kinds of reports and that like, and
+proved itself as very handy for this size and type of project.
 
 \subsection{Debugging PostgreSQL}
-During development it was very helpful to run the PostgreSQL backend
-in \texttt{--single} mode. A single backend, enter the query directly,
-edit \& continue in msvc.
-
+PostgreSQL creates one backend process, which corresponds to an
+operating system process, per client connect.  This property makes
+debugging a bit unpleasant.  Nevertheless there is a good work around
+for this, just operate the PostgreSQL in \emph{single user
+mode}\index{single user mode}.  This gives one a prompt, to enter
+queries directly and the query is evaulated in the same process.  So
+debugging or with Microsoft Visual C++ even \emph{edit \&
+continue}\index{edit \& continue}\footnote{Edit \& continue is the
+ability of modifing the source code while debugging, apply the changes
+and continue to debug.  Kind of deluxe for a C compiler.}  For further
+details see PostgreSQL documentation on
+\postgresdocu{app-postgres.html}{postgres}
 
 \subsection{Regression Testing}
 To fasilitate regression testing we also integrated a test case in

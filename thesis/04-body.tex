@@ -138,7 +138,7 @@
 \section{TODO}
 \begin{itemize}
 \item \todo{casing of section headings?}{}
-\item \todo{ask ali, which website for travelling by airplane uses skyline}{}
+\item \todo{ask Ali, which website for traveling by airplane uses skyline}{}
 \item \todo{has the order in which the skyline dimensions are checked an effect?}{}
 \item \todo{show how Preference SQL ABOUT can be emulated}{}
 \end{itemize}
@@ -159,7 +159,7 @@
 When thinking of a \emph{skyline} images like
 \autoref{fig:vienneseskyline} might come to ones mind, the
 popularity of such photographs is illustrated by following figures:
-\emph{Goolge images} returns $\approx 3{,}580{,}000$ hits, not
+\emph{Google images} returns $\approx 3{,}580{,}000$ hits, not
 counting the hits for the Nissan's skyline sports car, for the search
 term
 \emph{skyline -nissan}, and 
@@ -201,7 +201,7 @@ From a more abstract point of view a skyline is made up of objects
 closer and taller to the eye of the beholder. If we are only
 interested in the objects that are ``touching the sky'', we consider
 only the tallest object in each direction of view. On the other hand
-if we care about visiblity, an object is visible as long as there is
+if we care about visibility, an object is visible as long as there is
 no object closer and taller. We ask the alert reader to excuse the
 simplifications we made here, the authors are aware of the concept of
 perspective projection and of the fact that the earth is not a disk.
@@ -243,10 +243,10 @@ have only to cases \emph{front} and
 \emph{back}.
 
 \begin{example}[Which buildings are touching the sky?]\label{ex:touchsky}
-For sure building $c$ (the green in the backline) and building $f$
-(the blue one in the frontline) are part of the answer and $d$ and $e$
+For sure building $c$ (the green in the background) and building $f$
+(the blue one in the foreground) are part of the answer and $d$ and $e$
 are not.  As $a$ and $b$ do have the same height, we could take them
-both or make an arbitrary choice amoung $a$ and $b$.  We will later
+both or make an arbitrary choice among $a$ and $b$.  We will later
 see that this tacking both or choose an arbitrary one can be
 influenced by the keyword \inlinesql{DISTINCT}. So overall, possible
 answers are $\{a, c, f\}$, $\{b, c, f\}$, or $\{a, b, c, f\}$.
@@ -309,22 +309,22 @@ SELECT * FROM building SKYLINE OF x DIFF, y MIN, z MAX;
 \subsection{Why extending SQL?}
 \begin{itemize}
 \item \todo{skyline is within the expressiveness of SQL}{}
-\item \todo{easier to spec. that a correleted query / sql with except}{}
+\item \todo{easier to spec. that a correlated query / SQL with except}{}
 \item \todo{faster to evaluate}{}
-\item \todo{new optimization opportuinities}{}
+\item \todo{new optimization opportunities}{}
 \end{itemize}
 
 \todo{see \citep[Page 3]{Godfrey2004}}{}
 
 \subsection{Fields of Application}
-motivation: green computing: less cpu time,
+motivation: green computing: less CPU time,
 less computers, less energy --> safe the planet
 
 stocks: risk vs. costs (--> streaming skyline see [Tao2006])
 
 example of skyline
 
-when travelling by airplane: time vs. costs
+when traveling by airplane: time vs. costs
 
 TODO: more dim: \#stops, total dist travel by bus: \#of visited cities
 
@@ -339,7 +339,7 @@ employee (salary, revenue, years in the company)
 % Research Questions for this Thesis
 \section{Focus of this Thesis}
 \todo{}{}
-\todo{We consinder only BNL, SFS and variants}{}
+\todo{We consider only BNL, SFS and variants}{}
 
 \todo{}{}
 from \citep{Chaudhuri2006}:
@@ -352,7 +352,7 @@ limited total main memory, e.g. on a handheld device.
 
 The skyline operator \citep{Borzsonyi2001} filters out the
 \emph{interesting} points from a potentially large set of data
-points. The skyline operator returns the pareto optimal\index{pareto
+points. The skyline operator returns the Pareto optimal\index{Pareto
 optimal} elements of a set. This is also know as maximum vector
 problem\index{maximum vector problem}.
 
@@ -368,10 +368,10 @@ management has to be addressed.  Second, the existing index structures
 such as R-trees in an RDBMS can be adapted to implement index-based
 skyline algorithms.  Third, if several skyline algorithms are
 available in an RDBMS, the system is able to select the most efficient
-one for the given datasets.  Indeed, the comparisons of the skyline
+one for the given data sets.  Indeed, the comparisons of the skyline
 algorithms we have so far implemented reveal that there does not exist
 a clear winner in all aspects.  The efficiency of the algorithms
-depend on the properties of the datasets such as dimension,
+depend on the properties of the data sets such as dimension,
 distribution, cardinality and so on.
 %(more details are given in \autoref{sec:contribution}).
 For instance, BNL is more efficient than SFS and even LESS, if the
@@ -454,14 +454,14 @@ The example above also illustrates two other concepts: ``\texttt{\$}''
 indicates a shell prompt and ``\texttt{db=\#}'' indicates the prompt
 for PostgreSQL interactive terminal \texttt{psql}. Furthermore
 ``\texttt{db-\#}'' is displayed when \texttt{psql} is waiting for more
-input. All of them are used throughtout the text.
+input. All of them are used throughout the text.
 
-As long as it did not change the sematics of the input or output we
+As long as it did not change the semantics of the input or output we
 took the freedom to add and remove whitespace in order to increase
 readability, to emphasize a certain point, or just to work around the
 80 columns limitation.  Where extra long lines are wrapped we inserted
 ``$\hookleftarrow$'' before the break and ``$\rightarrow$'' after the break.
-Furthermore at certain points we even allowed ourselfs to strip some
+Furthermore at certain points we even allowed ourselves to strip some
 output, we indicated such omissions by an ellipsis (``$[\ldots]$'').
 
 \section{Further Organization}
@@ -497,9 +497,9 @@ relational database management system (RDBMS)\index{RDBMS} we restrict
 to finite database\index{finite database} instances.
 
 We assume two \todo{infinite}{hm? although in a real computer is
-everything finte} domains: $N$ (numbers) and $D$ (uninterpreted
+everything finite} domains: $N$ (numbers) and $D$ (uninterpreted
 constants). The domain $D$ will be used for attributes which are not
-subject to skyline computation, i.e. for the travelling example we
+subject to skyline computation, i.e. for the traveling example we
 will not use the name of the airline as a skyline criterion, therefore
 $D$ will be used as domain for this attribute.  For attributes or
 expressions which are subject to skyline computation we use the domain
@@ -512,9 +512,9 @@ and $>$ (strictly greater than) are defined with the usual properties.
 \begin{definition}[Schema]
 Given the domains $U_i, 1 \le i \le n$, such that $U_i$ is either
 equal to $D$ or $N$, we define the $n$-ary schema $\schema{R}$ as the
-cartesian product of the $U_i$'s, i.e. $\schema{R} = U_1 \times U_2
+Cartesian product of the $U_i$'s, i.e. $\schema{R} = U_1 \times U_2
 \times \ldots \times U_n$. The attributes of schema \schema{R} will be
-refered as $a_1, \ldots, a_n$.
+referred as $a_1, \ldots, a_n$.
 \end{definition}
 
 Preferences will be defined in terms of \emph{binary preference
@@ -560,7 +560,7 @@ $\forall x, y, z: (x \weakdominates y \land y \weakdominates z) \imp x \weakdomi
 
 \todo{
 In general a partial order is not a \emph{total order}, nor is a
-strict partial order a \emph{strict total order}, what distingueses
+strict partial order a \emph{strict total order}, what distinguishes
 partial orders ..... we have this in the 1 dim case}{}
 
 \begin{itemize}
@@ -614,7 +614,7 @@ s \in \relation{R}\colon s \dominates r \}$
 \begin{lemma}
 \todo{}{this is more or less theorem 2 from \citep{Chomicki2002}}
 Given the relation $\relation{R} \not= \emptyset$ and \dominates a
-strict parial order over \schema{R}, where \schema{R} is the schema
+strict partial order over \schema{R}, where \schema{R} is the schema
 for \relation{R}, the skyline is non empty,
 i.e. $\skyline_\dominates(\relation{R}) \not= \emptyset$ holds.
 \end{lemma}
@@ -731,7 +731,7 @@ r \comparable s = s \comparable r
 
 % todo http://en.wikipedia.org/wiki/Strict_weak_order
 \todo{}{}
-Transitifity of equivalence does not hold for a strict partial order
+Transitivity of equivalence does not hold for a strict partial order
 \[
 \neg \forall x, y, z\colon x \incomparable y \land y \incomparable z \imp x \incomparable z
 \]
@@ -808,8 +808,8 @@ DR_\dominates(r) := \{ x \in \schema R | r \dominates x \}
 \end{definition}
 
 \todo{If a point is a skyline point can be answered by checking of the
-anti domiance region is empty. This can be done with a range query
-even fasilidating an index.}{}
+anti dominance region is empty. This can be done with a range query
+even facilitating an index.}{}
 
 \subsection{How our implementation extends the mathematical model}
 Our implementation of the \inlinesql{SKYLINE~OF} clause is actually a
@@ -822,7 +822,7 @@ clause is valid as an expression in a \inlinesql{SKYLINE~OF} clause.
 
 This gives the opportunity to include expressions of almost any data
 type in a skyline query, even user defined ones, since it is possible
-to user define fullfledged data types in PostgreSQL. For more
+to user define full-fledged data types in PostgreSQL. For more
 information on user defined data types see PostgreSQL documentation on
 \postgresdocu{xtypes.html}{User-Defined Types} and
 \postgresdocu{xindex.html\#XINDEX-OPFAMILY}{Operator Classes and
@@ -889,7 +889,7 @@ SELECT * FROM a15d1e5 SKYLINE OF d2 MIN, d1 MIN;
 \todo{The proofs are for the non \inlinesql{SKYLINE OF DISTINCT} case}{?}.
 
 
-In this section, we study serveral ways of composing the skyline
+In this section, we study several ways of composing the skyline
 operator. (see \citep{Chomicki2002} 4.1) We assume two finite
 instances \relation{R}, \relation{S} of schema \schema{R}, ...
 
@@ -897,8 +897,8 @@ instances \relation{R}, \relation{S} of schema \schema{R}, ...
 \skyline(\relation{R} \intersection \relation{S}) = \skyline(\relation{R}) \intersection \skyline(\relation{S})
 \end{equation}
 
-this identity could be exploitet in the query optimizer. \todo{}{further work?}
-is it really worth? what direction of the identity is actually iteresseting?
+this identity could be exploited in the query optimizer. \todo{}{further work?}
+is it really worth? what direction of the identity is actually interesting?
 
 \begin{equation}\label{equ:skyline-composition-union}
 \skyline(\relation{R} \union \relation{S}) \not= \skyline(\relation{R}) \union \skyline(\relation{S})
@@ -910,7 +910,7 @@ tuple $r_1$ could dominate the entire relation \relation{S}.
 If the last property would hold, easy decompose, but due to theorem
 (\ref{theorem:nonempty}) $skyline(\{t_1\}) = \{t_1\}$ would yield
 $\forall \relation{R} : \skyline(\relation{R}) = \relation{R}$ if
-decompossied to singletons.
+decomposed to singletons.
 
 \begin{equation}\label{equ:skyline-decompose}
 \skyline(\relation{R} \union \relation{S}) = \skyline(\skyline(\relation R) \union \skyline(\relation S))
@@ -939,7 +939,7 @@ Tafelspitz than to eat Foobar.
 
 $\sigma_{Price<\textnormal{\euro}20}(\skyline_{C_1}(\relation{R}))=\skyline_{C_1}(\sigma_{Price<\textnormal{\euro}20}(\relation{R}))$
 according to Theorem 3 (\citep{Chomicki2002}).
-Such identies are not in our implementation.\todo{}{further work}
+Such identities are not in our implementation.\todo{}{further work}
 
 NOTE: $\sigma_{Price>\textnormal{\euro}20}$ does not commute with $\skyline$.
 
@@ -953,7 +953,7 @@ for fish I prefer white wine.
 
 
 \subsection{Intrinsic vs. extrinsic}
-According to the defintion in 5.2 \citep{Chomicki2002} the skyline
+According to the definition in 5.2 \citep{Chomicki2002} the skyline
 operator is \emph{intrinsic} as the preference relation between two
 tuples purles on the basis of the values occurring in those
 tuples. \todo{In contrast \emph{extrinsic} preference formulas may
@@ -1988,6 +1988,7 @@ are added or removed from the dataset, e.g. in a streaming scenario.
 
 \chapter{Implementation}
 \section{SQL Extension}
+\label{sec:sql-extension}
 
 \citet{Borzsonyi2001} proposed the following extension to the SQL's
 \inlinesql{SELECT} statement with an optional \inlinesql{SKYLINE~OF}-clause:
@@ -2599,7 +2600,19 @@ i.e. in general no intermediate results are materialized. \todo{}{}
 
 \srcref{src/backend/executor/execProcnode.c} 
 
-\section{Parsing the Skyline Query}
+
+\section{Parsing the \inlinesql{SKYLINE OF}-clause}
+In the parser component the textual representation of a query, namely
+SQL, is parsed into a data structure.  In this section we describe this
+process for the grammar of the \inlinesql{SKYLINE OF}-clause as defined
+lin \autoref{sec:sql-extension}
+
+
+
+
+see \srcref{src/backend/parser/gram.y} and 
+\srcref{src/backend/parser/keywords.c}
+
 
 \section{Query Analyzing}
 
@@ -3577,7 +3590,7 @@ update the PostgreSQL source.  We keep our source in a
 \href{http://tortoisesvn.tigris.org/}{TortoiseSVN} to interact with our
 repository.
 
-For each CVS tag we are interested in, namly \texttt{CVS HEAD} and
+For each CVS tag we are interested in, namely \texttt{CVS HEAD} and
 \texttt{REL8\_3\_STABLE}, we keep the entire source tree as a branch 
 in our SVN repostory, including the CVS metadata directories
 \texttt{CVS}.  By means of that we continiously merged \texttt{CVS HEAD}
@@ -5287,3 +5300,11 @@ where i.d1 >= o.d1 and i.d2 >= o.d2 and (i.d1 > o.d1 or i.d2 > o.d2);
 
 
 \end{verbatim}
+
+% LocalWords:  tex skyband todo mathescape morekeywords foreach nightshot Kung
+% LocalWords:  Pflügl Borzsonyi Preparata threeDskyline vienneseskyline nissan
+% LocalWords:  istockphoto BNL SFS Chaudhuri PostgreSQL RDBMS tuples tuple EF
+% LocalWords:  NOINDEX psql Simkovics Torlone Ciaccia Chomicki equ skylinepf
+% LocalWords:  iff whitespace incomparability online irreflexive Google prepend
+% LocalWords:  irreflexivity SQL Hannes multi rrrll ary trichotomy xtypes html
+% LocalWords:  skylinepfdiff xindex XINDEX OPFAMILY VARCHAR nba

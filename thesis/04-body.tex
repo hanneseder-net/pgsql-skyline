@@ -125,6 +125,9 @@
 	morekeywords={function,begin,end,foreach,then}
 }
 
+\newcommand\nospellcheck[1]{#1}%
+\newcommand\naive{\nospellcheck{na\"{\i}ve}}%
+\newcommand\Naive{\nospellcheck{Na\"{\i}ve}}%
 
 
 %%%
@@ -485,7 +488,7 @@ discusses future work.
 \chapter{Preliminaries}
 \label{chap:preliminaries}
 
-\todo{see \citep[Simkovics1998] section 1.1.1}{}
+\todo{see \citep[section 1.1.1]{Simkovics1998} }{}
 
 \section{Basic definitions}
 
@@ -849,7 +852,7 @@ The winnow operator is idempotent, i.e. $\omega_C(\relation
 R)=\omega_C(\omega_C(\relation R))$.
 \end{theorem}
 \begin{proof}
-\todo{no na}{}
+\todo{\nospellcheck{no na}}{}
 Let $\succ$ be the preference relation induced by $C$, then the result
 of the winnow operator is $\omega_C(\relation R) := \{r \in \relation
 R | \nexists s \in \relation{R} : s \succ r \}$, so
@@ -955,9 +958,9 @@ for fish I prefer white wine.
 \subsection{Intrinsic vs. extrinsic}
 According to the definition in 5.2 \citep{Chomicki2002} the skyline
 operator is \emph{intrinsic} as the preference relation between two
-tuples purles on the basis of the values occurring in those
+tuples relies only on the values occurring in those two
 tuples. \todo{In contrast \emph{extrinsic} preference formulas may
-refer not noly to build-in predicats but also to other constructs,
+refer not only to build-in predicates but also to other constructs,
 e.g., database relations.}{rephrase or cite}.
 
 \subsection{Skyline Stratum and $K$-Skyband}
@@ -966,9 +969,9 @@ e.g., database relations.}{rephrase or cite}.
 In the context of \emph{winnow} operator this is references as
 \emph{ranking}\index{ranking}, we prefer to use the term
 \emph{stratum}\index{stratum}, as we reserve the term ranking for
-scoring functions (see \autoref{subsec:scoring}).
+scoring functions (see \autoref{sec:scoring}).
 
-The $n$th skyline startum $\skyline_C^n$ is recursifly defined as:
+The \nospellcheck{$n$-th} skyline startum $\skyline_C^n$ is recursively defined as:
 
 \begin{eqnarray}
 \skyline_C^1(\relation{R}) & := & \skyline_C(\relation{R}) \\
@@ -982,26 +985,26 @@ The startum are of interest especially if there is a single
 dataset.  In the context of the relation \emph{Hotel(Price, Distance
 to beach)}, a barrack on the beach is cheaper and closer to the beach
 than any other accommodation, but might to meet our
-standards. \todo{restaurat, close, good, tiered of eating there}{}
+standards. \todo{restaurant, close, good, tiered of eating there}{}
 
 A \emph{$K$-skyband}\index{K-skyband@$K$-skyband} query, introduced by
-\citet{Papadias2005}, is a simlar concept as skyline stratum. A
+\citet{Papadias2005}, is a similar concept as skyline stratum. A
 $K$-skyband query reports all tuples which are dominated by at most
 $K$ points.
 
-\fixme{It is easy to see, that the following identities hold}{thats wrong}
+\fixme{It is easy to see, that the following identities hold}{that's wrong}
         x3
   x1  
  
     x2
 
 x1, x2 are in stratum 1, x3 is in stratum 1 but while x1 and x2 are in
-0-skyband, x3 is not is 1-skyband because it is dominiated by x1 and
+0-skyband, x3 is not is 1-skyband because it is dominated by x1 and
 x2 so it is in 2-skyband. Hence no general relation can be established
 between K-skyband and skyline stratum.
 
 The skyband rank of a point $p$ can be computed by counting the points
-in the anti-dominace region of $p$.
+in the anti-dominance region of $p$.
 
 \begin{eqnarray}
 \skyband_C^0(\relation{R}) &=& \skyline_C^1(\relation{R}) \label{equ:skyband} \\
@@ -1011,14 +1014,14 @@ in the anti-dominace region of $p$.
 
 The branch-and-bound-skyline (BBS) \citep{Papadias2005} supports the
 computation of $K$-skyband queries, as stated by \citet{Papadias2005},
-BNL and SFS can compute $K$-skybands, this can be easly done by
+BNL and SFS can compute $K$-skybands, this can be easily done by
 maintaining a the number of tuples that dominate a tuple in the tuple
 window. Increase the number by one each time a tuple in the tuple
 window is dominated by the current tuple and once this count is
 greater than $K$ drop the tuple from the tuple window.
 
 
-An interessing combination of \inlinesql{SKYLINE OF} and
+An interesting combination of \inlinesql{SKYLINE OF} and
 \inlinesql{TOP $k$} is given by the
 \emph{top-$k$-skyline}\index{top-k-skyline} operator
 \todo{\citep{Brando2007, Goncalves2005a, Goncalves2005}}{check
@@ -1026,7 +1029,7 @@ citation}, where as many skyline startum are computed till at least
 $k$ tuples are found, or the entire relation is returned.
 
 
-\subsection{Monoton vs. linear scoring functions}\label{subsec:scoring}
+\subsection{Monotone vs. linear scoring functions}\label{sec:scoring}
 see \citep[Page 5, Theorem 4]{Chomicki2002a}
 
 from \citep{Borzsonyi2001}: One of the nice properties of the Skyline
@@ -1034,7 +1037,7 @@ of a set $\mathcal{M}$ is that for any monotone scoring function
 $\mathcal{M} \rightarrow \mathbb{R}$, if $p \in \mathcal{M}$ maximizes
 that scoring function, then $p$ is in the Skyline.  In other words, no
 matter how you weight your personal preferences towards price and
-distance of hotles, you will find your favorite hotl in the Skyline.
+distance of hotels, you will find your favorite hotel in the Skyline.
 In addition, for every point $op$ in the Skyline, there exists a
 monotone scoring function such that $p$ maximizes that scoring
 function.  In other words, the Skyline does not contain any hotels
@@ -1056,7 +1059,7 @@ SELECT $target\_list$ FROM $rel$ AS $r$ WHERE $condition$ \\
 SKYLINE OF $a_1$ MIN$, \ldots, a_k$ MIN$, a_{k+1}$ MAX$, \ldots, a_l$ MAX$, a_{l+1}$ DIFF$, \ldots, a_m$ DIFF
 \end{sql}
 %
-can be rewritten, as examplified in \citep{Borzsonyi2001}, into
+can be rewritten, as exemplified in \citep{Borzsonyi2001}, into
 %
 \begin{sql}\label{sql:rewritten-non-distinct}
 \newcommand\abox[1]{\hbox to 2.5em{#1\hfil}}%
@@ -1074,16 +1077,16 @@ SELECT $o.target\_list$ FROM $rel$ AS $o$ WHERE ($condition\{r \gets o\}$) AND N
 \end{sql}
 
 Note that the attributes specified as a criterion in the skyline query
-need not neccessarly appear in the $target\_list$.
+need not necessarily appear in the $target\_list$.
 
-The correspondence with the basic defintion of the skyline operator
-(cf. Defition~\ref{def:skyline}) and with the defition of the binary
-preference releation \eqref{equ:skylinepf} is obvious.
+The correspondence with the basic definition of the skyline operator
+(cf. Definition~\autoref{def:skyline}) and with the definition of the binary
+preference relation \eqref{equ:skylinepf} is obvious.
 
 The join is a $\theta$-join and not an equi-join.
 
 A little notion we use here is $condition\{r \gets o\}$ to express
-that a any reference to the releation alias $r$ must be replace with
+that a any reference to the relation alias $r$ must be replace with
 the alias $o$.
 
 Another way to rewrite the query is given in
@@ -1107,7 +1110,7 @@ WHERE ($condition\{r \gets i\}$) AND ($condition\{r \gets o\}$)\\
 
 \noindent
 The principle used here is different, the skyline of a set is the set
-without those tuples that have a \emph{wittness}\index{wittness} that
+without those tuples that have a \emph{witness}\index{witness} that
 they are dominated. This can be formally expressed as:
 
 \begin{equation}
@@ -1129,14 +1132,14 @@ SKYLINE OF \textbf{DISTINCT} $a_1$ MIN$, \ldots, a_k$ MIN$, a_{k+1}$ MAX$, \ldot
 %
 Before we describe how to rewrite such a query into standard SQL and
 where the limits of this transformation are, we shall repeat what the
-intended sematics of \inlinesql{SKyLINE~OF DISTINCT} is
+intended semantics of \inlinesql{SKYLINE~OF DISTINCT} is
 \citep{Borzsonyi2001}.  If the \inlinesql{DISTINCT} modifier is
 present, then duplicates are eliminated in the following way; if for
 two tuples $r$ and $s$ the condition
 \[
 \bigland_{1 \le i \le m} r_i = s_i,
 \]
-i.e. they are equal on all skyline critiria, in other terms $r
+i.e. they are equal on all skyline criteria, in other terms $r
 \nondistinct s$ (cf. \eqref{eqn:nondistinct}), holds then either $r$
 or $s$ is retained, the choice is left to the implementation. Note
 that the attributes $a_{m+1}, \ldots, a_n$ are not effected by this,
@@ -1154,7 +1157,7 @@ the first, the last, an arbitrary one, but just one, or
 
 \item
 otherwise $target\_list \subseteq \{a_1, \ldots, a_m\}$, how to
-eliminate duplicats.
+eliminate duplicates.
 \end{enumerate}
 
 \noindent
@@ -1179,14 +1182,14 @@ Matters get more involved in the first case.  If we can establish a
 order on the tuples, then we are able to pick the first or the
 last\footnote{Of course we can also express to pick the second, the
 third and so forth, but all we know is that within a group we have at
-least one tuple.}.  In the presents of a unique and orderable
-key\footnote{On some RDBMS special pseudocolums for such proposes do
+least one tuple.}.  In the presents of a unique and ordered
+key\footnote{On some RDBMS special pseudocolumns for such proposes do
 exist.} this is obvious, in the other case as long as on each
 attribute a total order exists, we can construct a lexicographic
 order\index{lexicographic order}.  Duplicate elimination with
 \inlinesql{SELECT DISTINCT} might still be necessary.
 
-To examplify this, let the target list be $\{a_{j_1}, \ldots,
+To exemplify this, let the target list be $\{a_{j_1}, \ldots,
 a_{j_h}\}$, $\{j_1, \ldots, j_h\} = J$, with $J \subseteq \{1, \ldots,
 n\}$ and $J \cap \{m+1, \ldots, n\} \neq \emptyset$, i.e the target
 list contains at least one attribute not part of the skyline
@@ -1263,7 +1266,7 @@ the same access path will be used.  The \inlinesql{LIMIT}-clause is
 used, which is not part of the SQL 2003 standard. We conjecture that
 such a query can not be expressed with standard SQL.
 
-For the border case of one dimensional skyline queryies, i.e. $m = 1$,
+For the border case of one dimensional skyline queries, i.e. $m = 1$,
 other methods do exist, we show them in
 \autoref{sec:onedim-nondistinct} and \ref{sec:onedim-distinct}.
 
@@ -1332,7 +1335,7 @@ Convex hull, \emph{top-K} queries, and nearest-neighbor search
 (especially in the context of spacial skylines ``give me the next good
 restaurant'')
 
-In particlar, the convex hull contains the subset of skyline points
+In particular, the convex hull contains the subset of skyline points
 that may be optimal only for linear preference functions (as opposed
 to any monotone function).\todo{from \citep{Papadias2005}}{rephrase}
 
@@ -1349,7 +1352,7 @@ to any monotone function).\todo{from \citep{Papadias2005}}{rephrase}
 \todo{}{}
 
 
-\todo{FLET(Fast Linear Expected-time), [BCL90]:}{}
+\todo{FLET (Fast Linear Expected-time), [BCL90]:}{}
 
 Since the introduction of the skyline operator \citep{Borzsonyi2001}, a
 number of secondary-memory algorithms have been developed for
@@ -1378,8 +1381,8 @@ of these methods are presented in several works
 \citep{Tan2001, Kossmann2002, Chomicki2003}.
 
 Furthermore from an relational algebraic point of view, index-based
-skyline algorithms can only be placed an the leaves of an algobraic
-expresion, where the non-indexed based skyline algorithms are first
+skyline algorithms can only be placed an the leaves of an algebraic
+expression, where the non-indexed based skyline algorithms are first
 order citizens and can be placed any where in the relational algebra 
 expression, so they are full general.
 \todo{}{}
@@ -1417,7 +1420,7 @@ Symbol & Description \\
 $\mathcal{I}$ & input for skyline computation (\emph{type}: set of $d$-dimensional points) \\
 $\mathcal{O}$ & output of skyline computation (\emph{type}: set of $d$-dimensional points) \\
 $\mathcal{T}$ & temporary file (\emph{type}: set of $d$-dimensional points) \\
-$\mathbb{W}$ & tuple window in main memory (\emph{type}: set of $d$-dimensional points with a timestamp value for each point and if the window policies \emph{entroy} or \emph{random} are used, then each point has an associated \emph{rank}) \\
+$\mathbb{W}$ & tuple window in main memory (\emph{type}: set of $d$-dimensional points with a timestamp value for each point and if the window policies \emph{entropy} or \emph{random} are used, then each point has an associated \emph{rank}) \\
 $p \dominates q$ & point $p$ dominates point $q$
 \end{tabular}
 \caption{Symbols used throughout the pseudo code}
@@ -1471,7 +1474,7 @@ begin
 			end
 		end
 
-		// continue with next pass if necassary
+		// continue with next pass if necessary
 		if EOF($\mathcal{I}$) then begin
 			// switch to tempfile $\mathcal{T}$
 			$\mathcal{I} \gets \mathcal{T}$; $\mathcal{T} \gets \emptyset$;
@@ -1493,8 +1496,8 @@ end
 %\end{figure}
 
 
-\subsubsection{Nontermination of Block-Nested-Loops (BNL) Algorithm}
-During the implemention of BNL into PostgreSQL we discovered a flaw in
+\subsubsection{Non-termination of Block-Nested-Loops (BNL) Algorithm}
+During the implementation of BNL into PostgreSQL we discovered a flaw in
 the algorithm from the original paper \citep{Borzsonyi2001}.  Besides
 a little difference in notation and the fact that a tuple is only
 added to the tuple window when there is actual space in the tuple
@@ -1560,7 +1563,7 @@ $\mathcal{T}$; at this point $timestampOut = m$.
 the tuples $\{c_1, \ldots, c_n\}$ are processed, as each $c_i$
 dominates $a_i$, all $a_i$ are removed from the tuple window and
 replaced by the $c_i$; the timestamp for the $c_i$'s is $m$ and the
-tuple window is completly filled with the $c_i$'s tuples
+tuple window is completely filled with the $c_i$'s tuples
 
 \item
 end of input $\mathcal{I}$ is reached, so switch to temp file
@@ -1571,15 +1574,15 @@ reset to $0$
 the tuples $\{b_1, \ldots, b_m\}$ are processed, they will all end up
 in the temp file again, as they are all incomparable to the $c_i$'s;
 at this point $timestampIn = m$ but at the same time the end of input
-is reached, resulting in a switch to the temp file and reseting
+is reached, resulting in a switch to the temp file and resetting
 $timestampIn$ and $timestampOut$ to zero, no tuple $c_i$ from the
-tuple window will be propageted to the output as they have a timestamp
+tuple window will be propagated to the output as they have a timestamp
 of $m$ but the propagate code will not be reached with $timestampIn =
 m$;
 \emph{the result is that this last step will be repeated over and over again}
 \end{enumerate}
 
-The simplest case to reconstruct this nontermination behaviour is with
+The simplest case to reconstruct this non-termination behavior is with
 $n=m=1$.  A possible fix is to duplicate the lines 7--12 between 44
 and 45 in \autoref{code:bnl}, so the propagation is done once EOF
 is reached.  Nevertheless we fixed it with a slight modification in
@@ -1606,7 +1609,7 @@ begin
 				release($\mathbb{W}$, $q$);
 			end
 
-		// continue with next pass if necassary
+		// continue with next pass if necessary
 		if EOF($\mathcal{I}$) then begin
 			if EOF($\mathcal{T}$)
 				break; // we are done
@@ -1662,9 +1665,9 @@ end
 
 \subsubsection{Non-preservation of relative Tuple Order}
 \label{sec:bnl-tuple-order}
-It is not completly obious that BNL does not preserve the relative
+It is not completely obvious that BNL does not preserve the relative
 order of tuples from the input in the output, even when the tuple
-window policy \emph{append} is used.  To examplify this property
+window policy \emph{append} is used.  To exemplify this property
 we use a dataset as in the previous section with $n=m=1$, i.e.
 \[
 \mathcal{I} = \{a_1, b_1, c_1\},\quad\text{with}\ a_1 \incomparable b_1,\: b_1 \incomparable c_1,\: c_1 \dominates a_1.
@@ -1685,8 +1688,8 @@ therefor BNL does not preserve the relative order of tuples.  This
 physical property of BNL is important during query planing, as the
 relative order of tuples is an important aspect here, e.g. if a prior
 operator in the query plan establishes a certain order or preserves it
-an explicit sort can be ommited or for instance consider differnt
-phyiscal operators for aggregation or joining.
+an explicit sort can be omitted or for instance consider different
+physical operators for aggregation or joining.
 
 \subsection{Sort First Skyline (SFS)}
 The implementation of SFS is according to \citep{Chomicki2003}.  It
@@ -1747,7 +1750,7 @@ function SkylineSFS($\mathcal{I}$) begin
 			append($\mathcal{O}$, $p$);
 		end
 
-		// continue with next pass if necassary
+		// continue with next pass if necessary
 		if EOF($\mathcal{I}_{presorted}$) then begin
 			// switch to tempfile $\mathcal{T}$
 			$\mathcal{I}_{presorted} \gets \mathcal{T}$; $\mathcal{T} \gets \emptyset$;
@@ -1783,7 +1786,7 @@ differences between SFS and LESS are:
 \begin{enumerate}
 \item 
 it uses a so called \emph{elimination filter} in pass zero of the
-external sort routine toeliminate tuples early, hence less tuples left
+external sort routine to eliminate tuples early, hence less tuples left
 to sort; and
 \item
 the skyline-filter is interweaved in the final pass of the external
@@ -1797,12 +1800,12 @@ difference is mere an implementation detail.
 \label{sec:ef-tuple-order}
 The concept of elimination Filter (EF) is simply but effective.  It
 tries to eliminate as many non-skyline tuples in an early stage.  To
-do so it compares every incomming tuple $p$ against a tuple window
+do so it compares every incoming tuple $p$ against a tuple window
 $\mathbb{W}$, if $p$ is dominated by any tuple in the tuple window,
 then $p$ is dropped and the next tuple is read, otherwise $p$ is piped
 out and the next tuple is read.  Of course elimination filter does not
-garantee to filter out all non-skyline tuples, but a skyline candiate
-is garanteed to survive the elimination filter.  An other noteable
+guarantee to filter out all non-skyline tuples, but a skyline candidate
+is guaranteed to survive the elimination filter.  An other notable
 difference to BNL and SFS is that EF does not produce any temporary
 file once the tuple window gets full.  This makes EF suffer in the
 same way as BNL from a bad distribution of tuples in the input, e.g.
@@ -1813,12 +1816,12 @@ factor.
 filter in there paper. In \autoref{code:ef} we give a sketch for
 the code as we used it in our implementation. Note that we are give
 the algorithm in a form that fits into a pipelined architecture liked
-it is used in the PostgreSQL quey execution engine. The function
+it is used in the PostgreSQL query execution engine. The function
 \texttt{EliminationFilter} has to be called for each output tuple,
 until \texttt{NULL} is returned. While doing so
 \texttt{EliminationFilter} consumes the entire input $\mathcal{I}$.
 Please also note that the variable \texttt{state} has to be preserved
-over calles to \texttt{EliminationFilter} as it keeps the internal
+over calls to \texttt{EliminationFilter} as it keeps the internal
 state of function, later we will call such a function an iterator.
 
 Tunable parameters for the elimination filter are the tuple window size
@@ -1828,7 +1831,7 @@ are tunable for BNL and SFS.
 In \Citep{Godfrey2005} the elimination filter is only used in
 conjunction with as SFS style algorithm, in this paper we demonstrate
 that this concept is also very effective when used with an BNL style
-algortihm, we call it BNL+EF, cf. \autoref{sec:analysis}
+algorithm, we call it BNL+EF, cf. \autoref{sec:analysis}
 
 Furthermore it should be noted that the elimination filter preserves
 the relative order of tuples from the input in the output, i.e. does
@@ -1891,7 +1894,7 @@ end
 
 
 \subsection{SFS+EF (move to Implementation)}
-In \citep{Godfrey2005} Godfrey et al. proposed the LESS
+In \citep{Godfrey2005} \nospellcheck{Godfrey et al.} proposed the LESS
 algorithm, which is an improvement of SFS due to the introduction of
 the concept of {\em elimination filter} (EF). With the original LESS
 algorithm the elimination filtering is carried out in the pass zero of
@@ -1944,7 +1947,7 @@ window policy \emph{random}.  With EF window policy \emph{append} and
 \emph{prepend}, once the EF window is full, space in the EF window is
 only gained if a tuple in the EF window is dominated by the incoming
 tuple and thus removed.  In our implementation the window policy
-\emph{entropy} can only be used if statistics for basetables is
+\emph{entropy} can only be used if statistics for base tables is
 available.
 
 In summary, we conducted experiments of the four skyline algorithms:
@@ -1953,7 +1956,7 @@ applied: \emph{append}, \emph{prepend}, \emph{entropy} and
 \emph{random}.  For BNL+EF and SFS+EF, we applied on both windows the
 same window policy in our experiments.
 
-\section{Indexed based Skyline Algortihms}
+\section{Indexed based Skyline Algorithms}
 \todo{}{}
 
 \subsection{Bitmap}
@@ -1972,9 +1975,9 @@ same window policy in our experiments.
 \citep{Papadias2003, Papadias2005}
 \todo{}{}
 
-\section{Continous Skyline Computation}
+\section{Continuous Skyline Computation}
 This is a whole other class of skyline algorithms, the task is here
-the initialy compute the skyline and that update the skyline of tuples
+the initially compute the skyline and that update the skyline of tuples
 are added or removed from the dataset, e.g. in a streaming scenario.
 \todo{}{}
 
@@ -2010,7 +2013,7 @@ In addition, we extended the standard syntax to specify:
 \item \emph{tuple window policy} (append, prepend, ranked by entropy, ranked by a random value)
 \item \emph{usage of indexes} (\texttt{NOINDEX})
 \item \emph{usage of elimination filter (EF), 
-  	with the possiblity to influence the EF window in the same way
+  	with the possibility to influence the EF window in the same way
   	as for the BNL or SFS node}
 \end{itemize}
 \end{itemize}
@@ -2051,7 +2054,7 @@ our \inlinesql{SKYLINE OF} extension.
 \railboxheight 12pt
 \railinit
 
-The following diagram depicts how the \inlinesql{SKLINE OF}-clause
+The following diagram depicts how the \inlinesql{SKYLINE~OF}-clause
 (denoted by \nt{skyline\_clause} in the diagram) fits into an SQL
 select query.  It is right between the optional \inlinesql{GROUP
 BY}/\inlinesql{HAVING}-clause and the optional \inlinesql{ORDER
@@ -2063,7 +2066,7 @@ from the context that \nt{target\_list}, \nt{into\_clause},
 there usual meaning. We refer you to the according SQL standard and
 especially to the PostgreSQL documentation on SQL
 \postgresdocu{sql-select.html}{SELECT}. For the non-terminals that we omitted
-here we selected the same name as in the implemenation (see
+here we selected the same name as in the implementation (see
 \srcref{src/backend/parser/gram.y}), in order to easily find the exact definition.
 
 %
@@ -2075,9 +2078,9 @@ selectclause :
 \end{rail}
 
 
-The \nt{skyline\_clause} itself is preluded by keywords
-\inlinesql{SKYLINE OF}, followed by an optional \inlinesql{DISTINCT}.
-The essential part is the comma seperated list of
+The \nt{skyline\_clause} itself is preluded by the keywords
+\inlinesql{SKYLINE~OF}, followed by an optional \inlinesql{DISTINCT}.
+The essential part is the comma separated list of
 \nt{skyline\_of\_expr}, and it is closed by the optional 
 \nt{skyline\_options} part. For the semantics of \inlinesql{DISTINCT}
 see \autoref{sec:distinct}. For the entire skyline clause we
@@ -2093,7 +2096,7 @@ A \nt{skyline\_of\_expr} specifies how to treat a single dimension
 of a skyline query. This includes the specification of the column
 or even an expression (\nt{c\_expr}) and the specification of
 \inlinesql{MIN}, \inlinesql{MAX}, \inlinesql{DIFF}, and 
-\inlinesql{USING}~\emph{qualOP}. We call the later specification 
+\inlinesql{USING}~\emph{qualOp}. We call the later specification 
 \emph{skyline direction} or just \emph{direction} for short, this
 is because a similar concept (\inlinesql{ASC}/\inlinesql{DESC}) in the
 \inlinesql{ORDER~BY}-clause is also called direction.  Furthermore the
@@ -2102,9 +2105,9 @@ FIRST} and \inlinesql{NULLS LAST}.  We have to same concept for the
 \inlinesql{ORDER BY}-clause, where this special treatment of null values 
 was introduced in PostgreSQL 8.3.0 (see
 \postgresdocu{sql-select.html\#SQL-ORDERBY}{SQL SELECT/ORDER BY}. For
-the sementics of this see \autoref{sec:nullvalues}.
+the semantics of this see \autoref{sec:nullvalues}.
 
-The indroduction of \inlinesql{USING}~\emph{qualOp} to skyline queries
+The introduction of \inlinesql{USING}~\emph{qualOp} to skyline queries
 is our idea, but as for the treatment of null values it was inspired
 by a PostgreSQL extension to \inlinesql{ORDER~BY}-clause. See
 \autoref{sec:using-qualop} for more details.
@@ -2119,9 +2122,9 @@ and \nt{b\_expr} it is factored out to eliminate redundant coding, but
 in our case we use it directly to avoid shift/reduce conflicts. Please
 note that \texttt{'('} \nt{a\_expr} \texttt{')'} is a \nt{c\_expr}, so
 an unrestricted expression can always be used by surrounding it with
-parens. Furthermore \nt{c\_expr} contains to most common case a column
+parenthesis. Furthermore \nt{c\_expr} contains to most common case a column
 reference (\nt{columnref}) anyway and also function calls can be used
-without an extra pair of paranthesis.
+without an extra pair of parenthesis.
 
 \begin{rail}
 skylineofexpr:
@@ -2129,7 +2132,7 @@ skylineofexpr:
     (() | 'NULLS FIRST' | 'NULLS LAST') ;
 \end{rail}
 
-The syntax we have described so far deals only with specifing the
+The syntax we have described so far deals only with specifying the
 skyline query itself and the ultimate goal of our work is building a
 skyline query optimizer to automatically generate a good query plan
 w.r.t. I/O, time, and memory consumption and decide all operational
@@ -2138,9 +2141,9 @@ estimation of the skyline queries is a non-trivial task
 \citep{Chaudhuri2006} since the performance of a skyline query is
 sensitive to a number of parameters \citep{Godfrey2007}.
 
-To be able to study different query plans, differnt physical
+To be able to study different query plans, different physical
 operators, and various options for the physical operators we
-indroduced a set of options. This options list is preluded by the
+introduced a set of options. This options list is preluded by the
 keyword \inlinesql{WITH}.
 
 Except from order of the tuples in the output all of the following
@@ -2151,16 +2154,16 @@ computation. Furthermore the size of the tuple window and the tuple
 window policy have an impact on the order of tuples. And even the
 elimination filter and its tuple window size have an impact on the
 output order, as a different amount of potential skyline tuples reach
-the final skyline computation node, altough the elemination filter
-does not change the relative order.  See detailed discution on
+the final skyline computation node, although the elimination filter
+does not change the relative order.  See detailed discussion on
 relative tuple order preserving property in
 section~\label{sec:relative-tuple-order}.  To work around this
-reordering if decired, sort the query result by means of an
+reordering if desired, sort the query result by means of an
 appropriate
 \inlinesql{ORDER~BY}-clause.  We did so in regression testing, we
 ordered on the unique \inlinesql{ID} column, no matter what method and
 what options used the results are or at least should be the
-same. While the latter clearly indicates a flaw in the implemenation.
+same. While the latter clearly indicates a flaw in the implementation.
 
 The options fall into three groups: elimination filter
 (\inlinesql{EF}), physical operator (\inlinesql{BNL}, \inlinesql{SFS},
@@ -2169,7 +2172,7 @@ options if applicable.
 
 To tell the query planner to include a elimination filter (EF) in the
 query plan specify the option \inlinesql{EF}.  If the
-\nt{efwindowoptios} are omitted, the query planner uses the defaults
+\nt{efwindowoptions} are omitted, the query planner uses the defaults
 and plans the elimination filter with a 8~KB tuple window and the
 tuple window policy \inlinesql{APPEND}. The 8~KB tuple window size
 stem from PostgreSQL page size \texttt{BLCKSZ}, which is 8~KB on most
@@ -2182,7 +2185,7 @@ Currently the work horses of our skyline operator implementation into
 PostgreSQL are the BNL and the SFS algorithm. BNL is the catch all
 default in the query optimizer, only if a suitable index access path
 is available SFS is selected. This automatic can be overruled by
-specifing \inlinesql{BNL} or \inlinesql{SFS} as an option. Furthermore
+specifying \inlinesql{BNL} or \inlinesql{SFS} as an option. Furthermore
 the size and the tuple placement policy for the tuple window used by
 BNL or SFS can be specified with the \nt{windowoptions}, see below.
 In fact the options for the tuple window could be specified, while
@@ -2199,16 +2202,16 @@ are ordered according to the two skyline expressions a single tuple is
 enough to compute the skyline. See \autoref{sec:presort}.
 
 \inlinesql{MNL} stands for \emph{materialized nested loop}, which
-is our own very basic and experipental nevertheless full general
+is our own very basic and experimental nevertheless full general
 skyline computation algorithm, i.e. skylines of any dimensionality,
 distinct and non-distinct with the same type of expressions and
 directions (\inlinesql{MIN}, \inlinesql{MAX}, $\ldots$) can be
 computed. The approach is very simple: materialize all tuples from the
 outer query plan node in a tuple store\index{tuple
 store}\footnote{Tuple store is PostgreSQL concept for temporary files
-to store tuples.} and compare one tuple after the other agains all
+to store tuples.} and compare one tuple after the other against all
 other tuples in the tuple store. It is obvious that this algorithm has
-$O(n^2)$ run time complexity and very poor I/O behaviour. Nevertheless
+$O(n^2)$ run time complexity and very poor I/O behavior. Nevertheless
 it was easy to implement and gave us something to play with while
 implementing other parts of the system and of course for regression
 testing, because this method was just easier to get right and later on
@@ -2252,14 +2255,14 @@ efwindowoptions :
 
 BNL and SFS are using a tuple window to do their job. Our
 implementation allows to specify the size and the tuple placement
-policy. The size can be defined in two differnt terms, either
+policy. The size can be defined in two different terms, either
 in the number of slots or in the amount of RAM (in KB). When placing
 a tuple into the tuple window it takes up exactly one slot and
 as much RAM as required for the chunk of memory allocated with PostgreSQL
 \texttt{palloc}. If both are given, i.e. \inlinesql{SLOTS} and \inlinesql{WINDOWSIZE}
 the tuple window is only limited in the number of available slots and
 the RAM constraints are ignored. When the \inlinesql{WINDOWSIZE}
-option is used an accoring amount of RAM is used for the tuplewindow.
+option is used an according amount of RAM is used for the tuple window.
 \inlinesql{WINDOW} is just an alias for \inlinesql{WINDOWSIZE}.  If
 neither \inlinesql{SLOTS} nor \inlinesql{WINDOWSIZE} is given the
 configuration variable \texttt{work\_mem} is used, which is 1~MB per
@@ -2273,7 +2276,7 @@ windowoptions :
     ( 'WINDOWPOLICY' '=' windowpolicy ) ? ;
 \end{rail}
 
-As indicated above a tuple window is used by the elimenation filter
+As indicated above a tuple window is used by the elimination filter
 (EF) and the BNL and SFS algorithm. For each of them the order in
 which tuples are placed into the window is set by this option, where
 the default is \inlinesql{APPEND}. See
@@ -2288,7 +2291,7 @@ used (we slightly reformatted the output to make it fit into the page with
 constraint):
 
 \begin{interactive}
-\sqlprompt{EXPLAIN ANALZYE} \rcomment{see the query plan and execution statistics}
+\sqlprompt{EXPLAIN ANALYZE} \rcomment{see the query plan and execution statistics}
 \sqlpromptcont{SELECT * FROM a15d1e5s0idx} \rcomment{note: on relation ad1e50idx an index is defined}
 \sqlpromptcont{SKYLINE OF d1 min, d2 min, d3 min} \rcomment{we do a 3 dim skyline query}
 \sqlpromptcont{WITH} \rcomment{options for \inlinesql{SKYLINE OF} follow}
@@ -2329,7 +2332,7 @@ constraint):
 
 The reader might noticed that the grammar for \nt{skyline\_options}
 contains a rather big amount of $\varepsilon$-productions and that this
-grammar whould be easy to implement without any shift/reduce conflicts
+grammar would be easy to implement without any shift/reduce conflicts
 using yacc/bison. In fact we defined the grammar for
 \nt{skyline\_options}, just as simple as that:
 
@@ -2339,18 +2342,18 @@ skylineoptions:
 \end{rail}
 
 While the definition given above describes exactly the indented
-sementics this definition gave as maximum flexibility during
+semantics this definition gave as maximum flexibility during
 development. Using the short definition above we were able to
 introduce new options as we liked on the fly.  The options are passed
-around from the parser, trought query planing to the execution engine
+around from the parser, through query planing to the execution engine
 as a simple \emph{name/value} list.  So when ever we needed a new
 option we just had to query this list at the desired point in the
 code. If the equal sign and the value are omitted, this has the
-semantics of assigning the integer const 1 to the name.
+semantics of assigning the integer constant 1 to the name.
 
 To tell the whole truth the grammar for \nt{select\_clause} is defined
 a little bit different\footnote{see \srcref{src/backend/parser/gram.y}
-for details} but only in the aspect of the assozitivity of the entire
+for details} but only in the aspect of the associativity of the entire
 \inlinesql{SKYLINE OF} clause, this is because the SQL:1992 Standard
 \citep{SQL92} requires the following statement:
 
@@ -2361,7 +2364,7 @@ and not as
 \begin{sql}SELECT foo UNION (SELECT bar ORDER BY baz)\end{sql}
 
 \noindent{}For the \inlinesql{SKYLINE OF} clause we decided that the it should be left
-assoziative, i.e. 
+associative, i.e. 
 \begin{sql}SELECT * FROM foo UNION SELECT * FROM bar SKYLINE OF baz\end{sql}
 will be parsed as 
 \begin{sql}SELECT * FROM foo UNION (SELECT * FROM bar SKYLINE OF baz)\end{sql}
@@ -2372,7 +2375,7 @@ clause, therefore we parse it in the same way.
 
 \subsection{Reserved Keywords}
 \label{sec:reservedkeywords}
-On the lexicalical level we introduced one new \emph{reserved
+On the lexical level we introduced one new \emph{reserved
 keyword}: ``\inlinesql{SKYLINE}''\footnote{see
 \srcref{src/backend/parser/keywords.c}}. Introducing a reserved
 keyword has the usual consequences: it can not be used as normal
@@ -2417,7 +2420,9 @@ sql min, max, distinct != skyline min, max, distinct
 select d1 from a2d100 skyline distinct d1 min = select min(d1) from a2d100;
 
 
+\nospellcheck{
 wenn mehr als ein column in der result list ist
+}
 
 
 \subsection{\inlinesql{USING}~\emph{qualOp}}
@@ -2426,7 +2431,7 @@ PostgreSQL has the feature to use user defined ordering operators for
 the \inlinesql{ORDER~BY}-clause, where \inlinesql{ASC} is equivalent to
 \inlinesql{USING <} and \inlinesql{DESC} is equivalent to \inlinesql{USING >}, 
 but the create of a the user-defined ordering operator can give it any
-name.  We borrowed this concept and integreated it into SQL extension
+name.  We borrowed this concept and integrated it into SQL extension
 for the \inlinesql{SKYLINE~OF}-clause, where \inlinesql{MIN} is equivalent
 to \inlinesql{USING <} and \inlinesql{MAX} is equivalent to \inlinesql{USING >}.
 
@@ -2531,7 +2536,7 @@ ERROR:  column "e2d100.d1" must appear in the GROUP BY clause or be used in an a
 \section{PostgreSQL Architecture and Concepts}
 
 Before we go into the details we would like to give a brief overview
-of PostgreSQL architecture. According to \citep{Conway2006a} PostreSQL
+of PostgreSQL architecture. According to \citep{Conway2006a} PostgreSQL
 has five main components:
 
 \begin{enumerate}
@@ -2545,7 +2550,7 @@ has five main components:
 \begin{figure}[htbp]
 \centering
 \includegraphics[scale=0.75]{plots-qp/pgsql-arch}
-\caption{Architecture Diagram. Lightblue blackground indicates the components we modified to support skyline queries.}%
+\caption{Architecture Diagram. Light blue background indicates the components we modified to support skyline queries.}%
 \label{fig:pgsql-arch}%
 \end{figure}
 
@@ -2570,15 +2575,15 @@ pathkey encodes the sort order on a single column, actually this can
 be an arbitrary expression and a pathkey contains a reference to the
 according target list entry, furthermore the sort operator and a flag
 on how to treat NULL values (cf. \texttt{NULLS FIRST}/\texttt{NULLS
-LAST}). The information if the sort order is asceding (\texttt{ASC})
+LAST}). The information if the sort order is ascending (\texttt{ASC})
 or descending (\texttt{DESC}) is encoded in the sort operator used, as
 sort operator always appear in pairs an operator and its commutator,
 i.e. the same order just reversed.  This pathkeys information plays an
-important role troughout the query plan.  A note within the query plan
+important role throughout the query plan.  A note within the query plan
 might creates, can make use of, or destroys a certain pathkey.  If
 created or preserved the nodes higher up in the query plan can make
 use of it.  This information is considered by the query planner when
-deciding amough different physical operators, e.g. \emph{stream
+deciding among different physical operators, e.g. \emph{stream
 aggregate operator} vs. \emph{hash aggregate operator}, or different
 forms of the \emph{join operator}, for \emph{duplicate elimination}
 and so forth. \emph{Selection}, \emph{projection} and their like
@@ -2595,7 +2600,7 @@ see \srcref{src/backend/executor/README}
 PostgreSQL query execution engine has a pipelined architecture,
 i.e. in general no intermediate results are materialized. \todo{}{}
 
-\todo{It is coded in the fashion of a state machine.  Do somthing in each state and then proceed to another state.  The state is stored in the node's execution state information and is preserved acress calls.}{}
+\todo{It is coded in the fashion of a state machine.  Do something in each state and then proceed to another state.  The state is stored in the node's execution state information and is preserved across calls.}{}
 
 
 \srcref{src/backend/executor/execProcnode.c} 
@@ -2605,7 +2610,7 @@ i.e. in general no intermediate results are materialized. \todo{}{}
 In the parser component the textual representation of a query, namely
 SQL, is parsed into a data structure.  In this section we describe this
 process for the grammar of the \inlinesql{SKYLINE OF}-clause as defined
-lin \autoref{sec:sql-extension}
+in \autoref{sec:sql-extension}
 
 
 
@@ -2649,7 +2654,7 @@ SELECT * FROM a15d1e4s0 ORDER BY d2, d1;
 
 \noindent
 Yet alone from this example one get the intuition that the
-\inlinesql{SKYLINE~OF}-clause can versatily a richer set of indexes
+\inlinesql{SKYLINE~OF}-clause can versatile a richer set of indexes
 (access paths) than the \inlinesql{ORDER~BY}-clause can.  To be
 precise we must speak of \emph{pathkeys}\index{pathkeys}, i.e. both of
 the above skyline queries can make use of the following index, but
@@ -2665,23 +2670,23 @@ accordingly, c.f.  function \texttt{query\_planner}\footnote{in
 \srcref{src/backend/optimizer/plan/planmain.c}} and
 \texttt{grouping\_planner}\footnote{in \srcref{src/backend/optimizer/plan/planner.c}}.
 
-\todo{lookup make slyline pathkey, what is the name of the function that mathces a pathkey agains a skyline pathey}
+\todo{lookup make skyline pathkey, what is the name of the function that matches a pathkey against a skyline pathkeys}
 
 \subsection{Preserving relative tuple order}
 \label{sec:relative-tuple-order}
 The relative order of tuples is an important physical property of a
 tuple stream, knowledge about this is encoded in terms of
 \emph{pathkeys}\index{pathkeys} as described in \autoref{sec:pathkeys}. As a
-fullblown operator we have to provide this information for the skyline
+full blown operator we have to provide this information for the skyline
 operator es well.  In the Sections~\ref{sec:bnl-tuple-order},
 \ref{sec:sfs-tuple-order}, and \ref{sec:ef-tuple-order} in subsections
-respectivly, we bring forward arguments why BNL does \emph{not}
+respectively, we bring forward arguments why BNL does \emph{not}
 preserve the relative tuple order, independent from the tuple window
 policy used, and that SFS and EF \emph{do} preserve the relative tuple
 order.  As the two dimensional with presort algorithm is a special
 case of SFS it shares the same properties.  For the one dimensional
-case and for our na\"{\i}ve algorithms it is easy to see that they
-preserve the relative tuple order.  The properties are summariezed in
+case and for our \naive algorithms it is easy to see that they
+preserve the relative tuple order.  The properties are summarized in
 \autoref{tab:tuple-order-preserving}. Note that for the
 \emph{established pathkeys} property we cheat a bit here, as the order
 is actually established by an extra planned sort node and this is only
@@ -2725,7 +2730,7 @@ cite \citep{Buchta1989}
 
 \subsubsection{Tuple window size}
 One could be tempted to set the tuple window size according to the
-outcome of the cardinality estimation, but the assumtion that at no
+outcome of the cardinality estimation, but the assumption that at no
 time more than \texttt{output\_tuples} will be in the window does not
 hold. To see this imagine the BNL algorithm running on a uniformly
 distributed dataset, which implies the expected result set size is
@@ -2744,7 +2749,7 @@ results see \autoref{sec:analysis-window-size}.
 how top k interacts with skyline, no special measures have to be taken
 as the upper node will stop fetching tuples. only in cost estimation.
 
-\texttt{skyline\_methode\_can\_use\_limit}\footnote{in \srcref{src/backend/utils/skyline/skyline.c}}
+\texttt{skyline\_method\_can\_use\_limit}\footnote{in \srcref{src/backend/utils/skyline/skyline.c}}
 
 
 \section{Query Execution}
@@ -2752,11 +2757,11 @@ as the upper node will stop fetching tuples. only in cost estimation.
 The original System R prototype compiled query plans into machine
 code, whereas other systems like INGRES, the grandfather of
 PostgreSQL, generated an interpretable query plan. In the 1980 query
-interpreation was considered a ``mistake'' by the INGRES
+interpretation was considered a ``mistake'' by the INGRES
 authors. Moore's law and enabling cross-platform portability, every
 system now compiles queries into some kind of interpretable data
 structure; the only difference across systems these days is the level
-of abstraction \citep{Hellerstein2005}. We stick to the represenation
+of abstraction \citep{Hellerstein2005}. We stick to the representation
 as a tree, as it is used by PostgreSQL (see
 \autoref{fig:qp-agg-bnl-sort}).
 
@@ -2828,13 +2833,13 @@ All the pseudo code presented in the following subsections is in a
 form of state machines, as required for the PostgreSQL query execution
 engine.
 
-\todo{write about slot, resultSlot that they are preserved over calles
+\todo{write about slot, resultSlot that they are preserved over calls
 write about how pseudo code is related to the real implementation,
 we changed names an removed some nasty details}{}
 
 \subsection{Special case: one dimensional}
 \label{sec:onedim-nondistinct}
-Altought this case is of limited use, the general case algorithms like
+Although this case is of limited use, the general case algorithms like
 BNL and SFS can handle this case, and more over it is expressible in
 SQL in a very natural way, we have a special implementation for this
 case.  A skyline query of this type typically looks like:
@@ -2875,7 +2880,7 @@ Another way to express this query in standard SQL is:
 
 \noindent
 but this is even worse, and has a runtime complexity of $O(n^2)$, this
-approach corresponds to a na\"{\i}ve nested-loop, the query plan is
+approach corresponds to a \naive nested-loop, the query plan is
 accordingly:
 
 \todo{maybe skip this plan}{}
@@ -2899,12 +2904,12 @@ scan over the input we pipe out the tuple store,
 cf. \autoref{code:1dim}.  For the sake of a clearer pseudo code we
 gave our self the freedom to present the tuple store interface
 (\texttt{tuplestore\_*}) a little different to the actual
-implementation.  A functionalty we added to the tuple store is to
+implementation.  A functionality we added to the tuple store is to
 remove all tuples from the tuple store, which is cheaper than
 recreating it.  In the pseudo code this function is called
 \texttt{tuplestore\_clearall}, while in the real implementation its name
 is \texttt{tuplestore\_catchup}, which fits better as we are just
-modifing read and write pointers.
+modifying read and write pointers.
 
 %\begin{figure}[htbp]
 \begin{lstlisting}[language=pseudo,
@@ -3005,7 +3010,7 @@ the skyline operator would look like:
 \end{interactive}
 
 \noindent
-Please note that again two scans over the input are done, altought the
+Please note that again two scans over the input are done, although the
 second might stop earlier. For Microsoft SQL Server to same query
 would look like this:
 
@@ -3014,7 +3019,7 @@ would look like this:
 \end{interactive}
 
 \noindent
-An adhoc experiment that we conducted showed that Microsoft SQL Server
+An ad hoc experiment that we conducted showed that Microsoft SQL Server
 2005 produces a very similar execution plan.
 
 In Oracle the pseudocolumn \inlinesql{ROWNUM}\index{ROWNUM@\texttt{ROWNUM}}
@@ -3031,7 +3036,7 @@ standard SQL can be found:
 
 \noindent
 Note that condition \texttt{i.d1 = o.d1 AND i.id < o.id} is used to
-select the first, accoring to the order induced by \texttt{id}, of the
+select the first, according to the order induced by \texttt{id}, of the
 minimal tuples. The runtime complexity of this query is also in $O(n^2)$.
 
 %\begin{figure}[htbp]
@@ -3090,11 +3095,11 @@ perspective.
 An interesting aspect of this algorithm is how it deals with the
 \inlinesql{DISTINCT} modifier for the \inlinesql{SKYLINE~OF}-clause.
 \todo{}{give reference to semantics of distinct keyword}
-In the pseude code in \autoref{code:2dimpresort} \texttt{DISTINCT}
-is a boolean variable, which is \emph{true} if the
+In the pseudo code in \autoref{code:2dimpresort} \texttt{DISTINCT}
+is a Boolean variable, which is \emph{true} if the
 \inlinesql{DISTINCT} modifier is present, and \emph{false}
 otherwise. Let $p$ be the current skyline tuple, then a tuple $q$
-becomes the next skyline if the following condintion holds:
+becomes the next skyline if the following condition holds:
 
 \begin{equation}\label{eqn:2dimpf}
 q \dominates p \lor (q \nondistinct p \land \text{\texttt{DISTINCT}}).
@@ -3166,12 +3171,12 @@ end
 %\label{code:2dimpresort}
 %\end{figure}
 
-\subsection{Na\"{\i}ve method: \emph{MNL: materialized nested loop}}
+\subsection{\Naive method: \emph{MNL: materialized nested loop}}
 \label{sec:mnl}
 This method is the first general method which can deal with any
-dimensionalty and treat the \inlinesql{DISTINCT} modifier.  In
-directly corresponds to the na\"{\i}ve $O(n^2)$ nested loop approach,
-compare every tuple to all others as long no wittness is found, which
+dimensionality and treat the \inlinesql{DISTINCT} modifier.  In
+directly corresponds to the \naive $O(n^2)$ nested loop approach,
+compare every tuple to all others as long no witness is found, which
 dominates the current tuple.  Why is it called \emph{materialized}
 nested loop?  This \emph{materialized} stem from the fact that we
 materialize the tuples from the outer plan, to be able to read them
@@ -3219,13 +3224,13 @@ begin
 				$innerPos \gets innerPos + 1$;
 
 				if $innerSlot\ =$ NULL then begin
-					// no wittness found
+					// no witness found
 					return $slot$;
 				end
 
 				if $innerSlot \dominates slot$ then
 					break;
-				else if $innserSlot \nondistinct slot \land$ DISTINCT then begin
+				else if $innerSlot \nondistinct slot \land$ DISTINCT then begin
 					// favor the first
 					if $innerPos < state.pos$ then
 						break;
@@ -3246,10 +3251,10 @@ end
 
 \subsection{Tuple Window}
 A tuple window is a data structure used by BNL, SFS and EF to store
-skyline (candiate) points. As internal representation we used a double
+skyline (candidate) points. As internal representation we used a double
 linked list with a sentinel (cf. \citep[Page 204--209]{Cormen2002}).
 Using a sentinel simplifies the code to manipulate a double linked
-list alot.
+list a lot.
 
 The external interface is simple iterator interface with a few more
 functions\footnote{see \srcref{src/include/utils/tuplewindow.h}}:
@@ -3257,13 +3262,13 @@ functions\footnote{see \srcref{src/include/utils/tuplewindow.h}}:
 \begin{itemize}
 \item \lstinline|TupleWindowState *tuplewindow_begin(int maxKBytes, int maxSlots, TupleWindowPolicy policy)|
 creates a tuple window with the maximum size of \lstinline|maxKBytes|
-KBs or if a a maximum of \lstinline|maxSlosts| slots. The number of
+KB or if a a maximum of \lstinline|maxSlots| slots. The number of
 slots is the stronger limit. For policy see
 \autoref{sec:tuplewindowpolicies}.  The returned value must be
-used in all subsequent calles to the tuple window interface functions.
+used in all subsequent calls to the tuple window interface functions.
 
 \item \lstinline|void tuplewindow_end(TupleWindowState *state)| 
-destroys a tuple window and frees all recources.
+destroys a tuple window and frees all resources.
 
 \item \lstinline|void tuplewindow_clean(TupleWindowState *state)|
 removes all tuples from the tuple window.
@@ -3272,7 +3277,7 @@ removes all tuples from the tuple window.
 returns true of the tuple window can hold at least one more tuple.
 Note that we are ignore the fact that the tuple that is going to be
 inserted might consume a little more space than is actually left, but
-this eases the implementation and an exising PostgreSQL interface the
+this eases the implementation and an existing PostgreSQL interface the
 \lstinline|tuplestore| interface is designed in the same way.
 
 \item \lstinline|void tuplewindow_setinsertrank(TupleWindowState *state, double rank)|
@@ -3287,9 +3292,9 @@ tuple window with the given timestamp.  For a ranked window policy
 \lstinline|forced| can be set to true, i.e. if the new tuple has a
 higher rank than the lowest ranked tuple in the window that this
 lowest ranked tuple is removed, if the space for the higher ranked
-tuple is needed.  We use this especially for the implemention of the
-elimination filter. We speak of a \emph{foreced insert}\index{forced
-insert}.  Currently the \lstinline|timespace| argument is only used
+tuple is needed.  We use this especially for the implementation of the
+elimination filter. We speak of a \emph{forced insert}\index{forced
+insert}.  Currently the \lstinline|timestamp| argument is only used
 by BNL all other algorithms set it to zero.
 
 \item \lstinline|void tuplewindow_rewind(TupleWindowState *state)|
@@ -3326,7 +3331,7 @@ used by BNL.
 \subsubsection{Placement Policies}
 \label{sec:tuplewindowpolicies}
 With tuple window placement policy we want to express how tuples are
-orginized in the window and in which order the are compared against
+organized in the window and in which order the are compared against
 each other \citep{Godfrey2007}. The implementation supports four
 different placement policies:
 \begin{enumerate}
@@ -3338,7 +3343,7 @@ instead at the end, new tuples are inserted at the \emph{beginning} of
 the list
 
 \item \emph{entropy:}
-tuples are keep in \emph{rank descanding order}. The inserted position
+tuples are keep in \emph{rank descending order}. The inserted position
 is found in $O(n)$, this is done by computing the rank before starting
 to scan over the window and the pointer is only incremented as long as
 the rank of the tuple to be inserted is smaller or equal to the rank
@@ -3348,7 +3353,7 @@ case the tuple window is full, the tuple with the lowest ranking is
 removed from the window to make space for a higher ranked tuple.
 
 \item \emph{random: }
-belaves like \emph{entropy} but instead of a an computed entropy value
+behalves like \emph{entropy} but instead of a an computed entropy value
 for a tuple a random value is used
 
 \end{enumerate}
@@ -3411,16 +3416,16 @@ begin
 
 			$state.tsIn \gets state.tsIn + 1$;
 
-			tuplewindow_rewwind($state.window$);
+			tuplewindow_rewind($state.window$);
 			if $state.ranked$ then
 				tuplewindow_setinsertrank($state.window$, ExecSkylineRank($state$, $slot$);
 
 			forever do begin
 				if tuplewindow_ateof($state.window$) then begin
-					if tupelwindow_hasfreespace($state.window$) then
+					if tuplewindow_hasfreespace($state.window$) then
 						tuplewindow_put($state.window$, $slot$);
 					else begin
-						tupelstore_put($state.tempOut$, $slot$);
+						tuplestore_put($state.tempOut$, $slot$);
 						$state.tsOut \gets state.tsOut$;
 					end
 					break;
@@ -3526,18 +3531,18 @@ begin
 				break;
 			end
 
-			tuplewindow_rewwind($state.window$);
+			tuplewindow_rewind($state.window$);
 			if $state.ranked$ then
 				tuplewindow_setinsertrank($state.window$, ExecSkylineRank($state$, $slot$);
 
 			forever do begin
 				if tuplewindow_ateof($state.window$) then begin
-					if tupelwindow_hasfreespace($state.window$) then begin
+					if tuplewindow_hasfreespace($state.window$) then begin
 						tuplewindow_put($state.window$, $slot$);
 						return $slot$;
 					end
 					else begin
-						tupelstore_put($state.tempOut$, $slot$);
+						tuplestore_put($state.tempOut$, $slot$);
 						$state.neednextrun \gets true$;
 					end
 					break;
@@ -3579,8 +3584,8 @@ In this section we would share some of the experience we have made
 during development.
 
 \subsection{Source Code and Version Control}
-We started out our implemention efford of the skyline operator, when
-\texttt{CSV HEAD} of the PostgreSQL source repository was
+We started out our implementation effort of the skyline operator, when
+\texttt{CVS HEAD} of the PostgreSQL source repository was
 \texttt{8.3-devel}, i.e. the version 8.3 of PostgreSQL was currently
 under development.  PostgreSQL's source is kept in a Concurrent Versions
 System (CVS) repository.  We have used the very handy
@@ -3592,13 +3597,13 @@ repository.
 
 For each CVS tag we are interested in, namely \texttt{CVS HEAD} and
 \texttt{REL8\_3\_STABLE}, we keep the entire source tree as a branch 
-in our SVN repostory, including the CVS metadata directories
-\texttt{CVS}.  By means of that we continiously merged \texttt{CVS HEAD}
+in our SVN repository, including the CVS metadata directories
+\texttt{CVS}.  By means of that we continuously merged \texttt{CVS HEAD}
 into our main development branch, called \texttt{trunk} in the
 SubVersion terminology.  In order to have a more stable and
 reproducibly setting we decided to base this paper on the branch
 \texttt{REL8\_3\_STABLE}, i.e. all experiments in this paper are based
-von Version 8.3.0 of PostgreSQL with our patch for the skyline
+on Version 8.3.0 of PostgreSQL with our patch for the skyline
 operator applied.
 
 Having the entire CVS source tree in the SVN repository is handy, it
@@ -3608,14 +3613,14 @@ detects changes based on the file modification date/time, where SVN
 really looks at the file content.
 
 \begin{itemize}
-\item \texttt{cvs-entiers-normalize.sh:}
+\item \texttt{cvs-entries-normalize.sh:}
 sorts the content of the \texttt{CVS/Entries*} files, to have a
-normalized form, and minimize the changes that are commited to the
+normalized form, and minimize the changes that are committed to the
 SVN repository.
 
 \item \texttt{resetcvsts.pl:}
 sets the file date/time according to the values in \texttt{CVS/Entries},
-this allowes to easly move around the working copy accross different machines.
+this allows to easily move around the working copy across different machines.
 \end{itemize}
 
 Another benefit of using SVN was the smooth integration with an
@@ -3624,24 +3629,24 @@ has a wiki, milestones, all kinds of reports and that like, and
 proved itself as very handy for this size and type of project.
 
 \subsection{Debugging PostgreSQL}
-PostgreSQL creates one backend process, which corresponds to an
+PostgreSQL creates one back-end process, which corresponds to an
 operating system process, per client connect.  This property makes
 debugging a bit unpleasant.  Nevertheless there is a good work around
 for this, just operate the PostgreSQL in \emph{single user
 mode}\index{single user mode}.  This gives one a prompt, to enter
-queries directly and the query is evaulated in the same process.  So
+queries directly and the query is evaluated in the same process.  So
 debugging or with Microsoft Visual C++ even \emph{edit \&
 continue}\index{edit \& continue}\footnote{Edit \& continue is the
-ability of modifing the source code while debugging, apply the changes
+ability of modifying the source code while debugging, apply the changes
 and continue to debug.  Kind of deluxe for a C compiler.}  For further
 details see PostgreSQL documentation on
 \postgresdocu{app-postgres.html}{postgres}
 
 \subsection{Regression Testing}
-To fasilitate regression testing we also integrated a test case in
+To facilitate regression testing we also integrated a test case in
 PostgreSQL regression test suite.  This test case tests just a few
 very basic scenarios, as a throughout test would take quite some time,
-and this would be appriciated as part of a checked build.  For the
+and this would be appreciated as part of a checked build.  For the
 basic regression test see
 \srcref{src/test/regress/sql/skyline\_base.sql} and
 \srcref{src/test/regress/expected/skyline\_base.out}.
@@ -3741,8 +3746,8 @@ details.
 \label{sec:lessonlearned}
 A lesson we have painfully learned during our experiments is to
 minimize all possible influences on the runs to avoid skewed
-results. This esspecially includes: screen savers, power saving or
-standby options and any form of automatic software update suche as
+results. This especially includes: screen savers, power saving or
+standby options and any form of automatic software update such as
 Microsoft Windows Update or Google Pack software updater.
 
 \subsection{Random Dataset Generator}
@@ -3755,20 +3760,20 @@ function and creates datasets on the fly.  The details are described
 in the following sections.  But first of all we describe which type of
 dataset are generated by the dataset generator.
 
-\subsubsection{Independant, Correlated, and Anti-Correlated Datasets}
+\subsubsection{Independent, Correlated, and Anti-Correlated Datasets}
 \label{sec:corr-anti-indep}
 
 The main parameters one can vary for a generated dataset are
-\emph{cardinality}, i.e. number of tuples, \emph{dimensionalty} and
+\emph{cardinality}, i.e. number of tuples, \emph{dimensionality} and
 the \emph{distribution type} and types are as of \citep{Borzsonyi2001}: 
-\emph{independant}, \emph{correlated}, and \emph{anti-correlated}.
+\emph{independent}, \emph{correlated}, and \emph{anti-correlated}.
 
 %Instead of giving a lenghty description of how the differnt
 %distributions are generated, we present the essential parts of the
 %source, as we believe this is the precisest way to describe it. Here
 %are the some basic building blocks:
 
-Before we give a detailed describtion of this distribution types, we
+Before we give a detailed description of this distribution types, we
 show some of the basic build blocks used for generating them, as we
 believe the source code of the implementation is the precisest way to
 describe it:
@@ -3817,10 +3822,10 @@ normally distributed value $x \in (\textnormal{med} -
 value $E[x] = \textnormal{med}$.
 %
 This implementation is motivated through the central limit theorem and
-based on the observation that a $12$-fold sum of $[0,1]$ uniformlly
+based on the observation that a $12$-fold sum of $[0,1]$ uniformly
 distributed random value yields a sufficient good normally distributed
-value. A prerequirement for this to work, is that the $12$ uniformlly
-distributed values are intependent. While this can not be guaranteed
+value. A pre-requirement for this to work, is that the $12$ uniformly
+distributed values are independent. While this can not be guaranteed
 for \lstinline{random_equal()} we verified that data generated by
 \lstinline{random_normal()} are sufficiently normally distributed with
 the Shapiro-Wilk test.
@@ -3887,7 +3892,7 @@ are good in one dimension are also good in the other dimensions.
 %For instance, students which have a good publication record typically also
 %do well in their preliminaries. 
 
-A vextor $x$ with the dimension $dim$ is generated in the following way:
+A vector $x$ with the dimension $dim$ is generated in the following way:
 
 \begin{lstlisting}
 do
@@ -4005,7 +4010,7 @@ look at the implementation which is available from \citep{Eder2007a}.
 
 \subsubsection{As command line utility}
 
-The most benifitial use case for the command line version of the
+The most beneficial use case for the command line version of the
 random dataset generator is to pipe its output directly into the
 database. The usage message explains how to use the command line
 utility:
@@ -4064,11 +4069,11 @@ module which implements the functionality of \texttt{randdataset} as a
 set returning function. To create, backup and restore a test database
 with an appropriate set of test tables can be very time
 consuming. Having such a function at had is useful in many situations,
-all it takes is run PostgreSQLs \texttt{initdb} and install the set
+all it takes is run PostgreSQL's \texttt{initdb} and install the set
 returning function. We did so many times when merging PostgreSQL
 8.3-devel branch into our branch, which often made it necessary to
 re-\texttt{initdb}. Especially for regression tests and during
-debugging this function was very handy. PostgreSQLs concept of
+debugging this function was very handy. PostgreSQL's concept of
 \postgresdocu{functions-srf.html}{set returning functions} allows to
 issue queries as such:
 
@@ -4086,14 +4091,14 @@ This concept of set returning functions is quite flexible and allows
 also to return complex data types such as records. To test drive this
 PostgreSQL 'contrib' module (see
 \srcref(contrib/randdataset)), without installing it, even with
-installing PostgreSQL visit our webinterface at
+installing PostgreSQL visit our web-interface at
 \url{http://skyline.dbai.tuwien.ac.at/}. To install it onto your
 PostgreSQL installation follow the instructions
 \srcref{contrib/randdataset/README.randdataset}. Once installed the
 function can be used as follows:
 
 \begin{interactive}
-\sqlprompt{SELECT rds.id, rds.d1, rds.d2 FROM}\rcomment{columns are refered by name}
+\sqlprompt{SELECT rds.id, rds.d1, rds.d2 FROM}\rcomment{columns are referred by name}
 \sqlpromptcont{pg_rand_dataset('indep', 2, 10, 0) AS}\rcomment{2 dim independent dataset with 10 tuples}
 \sqlpromptcont{rds(id int, d1 float, d2 float);}\rcomment{define names and types}
  id |         d1         |         d2
@@ -4105,7 +4110,7 @@ function can be used as follows:
 (10 rows)
 
 \sqlprompt{SELECT rds.* FROM}
-\sqlpromptcont{pg_rand_dataset('corr', 3, 10, 0) AS}\rcomment{3 dim, correleted, 10 tuples}
+\sqlpromptcont{pg_rand_dataset('corr', 3, 10, 0) AS}\rcomment{3 dim, correlated, 10 tuples}
 \sqlpromptcont{rds(id int, d1 float, d2 float, d3 float);}
  id |        d1         |        d2         |        d3
 ----+-------------------+-------------------+-------------------
@@ -4118,11 +4123,11 @@ function can be used as follows:
 \sqlprompt{SELECT rds.* FROM}
 \sqlpromptcont{pg_rand_dataset('anti', 3, 20, 1) AS}\rcomment{3 dim, anti-correlated, 20 tuples, seed 1}
 \sqlpromptcont{rds(id int, d1 float, d2 float, d3 float);}
-\comment{output ommit, as it is similar to above, except other distribution, more tuples, and another inital seed is used}
+\comment{output omitted, as it is similar to above, except other distribution, more tuples, and another initial seed is used}
 \end{interactive}
 
 \noindent
-The general signatur for \inlinesql{pg\_rand\_dataset} is:
+The general signature for \inlinesql{pg\_rand\_dataset} is:
 \begin{interactive}
 FUNCTION pg_rand_dataset(disttype text, dim int, rows int, seed int)
 RETURNS setof record
@@ -4133,7 +4138,7 @@ Where the arguments have following meaning:
 \begin{itemize}
 \item \texttt{disttype} specifies the distribution type (see section \ref{sec:corr-anti-indep}), allowed values are \texttt{'indep'}, \texttt{'corr'}, and \texttt{'anti'}
 
-\item \texttt{dim} specifies the number of dimensions, allowed values are 1 upto 20 
+\item \texttt{dim} specifies the number of dimensions, allowed values are 1 up to 20 
 
 \item \texttt{rows} specifies the number of tuples that should be returned, and 
 
@@ -4147,7 +4152,7 @@ terminology this property of a function is called \texttt{IMMUTABLE}
 \postgresdocu{xfunc-volatility.html}{Function Volatility Categories}).
 
 To make the usage more comfortable we defined a set of wrapper
-functions \texttt{rds$k$d} for the dimenions $k \in \{1, \ldots,
+functions \texttt{rds$k$d} for the dimensions $k \in \{1, \ldots,
 20\}$, they allowed us to issue the same queries as above in the
 following why (see \srcref{contrib/randdataset/randdataset.sql.in}):
 
@@ -4165,7 +4170,7 @@ following why (see \srcref{contrib/randdataset/randdataset.sql.in}):
 
 \subsubsection{Buffer for Set returning function}
 
-In the PostgreSQL execution engin a function scan node is responsible
+In the PostgreSQL execution engine a function scan node is responsible
 for retrieving tuples from a set returning function. The current
 implementation reads all the tuples from the set returning function
 and stores them in a \texttt{tuplestore} before returning the first
@@ -4173,7 +4178,7 @@ tuple to the caller. A \texttt{tuplestore} maintains an in memory
 buffer once it runs out of memory the remaining tuples are written to
 a tempfile. The size of the in memory buffer is controlled through the
 configuration variable \texttt{work\_mem}. The default value is
-1024~KB. This configuration variable is also used to determine the amout
+1024~KB. This configuration variable is also used to determine the amount
 of RAM used for sort operations, for merge joins, hash joins and many more.
 So RAM used for a single complex query can by multiple times the value of 
 \texttt{work\_mem}.
@@ -4196,7 +4201,7 @@ This behavior is not desirable, at least we want that the tuples do
 not get swapped out to disk as
 \texttt{tuplestore}'s-\texttt{work\_mem} gets full, since for parts
 of our experiments we were not willing to pay I/O penalty as we were
-studing just the CPU bounded behavior of the skyline algorithms.
+studying just the CPU bounded behavior of the skyline algorithms.
 
 On the other hand we do not want to increase \texttt{work\_mem}, as
 this would as mentioned above influence the sort operation and the size
@@ -4230,8 +4235,8 @@ There is a large number of parameters that can be varied:
 in case the data are stored on disk
 \begin{itemize}
 \item 
-\emph{sequencial scan vs. index scan} SFS can benefit from index scan
-(ommit sort phase), BNL and SFS could benefit from a index scan if
+\emph{sequential scan vs. index scan} SFS can benefit from index scan
+(omit sort phase), BNL and SFS could benefit from a index scan if
 DIFF groups are used.
 
 \item \emph{sequence of tuples in tuple stream} (random, high entropy first/last) for BNL and EF if a very good tuple is very early in the tuple stream it will eliminate a lot of tuples in a very early stage
@@ -4276,12 +4281,12 @@ recommended to turn asserts and co. off for benchmarking
 \section{Experimental Environment}
 \label{sec:experimentalenvironment}
 We believe the systems environment in which we carried out our
-experiments is interessting on its own and therefore we sketch it in
+experiments is interesting on its own and therefore we sketch it in
 this section.
 %
 First of all we would like to give some definitions of terms we use to
 describe the experimental environment and how the relate to each
-other. To distigues these terms from the general terms with the same
+other. To distinguish these terms from the general terms with the same
 name we start them with an upper case letter, i.e. Job vs. job.
 
 \begin{definition}[Query]
@@ -4323,8 +4328,8 @@ used otherwise.
 In our experimental studies our focus is on the execution
 plan\footnote{We use execution plan and query plan interchangeable.}
 and the actual run times and not on the output of a query. The output
-of a query was of interesst for us, when we did regression testing to
-ensure our implementation is correct. To accomblish this we prefixed
+of a query was of interest for us, when we did regression testing to
+ensure our implementation is correct. To accomplish this we prefixed
 our queries with \inlinesql{EXPLAIN ANALYZE}. \inlinesql{EXPLAIN}
 alone just shows the execution plan of a statement without actually
 running it, while \inlinesql{EXPLAIN ANALYZE} carries out the command
@@ -4332,7 +4337,7 @@ and shows the actual run times. See PostgreSQL documentation on
 \postgresdocu{sql-explain.html}{EXPLAIN} for more details.
 
 \begin{definition}[Setup Query]
-A Setup Query is a query whos soly purpose is to setup things up for
+A Setup Query is a query who's sole purpose is to setup things up for
 the query that is going to be profiled.
 \end{definition}
 
@@ -4354,7 +4359,7 @@ EXPLAIN ANALYZE SELECT * FROM a15d1e5s0idx ORDER BY d1, d2;
 \noindent
 and given enough shared buffers the entire relation and the used index
 will be in the disk cache afterwards. As we set the shared buffer size
-why larger than our biggest relation we the assoziated indexes this
+why larger than our biggest relation we the associated indexes this
 was always the case.
 
 \begin{definition}[Run]
@@ -4468,7 +4473,7 @@ explain analyze select * from a15d1e5s0 \prebreak
 # \ellipsis\rcomment{the query plan is as in Figure \ref{fig:logfile}}
 #--</comment>
 #--<query runid=bnl.ef.entropy.entropy.a15d1e5s0.5>\commentskip
-\comment{For the query sections all relevant information from the query plan is parsed into CSV format with the columns \texttt{runid}, \texttt{name} and \texttt{value}.  See \autoref{tab:queryplanfields} for a describtion of the name/value pairs.\commentskip{}}
+\comment{For the query sections all relevant information from the query plan is parsed into CSV format with the columns \texttt{runid}, \texttt{name} and \texttt{value}.  See \autoref{tab:queryplanfields} for a description of the name/value pairs.\commentskip{}}
 "bnl.ef.entropy.entropy.a15d1e5s0.5","method","bnl.ef.entropy.entropy"
 \ellipsis
 "bnl.ef.entropy.entropy.a15d1e5s0.5","skyline.rows","4550"
@@ -4494,7 +4499,7 @@ explain analyze select * from a15d1e5s0 \prebreak
 #</queryplan>
 #--</query>
 \end{interactive}
-\caption{A log file parsed with \texttt{qp2log}.  For the name and describtion of the extracted fields see \autoref{tab:queryplanfields}.}
+\caption{A log file parsed with \texttt{qp2log}.  For the name and description of the extracted fields see \autoref{tab:queryplanfields}.}
 \label{fig:parsedlogfile}
 \end{figure}
 
@@ -4506,7 +4511,7 @@ SKY07), but this seven is just because of we did not have more.
 To have exactly the same configuration, we cloned SKY02, $\ldots$, SKY07 from
 SKY01 using a fine piece of free software namely PING (Partimage Is
 Not Ghost)\footnote{available at: \url{http://ping.windowsdream.com/}}.
-We also used Windows XPs \texttt{sysprep} during the clone process.
+We also used Windows XP's \texttt{sysprep} during the clone process.
 
 For interprocess communication we used file sharing and we use file
 locking for synchronization. The machine SKY00 shared a folder, which
@@ -4544,7 +4549,7 @@ described in \autoref{tab:dirlayoutexpiriments}.
                     sibling directories \texttt{s1/} and
                     \texttt{s2/}. \\
 \verb|      ws/|  & This one for example holds the jobs, when we were
-                    analyzing the effect of varing window size.\\
+                    analyzing the effect of varying window size.\\
 \verb|      .../| & \\
 \verb|    s1/|    & \\
 \verb|    s2/|    & \\
@@ -4564,9 +4569,9 @@ described in \autoref{tab:dirlayoutexpiriments}.
 \subsection{Life Cycle of a Run}
 A Job is born by a script called \texttt{gj.pl} (see
 \autoref{sec:generatejobs}) in the \texttt{prep/} directory. We
-distributed the Jobs to serveral directories below
+distributed the Jobs to several directories below
 \texttt{prep/}, namely to \texttt{s0}, \texttt{s1} and \texttt{s2} and
-there subdirectories. Using \texttt{xcopy /m} makes this task easy, as
+there sub-directories. Using \texttt{xcopy /m} makes this task easy, as
 only files with set archive bit are copied. On SKY00 a script called
 \texttt{feed.pl} was running, which move the Jobs of these directories
 to the \texttt{jobs/} directory once this had no more Jobs. The Jobs in 
@@ -4610,13 +4615,13 @@ the first of these files, given one was found, to a directory with the
 same name as the machine \texttt{js.pl} is running one, next release
 the exclusive lock on \texttt{js.lock} and finally starts to work in
 the dequeued job by piping it through PostgreSQL interactive SQL
-processor \texttt{psql}. The ouptut is redirected to a log file in the
+processor \texttt{psql}. The output is redirected to a log file in the
 \texttt{log/} directory.  This steps are performed in a endless loop.
 
 A simple lesson learned here is not to use Perl's \texttt{glob}
-function to read the content of a directory with thousends of
+function to read the content of a directory with thousands of
 \texttt{*.sql} files, when you actually just want to pick one of
-them. Globbing a dirctory with thousends of files could take longer
+them. Globbing a directory with thousands of files could take longer
 than running one of these jobs and instead of running them in
 parallel, they are processed serially.  Instead rely \texttt{opendir},
 \texttt{readdir} and \texttt{closedir}.
@@ -4625,7 +4630,7 @@ The Perl script \texttt{feed.pl} is another simple script engaged with
 job scheduling.  Its task is to move batches of Jobs into the
 \texttt{jobs} directory once this got empty.  The idea is to have
 more control in which sequence the Jobs are processed, as we where a
-little bit more interessted in some results than in some others.  The
+little bit more interested in some results than in some others.  The
 access to the \texttt{jobs} directory was once again synchronized via
 file locking \texttt{js.lock}.  A typical invocation of
 \texttt{feed.pl} looked like this:
@@ -4645,7 +4650,7 @@ in the \texttt{jobs/} directory.  This is very handy, do reconfigure
 the system like temporary remove some Jobs from the queue to schedule
 others first.
 
-By means of this simple arragement of files, directory and scripts we
+By means of this simple arrangement of files, directory and scripts we
 were able to add and remove machines as we liked.
 
 \subsubsection{To CSV Format}
@@ -4662,13 +4667,13 @@ working correctly, which was helpful during the development of
 
 The script \texttt{qp2log} makes extensive use of Perl's regular
 expressions to do its task.  All the fields that are extracted from
-the queries executation plan are listet in
+the queries execution plan are listed in
 \autoref{tab:queryplanfields}.  We would like to point out a feature
-of Perl's regex support which was very handy for us, it is the
-combination of ``\texttt{m//g}'' and ``\texttt{\ttbackslash
-G}''. ``\texttt{\ttbackslash G}'' matches only at the end-of-match
-position of the prior \texttt{m//g}.  By means of that one can build a
-very \texttt{lex}/\texttt{flex} like scanner.
+of Perl's regular expression (regex) support which was very handy for
+us, it is the combination of ``\texttt{m//g}'' and
+``\texttt{\ttbackslash G}''. ``\texttt{\ttbackslash G}'' matches only
+at the end-of-match position of the prior \texttt{m//g}.  By means of
+that one can build a very \texttt{lex}/\texttt{flex} like scanner.
 
 
 \global\fixedcolumnwidth 5cm
@@ -4697,18 +4702,18 @@ very \texttt{lex}/\texttt{flex} like scanner.
 
 &
 \begin{minipage}[t]{\paragraphcolumnwidth}
-For any node type in the executation plan we output these quantities.
+For any node type in the execution plan we output these quantities.
 The node names are mapped to \texttt{skyline}, \texttt{elimfilter},
 \texttt{seqscan} and \texttt{idxscan}.  Although other node types do
-exist in general, they have not been of interesst in our studies.
+exist in general, they have not been of interest in our studies.
 
 The fields with \texttt{.est} correspond to the estimated values,
 while the other are actual values. The fields with \texttt{.cost} are
 costs split up into startup costs \texttt{.start}, the time needed to
 return the first tuple, and total costs \texttt{.total}, the time
 needed to return all the tuples. Please note that the estimated costs
-are in an arbitrary unit and that the actual cost are in milliconds,
-see PostgresSQL documentation on
+are in an arbitrary unit and that the actual cost are in milliseconds,
+see PostgreSQL documentation on
 \postgresdocu{using-explain.html}{Using EXPLAIN}.
 
 The estimated average width of a row \texttt{.width} is measured in
@@ -4724,7 +4729,7 @@ once, e.g. as part of a subplan, than this number is reported by
 
 \hline
 					& For a skyline node either ``Skyline'' or ``Elimination Filter'' the following fields are reported: \\
-\verb|[SKYLINENODE].method|		& Currently one of \texttt{1dim}, \texttt{presort}, \texttt{mnl}, \texttt{bnl}, \texttt{sfs} and \texttt{elimfilter}. NOte there are actually differnt methodes for 1 dimensional distinct and non-distinct, but we distingues them only by the next field here.\\
+\verb|[SKYLINENODE].method|		& Currently one of \texttt{1dim}, \texttt{presort}, \texttt{mnl}, \texttt{bnl}, \texttt{sfs} and \texttt{elimfilter}. Note there are actually different methods for 1 dimensional distinct and non-distinct, but we distinguish them only by the next field here.\\
 \verb|[SKYLINENODE].distinct|		& \texttt{SKYLINE OF \textbf{DISTINCT}}? 0/1\\
 \verb|[SKYLINENODE].dim|		& \# of dimensions: $1, 2, \ldots$ \\
 \verb|[SKYLINENODE].attr|		& The attributes the skyline is computed on.\\
@@ -4739,8 +4744,8 @@ once, e.g. as part of a subplan, than this number is reported by
 
 \hline
 
-\verb|seqscan{.ALIAS}.on|		& Name of the basetable, when an alias is used for the table it is given as \texttt{.ALIAS}, like when we express a skyline query only with SQL, we have an inner \texttt{.i} and an outer \texttt{.o} relation.\\
-\verb|seqscan{.ALIAS}.tablesize|	& Here we do a little hack and derive this value from the tablename (\# rows). \\
+\verb|seqscan{.ALIAS}.on|		& Name of the base table, when an alias is used for the table it is given as \texttt{.ALIAS}, like when we express a skyline query only with SQL, we have an inner \texttt{.i} and an outer \texttt{.o} relation.\\
+\verb|seqscan{.ALIAS}.tablesize|	& Here we do a little hack and derive this value from the table name (\# rows). \\
 
 \hline
 
@@ -4754,7 +4759,7 @@ once, e.g. as part of a subplan, than this number is reported by
 
 \hline
 
-\verb|total|				& The total runtime of the query in millisecondes (ms).\\
+\verb|total|				& The total runtime of the query in milliseconds (ms).\\
 \end{tabular*}
 \caption{Fields/Values from the execution plan}
 \label{tab:queryplanfields}
@@ -4766,7 +4771,7 @@ Our tool \texttt{pivot\_log} transforms a parse log file
 (cf. \autoref{fig:parsedlogfile}) into CSV format, where each Run
 is represented by a single line and values for the selected names are
 the columns (cf. \autoref{fig:pivot_log}). For a list of fields
-with describtion see \autoref{tab:queryplanfields}.
+with description see \autoref{tab:queryplanfields}.
 
 \begin{figure}[htbp]
 \begin{interactive}
@@ -4801,7 +4806,7 @@ column is always RUNID.
 
 \subsubsection{Aggregating and Analyzing in R}
 \label{sec:aggregatingandanalyzing}
-For further aggregatation and analysis we imported the CSV files
+For further aggregation and analysis we imported the CSV files
 generated in the last step into the statistics software R
 (\url{http://www.r-project.org/}). The results of this effort can be
 seen in \autoref{sec:analysis}
@@ -5084,7 +5089,7 @@ independent from the window policy used, with a single exception (cf.
 for using an index.
 
 However, SFS+EF w/ index performs worse than SFS w/ index.  This is
-somehow counterintuitive, because for 100k tuples SFS+EF performs
+somehow counter intuitive, because for 100k tuples SFS+EF performs
 better than SFS, as we have discussed in
 \autoref{sec:big-datasets} (cf. \autoref{fig:all-dim}).  We
 argue that, the effectiveness of EF deteriorates in the presence of
@@ -5139,9 +5144,9 @@ the most effective EF window policy.
 
 \chapter{Future work}
 
-\section{Differnt syntax for \inlinesql{SKYLINE OF DIFF}}
+\section{Different syntax for \inlinesql{SKYLINE OF DIFF}}
 We believe the syntax of \inlinesql{SKYLINE OF DIFF} is a bit
-cumbersom for the intended semantic to partition the input relation
+cumbersome for the intended semantic to partition the input relation
 into partitions, so that the skyline is computed with these
 partitions. Instead of \inlinesql{DIFF} a construct like this could be
 used:
@@ -5184,29 +5189,29 @@ we did not yet make an attempt to make use of an suitable index for
 skyline computation in the one dimensional case. The computation of
 distinct and non-distinct one dimensional skyline could be speedup by
 performing an index scan. In the distinct case start at the minimum or
-maximum respectivly and read a sinlge tuple. For the non-distinct case
+maximum respectively and read a single tuple. For the non-distinct case
 start at the right end of the index and read as long as the value does
 not change.
 
-\section{Speedups for low cardinalty domains}
+\section{Speedups for low cardinality domains}
 %
 use special algorithms if we deal with domains with small
-cardinalites, \citep{Preisinger2006, Preisinger2007, Morse2007}
+cardinalities, \citep{Preisinger2006, Preisinger2007, Morse2007}
 
 \section{Speedups for \inlinesql{SKYLINE OF DIFF}}
 %
-Use a seperate tuple window for each \inlinesql{SKYLINE OF DIFF}
+Use a separate tuple window for each \inlinesql{SKYLINE OF DIFF}
 group, so only the tuples with the same values on the
 \inlinesql{SKYLINE OF DIFF} attributes have to be compared to each
-other. This reduction of comparision would yield an overall speedup.
+other. This reduction of comparison would yield an overall speedup.
 In order to avoid an unbounded number of tuple windows instead of
 having a tuple window for each \inlinesql{SKYLINE OF DIFF} group
-hashing could be engaded, i.e. allocate a fixed number of tuple
+hashing could be engaged, i.e. allocate a fixed number of tuple
 windows and hash each \inlinesql{SKYLINE OF DIFF} group into one tuple
 window.
 
-For SFS differenciate between CMP\_INCOMPAREABLE\_SAME\_GROUP and
-CMP\_INCOMPAREABLE\_DIFFERENT\_GROUP.
+For SFS differentiate between CMP\_INCOMPARABLE\_SAME\_GROUP and
+CMP\_INCOMPARABLE\_DIFFERENT\_GROUP.
 
 \section{Project Tuples before inserting into SFS Tuple Window}
 SFS emits a tuple directly after it has survived the test against all
@@ -5215,13 +5220,13 @@ on the skyline attributes.  Because of this property it is possible to
 project the tuples only on the skyline attributes before inserting
 into the tuple window to safe space in the tuple window, but there is
 now free lunch, this projection comes at some CPU cost as memory has
-to be copied and manupilated.  Some cost estimation or some heuristics
-could be developt when to perform this projection.
+to be copied and manipulated.  Some cost estimation or some heuristics
+could be developed when to perform this projection.
 
 \section{Heuristics}
 \subsection{Flush Elimination Filter}
 \todo{}{}
-If the elimination filter does not eliminate a certain amout of tuples
+If the elimination filter does not eliminate a certain amount of tuples
 an heuristic could be engaged to drop some tuples form the tuple
 window to make space for some new ones to get a better distribution in
 the tuple window so it is more effective.
@@ -5233,7 +5238,7 @@ the tuple window so it is more effective.
 \subsection{\inlinesql{USING} \emph{op} for \inlinesql{SKYLINE OF DIFF}}
 While we do provide syntax to use user defined ordering operators
 instead for \inlinesql{SKYLINE OF MIN/MAX}, we do not do it yet for
-\inlinesql{SKYLINE OF DIFF}, which is used to partion the input
+\inlinesql{SKYLINE OF DIFF}, which is used to partition the input
 into groups.  For the moment only equality for the given data type is
 used, but in general any equality relation could be used, to provide
 syntax, e.g. \dots \inlinesql{SKYLINE OF d3 DIFF USING myOp}, for this
@@ -5241,10 +5246,10 @@ is subject to future work.
 
 \subsection{Sampling}
 In the absence of statistics for the relation in questions, sampling
-could be engadged. \todo{cite}{Chaurduri2006}
+could be engaged. \todo{cite}{Chaurduri2006}
 
 \subsection{$K$-skyband}
-implement $K$-skyband (maintaine dominance count in tuple window) do
+implement $K$-skyband (maintain dominance count in tuple window) do
 so for BNL and SFS.
 
 \subsection{$k$-dominance skyline}
@@ -5272,7 +5277,7 @@ best in all aspects.
 
 
 
-\chapter{Spareparts}
+\chapter{Spare parts}
 
 \todo{show also a query plan when using EXCEPT}{}
 \begin{verbatim}
@@ -5301,10 +5306,40 @@ where i.d1 >= o.d1 and i.d2 >= o.d2 and (i.d1 > o.d1 or i.d2 > o.d2);
 
 \end{verbatim}
 
-% LocalWords:  tex skyband todo mathescape morekeywords foreach nightshot Kung
+% LocalWords:  tex skyband todo mathescape morekeywords foreach nightshot NN ef
 % LocalWords:  Pflügl Borzsonyi Preparata threeDskyline vienneseskyline nissan
-% LocalWords:  istockphoto BNL SFS Chaudhuri PostgreSQL RDBMS tuples tuple EF
-% LocalWords:  NOINDEX psql Simkovics Torlone Ciaccia Chomicki equ skylinepf
+% LocalWords:  istockphoto BNL SFS PostgreSQL RDBMS tuples tuple EF timestamp
+% LocalWords:  NOINDEX psql  preprocessing nextness EOF MNL Naur EBNF Niklaus
 % LocalWords:  iff whitespace incomparability online irreflexive Google prepend
 % LocalWords:  irreflexivity SQL Hannes multi rrrll ary trichotomy xtypes html
-% LocalWords:  skylinepfdiff xindex XINDEX OPFAMILY VARCHAR nba
+% LocalWords:  skylinepfdiff xindex XINDEX OPFAMILY VARCHAR nba subformula eqn
+% LocalWords:  Tafelspitz startum dataset Papadias skybands unnested Wirth yacc
+% LocalWords:  pseudocolumns subselects Roschger preluded tuplestore palloc DDL
+% LocalWords:  IndexScan SeqScan runtime hardcoded subselect DESC equi tempfile
+% LocalWords:  SkylineBNL timestampIn timestampOut isCandidate hasfreespace sfs
+% LocalWords:  fixedbnl SkylineSFS isSkyline interweaved pipelined INIT SQL's
+% LocalWords:  EliminationFilter selectclause targetlist intoclause fromclause
+% LocalWords:  whereclause groupclause havingclause skylineclause sortclause XP
+% LocalWords:  selectlimit qualOp qual skylineofexpr expr skylineoptions cexpr
+% LocalWords:  sql src ASC columnref efwindowoptions BLCKSZ windowoptions mem
+% LocalWords:  DIMDISTINCT EFSLOTS EFWINDOW EFWINDOWSIZE windowsize idx Attr js
+% LocalWords:  EFWINDOWPOLICY windowpolicy Cmps quicksort Elim elimfilter FLET
+% LocalWords:  changeset subquery subqueries pathkeys pathkey lookup nobody's
+% LocalWords:  baz DeptName Dno DeptId ExecRestrPos ExecMarkPos ExecReScan init
+% LocalWords:  ExecProcNode rewriter FIXME InitPlan subplan SubPlan ExecSkyline
+% LocalWords:  resultSlot outerPlanState clearall PIPEOUT eof hoc pseudocolumn
+% LocalWords:  ROWNUM dimdistinct DimDistinct dimpresort DimPresort returnSlot
+% LocalWords:  innerPos mnl MaterializedNestedLoop pos innerSlot tuplewindow gj
+% LocalWords:  TupleWindowState maxKBytes maxSlots TupleWindowPolicy bool ateof
+% LocalWords:  freespace setinsertrank puttupleslot TupleTableSlot movenext CVS
+% LocalWords:  removecurrent afterwards gettupleslot removeit timestampcurrent
+% LocalWords:  BlockNestedLoop tempOut tsIn tsOut tempIn FINALPIPEOUT devel SVN
+% LocalWords:  ExecSkylineRank SortFilterSkyline neednextrun PostgreSQL's Trac
+% LocalWords:  SubVersion TortoiseSVN metadata wiki slregress refactor OptiPlex
+% LocalWords:  GHz Seagate HDD SATA NTFS datasets Wilk indep subregion stderr
+% LocalWords:  grayscale randdataset STDIN CSV initdb contrib rds disttype bnl
+% LocalWords:  setof runid queryplan efwindowpolicy XP's sysprep interprocess
+% LocalWords:  xcopy dequeued Globbing opendir readdir closedir regex lex attr
+% LocalWords:  ANYNODE seqscan idxscan startup SKYLINENODE windowslots cmps qp
+% LocalWords:  tablesize outrows inrows wp cardinalities proven efws subclause
+% LocalWords:  CMP

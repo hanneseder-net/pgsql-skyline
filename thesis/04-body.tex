@@ -46,10 +46,15 @@
 \newcommand\ttspace[1]{{\hbox to #1em{\hfil}}}%
 
 \newtheorem{definition}{Definition}
+\newcommand*\definitionautorefname{Definition}
 \newtheorem{lemma}{Lemma}
+\newcommand*\lemmaautorefname{Lemma}
 \newtheorem{theorem}{Theorem}
+%\newcommand*\theoremautorefname{Theorem}
 \newtheorem{example}{Example}
+\newcommand*\exampleautorefname{Example}
 \newtheorem{property}{Property}
+\newcommand*\propertyautorefname{Property}
 
 \newcommand\nt[1]{\textit{#1}}
 
@@ -286,7 +291,7 @@ is obvious that $c$ and $d$ are part of the answer. The complete
 answer is $\{b, c, d, f\}$.
 \end{example}
 
-The question from example~\ref{ex:touchsky} could be formalized in the
+The question from \autoref{ex:touchsky} could be formalized in the
 following way:
 
 \begin{interactive}
@@ -303,7 +308,7 @@ SELECT * FROM building SKYLINE OF DISTINCT x DIFF, z MAX;
 \end{interactive}
 
 \noindent
-On the other hand the query for example~\ref{ex:visibility} looks like:
+On the other hand the query for \autoref{ex:visibility} looks like:
 
 \begin{interactive}
 SELECT * FROM building SKYLINE OF x DIFF, y MIN, z MAX;
@@ -469,6 +474,7 @@ output, we indicated such omissions by an ellipsis (``$[\ldots]$'').
 
 \section{Further Organization}
 \todo{}{}
+\begin{verbatim}
 The paper is organized as follows: In \autoref{sec:algorithms} we
 introduce briefly the implemented skyline algorithms.
 \autoref{sec:configuration} describes the experimental setup.
@@ -476,6 +482,7 @@ introduce briefly the implemented skyline algorithms.
 various data settings, followed by the analysis of the
 results. \autoref{sec:conclusion} concludes the paper and
 discusses future work.
+\end{verbatim}
 
 
 
@@ -859,7 +866,7 @@ R | \nexists s \in \relation{R} : s \succ r \}$, so
 $\omega_C(\relation R)$ already contains only the maximal elements
 according $\succ$, \todo{...}{complete}
 \end{proof}
-Since the skyline operator is a special case of \emph{winnow} operator, theorem \ref{the:skyline-idempotent} holds as well.
+Since the skyline operator is a special case of \emph{winnow} operator, \autoref{the:skyline-idempotent} holds as well.
 
 
 \subsection{Independence of Attribute Order}
@@ -910,8 +917,8 @@ It is easy to see that an equality in
 \eqref{equ:skyline-composition-union} would not hold, as e.g. a single
 tuple $r_1$ could dominate the entire relation \relation{S}.
 
-If the last property would hold, easy decompose, but due to theorem
-(\ref{theorem:nonempty}) $skyline(\{t_1\}) = \{t_1\}$ would yield
+If the last property would hold, easy decompose, but due to
+\autoref{theorem:nonempty} $skyline(\{t_1\}) = \{t_1\}$ would yield
 $\forall \relation{R} : \skyline(\relation{R}) = \relation{R}$ if
 decomposed to singletons.
 
@@ -1080,7 +1087,7 @@ Note that the attributes specified as a criterion in the skyline query
 need not necessarily appear in the $target\_list$.
 
 The correspondence with the basic definition of the skyline operator
-(cf. Definition~\autoref{def:skyline}) and with the definition of the binary
+(cf. \autoref{def:skyline}) and with the definition of the binary
 preference relation \eqref{equ:skylinepf} is obvious.
 
 The join is a $\theta$-join and not an equi-join.
@@ -2025,7 +2032,7 @@ diagrams).  Railroad diagrams are a graphical alternative to
 Backus-Naur form or EBNF and they have been made popular by books such
 as the ``Pascal User Manual'' written by Niklaus Wirth.  Nowadays
 railroad diagrams are used in user manuals such as the ``Oracle
-Database SQL Reference'' (see \citep[Oracle2005]).  We believe the
+Database SQL Reference'' (see \citep{Oracle2005}).  We believe the
 general concept of railroad diagrams is easy to grasp and does not
 need a further explanation at this point, so we can directly focus on
 our \inlinesql{SKYLINE OF} extension.
@@ -2157,9 +2164,8 @@ output order, as a different amount of potential skyline tuples reach
 the final skyline computation node, although the elimination filter
 does not change the relative order.  See detailed discussion on
 relative tuple order preserving property in
-section~\label{sec:relative-tuple-order}.  To work around this
-reordering if desired, sort the query result by means of an
-appropriate
+\autoref{sec:relative-tuple-order}.  To work around this reordering if
+desired, sort the query result by means of an appropriate
 \inlinesql{ORDER~BY}-clause.  We did so in regression testing, we
 ordered on the unique \inlinesql{ID} column, no matter what method and
 what options used the results are or at least should be the
@@ -2678,7 +2684,7 @@ The relative order of tuples is an important physical property of a
 tuple stream, knowledge about this is encoded in terms of
 \emph{pathkeys}\index{pathkeys} as described in \autoref{sec:pathkeys}. As a
 full blown operator we have to provide this information for the skyline
-operator es well.  In the Sections~\ref{sec:bnl-tuple-order},
+operator es well.  In the \autoref{sec:bnl-tuple-order},
 \ref{sec:sfs-tuple-order}, and \ref{sec:ef-tuple-order} in subsections
 respectively, we bring forward arguments why BNL does \emph{not}
 preserve the relative tuple order, independent from the tuple window
@@ -3252,7 +3258,7 @@ end
 \subsection{Tuple Window}
 A tuple window is a data structure used by BNL, SFS and EF to store
 skyline (candidate) points. As internal representation we used a double
-linked list with a sentinel (cf. \citep[Page 204--209]{Cormen2002}).
+linked list with a sentinel (cf. \citep[Page 204--209]{Cormen2001}).
 Using a sentinel simplifies the code to manipulate a double linked
 list a lot.
 
@@ -3836,17 +3842,17 @@ generated and we show some of their properties:
 \begin{itemize}
 \item \emph{indep}: 
 for this type of dataset, all attribute values are generated
-independently using a uniform distribution. Figure
-\ref{fig:density-2d-i2d1e5} shows an density plot and statistics of
-such an independent dataset with 100k tuples and $d = 2$. The skyline
-tuples of this dataset are the lower left corners of the red line,
-where the red line is the ``skyline''. The density of points within a
-specific subregion is indicated by grayscale values, the darker the
-more points are in the subregion. Above and to the right of the
-grayscale density plot is the border distribution for each dimension,
-in this plots the blue line indicates the density of a normal
-distribution with the same mean and standard deviation as the border
-distribution.
+independently using a uniform distribution. 
+\autoref{fig:density-2d-i2d1e5} shows an density plot
+and statistics of such an independent dataset with 100k tuples and $d
+= 2$. The skyline tuples of this dataset are the lower left corners of
+the red line, where the red line is the ``skyline''. The density of
+points within a specific subregion is indicated by grayscale values,
+the darker the more points are in the subregion. Above and to the
+right of the grayscale density plot is the border distribution for
+each dimension, in this plots the blue line indicates the density of a
+normal distribution with the same mean and standard deviation as the
+border distribution.
 
 The implementation is as straight forward as expected:
 
@@ -4136,7 +4142,10 @@ RETURNS setof record
 \noindent
 Where the arguments have following meaning:
 \begin{itemize}
-\item \texttt{disttype} specifies the distribution type (see section \ref{sec:corr-anti-indep}), allowed values are \texttt{'indep'}, \texttt{'corr'}, and \texttt{'anti'}
+\item \texttt{disttype} 
+specifies the distribution type (see \autoref{sec:corr-anti-indep}),
+allowed values are \texttt{'indep'}, \texttt{'corr'}, and
+\texttt{'anti'}
 
 \item \texttt{dim} specifies the number of dimensions, allowed values are 1 up to 20 
 

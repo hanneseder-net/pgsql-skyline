@@ -152,6 +152,32 @@
 \end{itemize}
 
 
+\begin{verbatim}
+top down driven
+
+iterator interface
+
+open()
+tuple next()
+close()
+
+each node consumes the tuples from its children and produces tuples
+
+
+pseudocode:
+
+In the real code we do concern issues of software engineering, like error handling, which we 
+ignore in the pseudocode to convey the essence of the algorithms more concisely.
+
+Pseudocode conventions: see \citep[Page 19]{Cormen2001}
+
+no begin/end only indent like in python
+
+we do explicitly break at the end of case statements as in some situations
+we fall through to the next case
+
+\end{verbatim}
+
 
 %%%
 %%% CHAPTER: Introduction
@@ -1900,39 +1926,6 @@ end
 %\end{figure}
 
 
-\subsection{SFS+EF (move to Implementation)}
-In \citep{Godfrey2005} \nospellcheck{Godfrey et al.} proposed the LESS
-algorithm, which is an improvement of SFS due to the introduction of
-the concept of {\em elimination filter} (EF). With the original LESS
-algorithm the elimination filtering is carried out in the pass zero of
-the external sort routine to eliminate records quickly.
-
-In our case, in order to integrate the elimination filter into the SFS
-algorithm, while at the same time preserving the utilization of the
-physical sort operator, we implemented the elimination filter {\em
-before} the sort routine.  Speaking in terms of the iterator tree, the
-EF node is a child of the sort node, which in turn is a child of the
-SFS node (see \autoref{fig:qp-sfs-ef}).  Furthermore, we do not
-integrate the skyline computation into the final pass of the merge
-sort phase, as described in \citep{Godfrey2005}.  Therefore,
-technically speaking, SFS+EF is not an equivalent implementation of
-LESS.  However, the elimination filter is preserved in SFS+EF, which
-is essentially the gist of LESS.
-
-The implementation of EF is similar to BNL.  An elimination filter
-window is maintained in the main memory.  We use 8 KB as default
-window size.  The difference between EF and BNL is that EF does not
-write tuples to a temporary file if the tuple window is full, and that
-the relative order of tuples going through the EF is preserved.
-
-\subsection{BNL+EF (move to Implementation)}
-Inspired from the idea of the elimination filter in LESS, we
-experimented a new combination of BNL and EF. That is, the elimination
-filter is executed before the BNL algorithm. Since our implementation
-of the elimination filter is independent from the external sort
-routine, the coding of this variant is straightforward.  It turns out
-that the algorithm BNL+EF is a substantial improvement to BNL.
-
 \subsection{Divide and Conquer (D\&C)}
 \todo{}{}
 
@@ -3578,8 +3571,40 @@ cf. \autoref{code:ef}.
 the options that can be specified.}{?}
 
 \subsubsection{SFS+EF (a LESS Variant)}
+In \citep{Godfrey2005} \nospellcheck{Godfrey et al.} proposed the LESS
+algorithm, which is an improvement of SFS due to the introduction of
+the concept of {\em elimination filter} (EF). With the original LESS
+algorithm the elimination filtering is carried out in the pass zero of
+the external sort routine to eliminate records quickly.
+
+In our case, in order to integrate the elimination filter into the SFS
+algorithm, while at the same time preserving the utilization of the
+physical sort operator, we implemented the elimination filter {\em
+before} the sort routine.  Speaking in terms of the iterator tree, the
+EF node is a child of the sort node, which in turn is a child of the
+SFS node (see \autoref{fig:qp-sfs-ef}).  Furthermore, we do not
+integrate the skyline computation into the final pass of the merge
+sort phase, as described in \citep{Godfrey2005}.  Therefore,
+technically speaking, SFS+EF is not an equivalent implementation of
+LESS.  However, the elimination filter is preserved in SFS+EF, which
+is essentially the gist of LESS.
+
+The implementation of EF is similar to BNL.  An elimination filter
+window is maintained in the main memory.  We use 8 KB as default
+window size.  The difference between EF and BNL is that EF does not
+write tuples to a temporary file if the tuple window is full, and that
+the relative order of tuples going through the EF is preserved.
+
+
 
 \subsubsection{BNL+EF}
+Inspired from the idea of the elimination filter in LESS, we
+experimented a new combination of BNL and EF. That is, the elimination
+filter is executed before the BNL algorithm. Since our implementation
+of the elimination filter is independent from the external sort
+routine, the coding of this variant is straightforward.  It turns out
+that the algorithm BNL+EF is a substantial improvement to BNL.
+
 
 \subsubsection{Presort+EF (for 2 dim only)}
 

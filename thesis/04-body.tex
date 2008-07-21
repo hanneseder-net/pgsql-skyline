@@ -2429,16 +2429,19 @@ wenn mehr als ein column in der result list ist
 PostgreSQL has the feature to use user defined ordering operators for
 the \inlinesql{ORDER~BY}-clause, where \inlinesql{ASC} is equivalent to
 \inlinesql{USING <} and \inlinesql{DESC} is equivalent to \inlinesql{USING >}, 
-but the create of a the user-defined ordering operator can give it any
-name.  We borrowed this concept and integrated it into SQL extension
-for the \inlinesql{SKYLINE~OF}-clause, where \inlinesql{MIN} is equivalent
-to \inlinesql{USING <} and \inlinesql{MAX} is equivalent to \inlinesql{USING >}.
+but the creator of a the user-defined ordering operator can give it
+any name, see PostgreSQL documentation on
+\postgresdocu{sql-select.html\#SQL-ORDERBY}{ORDER BY-clause}.  We
+borrowed this concept and integrated it into SQL extension for the
+\inlinesql{SKYLINE~OF}-clause, where \inlinesql{MIN} is equivalent to
+\inlinesql{USING~<} and \inlinesql{MAX} is equivalent to
+\inlinesql{USING~>}, e.g.
 
+\begin{sql}
+SELECT * FROM a15d1e5s0 SKYLINE OF d1 \textbf{USING <}, d2 \textbf{USING >};
+\end{sql}
 
-\citep{Chomicki2002} for red/white wine, meat/fish
-
-see PostgreSQL documentation on
-\postgresdocu{sql-select.html\#SQL-ORDERBY}{ORDER BY-clause}
+%\citep{Chomicki2002} for red/white wine, meat/fish
 
 \subsection{Skyline in the presents of NULL values}
 \label{sec:nullvalues}

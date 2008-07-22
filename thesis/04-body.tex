@@ -2406,23 +2406,21 @@ up the implementation of SQL aggregate functions.
 \label{sec:distinct}
 \todo{}{}
 
-\subsection{One dimensional \inlinesql{SKYLINE OF} is different to SQL \inlinesql{MIN}/\inlinesql{MAX}}
-\todo{for 1 dim distinct use FIRST as supported by Microsoft SQL Server, PostgreSQL does not have this, but it could be built in}{}
-\todo{for 1 dim distinct use subselect/self-join and limit 1}{}
-
-skyline 1d min neq sql min:
-
-sql min, max, distinct != skyline min, max, distinct
-
-\todo{1 dim with out distinct can be emulated with a subselect or a self-join}{}
-
-select d1 from a2d100 skyline distinct d1 min = select min(d1) from a2d100;
-
-
-\nospellcheck{
-wenn mehr als ein column in der result list ist
-}
-
+%\subsection{One dimensional \inlinesql{SKYLINE OF} is different to SQL \inlinesql{MIN}/\inlinesql{MAX}}
+%\todo{for 1 dim distinct use FIRST as supported by Microsoft SQL Server, PostgreSQL does not have this, but it could be built in}{}
+%\todo{for 1 dim distinct use subselect/self-join and limit 1}{}
+%
+%skyline 1d min neq sql min:
+%
+%sql min, max, distinct != skyline min, max, distinct
+%
+%\todo{1 dim with out distinct can be emulated with a subselect or a self-join}{}
+%
+%select d1 from a2d100 skyline distinct d1 min = select min(d1) from a2d100;
+%
+%\nospellcheck{
+%wenn mehr als ein column in der result list ist
+%}
 
 \subsection{\inlinesql{USING}~\emph{qualOp}}
 \label{sec:using-qualop}
@@ -2445,30 +2443,27 @@ SELECT * FROM a15d1e5s0 SKYLINE OF d1 \textbf{USING <}, d2 \textbf{USING >};
 
 \subsection{Skyline in the presents of NULL values}
 \label{sec:nullvalues}
-\begin{verbatim}
-skyline by nulls first / nulls last
+The issue of dealing with null values is usually not treated in the
+literature, but a real implemenation in a database system of course
+must be able to cope with null values.  Furthermore we have a syntax
+to specify how to deal with null values.  Once again this is a feature
+inspired by a feature of PostgreSQL's \inlinesql{ORDER~BY}-clause, where
+the keywords \inlinesql{NULLS FIRST} and \inlinesql{NULLS LAST} allows
+the user the specify how to treat null values.  When sorting ascending
+per default null values sort after non-null values and when sorting
+descedning null values sort before non-null values, as above see the
+PostgreSQL documentation on ORDER BY-clause.
 
-Hannes=# select * from foo skyline by (price) nulls first;
+If \inlinesql{NULLS FIRST} or \inlinesql{NULLS LAST} is omitted, the
+default is to sort null values after all the non-null values on
+\inlinesql{SKYLINE OF MIN} and for \inlinesql{SKYLINE OF MAX} to have
+the null values before the non-null values.  Specifing
+\inlinesql{NULLS FIRST/LAST} overrides this default.  The question
+may arise if \inlinesql{NULLS LAST} should be the default for
+\inlinesql{SKYLINE OF MAX}, but as this is not the case for the
+\inlinesql{ORDER BY DESC} we stick with \inlinesql{NULLS FIRST} to
+be consistent.
 
- id | price | dist
-----+-------+------
-  5 |       |    3
-
-Hannes=# select * from foo skyline by distinct (price) max;
-
- id | price | dist
-----+-------+------
-  5 |       |    3
-(1 row)
-
-Hannes=# select * from foo skyline by distinct (price) max nulls last;
-
- id | price | dist
-----+-------+------
-  1 |    10 |    1
-
-should in case of max nulls last be the default? on sorting it's not.
-\end{verbatim}
 
 \subsection{\inlinesql{SKYLINE OF} and \inlinesql{GROUP BY}}
 \begin{verbatim}
@@ -2527,13 +2522,16 @@ skyline
      scan
 
 
-Eder=# select id, count(*) from e2d100 group by id skyline by (d1) min;
-ERROR:  column "e2d100.d1" must appear in the GROUP BY clause or be used in an aggregate function
 \end{verbatim}
 
-\subsection{\inlinesql{SKYLINE OF} is different to SQL:2003 \inlinesql{WINDOW} clause}
+\begin{interactive}
+\sqlprompt{SELECT id, COUNT(*) FROM a15d1e5s0 GROUP BY id SKYLINE OF d1 MIN;}
+ERROR:  column "a15d1e5s0.d1" must appear in the GROUP BY clause or be used 
+in an aggregate function
+\end{interactive}
 
-\todo{}{explain more}
+%\subsection{\inlinesql{SKYLINE OF} is different to SQL:2003 \inlinesql{WINDOW} clause}
+%\todo{}{explain more}
 
 \section{PostgreSQL Architecture and Concepts}
 

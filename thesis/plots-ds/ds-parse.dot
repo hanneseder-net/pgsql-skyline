@@ -1,0 +1,23 @@
+digraph g {
+graph [ fontname = "Helvetica", fontsize = 10 ];
+node [	fontname = "Helvetica", shape = "record" ];
+edge [ ];
+
+"select" [ label = "{<f0> T_SelectStmt | ... | List: targetList | ... | List: fromClause | Node: whereClause | ... | <f1> Node: skylineOfClause\ | ...}", pos="0,5!", pin=true ];
+
+"skyline" [ label = "{<f0> T_SkylineOfClause | <f1> List: skyline_of_list | Bool: skyline_distinct | <f2> List: skyline_of_options}", pos="3,5!" ];
+
+sol1 [ label = "<f0>|<f1>" ];
+sol2 [ label = "<f0>|<f1>(null)" ];
+
+soe1 [ label = "<f0> T_SkylineOfExpr" ];
+soe2 [ label = "<f0> T_SkylineOfExpr" ];
+
+select:f1 -> skyline:f0;
+skyline:f1 -> sol1:f0;
+sol1:f1 -> sol2:f0;
+sol1:f0 -> soe1:f0;
+sol2:f0 -> soe2:f0;
+
+}
+

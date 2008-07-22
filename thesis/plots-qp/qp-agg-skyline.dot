@@ -1,0 +1,13 @@
+digraph "agg-skyline" {
+	graph [	fontname = "Helvetica",
+		fontsize = 10,
+		size = "6,6" ];
+	node [	fontname = "Helvetica" ];
+
+	SKYLINE [ label="Skyline" ];
+	GROUPBY [ label="Group By" ];
+	SCAN [ label="Scan" ];
+
+	SKYLINE -> GROUPBY [ dir=back ];
+	GROUPBY ->  SCAN [ dir=back ];
+}

@@ -153,17 +153,6 @@
 
 
 \begin{verbatim}
-top down driven
-
-iterator interface
-
-open()
-tuple next()
-close()
-
-each node consumes the tuples from its children and produces tuples
-
-
 pseudocode:
 
 In the real code we do concern issues of software engineering, like error handling, which we 
@@ -2019,6 +2008,7 @@ In addition, we extended the standard syntax to specify:
 \end{itemize}
 
 \subsection{Syntax (Railroad Diagrams)}
+\label{sec:syntax}
 To describe the formal grammar of the \inlinesql{SKYLINE OF}-clause
 extension to the SQL query syntax we use syntax diagrams (or railroad
 diagrams).  Railroad diagrams are a graphical alternative to
@@ -2083,7 +2073,7 @@ The \nt{skyline\_clause} itself is preluded by the keywords
 The essential part is the comma separated list of
 \nt{skyline\_of\_expr}, and it is closed by the optional 
 \nt{skyline\_options} part. For the semantics of \inlinesql{DISTINCT}
-see \autoref{sec:distinct}. For the entire skyline clause we
+see \autoref{sec:rewrite-to-sql}. For the entire skyline clause we
 introduced just a single new reserved keyword, see
 \autoref{sec:reservedkeywords}.
 
@@ -2402,9 +2392,19 @@ up the implementation of SQL aggregate functions.
 
 \section{Semantics}
 
-\subsection{\inlinesql{DISTINCT} and non-\inlinesql{DISTINCT}}
-\label{sec:distinct}
-\todo{}{}
+In this section and the following subsections we describe only these
+aspects of the skyline operator semantics which are not cleare through
+the basic definition.  The semantics of the options for the
+\inlinesql{SKYLINE~OF}-clause is either already given in the describtion
+of the syntax in \autoref{sec:syntax} or in the appropriate subsection
+in the describtion of query execution (cf. \autoref{sec:queryexecution}).
+The semantics of \inlinesql{SKYLINE OF DISTINCT}
+vs. non-\inlinesql{SKYLINE OF DISTINCT} is described in
+\autoref{sec:rewrite-to-sql}.
+
+%\subsection{\inlinesql{DISTINCT} and non-\inlinesql{DISTINCT}}
+%\label{sec:distinct}
+%\todo{}{}
 
 %\subsection{One dimensional \inlinesql{SKYLINE OF} is different to SQL \inlinesql{MIN}/\inlinesql{MAX}}
 %\todo{for 1 dim distinct use FIRST as supported by Microsoft SQL Server, PostgreSQL does not have this, but it could be built in}{}
@@ -2466,63 +2466,41 @@ be consistent.
 
 
 \subsection{\inlinesql{SKYLINE OF} and \inlinesql{GROUP BY}}
-\begin{verbatim}
-skyline and group by
+It is well known that there are some dependencies between what one can
+specifiy in the \nt{target\_list} of a \inlinesql{SELECT}-clause and
+the relvars\footnote{The term \emph{relvar} was coined by C. J. Date
+as an abbreviation for ``relation variable''.  This usually refers to
+a \emph{table}, but could also be a sub-select or such.} specified
+in the \nt{from\_clause}.  A violation of this rule is reported as an
+error, e.g.:
 
-select year, count(*)
-from logfile
-group by year
-skyline by month min;
+\begin{interactive}
+\sqlprompt{SELECT foo FROM a15d1e5s0;}
+ERROR:  column "foo" does not exist
+LINE 1: select foo from a15d1e5s0;
+               ^
+\end{interactive}
 
+\noindent
+Clearly such limitation also apply to the expressions in the
+\inlinesql{SKYLINE~OF}-clause.  In the presents of a
+\inlinesql{GROUP~BY}-clause more limitations apply, which immediatly
+becomes clear when we look at the operator tree
+(cf. \autoref{fig:qp-agg-skyline}).  Only does columns or expressions
+that appear in the \inlinesql{GROUP~BY}-clause or are part of an
+aggregate function can be used as a \inlinesql{SKYLINE~OF} expression.
+The same applies to the \inlinesql{ORDER~BY}-clause.
 
-select year, count(*)
-from logfile
-group by year
-skyline by year min;
+\begin{figure}[htbp]
+\centering
+\includegraphics[scale=0.5]{plots-qp/qp-agg-skyline}\\
+\caption{Query plan for query with aggregation and skyline operator}
+\label{fig:qp-agg-skyline}
+\end{figure}
 
-==>
-
-select year, count(*), month
-from logfile
-group by year, month
-skyline by month min
-
-hm? i.e. the skyline expr has to be added to the group by.
-the result might be a bit unexpected if the skyline expr
-is not part of the result nor of the group by clause
-
-
-01 2000
-02 2000
-01 2001
-01 2001
-
-select year, count(*) from logfile group by year
-
-2000 2
-2001 2
-
-
-select year, count(*), month from logfile group by year, month
-
-
-2000 1 01
-2000 1 02
-2001 2 01
-
-skyline by month min
-
-2000 1 01
-2001 2 01
-
-
-
-skyline
-  aggrate
-     scan
-
-
-\end{verbatim}
+\noindent
+Again a violation of this limitation is reported with an appropriate
+error message, e.g.:
 
 \begin{interactive}
 \sqlprompt{SELECT id, COUNT(*) FROM a15d1e5s0 GROUP BY id SKYLINE OF d1 MIN;}
@@ -2547,19 +2525,16 @@ has five main components:
 \item \emph{utility processor:\/} process DDL statements like \inlinesql{CREATE TABLE}
 \end{enumerate}
 
+\noindent
+How these components work together to execute a query is illustrated
+in \autoref{fig:pgsql-arch}.
+
 \begin{figure}[htbp]
 \centering
 \includegraphics[scale=0.75]{plots-qp/pgsql-arch}
 \caption{Architecture Diagram. Light blue background indicates the components we modified to support skyline queries.}%
 \label{fig:pgsql-arch}%
 \end{figure}
-
-\todo{changeset: [140] \texttt{is\_simple\_subquery}, do not pull up subqueries with a skyline query}{}
-
-\todo{changeset: [657], \texttt{subquery\_is\_pushdown\_safe} @ \srcref{src/backend/optimizer/path/allpaths.c}, If the subquery contains SKYLINE OF we cannot push quals into
- * it, because that would change the results ... FIXME: is it true?}{}
-
-
 
 \subsection{Pathkeys\index{pathkeys}}
 \label{sec:pathkeys}
@@ -2594,23 +2569,50 @@ a certain relative order.
 
 \subsection{Pipelined execution}
 
-see \srcref{src/backend/executor/README}
-\todo{The iterator model in the executor}{}
+PostgreSQL query execution engine has a top down driven pipelined
+architecture, i.e. each node consumes the tuples from its children and
+produces tuples and in general no intermediate results are
+materialized, see \srcref{src/backend/executor/README}.  A simple
+suitable interface for this iterator whould just expose these methods:
+\texttt{open()}, \texttt{tuple next()} and \texttt{close()}.  Nevertheless
+PostgreSQL's iterator interface is a bit richer, the dispatch functions
+are in \srcref{src/backend/executor/execProcnode.c}. In order to specialize
+just add an approriate case in the these dispatch function and call
+our own code:
 
-PostgreSQL query execution engine has a pipelined architecture,
-i.e. in general no intermediate results are materialized. \todo{}{}
+\begin{lstlisting}[language=pseudo,numbers=none]
+ExecCountSlotsNode -- count tuple slots needed by plan tree
+ExecInitNode       -- initialize a plan node and its subplans
+ExecProcNode       -- get a tuple by executing the plan node
+ExecEndNode        -- shut down a plan node and its subplans
+\end{lstlisting}
 
-\todo{It is coded in the fashion of a state machine.  Do something in each state and then proceed to another state.  The state is stored in the node's execution state information and is preserved across calls.}{}
+\noindent
+Dispatch functions for less frequent used methods are in
+\srcref{src/backend/executor/exexAmi.c}:
 
+\begin{lstlisting}[language=pseudo,numbers=none]
+ExecReScan               -- Reset a plan state node so that its 
+                         -- output can be re-scanned
+ExecMarkPos              -- Marks the current scan position
+ExecRestrPos             -- restores the scan position previously
+                         -- saved with ExecMarkPos
+ExecSupportsBackwardScan -- does a plan type support backwards
+                         -- scanning?
+\end{lstlisting}
 
-\srcref{src/backend/executor/execProcnode.c} 
+\noindent
+Each execution node is coded in the fashion of a state machine.  Do
+something in each state and then if neccessary proceed to another
+state.  The whole state is stored in the node's execution state
+information and is preserved across calls.
 
 
 \section{Parsing the \inlinesql{SKYLINE OF}-clause}
 In the parser component the textual representation of a query, namely
 SQL, is parsed into a data structure.  In this section we describe this
 process for the grammar of the \inlinesql{SKYLINE OF}-clause as defined
-in \autoref{sec:sql-extension}
+in \autoref{sec:sql-extension}.
 
 
 
@@ -2620,6 +2622,16 @@ see \srcref{src/backend/parser/gram.y} and
 
 
 \section{Query Analyzing}
+
+
+\section{Query Rewriting}
+\todo{is this the right place?}{}
+
+\todo{changeset: [140] \texttt{is\_simple\_subquery}, do not pull up subqueries with a skyline query}{}
+
+\todo{changeset: [657], \texttt{subquery\_is\_pushdown\_safe} @ \srcref{src/backend/optimizer/path/allpaths.c}, If the subquery contains SKYLINE OF we cannot push quals into
+ * it, because that would change the results ... FIXME: is it true?}{}
+
 
 \section{Query Planning}
 
@@ -2753,6 +2765,7 @@ as the upper node will stop fetching tuples. only in cost estimation.
 
 
 \section{Query Execution}
+\label{sec:queryexecution}
 
 The original System R prototype compiled query plans into machine
 code, whereas other systems like INGRES, the grandfather of

@@ -1,1 +1,1 @@
-perl restore.pl
+perl -- restore.pl

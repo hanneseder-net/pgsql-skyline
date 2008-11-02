@@ -4,17 +4,20 @@
 
 GS=gswin32c.exe
 
-dotgraphs=ds-parse.pdf
+dotgraphs=ds-parse.svg
 
 all: qps
 
-qps: $(dotgraphs)
+qps: $(dotgraphs) 
 
-$(dotgraphs) : %.pdf : %.ps
-	$(GS) -dBATCH -dNOPAUSE -sDEVICE=pdfwrite -sOutputFile=$@ $<
+#$(dotgraphs) : %.pdf : %.ps
+#	$(GS) -dBATCH -dNOPAUSE -sDEVICE=pdfwrite -sOutputFile=$@ $<
 
 %.ps: %.dot
-	neato -Tps2 $< > $@
+	dot -Tps2 $< > $@
+
+%.svg: %.dot
+	dotty $< > $@
 
 clean:
 	rm -rf *.aux *.log *~ *.bbl *.blg

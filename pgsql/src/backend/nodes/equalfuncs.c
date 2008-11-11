@@ -1800,7 +1800,7 @@ _equalSkylineOfExpr(SkylineOfExpr *a, SkylineOfExpr *b)
 }
 
 static bool
-_eqaulSkylineOption(SkylineOption *a, SkylineOption *b)
+_equalSkylineOption(SkylineOption *a, SkylineOption *b)
 {
 	COMPARE_STRING_FIELD(name);
 	COMPARE_NODE_FIELD(value);
@@ -2539,7 +2539,7 @@ equal(void *a, void *b)
 			retval = _equalSkylineOfExpr(a, b);
 			break;
 		case T_SkylineOption:
-			retval = _eqaulSkylineOption(a, b);
+			retval = _equalSkylineOption(a, b);
 			break;
 		case T_RangeSubselect:
 			retval = _equalRangeSubselect(a, b);

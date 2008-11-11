@@ -251,3 +251,50 @@ select * from (
   select min(unique1) from tenk1 as a
   where not exists (select 1 from tenk1 as b where b.unique2 = 10000)
 ) ss;
+
+--
+-- Test that an IN implemented using a UniquePath does unique-ification
+-- with the right semantics, as per bug #4113.  (Unfortunately we have
+-- no simple way to ensure that this test case actually chooses that type
+-- of plan, but it does in releases 7.4-8.3.  Note that an ordering difference
+-- here might mean that some other plan type is being used, rendering the test
+-- pointless.)
+--
+
+create temp table numeric_table (num_col numeric);
+insert into numeric_table values (1), (1.000000000000000000001), (2), (3);
+
+create temp table float_table (float_col float8);
+insert into float_table values (1), (2), (3);
+
+select * from float_table
+  where float_col in (select num_col from numeric_table);
+
+select * from numeric_table
+  where num_col in (select float_col from float_table);
+
+--
+-- Test case for bug #4290: bogus calculation of subplan param sets
+--
+
+create temp table ta (id int primary key, val int);
+
+insert into ta values(1,1);
+insert into ta values(2,2);
+
+create temp table tb (id int primary key, aval int);
+
+insert into tb values(1,1);
+insert into tb values(2,1);
+insert into tb values(3,2);
+insert into tb values(4,2);
+
+create temp table tc (id int primary key, aid int);
+
+insert into tc values(1,1);
+insert into tc values(2,2);
+
+select
+  ( select min(tb.id) from tb
+    where tb.aval = (select ta.val from ta where ta.id = tc.aid) ) as min_tb_id
+from tc;

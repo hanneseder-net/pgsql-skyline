@@ -55,7 +55,7 @@
  *
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/backend/postmaster/autovacuum.c,v 1.71 2008/01/14 13:39:25 alvherre Exp $
+ *	  $PostgreSQL: pgsql/src/backend/postmaster/autovacuum.c,v 1.71.2.6 2008/07/23 20:21:04 alvherre Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -285,12 +285,13 @@ static void relation_needs_vacanalyze(Oid relid, Form_pg_autovacuum avForm,
 
 static void autovacuum_do_vac_analyze(Oid relid, bool dovacuum,
 						  bool doanalyze, int freeze_min_age,
+						  bool for_wraparound,
 						  BufferAccessStrategy bstrategy);
 static HeapTuple get_pg_autovacuum_tuple_relid(Relation avRel, Oid relid);
 static PgStat_StatTabEntry *get_pgstat_tabentry_relid(Oid relid, bool isshared,
 						  PgStat_StatDBEntry *shared,
 						  PgStat_StatDBEntry *dbentry);
-static void autovac_report_activity(VacuumStmt *vacstmt, Oid relid);
+static void autovac_report_activity(VacuumStmt *vacstmt, Oid relid, bool for_wraparound);
 static void avl_sighup_handler(SIGNAL_ARGS);
 static void avl_sigusr1_handler(SIGNAL_ARGS);
 static void avl_sigterm_handler(SIGNAL_ARGS);
@@ -352,7 +353,7 @@ StartAutoVacLauncher(void)
 	{
 		case -1:
 			ereport(LOG,
-					(errmsg("could not fork autovacuum process: %m")));
+					(errmsg("could not fork autovacuum launcher process: %m")));
 			return 0;
 
 #ifndef EXEC_BACKEND
@@ -1400,7 +1401,7 @@ StartAutoVacWorker(void)
 	{
 		case -1:
 			ereport(LOG,
-					(errmsg("could not fork autovacuum process: %m")));
+					(errmsg("could not fork autovacuum worker process: %m")));
 			return 0;
 
 #ifndef EXEC_BACKEND
@@ -2095,23 +2096,18 @@ do_autovacuum(void)
 		/* clean up memory before each iteration */
 		MemoryContextResetAndDeleteChildren(PortalContext);
 
-		/* set the "vacuum for wraparound" flag in PGPROC */
-		if (tab->at_wraparound)
-		{
-			LWLockAcquire(ProcArrayLock, LW_EXCLUSIVE);
-			MyProc->vacuumFlags |= PROC_VACUUM_FOR_WRAPAROUND;
-			LWLockRelease(ProcArrayLock);
-		}
-
 		/*
 		 * Save the relation name for a possible error message, to avoid a
-		 * catalog lookup in case of an error.	Note: they must live in a
-		 * long-lived memory context because we call vacuum and analyze in
-		 * different transactions.
+		 * catalog lookup in case of an error.  If any of these return NULL,
+		 * then the relation has been dropped since last we checked; skip it.
+		 * Note: they must live in a long-lived memory context because we call
+		 * vacuum and analyze in different transactions.
 		 */
 		datname = get_database_name(MyDatabaseId);
 		nspname = get_namespace_name(get_rel_namespace(tab->at_relid));
 		relname = get_rel_name(tab->at_relid);
+		if (!datname || !nspname || !relname)
+			goto deleted;
 
 		/*
 		 * We will abort vacuuming the current table if something errors out,
@@ -2126,6 +2122,7 @@ do_autovacuum(void)
 									  tab->at_dovacuum,
 									  tab->at_doanalyze,
 									  tab->at_freeze_min_age,
+									  tab->at_wraparound,
 									  bstrategy);
 
 			/*
@@ -2164,11 +2161,15 @@ do_autovacuum(void)
 
 		/* the PGPROC flags are reset at the next end of transaction */
 
+deleted:
 		/* be tidy */
 		pfree(tab);
-		pfree(datname);
-		pfree(nspname);
-		pfree(relname);
+		if (datname)
+			pfree(datname);
+		if (nspname)
+			pfree(nspname);
+		if (relname)
+			pfree(relname);
 
 		/* remove my info from shared memory */
 		LWLockAcquire(AutovacuumLock, LW_EXCLUSIVE);
@@ -2604,21 +2605,16 @@ relation_needs_vacanalyze(Oid relid,
  */
 static void
 autovacuum_do_vac_analyze(Oid relid, bool dovacuum, bool doanalyze,
-						  int freeze_min_age,
+						  int freeze_min_age, bool for_wraparound,
 						  BufferAccessStrategy bstrategy)
 {
 	VacuumStmt	vacstmt;
+	List	   *relids;
 	MemoryContext old_cxt;
 
+	/* Set up command parameters --- use a local variable instead of palloc */
 	MemSet(&vacstmt, 0, sizeof(vacstmt));
 
-	/*
-	 * The list must survive transaction boundaries, so make sure we create it
-	 * in a long-lived context
-	 */
-	old_cxt = MemoryContextSwitchTo(AutovacMemCxt);
-
-	/* Set up command parameters */
 	vacstmt.type = T_VacuumStmt;
 	vacstmt.vacuum = dovacuum;
 	vacstmt.full = false;
@@ -2628,11 +2624,18 @@ autovacuum_do_vac_analyze(Oid relid, bool dovacuum, bool doanalyze,
 	vacstmt.relation = NULL;	/* not used since we pass a relids list */
 	vacstmt.va_cols = NIL;
 
-	/* Let pgstat know what we're doing */
-	autovac_report_activity(&vacstmt, relid);
-
-	vacuum(&vacstmt, list_make1_oid(relid), bstrategy, true);
+	/*
+	 * The list must survive transaction boundaries, so make sure we create it
+	 * in a long-lived context
+	 */
+	old_cxt = MemoryContextSwitchTo(AutovacMemCxt);
+	relids = list_make1_oid(relid);
 	MemoryContextSwitchTo(old_cxt);
+
+	/* Let pgstat know what we're doing */
+	autovac_report_activity(&vacstmt, relid, for_wraparound);
+
+	vacuum(&vacstmt, relids, bstrategy, for_wraparound, true);
 }
 
 /*
@@ -2647,12 +2650,12 @@ autovacuum_do_vac_analyze(Oid relid, bool dovacuum, bool doanalyze,
  * bother to report "<IDLE>" or some such.
  */
 static void
-autovac_report_activity(VacuumStmt *vacstmt, Oid relid)
+autovac_report_activity(VacuumStmt *vacstmt, Oid relid, bool for_wraparound)
 {
 	char	   *relname = get_rel_name(relid);
 	char	   *nspname = get_namespace_name(get_rel_namespace(relid));
 
-#define MAX_AUTOVAC_ACTIV_LEN (NAMEDATALEN * 2 + 32)
+#define MAX_AUTOVAC_ACTIV_LEN (NAMEDATALEN * 2 + 56)
 	char		activity[MAX_AUTOVAC_ACTIV_LEN];
 
 	/* Report the command and possible options */
@@ -2676,7 +2679,8 @@ autovac_report_activity(VacuumStmt *vacstmt, Oid relid)
 		int			len = strlen(activity);
 
 		snprintf(activity + len, MAX_AUTOVAC_ACTIV_LEN - len,
-				 " %s.%s", nspname, relname);
+				 " %s.%s%s", nspname, relname,
+				 for_wraparound ? " (to prevent wraparound)" : "");
 	}
 
 	/* Set statement_timestamp() to current time for pg_stat_activity */

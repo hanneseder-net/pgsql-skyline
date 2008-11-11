@@ -7,7 +7,7 @@
  * Portions Copyright (c) 1996-2008, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
- * $PostgreSQL: pgsql/src/include/access/gist_private.h,v 1.28 2008/01/01 19:45:56 momjian Exp $
+ * $PostgreSQL: pgsql/src/include/access/gist_private.h,v 1.28.2.3 2008/10/22 12:54:25 teodor Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -60,6 +60,12 @@ typedef struct GISTSTATE
 	TupleDesc	tupdesc;
 } GISTSTATE;
 
+typedef struct MatchedItemPtr 
+{
+	ItemPointerData		heapPtr;
+	OffsetNumber		pageOffset; /* offset in index page */
+} MatchedItemPtr;
+
 /*
  *	When we're doing a scan, we need to keep track of the parent stack
  *	for the marked and current items.
@@ -69,12 +75,20 @@ typedef struct GISTScanOpaqueData
 	GISTSearchStack *stack;
 	GISTSearchStack *markstk;
 	uint16		flags;
+	bool        qual_ok;        /* false if qual can never be satisfied */
 	GISTSTATE  *giststate;
 	MemoryContext tempCxt;
 	Buffer		curbuf;
 	ItemPointerData curpos;
 	Buffer		markbuf;
 	ItemPointerData markpos;
+
+	MatchedItemPtr	pageData[BLCKSZ/sizeof(IndexTupleData)];
+	OffsetNumber	nPageData;
+	OffsetNumber	curPageData;
+	MatchedItemPtr	markPageData[BLCKSZ/sizeof(IndexTupleData)];
+	OffsetNumber	markNPageData;
+	OffsetNumber	markCurPageData;
 } GISTScanOpaqueData;
 
 typedef GISTScanOpaqueData *GISTScanOpaque;

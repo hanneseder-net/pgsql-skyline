@@ -8,7 +8,7 @@
  *
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/backend/commands/tablecmds.c,v 1.242 2008/02/07 17:09:51 tgl Exp $
+ *	  $PostgreSQL: pgsql/src/backend/commands/tablecmds.c,v 1.242.2.4 2008/10/07 11:15:48 heikki Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -1184,7 +1184,7 @@ change_varattnos_walker(Node *node, const AttrNumber *newattno)
 			 * currently.
 			 */
 			Assert(newattno[var->varattno - 1] > 0);
-			var->varattno = newattno[var->varattno - 1];
+			var->varattno = var->varoattno = newattno[var->varattno - 1];
 		}
 		return false;
 	}
@@ -3238,6 +3238,11 @@ ATExecAddColumn(AlteredTableInfo *tab, Relation rel,
 	}
 
 	/*
+	 * If the new column is NOT NULL, tell Phase 3 it needs to test that.
+	 */
+	tab->new_notnull |= colDef->is_not_null;
+
+	/*
 	 * Add needed dependency entries for the new column.
 	 */
 	add_column_datatype_dependency(myrelid, i, attribute->atttypid);
@@ -4134,11 +4139,11 @@ ATAddForeignKeyConstraint(AlteredTableInfo *tab, Relation rel,
 			/*
 			 * Otherwise, look for an implicit cast from the FK type to the
 			 * opcintype, and if found, use the primary equality operator.
-			 * This is a bit tricky because opcintype might be a generic type
-			 * such as ANYARRAY, and so what we have to test is whether the
-			 * two actual column types can be concurrently cast to that type.
-			 * (Otherwise, we'd fail to reject combinations such as int[] and
-			 * point[].)
+			 * This is a bit tricky because opcintype might be a polymorphic
+			 * type such as ANYARRAY or ANYENUM; so what we have to test is
+			 * whether the two actual column types can be concurrently cast to
+			 * that type.  (Otherwise, we'd fail to reject combinations such
+			 * as int[] and point[].)
 			 */
 			Oid			input_typeids[2];
 			Oid			target_typeids[2];
@@ -5825,6 +5830,7 @@ ATExecSetTableSpace(Oid tableOid, Oid newTableSpace)
 	Oid			oldTableSpace;
 	Oid			reltoastrelid;
 	Oid			reltoastidxid;
+	Oid			newrelfilenode;
 	RelFileNode newrnode;
 	SMgrRelation dstrel;
 	Relation	pg_class;
@@ -5885,9 +5891,18 @@ ATExecSetTableSpace(Oid tableOid, Oid newTableSpace)
 		elog(ERROR, "cache lookup failed for relation %u", tableOid);
 	rd_rel = (Form_pg_class) GETSTRUCT(tuple);
 
+	/*
+	 * Relfilenodes are not unique across tablespaces, so we need to allocate
+	 * a new one in the new tablespace.
+	 */
+	newrelfilenode = GetNewRelFileNode(newTableSpace,
+									   rel->rd_rel->relisshared,
+									   NULL);
+
 	/* create another storage file. Is it a little ugly ? */
 	/* NOTE: any conflict in relfilenode value will be caught here */
 	newrnode = rel->rd_node;
+	newrnode.relNode = newrelfilenode;
 	newrnode.spcNode = newTableSpace;
 
 	dstrel = smgropen(newrnode);
@@ -5908,6 +5923,7 @@ ATExecSetTableSpace(Oid tableOid, Oid newTableSpace)
 
 	/* update the pg_class row */
 	rd_rel->reltablespace = (newTableSpace == MyDatabaseTableSpace) ? InvalidOid : newTableSpace;
+	rd_rel->relfilenode = newrelfilenode;
 	simple_heap_update(pg_class, &tuple->t_self, tuple);
 	CatalogUpdateIndexes(pg_class, tuple);
 

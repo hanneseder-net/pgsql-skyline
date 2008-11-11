@@ -10,7 +10,7 @@
  * Written by Peter Eisentraut <peter_e@gmx.net>.
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/backend/utils/misc/guc.c,v 1.432 2008/01/30 18:35:55 tgl Exp $
+ *	  $PostgreSQL: pgsql/src/backend/utils/misc/guc.c,v 1.432.2.2 2008/07/06 19:48:53 tgl Exp $
  *
  *--------------------------------------------------------------------
  */
@@ -4381,6 +4381,10 @@ set_config_option(const char *name, const char *value,
 					source = conf->gen.reset_source;
 				}
 
+				/* Save old value to support transaction abort */
+				if (changeVal && !makeDefault)
+					push_old_value(&conf->gen, action);
+
 				if (conf->assign_hook)
 					if (!(*conf->assign_hook) (newval, changeVal, source))
 					{
@@ -4391,32 +4395,26 @@ set_config_option(const char *name, const char *value,
 						return false;
 					}
 
-				if (changeVal || makeDefault)
+				if (changeVal)
 				{
-					/* Save old value to support transaction abort */
-					if (!makeDefault)
-						push_old_value(&conf->gen, action);
-					if (changeVal)
-					{
-						*conf->variable = newval;
-						conf->gen.source = source;
-					}
-					if (makeDefault)
-					{
-						GucStack   *stack;
+					*conf->variable = newval;
+					conf->gen.source = source;
+				}
+				if (makeDefault)
+				{
+					GucStack   *stack;
 
-						if (conf->gen.reset_source <= source)
+					if (conf->gen.reset_source <= source)
+					{
+						conf->reset_val = newval;
+						conf->gen.reset_source = source;
+					}
+					for (stack = conf->gen.stack; stack; stack = stack->prev)
+					{
+						if (stack->source <= source)
 						{
-							conf->reset_val = newval;
-							conf->gen.reset_source = source;
-						}
-						for (stack = conf->gen.stack; stack; stack = stack->prev)
-						{
-							if (stack->source <= source)
-							{
-								stack->prior.boolval = newval;
-								stack->source = source;
-							}
+							stack->prior.boolval = newval;
+							stack->source = source;
 						}
 					}
 				}
@@ -4458,6 +4456,10 @@ set_config_option(const char *name, const char *value,
 					source = conf->gen.reset_source;
 				}
 
+				/* Save old value to support transaction abort */
+				if (changeVal && !makeDefault)
+					push_old_value(&conf->gen, action);
+
 				if (conf->assign_hook)
 					if (!(*conf->assign_hook) (newval, changeVal, source))
 					{
@@ -4468,32 +4470,26 @@ set_config_option(const char *name, const char *value,
 						return false;
 					}
 
-				if (changeVal || makeDefault)
+				if (changeVal)
 				{
-					/* Save old value to support transaction abort */
-					if (!makeDefault)
-						push_old_value(&conf->gen, action);
-					if (changeVal)
-					{
-						*conf->variable = newval;
-						conf->gen.source = source;
-					}
-					if (makeDefault)
-					{
-						GucStack   *stack;
+					*conf->variable = newval;
+					conf->gen.source = source;
+				}
+				if (makeDefault)
+				{
+					GucStack   *stack;
 
-						if (conf->gen.reset_source <= source)
+					if (conf->gen.reset_source <= source)
+					{
+						conf->reset_val = newval;
+						conf->gen.reset_source = source;
+					}
+					for (stack = conf->gen.stack; stack; stack = stack->prev)
+					{
+						if (stack->source <= source)
 						{
-							conf->reset_val = newval;
-							conf->gen.reset_source = source;
-						}
-						for (stack = conf->gen.stack; stack; stack = stack->prev)
-						{
-							if (stack->source <= source)
-							{
-								stack->prior.intval = newval;
-								stack->source = source;
-							}
+							stack->prior.intval = newval;
+							stack->source = source;
 						}
 					}
 				}
@@ -4532,6 +4528,10 @@ set_config_option(const char *name, const char *value,
 					source = conf->gen.reset_source;
 				}
 
+				/* Save old value to support transaction abort */
+				if (changeVal && !makeDefault)
+					push_old_value(&conf->gen, action);
+
 				if (conf->assign_hook)
 					if (!(*conf->assign_hook) (newval, changeVal, source))
 					{
@@ -4542,32 +4542,26 @@ set_config_option(const char *name, const char *value,
 						return false;
 					}
 
-				if (changeVal || makeDefault)
+				if (changeVal)
 				{
-					/* Save old value to support transaction abort */
-					if (!makeDefault)
-						push_old_value(&conf->gen, action);
-					if (changeVal)
-					{
-						*conf->variable = newval;
-						conf->gen.source = source;
-					}
-					if (makeDefault)
-					{
-						GucStack   *stack;
+					*conf->variable = newval;
+					conf->gen.source = source;
+				}
+				if (makeDefault)
+				{
+					GucStack   *stack;
 
-						if (conf->gen.reset_source <= source)
+					if (conf->gen.reset_source <= source)
+					{
+						conf->reset_val = newval;
+						conf->gen.reset_source = source;
+					}
+					for (stack = conf->gen.stack; stack; stack = stack->prev)
+					{
+						if (stack->source <= source)
 						{
-							conf->reset_val = newval;
-							conf->gen.reset_source = source;
-						}
-						for (stack = conf->gen.stack; stack; stack = stack->prev)
-						{
-							if (stack->source <= source)
-							{
-								stack->prior.realval = newval;
-								stack->source = source;
-							}
+							stack->prior.realval = newval;
+							stack->source = source;
 						}
 					}
 				}
@@ -4621,6 +4615,10 @@ set_config_option(const char *name, const char *value,
 					source = conf->gen.reset_source;
 				}
 
+				/* Save old value to support transaction abort */
+				if (changeVal && !makeDefault)
+					push_old_value(&conf->gen, action);
+
 				if (conf->assign_hook && newval)
 				{
 					const char *hookresult;
@@ -4658,40 +4656,32 @@ set_config_option(const char *name, const char *value,
 					}
 				}
 
-				if (changeVal || makeDefault)
+				if (changeVal)
 				{
-					/* Save old value to support transaction abort */
-					if (!makeDefault)
-						push_old_value(&conf->gen, action);
-					if (changeVal)
-					{
-						set_string_field(conf, conf->variable, newval);
-						conf->gen.source = source;
-					}
-					if (makeDefault)
-					{
-						GucStack   *stack;
+					set_string_field(conf, conf->variable, newval);
+					conf->gen.source = source;
+				}
+				if (makeDefault)
+				{
+					GucStack   *stack;
 
-						if (conf->gen.reset_source <= source)
+					if (conf->gen.reset_source <= source)
+					{
+						set_string_field(conf, &conf->reset_val, newval);
+						conf->gen.reset_source = source;
+					}
+					for (stack = conf->gen.stack; stack; stack = stack->prev)
+					{
+						if (stack->source <= source)
 						{
-							set_string_field(conf, &conf->reset_val, newval);
-							conf->gen.reset_source = source;
+							set_string_field(conf, &stack->prior.stringval,
+											 newval);
+							stack->source = source;
 						}
-						for (stack = conf->gen.stack; stack; stack = stack->prev)
-						{
-							if (stack->source <= source)
-							{
-								set_string_field(conf, &stack->prior.stringval,
-												 newval);
-								stack->source = source;
-							}
-						}
-						/* Perhaps we didn't install newval anywhere */
-						if (newval && !string_field_used(conf, newval))
-							free(newval);
 					}
 				}
-				else if (newval)
+				/* Perhaps we didn't install newval anywhere */
+				if (newval && !string_field_used(conf, newval))
 					free(newval);
 				break;
 			}
@@ -5845,10 +5835,18 @@ _ShowOption(struct config_generic * record, bool use_units)
 					val = (*conf->show_hook) ();
 				else
 				{
-					char		unit[4];
-					int			result = *conf->variable;
+					/*
+					 * Use int64 arithmetic to avoid overflows in units
+					 * conversion.  If INT64_IS_BUSTED we might overflow
+					 * anyway and print bogus answers, but there are few
+					 * enough such machines that it doesn't seem worth
+					 * trying harder.
+					 */
+					int64		result = *conf->variable;
+					const char *unit;
 
-					if (use_units && result > 0 && (record->flags & GUC_UNIT_MEMORY))
+					if (use_units && result > 0 &&
+						(record->flags & GUC_UNIT_MEMORY))
 					{
 						switch (record->flags & GUC_UNIT_MEMORY)
 						{
@@ -5863,19 +5861,20 @@ _ShowOption(struct config_generic * record, bool use_units)
 						if (result % KB_PER_GB == 0)
 						{
 							result /= KB_PER_GB;
-							strcpy(unit, "GB");
+							unit = "GB";
 						}
 						else if (result % KB_PER_MB == 0)
 						{
 							result /= KB_PER_MB;
-							strcpy(unit, "MB");
+							unit = "MB";
 						}
 						else
 						{
-							strcpy(unit, "kB");
+							unit = "kB";
 						}
 					}
-					else if (use_units && result > 0 && (record->flags & GUC_UNIT_TIME))
+					else if (use_units && result > 0 &&
+							 (record->flags & GUC_UNIT_TIME))
 					{
 						switch (record->flags & GUC_UNIT_TIME)
 						{
@@ -5890,33 +5889,33 @@ _ShowOption(struct config_generic * record, bool use_units)
 						if (result % MS_PER_D == 0)
 						{
 							result /= MS_PER_D;
-							strcpy(unit, "d");
+							unit = "d";
 						}
 						else if (result % MS_PER_H == 0)
 						{
 							result /= MS_PER_H;
-							strcpy(unit, "h");
+							unit = "h";
 						}
 						else if (result % MS_PER_MIN == 0)
 						{
 							result /= MS_PER_MIN;
-							strcpy(unit, "min");
+							unit = "min";
 						}
 						else if (result % MS_PER_S == 0)
 						{
 							result /= MS_PER_S;
-							strcpy(unit, "s");
+							unit = "s";
 						}
 						else
 						{
-							strcpy(unit, "ms");
+							unit = "ms";
 						}
 					}
 					else
-						strcpy(unit, "");
+						unit = "";
 
-					snprintf(buffer, sizeof(buffer), "%d%s",
-							 (int) result, unit);
+					snprintf(buffer, sizeof(buffer), INT64_FORMAT "%s",
+							 result, unit);
 					val = buffer;
 				}
 			}

@@ -3,7 +3,7 @@ package Mkvcbuild;
 #
 # Package that generates build files for msvc build
 #
-# $PostgreSQL: pgsql/src/tools/msvc/Mkvcbuild.pm,v 1.25 2008/02/05 14:17:23 mha Exp $
+# $PostgreSQL: pgsql/src/tools/msvc/Mkvcbuild.pm,v 1.25.2.3 2008/05/10 16:07:56 adunstan Exp $
 #
 use Carp;
 use Win32;
@@ -31,7 +31,7 @@ my $contrib_extrasource = {
     'cube' => ['cubescan.l','cubeparse.y'],
     'seg' => ['segscan.l','segparse.y']
 };
-my @contrib_excludes = ('pgcrypto','uuid-ossp');
+my @contrib_excludes = ('pgcrypto');
 
 sub mkvcbuild
 {
@@ -127,6 +127,7 @@ sub mkvcbuild
 
     $libpq = $solution->AddProject('libpq','dll','interfaces','src\interfaces\libpq');
     $libpq->AddDefine('FRONTEND');
+	$libpq->AddDefine('UNSAFE_STAT_OK');
     $libpq->AddIncludeDir('src\port');
     $libpq->AddLibrary('wsock32.lib');
     $libpq->AddLibrary('secur32.lib');
@@ -245,6 +246,16 @@ sub mkvcbuild
     if (!$solution->{options}->{openssl})
     {
         push @contrib_excludes,'sslinfo';
+    }
+
+    if ($solution->{options}->{uuid})
+    {
+       $contrib_extraincludes->{'uuid-ossp'} = [ $solution->{options}->{uuid} . '\include' ];
+       $contrib_extralibs->{'uuid-ossp'} = [ $solution->{options}->{uuid} . '\lib\uuid.lib' ];
+    }
+	 else
+    {
+       push @contrib_excludes,'uuid-ossp';
     }
 
     # Pgcrypto makefile too complex to parse....
@@ -387,8 +398,10 @@ sub AddContrib
         $mf =~ s{\\\s*[\r\n]+}{}mg;
         my $proj = $solution->AddProject($dn, 'dll', 'contrib');
         $mf =~ /^OBJS\s*=\s*(.*)$/gm || croak "Could not find objects in MODULE_big for $n\n";
-        foreach my $o (split /\s+/, $1)
+		my $objs = $1;
+        while ($objs =~ /\b([\w-]+\.o)\b/g)
         {
+			my $o = $1;
             $o =~ s/\.o$/.c/;
             $proj->AddFile('contrib\\' . $n . '\\' . $o);
         }
@@ -401,8 +414,10 @@ sub AddContrib
                 $mf2 =~ s{\\\s*[\r\n]+}{}mg;
                 $mf2 =~ /^SUBOBJS\s*=\s*(.*)$/gm
                   || croak "Could not find objects in MODULE_big for $n, subdir $d\n";
-                foreach my $o (split /\s+/, $1)
-                {
+                $objs = $1;
+				while ($objs =~ /\b([\w-]+\.o)\b/g)
+				{
+					my $o = $1;
                     $o =~ s/\.o$/.c/;
                     $proj->AddFile('contrib\\' . $n . '\\' . $d . '\\' . $o);
                 }
@@ -424,8 +439,10 @@ sub AddContrib
     {
         my $proj = $solution->AddProject($1, 'exe', 'contrib');
         $mf =~ /^OBJS\s*=\s*(.*)$/gm || croak "Could not find objects in MODULE_big for $n\n";
-        foreach my $o (split /\s+/, $1)
+        my $objs = $1;
+        while ($objs =~ /\b([\w-]+\.o)\b/g)
         {
+			my $o = $1;
             $o =~ s/\.o$/.c/;
             $proj->AddFile('contrib\\' . $n . '\\' . $o);
         }

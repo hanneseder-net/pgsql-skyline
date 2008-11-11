@@ -1,4 +1,4 @@
-/* $PostgreSQL: pgsql/src/interfaces/ecpg/preproc/preproc.y,v 1.359 2008/01/15 10:31:47 meskes Exp $ */
+/* $PostgreSQL: pgsql/src/interfaces/ecpg/preproc/preproc.y,v 1.359.2.6 2008/10/10 12:20:06 meskes Exp $ */
 
 /* Copyright comment */
 %{
@@ -87,8 +87,10 @@ mmerror(int error_code, enum errortype type, char * error, ...)
 			ret_value = error_code;
 			break;
 		case ET_FATAL:
-			fclose(yyin);
-			fclose(yyout);
+			if (yyin)
+				fclose(yyin);
+			if (yyout)
+				fclose(yyout);
 			if (unlink(output_filename) != 0 && *output_filename != '-')
 			        fprintf(stderr, "Could not remove output file %s!\n", output_filename);
 			exit(error_code);
@@ -807,7 +809,7 @@ stmt:  AlterDatabaseStmt		{ output_statement($1, 0, ECPGst_normal); }
 		| DropUserStmt		{ output_statement($1, 0, ECPGst_normal); }
 		| DropdbStmt		{ output_statement($1, 0, ECPGst_normal); }
 		| ExplainStmt		{ output_statement($1, 0, ECPGst_normal); }
-		| ExecuteStmt		{ output_statement($1, 0, ECPGst_execute); }
+		| ExecuteStmt		{ output_statement($1, 1, ECPGst_execute); }
 		| FetchStmt		{ output_statement($1, 1, ECPGst_normal); }
 		| GrantStmt		{ output_statement($1, 0, ECPGst_normal); }
 		| GrantRoleStmt		{ output_statement($1, 0, ECPGst_normal); }
@@ -1005,7 +1007,7 @@ stmt:  AlterDatabaseStmt		{ output_statement($1, 0, ECPGst_normal); }
  *****************************************************************************/
 
 CreateRoleStmt: CREATE ROLE RoleId opt_with OptRoleList
-			{ $$ = cat_str(4, make_str("create role"), $3, make_str("with"), $5); }
+			{ $$ = cat_str(4, make_str("create role"), $3, $4, $5); }
 		;
 
 opt_with:  WITH 		{ $$ = make_str("with"); }
@@ -1241,7 +1243,16 @@ iso_level:	READ UNCOMMITTED	{ $$ = make_str("read uncommitted"); }
 		;
 
 var_value:	opt_boolean		{ $$ = $1; }
-		| AllConst			{ $$ = $1; }
+		| AllConst			{ 	/* we have to check for a variable here because it has to be
+						     	replaced with its value on the client side */
+							if ($1[1] == '$')
+							{
+								$$ = make_str("$0");
+								free($1);
+							}
+							else
+								$$ = $1;
+						}
 		| ColId				{ $$ = $1; }
 		;
 
@@ -2356,7 +2367,7 @@ fetch_direction:  NEXT				{ $$ = make_str("next"); }
 fetch_count:	IntConst	{
 		                	if ($1[1] == '$')
 					{
-						/* a variable here has to be replaced on the client side, thus we have to use '?' here */
+						/* a variable here has to be replaced on the client side, thus we have to use '$0' here */
 						$$ = make_str("$0");
 						free($1);
 					}
@@ -5845,7 +5856,7 @@ prepared_name: name	 	{
 						int i;
 
 						for (i = 0; i< strlen($1); i++)
-							$1[i] = tolower($1[i]);
+							$1[i] = tolower((unsigned char) $1[i]);
 
 						$$ = make3_str(make_str("\""), $1, make_str("\""));
 					}
@@ -6270,6 +6281,7 @@ ECPGKeywords_vanames:  SQL_BREAK		{ $$ = make_str("break"); }
 		| SQL_RETURNED_OCTET_LENGTH	{ $$ = make_str("returned_octet_length"); }
 		| SQL_SCALE					{ $$ = make_str("scale"); }
 		| SQL_SECTION				{ $$ = make_str("section"); }
+		| SQL_SQL				{ $$ = make_str("sql"); }
 		| SQL_SQLERROR				{ $$ = make_str("sqlerror"); }
 		| SQL_SQLPRINT				{ $$ = make_str("sqlprint"); }
 		| SQL_SQLWARNING			{ $$ = make_str("sqlwarning"); }

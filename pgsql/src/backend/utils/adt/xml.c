@@ -7,7 +7,7 @@
  * Portions Copyright (c) 1996-2008, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
- * $PostgreSQL: pgsql/src/backend/utils/adt/xml.c,v 1.68 2008/01/15 18:56:59 tgl Exp $
+ * $PostgreSQL: pgsql/src/backend/utils/adt/xml.c,v 1.68.2.5 2008/10/09 15:49:10 tgl Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -208,7 +208,6 @@ xml_out_internal(xmltype *x, pg_enc target_encoding)
 
 #ifdef USE_LIBXML
 	xmlChar    *version;
-	xmlChar    *encoding;
 	int			standalone;
 	int			res_code;
 #endif
@@ -220,7 +219,7 @@ xml_out_internal(xmltype *x, pg_enc target_encoding)
 
 #ifdef USE_LIBXML
 	if ((res_code = parse_xml_decl((xmlChar *) str,
-							   &len, &version, &encoding, &standalone)) == 0)
+								   &len, &version, NULL, &standalone)) == 0)
 	{
 		StringInfoData buf;
 
@@ -237,6 +236,10 @@ xml_out_internal(xmltype *x, pg_enc target_encoding)
 				len += 1;
 		}
 		appendStringInfoString(&buf, str + len);
+
+		if (version)
+			xmlFree(version);
+		pfree(str);
 
 		return buf.data;
 	}
@@ -788,70 +791,19 @@ xmlroot(xmltype *data, text *version, int standalone)
 
 /*
  * Validate document (given as string) against DTD (given as external link)
- * TODO !!! use text instead of cstring for second arg
- * TODO allow passing DTD as a string value (not only as an URI)
- * TODO redesign (see comment with '!!!' below)
+ *
+ * This has been removed because it is a security hole: unprivileged users
+ * should not be able to use Postgres to fetch arbitrary external files,
+ * which unfortunately is exactly what libxml is willing to do with the DTD
+ * parameter.
  */
 Datum
 xmlvalidate(PG_FUNCTION_ARGS)
 {
-#ifdef USE_LIBXML
-	text	   *data = PG_GETARG_TEXT_P(0);
-	text	   *dtdOrUri = PG_GETARG_TEXT_P(1);
-	bool		result = false;
-	xmlParserCtxtPtr ctxt;
-	xmlDocPtr	doc;
-	xmlDtdPtr	dtd;
-
-	xml_init();
-	xmlInitParser();
-	ctxt = xmlNewParserCtxt();
-	if (ctxt == NULL)
-		xml_ereport(ERROR, ERRCODE_OUT_OF_MEMORY,
-					"could not allocate parser context");
-
-	doc = xmlCtxtReadMemory(ctxt, (char *) VARDATA(data),
-							VARSIZE(data) - VARHDRSZ,
-							NULL, NULL, 0);
-	if (doc == NULL)
-		xml_ereport(ERROR, ERRCODE_INVALID_XML_DOCUMENT,
-					"could not parse XML data");
-
-#if 0
-	uri = xmlCreateURI();
-	elog(NOTICE, "dtd - %s", dtdOrUri);
-	dtd = palloc(sizeof(xmlDtdPtr));
-	uri = xmlParseURI(dtdOrUri);
-	if (uri == NULL)
-		xml_ereport(ERROR, ERRCODE_INTERNAL_ERROR,
-					"not implemented yet... (TODO)");
-	else
-#endif
-		dtd = xmlParseDTD(NULL, xml_text2xmlChar(dtdOrUri));
-
-	if (dtd == NULL)
-		xml_ereport(ERROR, ERRCODE_INVALID_XML_DOCUMENT,
-					"could not load DTD");
-
-	if (xmlValidateDtd(xmlNewValidCtxt(), doc, dtd) == 1)
-		result = true;
-
-	if (!result)
-		xml_ereport(NOTICE, ERRCODE_INVALID_XML_DOCUMENT,
-					"validation against DTD failed");
-
-#if 0
-	xmlFreeURI(uri);
-#endif
-	xmlFreeDtd(dtd);
-	xmlFreeDoc(doc);
-	xmlFreeParserCtxt(ctxt);
-
-	PG_RETURN_BOOL(result);
-#else							/* not USE_LIBXML */
-	NO_XML_SUPPORT();
+	ereport(ERROR,
+			(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+			 errmsg("xmlvalidate is not implemented")));
 	return 0;
-#endif   /* not USE_LIBXML */
 }
 
 
@@ -1452,25 +1404,25 @@ xml_ereport_by_code(int level, int sqlcode,
 	switch (code)
 	{
 		case XML_ERR_INVALID_CHAR:
-			det = "Invalid character value";
+			det = gettext_noop("Invalid character value.");
 			break;
 		case XML_ERR_SPACE_REQUIRED:
-			det = "Space required";
+			det = gettext_noop("Space required.");
 			break;
 		case XML_ERR_STANDALONE_VALUE:
-			det = "standalone accepts only 'yes' or 'no'";
+			det = gettext_noop("standalone accepts only 'yes' or 'no'.");
 			break;
 		case XML_ERR_VERSION_MISSING:
-			det = "Malformed declaration expecting version";
+			det = gettext_noop("Malformed declaration: missing version.");
 			break;
 		case XML_ERR_MISSING_ENCODING:
-			det = "Missing encoding in text declaration";
+			det = gettext_noop("Missing encoding in text declaration.");
 			break;
 		case XML_ERR_XMLDECL_NOT_FINISHED:
-			det = "Parsing XML declaration: '?>' expected";
+			det = gettext_noop("Parsing XML declaration: '?>' expected.");
 			break;
 		default:
-			det = "Unrecognized libxml error code: %d";
+			det = gettext_noop("Unrecognized libxml error code: %d.");
 			break;
 	}
 
@@ -1658,8 +1610,6 @@ map_sql_value_to_xml_value(Datum value, Oid type)
 {
 	StringInfoData buf;
 
-	initStringInfo(&buf);
-
 	if (type_is_array(type))
 	{
 		ArrayType  *array;
@@ -1681,6 +1631,8 @@ map_sql_value_to_xml_value(Datum value, Oid type)
 						  &elem_values, &elem_nulls,
 						  &num_elems);
 
+		initStringInfo(&buf);
+
 		for (i = 0; i < num_elems; i++)
 		{
 			if (elem_nulls[i])
@@ -1694,6 +1646,8 @@ map_sql_value_to_xml_value(Datum value, Oid type)
 
 		pfree(elem_values);
 		pfree(elem_nulls);
+
+		return buf.data;
 	}
 	else
 	{
@@ -1777,62 +1731,73 @@ map_sql_value_to_xml_value(Datum value, Oid type)
 
 					return pstrdup(buf);
 				}
+
+#ifdef USE_LIBXML
+			case BYTEAOID:
+				{
+					bytea	   *bstr = DatumGetByteaPP(value);
+					xmlBufferPtr buf;
+					xmlTextWriterPtr writer;
+					char	   *result;
+
+					xml_init();
+
+					buf = xmlBufferCreate();
+					writer = xmlNewTextWriterMemory(buf, 0);
+
+					if (xmlbinary == XMLBINARY_BASE64)
+						xmlTextWriterWriteBase64(writer, VARDATA_ANY(bstr),
+												 0, VARSIZE_ANY_EXHDR(bstr));
+					else
+						xmlTextWriterWriteBinHex(writer, VARDATA_ANY(bstr),
+												 0, VARSIZE_ANY_EXHDR(bstr));
+
+					xmlFreeTextWriter(writer);
+					result = pstrdup((const char *) xmlBufferContent(buf));
+					xmlBufferFree(buf);
+					return result;
+				}
+#endif   /* USE_LIBXML */
+
 		}
 
+		/*
+		 * otherwise, just use the type's native text representation
+		 */
 		getTypeOutputInfo(type, &typeOut, &isvarlena);
 		str = OidOutputFunctionCall(typeOut, value);
 
+		/* ... exactly as-is for XML */
 		if (type == XMLOID)
 			return str;
 
-#ifdef USE_LIBXML
-		if (type == BYTEAOID)
-		{
-			xmlBufferPtr buf;
-			xmlTextWriterPtr writer;
-			char	   *result;
+		/* otherwise, translate special characters as needed */
+		initStringInfo(&buf);
 
-			xml_init();
-
-			buf = xmlBufferCreate();
-			writer = xmlNewTextWriterMemory(buf, 0);
-
-			if (xmlbinary == XMLBINARY_BASE64)
-				xmlTextWriterWriteBase64(writer, VARDATA(value), 0, VARSIZE(value) - VARHDRSZ);
-			else
-				xmlTextWriterWriteBinHex(writer, VARDATA(value), 0, VARSIZE(value) - VARHDRSZ);
-
-			xmlFreeTextWriter(writer);
-			result = pstrdup((const char *) xmlBufferContent(buf));
-			xmlBufferFree(buf);
-			return result;
-		}
-#endif   /* USE_LIBXML */
-
-		for (p = str; *p; p += pg_mblen(p))
+		for (p = str; *p; p++)
 		{
 			switch (*p)
 			{
 				case '&':
-					appendStringInfo(&buf, "&amp;");
+					appendStringInfoString(&buf, "&amp;");
 					break;
 				case '<':
-					appendStringInfo(&buf, "&lt;");
+					appendStringInfoString(&buf, "&lt;");
 					break;
 				case '>':
-					appendStringInfo(&buf, "&gt;");
+					appendStringInfoString(&buf, "&gt;");
 					break;
 				case '\r':
-					appendStringInfo(&buf, "&#x0d;");
+					appendStringInfoString(&buf, "&#x0d;");
 					break;
 				default:
-					appendBinaryStringInfo(&buf, p, pg_mblen(p));
+					appendStringInfoCharMacro(&buf, *p);
 					break;
 			}
 		}
-	}
 
-	return buf.data;
+		return buf.data;
+	}
 }
 
 
@@ -3252,6 +3217,7 @@ xml_xmlnodetoxmltype(xmlNodePtr cur)
 		result = (text *) palloc(len + VARHDRSZ);
 		SET_VARSIZE(result, len + VARHDRSZ);
 		memcpy(VARDATA(result), str, len);
+		xmlFree(str);
 	}
 
 	return result;

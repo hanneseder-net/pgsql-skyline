@@ -12,6 +12,7 @@ our $config = {
 #    krb5=>'c:\pgsql\depend\krb5', # --with-krb5=<path>
 #    ldap=>1,			# --with-ldap
 #    openssl=>'c:\openssl', # --with-ssl=<path>
+#    uuid=>'c:\prog\pgsql\depend\ossp-uuid', #--with-ossp-uuid
 #    xml=>'c:\pgsql\depend\libxml2',
 #    xslt=>'c:\pgsql\depend\libxslt',
     iconv=>'c:\pgsql\depend\iconv',

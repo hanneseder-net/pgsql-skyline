@@ -94,7 +94,6 @@ int			CTimeZone = 0;
 bool		enableFsync = true;
 bool		allowSystemTableMods = false;
 int			work_mem = 1024;
-int			function_scan_work_mem = 1024;
 int			maintenance_work_mem = 16384;
 
 /*

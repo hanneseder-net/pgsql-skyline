@@ -1281,17 +1281,6 @@ static struct config_int ConfigureNamesInt[] =
 	},
 
 	{
-		{"function_scan_work_mem", PGC_USERSET, RESOURCES_MEM,
-			gettext_noop("Sets the maximum memory to be used for function scan workspaces."),
-			gettext_noop("This much memory can be used by each function "
-						 "scan operation before switching to temporary disk files."),
-			GUC_UNIT_KB
-		},
-		&function_scan_work_mem,
-		1024, 8 * BLCKSZ / 1024, MAX_KILOBYTES, NULL, NULL
-	},
-
-	{
 		{"maintenance_work_mem", PGC_USERSET, RESOURCES_MEM,
 			gettext_noop("Sets the maximum memory to be used for maintenance operations."),
 			gettext_noop("This includes operations such as VACUUM and CREATE INDEX."),

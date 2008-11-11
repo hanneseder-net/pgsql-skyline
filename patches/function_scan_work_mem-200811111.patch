@@ -1,0 +1,85 @@
+*** pgsql-REL8_3_STABLE/src/backend/utils/misc/guc.c	Sun Jul  6 21:48:53 2008
+--- pgsql/src/backend/utils/misc/guc.c	Tue Nov 11 17:53:33 2008
+***************
+*** 1281,1286 ****
+--- 1281,1297 ----
+  	},
+  
+  	{
++ 		{"function_scan_work_mem", PGC_USERSET, RESOURCES_MEM,
++ 			gettext_noop("Sets the maximum memory to be used for function scan workspaces."),
++ 			gettext_noop("This much memory can be used by each function "
++ 						 "scan operation before switching to temporary disk files."),
++ 			GUC_UNIT_KB
++ 		},
++ 		&function_scan_work_mem,
++ 		1024, 8 * BLCKSZ / 1024, MAX_KILOBYTES, NULL, NULL
++ 	},
++ 
++ 	{
+  		{"maintenance_work_mem", PGC_USERSET, RESOURCES_MEM,
+  			gettext_noop("Sets the maximum memory to be used for maintenance operations."),
+  			gettext_noop("This includes operations such as VACUUM and CREATE INDEX."),
+diff -cr --new-file -b --tabsize 4 -x CVS -x .svn -x tools pgsql-REL8_3_STABLE/src/backend/executor/execQual.c pgsql/src/backend/executor/execQual.c
+*** pgsql-REL8_3_STABLE/src/backend/executor/execQual.c	Tue Jan  1 20:45:49 2008
+--- pgsql/src/backend/executor/execQual.c	Thu Jan 10 19:37:14 2008
+***************
+*** 1628,1634 ****
+  									   -1,
+  									   0);
+  				}
+! 				tupstore = tuplestore_begin_heap(true, false, work_mem);
+  				MemoryContextSwitchTo(oldcontext);
+  				rsinfo.setResult = tupstore;
+  				rsinfo.setDesc = tupdesc;
+--- 1628,1634 ----
+  									   -1,
+  									   0);
+  				}
+! 				tupstore = tuplestore_begin_heap(true, false, function_scan_work_mem);
+  				MemoryContextSwitchTo(oldcontext);
+  				rsinfo.setResult = tupstore;
+  				rsinfo.setDesc = tupdesc;
+***************
+*** 1695,1701 ****
+  	if (rsinfo.setResult == NULL)
+  	{
+  		MemoryContextSwitchTo(econtext->ecxt_per_query_memory);
+! 		tupstore = tuplestore_begin_heap(true, false, work_mem);
+  		rsinfo.setResult = tupstore;
+  		if (!returnsSet)
+  		{
+--- 1695,1701 ----
+  	if (rsinfo.setResult == NULL)
+  	{
+  		MemoryContextSwitchTo(econtext->ecxt_per_query_memory);
+! 		tupstore = tuplestore_begin_heap(true, false, function_scan_work_mem);
+  		rsinfo.setResult = tupstore;
+  		if (!returnsSet)
+  		{
+diff -cr --new-file -b --tabsize 4 -x CVS -x .svn -x tools pgsql-REL8_3_STABLE/src/backend/utils/init/globals.c pgsql/src/backend/utils/init/globals.c
+*** pgsql-REL8_3_STABLE/src/backend/utils/init/globals.c	Tue Jan  1 20:45:53 2008
+--- pgsql/src/backend/utils/init/globals.c	Thu Jan 10 19:37:33 2008
+***************
+*** 94,99 ****
+--- 94,100 ----
+  bool		enableFsync = true;
+  bool		allowSystemTableMods = false;
+  int			work_mem = 1024;
++ int			function_scan_work_mem = 1024;
+  int			maintenance_work_mem = 16384;
+  
+  /*
+diff -cr --new-file -b --tabsize 4 -x CVS -x .svn -x tools pgsql-REL8_3_STABLE/src/include/miscadmin.h pgsql/src/include/miscadmin.h
+*** pgsql-REL8_3_STABLE/src/include/miscadmin.h	Thu Jan  3 22:23:15 2008
+--- pgsql/src/include/miscadmin.h	Thu Jan 10 19:36:55 2008
+***************
+*** 206,211 ****
+--- 206,212 ----
+  extern bool enableFsync;
+  extern bool allowSystemTableMods;
+  extern PGDLLIMPORT int work_mem;
++ extern PGDLLIMPORT int function_scan_work_mem;
+  extern PGDLLIMPORT int maintenance_work_mem;
+  
+  extern int	VacuumCostPageHit;

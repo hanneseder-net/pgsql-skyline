@@ -941,6 +941,7 @@ grouping_planner(PlannerInfo *root, double tuple_fraction)
 		}
 
 		/*
+ 		 * Select the best path.  If we are doing hashed grouping, we will
 		 * always read all the input tuples, so use the cheapest-total path.
 		 * Otherwise, trust query_planner's decision about which to use.
 		 */

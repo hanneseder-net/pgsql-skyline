@@ -662,8 +662,8 @@ ExecSkyline_1Dim(SkylineState *state, Skyline *node)
 							}
 							else if (cmp > 0)
 							{
-								if (DatumGetPointer(datum1) != NULL)
-									datumFree(datum1, typbyval, typlen);
+								if (!typbyval && !isnull1 && DatumGetPointer(datum1) != NULL)
+									pfree(DatumGetPointer(datum1));
 								datum1 = datumCopy(datum2, typbyval, typlen);
 								isnull1 = isnull2;
 
@@ -673,8 +673,8 @@ ExecSkyline_1Dim(SkylineState *state, Skyline *node)
 						}
 					}
 
-					if (DatumGetPointer(datum1) != NULL)
-						datumFree(datum1, typbyval, typlen);
+					if (!typbyval && !isnull1 && DatumGetPointer(datum1) != NULL)
+						pfree(DatumGetPointer(datum1));
 
 					state->status = SS_PIPEOUT;
 				}

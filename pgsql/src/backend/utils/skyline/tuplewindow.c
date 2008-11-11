@@ -1,10 +1,11 @@
 /*-------------------------------------------------------------------------
  *
  * tuplewindow.c
- *    Routines to handle maintain a tuplewindow, used for skyline nodes.
+ *    Routines to maintain a tuplewindow, used for skyline nodes.
  *    see: executor/nodeSkyline.c
  *
- * Portions Copyright (c) 2007, PostgreSQL Global Development Group
+ * Portions Copyright (c) 2008, PostgreSQL Global Development Group
+ * Portions Copyright (c) 2007-2008, Hannes Eder
  *
  *
  * DESCRIPTION

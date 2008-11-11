@@ -1,3 +1,20 @@
+/*-------------------------------------------------------------------------
+ *
+ * skyline.h
+ *	  prototypes for skyline.c
+ *
+ * Portions Copyright (c) 2008, PostgreSQL Global Development Group
+ * Portions Copyright (c) 2007-2008, Hannes Eder
+ *
+ *
+ * DESCRIPTION
+ *	  FIXME
+ *
+ * IDENTIFICATION
+ *	  $PostgreSQL: $
+ *
+ *-------------------------------------------------------------------------
+ */
 #ifndef SKYLINE_H
 #define SKYLINE_H
 

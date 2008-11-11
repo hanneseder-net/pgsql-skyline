@@ -1,3 +1,20 @@
+/*-------------------------------------------------------------------------
+ *
+ * nodeElimFilter.c
+ *	  prototypes for nodeElimFilter.c
+ *
+ * Portions Copyright (c) 2008, PostgreSQL Global Development Group
+ * Portions Copyright (c) 2007-2008, Hannes Eder
+ *
+ *
+ * DESCRIPTION
+ *	  FIXME
+ *
+ * IDENTIFICATION
+ *	  $PostgreSQL: $
+ *
+ *-------------------------------------------------------------------------
+ */
 #ifndef NODEELIMFILTER_H
 #define NODEELIMFILTER_H
 

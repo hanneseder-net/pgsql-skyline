@@ -1,3 +1,20 @@
+/*-------------------------------------------------------------------------
+ *
+ * tuplewindow.h
+ *	  prototypes for tuplewindow.c
+ *
+ * Portions Copyright (c) 2008, PostgreSQL Global Development Group
+ * Portions Copyright (c) 2007-2008, Hannes Eder
+ *
+ *
+ * DESCRIPTION
+ *	  FIXME
+ *
+ * IDENTIFICATION
+ *	  $PostgreSQL: $
+ *
+ *-------------------------------------------------------------------------
+ */
 #ifndef TUPLEWINDOW_H
 #define TUPLEWINDOW_H
 
@@ -25,6 +42,5 @@ extern bool tuplewindow_gettupleslot(TupleWindowState *state, TupleTableSlot *sl
 extern void tuplewindow_removecurrent(TupleWindowState *state);
 extern void tuplewindow_clean(TupleWindowState *state);
 extern void tuplewindow_end(TupleWindowState *state);
-
 
 #endif   /* TUPLEWINDOW_H */

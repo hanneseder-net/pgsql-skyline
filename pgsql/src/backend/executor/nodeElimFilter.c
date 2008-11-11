@@ -3,7 +3,8 @@
  * nodeElimFilter.c
  *	  Routines to handle skyline LESS elimination Filter
  *
- * Portions Copyright (c) 2007, PostgreSQL Global Development Group
+ * Portions Copyright (c) 2008, PostgreSQL Global Development Group
+ * Portions Copyright (c) 2007-2008, Hannes Eder
  *
  *
  * DESCRIPTION

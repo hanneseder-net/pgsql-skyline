@@ -3,7 +3,8 @@
  * nodeSkyline.c
  *	  Routines to handle skyline nodes (used for queries with SKYLINE OF clause).
  *
- * Portions Copyright (c) 2007, PostgreSQL Global Development Group
+ * Portions Copyright (c) 2008, PostgreSQL Global Development Group
+ * Portions Copyright (c) 2007-2008, Hannes Eder
  *
  *
  * DESCRIPTION

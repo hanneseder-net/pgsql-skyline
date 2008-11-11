@@ -8,7 +8,7 @@
  *
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/backend/optimizer/plan/initsplan.c,v 1.138 2008/01/09 20:42:28 tgl Exp $
+ *	  $PostgreSQL: pgsql/src/backend/optimizer/plan/initsplan.c,v 1.138.2.2 2008/06/27 20:54:45 tgl Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -1092,14 +1092,15 @@ check_outerjoin_delay(PlannerInfo *root, Relids *relids_p,
 				(ojinfo->is_full_join &&
 				 bms_overlap(relids, ojinfo->min_lefthand)))
 			{
-				/* yes; have we included all its rels in relids? */
+				/* yes, so set the result flag */
+				outerjoin_delayed = true;
+				/* have we included all its rels in relids? */
 				if (!bms_is_subset(ojinfo->min_lefthand, relids) ||
 					!bms_is_subset(ojinfo->min_righthand, relids))
 				{
 					/* no, so add them in */
 					relids = bms_add_members(relids, ojinfo->min_lefthand);
 					relids = bms_add_members(relids, ojinfo->min_righthand);
-					outerjoin_delayed = true;
 					/* we'll need another iteration */
 					found_some = true;
 				}
@@ -1219,7 +1220,7 @@ process_implied_equality(PlannerInfo *root,
 	/* If both constant, try to reduce to a boolean constant. */
 	if (both_const)
 	{
-		clause = (Expr *) eval_const_expressions((Node *) clause);
+		clause = (Expr *) eval_const_expressions(root, (Node *) clause);
 
 		/* If we produced const TRUE, just drop the clause */
 		if (clause && IsA(clause, Const))

@@ -8,7 +8,7 @@
  *
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/backend/executor/spi.c,v 1.187 2008/01/01 19:45:49 momjian Exp $
+ *	  $PostgreSQL: pgsql/src/backend/executor/spi.c,v 1.188.2.3 2008/10/16 13:23:28 tgl Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -677,7 +677,7 @@ SPI_getvalue(HeapTuple tuple, TupleDesc tupdesc, int fnumber)
 
 	SPI_result = 0;
 
-	if (fnumber > HeapTupleHeaderGetNatts(tuple->t_data) || fnumber == 0 ||
+	if (fnumber > tupdesc->natts || fnumber == 0 ||
 		fnumber <= FirstLowInvalidHeapAttributeNumber)
 	{
 		SPI_result = SPI_ERROR_NOATTRIBUTE;
@@ -718,7 +718,7 @@ SPI_getbinval(HeapTuple tuple, TupleDesc tupdesc, int fnumber, bool *isnull)
 {
 	SPI_result = 0;
 
-	if (fnumber > HeapTupleHeaderGetNatts(tuple->t_data) || fnumber == 0 ||
+	if (fnumber > tupdesc->natts || fnumber == 0 ||
 		fnumber <= FirstLowInvalidHeapAttributeNumber)
 	{
 		SPI_result = SPI_ERROR_NOATTRIBUTE;
@@ -858,6 +858,7 @@ SPI_cursor_open(const char *name, SPIPlanPtr plan,
 	CachedPlanSource *plansource;
 	CachedPlan *cplan;
 	List	   *stmt_list;
+	char	   *query_string;
 	ParamListInfo paramLI;
 	Snapshot	snapshot;
 	MemoryContext oldcontext;
@@ -886,6 +887,10 @@ SPI_cursor_open(const char *name, SPIPlanPtr plan,
 	Assert(list_length(plan->plancache_list) == 1);
 	plansource = (CachedPlanSource *) linitial(plan->plancache_list);
 
+	/* Push the SPI stack */
+	if (_SPI_begin_call(false) < 0)
+		elog(ERROR, "SPI_cursor_open called while not connected");
+
 	/* Reset SPI result (note we deliberately don't touch lastoid) */
 	SPI_processed = 0;
 	SPI_tuptable = NULL;
@@ -904,10 +909,22 @@ SPI_cursor_open(const char *name, SPIPlanPtr plan,
 		portal = CreatePortal(name, false, false);
 	}
 
+	/*
+	 * Prepare to copy stuff into the portal's memory context.  We do all this
+	 * copying first, because it could possibly fail (out-of-memory) and we
+	 * don't want a failure to occur between RevalidateCachedPlan and
+	 * PortalDefineQuery; that would result in leaking our plancache refcount.
+	 */
+	oldcontext = MemoryContextSwitchTo(PortalGetHeapMemory(portal));
+
+	/* Copy the plan's query string, if available, into the portal */
+	query_string = plansource->query_string;
+	if (query_string)
+		query_string = pstrdup(query_string);
+
 	/* If the plan has parameters, copy them into the portal */
 	if (plan->nargs > 0)
 	{
-		oldcontext = MemoryContextSwitchTo(PortalGetHeapMemory(portal));
 		/* sizeof(ParamListInfoData) includes the first array element */
 		paramLI = (ParamListInfo) palloc(sizeof(ParamListInfoData) +
 								 (plan->nargs - 1) *sizeof(ParamExternData));
@@ -936,10 +953,11 @@ SPI_cursor_open(const char *name, SPIPlanPtr plan,
 									   paramTypByVal, paramTypLen);
 			}
 		}
-		MemoryContextSwitchTo(oldcontext);
 	}
 	else
 		paramLI = NULL;
+
+	MemoryContextSwitchTo(oldcontext);
 
 	if (plan->saved)
 	{
@@ -961,7 +979,7 @@ SPI_cursor_open(const char *name, SPIPlanPtr plan,
 	 */
 	PortalDefineQuery(portal,
 					  NULL,		/* no statement name */
-					  plansource->query_string,
+					  query_string,
 					  plansource->commandTag,
 					  stmt_list,
 					  cplan);
@@ -1040,6 +1058,9 @@ SPI_cursor_open(const char *name, SPIPlanPtr plan,
 	PortalStart(portal, paramLI, snapshot);
 
 	Assert(portal->strategy != PORTAL_MULTI_QUERY);
+
+	/* Pop the SPI stack */
+	_SPI_end_call(false);
 
 	/* Return the created portal */
 	return portal;
@@ -1180,8 +1201,16 @@ SPI_is_cursor_plan(SPIPlanPtr plan)
 	}
 
 	if (list_length(plan->plancache_list) != 1)
+	{
+		SPI_result = 0;
 		return false;			/* not exactly 1 pre-rewrite command */
+	}
 	plansource = (CachedPlanSource *) linitial(plan->plancache_list);
+
+	/* Need _SPI_begin_call in case replanning invokes SPI-using functions */
+	SPI_result = _SPI_begin_call(false);
+	if (SPI_result < 0)
+		return false;
 
 	if (plan->saved)
 	{
@@ -1190,11 +1219,44 @@ SPI_is_cursor_plan(SPIPlanPtr plan)
 		ReleaseCachedPlan(cplan, true);
 	}
 
+	_SPI_end_call(false);
+	SPI_result = 0;
+
 	/* Does it return tuples? */
 	if (plansource->resultDesc)
 		return true;
 
 	return false;
+}
+
+/*
+ * SPI_plan_is_valid --- test whether a SPI plan is currently valid
+ * (that is, not marked as being in need of revalidation).
+ *
+ * See notes for CachedPlanIsValid before using this.
+ */
+bool
+SPI_plan_is_valid(SPIPlanPtr plan)
+{
+	Assert(plan->magic == _SPI_PLAN_MAGIC);
+	if (plan->saved)
+	{
+		ListCell   *lc;
+
+		foreach(lc, plan->plancache_list)
+		{
+			CachedPlanSource *plansource = (CachedPlanSource *) lfirst(lc);
+
+			if (!CachedPlanIsValid(plansource))
+				return false;
+		}
+		return true;
+	}
+	else
+	{
+		/* An unsaved plan is assumed valid for its (short) lifetime */
+		return true;
+	}
 }
 
 /*

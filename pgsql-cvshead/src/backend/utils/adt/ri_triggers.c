@@ -15,7 +15,7 @@
  *
  * Portions Copyright (c) 1996-2008, PostgreSQL Global Development Group
  *
- * $PostgreSQL: pgsql/src/backend/utils/adt/ri_triggers.c,v 1.103 2008/02/07 22:58:35 tgl Exp $
+ * $PostgreSQL: pgsql/src/backend/utils/adt/ri_triggers.c,v 1.103.2.3 2008/09/15 23:37:49 tgl Exp $
  *
  * ----------
  */
@@ -67,13 +67,12 @@
 #define RI_PLAN_RESTRICT_UPD_CHECKREF	8
 #define RI_PLAN_SETNULL_DEL_DOUPDATE	9
 #define RI_PLAN_SETNULL_UPD_DOUPDATE	10
-#define RI_PLAN_KEYEQUAL_UPD			11
 
 #define MAX_QUOTED_NAME_LEN  (NAMEDATALEN*2+3)
 #define MAX_QUOTED_REL_NAME_LEN  (MAX_QUOTED_NAME_LEN*2)
 
 #define RIAttName(rel, attnum)	NameStr(*attnumAttName(rel, attnum))
-#define RIAttType(rel, attnum)	SPI_gettypeid(RelationGetDescr(rel), attnum)
+#define RIAttType(rel, attnum)	attnumTypeId(rel, attnum)
 
 #define RI_TRIGTYPE_INSERT 1
 #define RI_TRIGTYPE_UPDATE 2
@@ -2516,8 +2515,6 @@ RI_FKey_keyequal_upd_pk(Trigger *trigger, Relation pk_rel,
 						HeapTuple old_row, HeapTuple new_row)
 {
 	RI_ConstraintInfo riinfo;
-	Relation	fk_rel;
-	RI_QueryKey qkey;
 
 	/*
 	 * Get arguments.
@@ -2530,18 +2527,11 @@ RI_FKey_keyequal_upd_pk(Trigger *trigger, Relation pk_rel,
 	if (riinfo.nkeys == 0)
 		return true;
 
-	fk_rel = heap_open(riinfo.fk_relid, AccessShareLock);
-
 	switch (riinfo.confmatchtype)
 	{
 		case FKCONSTR_MATCH_UNSPECIFIED:
 		case FKCONSTR_MATCH_FULL:
-			ri_BuildQueryKeyFull(&qkey, &riinfo,
-								 RI_PLAN_KEYEQUAL_UPD);
-
-			heap_close(fk_rel, AccessShareLock);
-
-			/* Return if key's are equal */
+			/* Return true if keys are equal */
 			return ri_KeysEqual(pk_rel, old_row, new_row, &riinfo, true);
 
 			/* Handle MATCH PARTIAL set null delete. */
@@ -2570,8 +2560,6 @@ RI_FKey_keyequal_upd_fk(Trigger *trigger, Relation fk_rel,
 						HeapTuple old_row, HeapTuple new_row)
 {
 	RI_ConstraintInfo riinfo;
-	Relation	pk_rel;
-	RI_QueryKey qkey;
 
 	/*
 	 * Get arguments.
@@ -2584,17 +2572,11 @@ RI_FKey_keyequal_upd_fk(Trigger *trigger, Relation fk_rel,
 	if (riinfo.nkeys == 0)
 		return true;
 
-	pk_rel = heap_open(riinfo.pk_relid, AccessShareLock);
-
 	switch (riinfo.confmatchtype)
 	{
 		case FKCONSTR_MATCH_UNSPECIFIED:
 		case FKCONSTR_MATCH_FULL:
-			ri_BuildQueryKeyFull(&qkey, &riinfo,
-								 RI_PLAN_KEYEQUAL_UPD);
-			heap_close(pk_rel, AccessShareLock);
-
-			/* Return if key's are equal */
+			/* Return true if keys are equal */
 			return ri_KeysEqual(fk_rel, old_row, new_row, &riinfo, false);
 
 			/* Handle MATCH PARTIAL set null delete. */
@@ -3628,6 +3610,7 @@ static SPIPlanPtr
 ri_FetchPreparedPlan(RI_QueryKey *key)
 {
 	RI_QueryHashEntry *entry;
+	SPIPlanPtr		plan;
 
 	/*
 	 * On the first call initialize the hashtable
@@ -3643,7 +3626,30 @@ ri_FetchPreparedPlan(RI_QueryKey *key)
 											  HASH_FIND, NULL);
 	if (entry == NULL)
 		return NULL;
-	return entry->plan;
+
+	/*
+	 * Check whether the plan is still valid.  If it isn't, we don't want
+	 * to simply rely on plancache.c to regenerate it; rather we should
+	 * start from scratch and rebuild the query text too.  This is to cover
+	 * cases such as table/column renames.  We depend on the plancache
+	 * machinery to detect possible invalidations, though.
+	 *
+	 * CAUTION: this check is only trustworthy if the caller has already
+	 * locked both FK and PK rels.
+	 */
+	plan = entry->plan;
+	if (plan && SPI_plan_is_valid(plan))
+		return plan;
+
+	/*
+	 * Otherwise we might as well flush the cached plan now, to free a
+	 * little memory space before we make a new one.
+	 */
+	entry->plan = NULL;
+	if (plan)
+		SPI_freeplan(plan);
+
+	return NULL;
 }
 
 
@@ -3666,11 +3672,13 @@ ri_HashPreparedPlan(RI_QueryKey *key, SPIPlanPtr plan)
 		ri_InitHashTables();
 
 	/*
-	 * Add the new plan.
+	 * Add the new plan.  We might be overwriting an entry previously
+	 * found invalid by ri_FetchPreparedPlan.
 	 */
 	entry = (RI_QueryHashEntry *) hash_search(ri_query_cache,
 											  (void *) key,
 											  HASH_ENTER, &found);
+	Assert(!found || entry->plan == NULL);
 	entry->plan = plan;
 }
 
@@ -3951,8 +3959,12 @@ ri_HashCompareOp(Oid eq_opr, Oid typeid)
 			if (pathtype != COERCION_PATH_FUNC &&
 				pathtype != COERCION_PATH_RELABELTYPE)
 			{
-				/* If target is ANYARRAY, assume it's OK, else punt. */
-				if (lefttype != ANYARRAYOID)
+				/*
+				 * The declared input type of the eq_opr might be a
+				 * polymorphic type such as ANYARRAY or ANYENUM.  If so,
+				 * assume the coercion is valid; otherwise complain.
+				 */
+				if (!IsPolymorphicType(lefttype))
 					elog(ERROR, "no conversion function from %s to %s",
 						 format_type_be(typeid),
 						 format_type_be(lefttype));

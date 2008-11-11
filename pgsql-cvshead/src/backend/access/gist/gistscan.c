@@ -8,7 +8,7 @@
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/backend/access/gist/gistscan.c,v 1.68 2008/01/01 19:45:46 momjian Exp $
+ *	  $PostgreSQL: pgsql/src/backend/access/gist/gistscan.c,v 1.68.2.3 2008/10/22 12:54:25 teodor Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -61,6 +61,7 @@ gistrescan(PG_FUNCTION_ARGS)
 			ReleaseBuffer(so->markbuf);
 			so->markbuf = InvalidBuffer;
 		}
+
 	}
 	else
 	{
@@ -81,6 +82,7 @@ gistrescan(PG_FUNCTION_ARGS)
 	 */
 	ItemPointerSetInvalid(&so->curpos);
 	ItemPointerSetInvalid(&so->markpos);
+	so->nPageData = so->curPageData = 0;
 
 	/* Update scan key, if a new one is given */
 	if (key && scan->numberOfKeys > 0)
@@ -94,9 +96,19 @@ gistrescan(PG_FUNCTION_ARGS)
 		 * function in the form of its strategy number, which is available
 		 * from the sk_strategy field, and its subtype from the sk_subtype
 		 * field.
+		 *
+		 * Next, if any of keys is a NULL and that key is not marked with
+		 * SK_SEARCHNULL then nothing can be found.
 		 */
-		for (i = 0; i < scan->numberOfKeys; i++)
+		so->qual_ok = true;
+		for (i = 0; i < scan->numberOfKeys; i++) {
 			scan->keyData[i].sk_func = so->giststate->consistentFn[scan->keyData[i].sk_attno - 1];
+
+			if ( scan->keyData[i].sk_flags & SK_ISNULL ) {
+				if ( (scan->keyData[i].sk_flags & SK_SEARCHNULL) == 0 )
+					so->qual_ok = false;
+			}
+		}
 	}
 
 	PG_RETURN_VOID();
@@ -148,6 +160,11 @@ gistmarkpos(PG_FUNCTION_ARGS)
 		so->markbuf = so->curbuf;
 	}
 
+	so->markNPageData = so->nPageData;
+	so->markCurPageData = so->curPageData;
+	if ( so->markNPageData > 0 )
+		memcpy( so->markPageData, so->pageData, sizeof(MatchedItemPtr) * so->markNPageData );		
+
 	PG_RETURN_VOID();
 }
 
@@ -196,6 +213,11 @@ gistrestrpos(PG_FUNCTION_ARGS)
 		IncrBufferRefCount(so->markbuf);
 		so->curbuf = so->markbuf;
 	}
+
+	so->nPageData = so->markNPageData;
+	so->curPageData = so->markNPageData;
+	if ( so->markNPageData > 0 )
+		memcpy( so->pageData, so->markPageData, sizeof(MatchedItemPtr) * so->markNPageData );		
 
 	PG_RETURN_VOID();
 }

@@ -8,7 +8,7 @@
  *
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/backend/optimizer/util/clauses.c,v 1.254 2008/01/11 18:39:40 tgl Exp $
+ *	  $PostgreSQL: pgsql/src/backend/optimizer/util/clauses.c,v 1.254.2.3 2008/08/26 02:16:39 tgl Exp $
  *
  * HISTORY
  *	  AUTHOR			DATE			MAJOR EVENT
@@ -1675,16 +1675,22 @@ rowtype_field_matches(Oid rowtypeid, int fieldnum,
  * We assume that the tree has already been type-checked and contains
  * only operators and functions that are reasonable to try to execute.
  *
+ * NOTE: "root" can be passed as NULL if the caller never wants to do any
+ * Param substitutions.
+ *
  * NOTE: the planner assumes that this will always flatten nested AND and
  * OR clauses into N-argument form.  See comments in prepqual.c.
  *--------------------
  */
 Node *
-eval_const_expressions(Node *node)
+eval_const_expressions(PlannerInfo *root, Node *node)
 {
 	eval_const_expressions_context context;
 
-	context.boundParams = NULL; /* don't use any bound params */
+	if (root)
+		context.boundParams = root->glob->boundParams;	/* bound Params */
+	else
+		context.boundParams = NULL;
 	context.active_fns = NIL;	/* nothing being recursively simplified */
 	context.case_val = NULL;	/* no CASE being examined */
 	context.estimate = false;	/* safe transformations only */
@@ -2088,6 +2094,106 @@ eval_const_expressions_mutator(Node *node,
 			newrelabel->relabelformat = relabel->relabelformat;
 			return (Node *) newrelabel;
 		}
+	}
+	if (IsA(node, CoerceViaIO))
+	{
+		CoerceViaIO *expr = (CoerceViaIO *) node;
+		Expr	   *arg;
+		Oid			outfunc;
+		bool		outtypisvarlena;
+		Oid			infunc;
+		Oid			intypioparam;
+		Expr	   *simple;
+		CoerceViaIO *newexpr;
+
+		/*
+		 * Reduce constants in the CoerceViaIO's argument.
+		 */
+		arg = (Expr *) eval_const_expressions_mutator((Node *) expr->arg,
+													  context);
+
+		/*
+		 * CoerceViaIO represents calling the source type's output function
+		 * then the result type's input function.  So, try to simplify it
+		 * as though it were a stack of two such function calls.  First we
+		 * need to know what the functions are.
+		 */
+		getTypeOutputInfo(exprType((Node *) arg), &outfunc, &outtypisvarlena);
+		getTypeInputInfo(expr->resulttype, &infunc, &intypioparam);
+
+		simple = simplify_function(outfunc,
+								   CSTRINGOID, -1,
+								   list_make1(arg),
+								   true, context);
+		if (simple)				/* successfully simplified output fn */
+		{
+			/*
+			 * Input functions may want 1 to 3 arguments.  We always supply
+			 * all three, trusting that nothing downstream will complain.
+			 */
+			List	   *args;
+
+			args = list_make3(simple,
+							  makeConst(OIDOID, -1, sizeof(Oid),
+										ObjectIdGetDatum(intypioparam),
+										false, true),
+							  makeConst(INT4OID, -1, sizeof(int32),
+										Int32GetDatum(-1),
+										false, true));
+
+			simple = simplify_function(infunc,
+									   expr->resulttype, -1,
+									   args,
+									   true, context);
+			if (simple)			/* successfully simplified input fn */
+				return (Node *) simple;
+		}
+
+		/*
+		 * The expression cannot be simplified any further, so build and
+		 * return a replacement CoerceViaIO node using the possibly-simplified
+		 * argument.
+		 */
+		newexpr = makeNode(CoerceViaIO);
+		newexpr->arg = arg;
+		newexpr->resulttype = expr->resulttype;
+		newexpr->coerceformat = expr->coerceformat;
+		return (Node *) newexpr;
+	}
+	if (IsA(node, ArrayCoerceExpr))
+	{
+		ArrayCoerceExpr *expr = (ArrayCoerceExpr *) node;
+		Expr	   *arg;
+		ArrayCoerceExpr *newexpr;
+
+		/*
+		 * Reduce constants in the ArrayCoerceExpr's argument, then build
+		 * a new ArrayCoerceExpr.
+		 */
+		arg = (Expr *) eval_const_expressions_mutator((Node *) expr->arg,
+													  context);
+
+		newexpr = makeNode(ArrayCoerceExpr);
+		newexpr->arg = arg;
+		newexpr->elemfuncid = expr->elemfuncid;
+		newexpr->resulttype = expr->resulttype;
+		newexpr->resulttypmod = expr->resulttypmod;
+		newexpr->isExplicit = expr->isExplicit;
+		newexpr->coerceformat = expr->coerceformat;
+
+		/*
+		 * If constant argument and it's a binary-coercible or immutable
+		 * conversion, we can simplify it to a constant.
+		 */
+		if (arg && IsA(arg, Const) &&
+			(!OidIsValid(newexpr->elemfuncid) ||
+			 func_volatile(newexpr->elemfuncid) == PROVOLATILE_IMMUTABLE))
+			return (Node *) evaluate_expr((Expr *) newexpr,
+										  newexpr->resulttype,
+										  newexpr->resulttypmod);
+
+		/* Else we must return the partially-simplified node */
+		return (Node *) newexpr;
 	}
 	if (IsA(node, CaseExpr))
 	{

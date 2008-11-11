@@ -9,7 +9,7 @@
  *
  *
  * IDENTIFICATION
- *	  $PostgreSQL: pgsql/src/backend/utils/adt/ruleutils.c,v 1.269 2008/01/06 01:03:16 tgl Exp $
+ *	  $PostgreSQL: pgsql/src/backend/utils/adt/ruleutils.c,v 1.269.2.2 2008/06/06 17:59:37 tgl Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -2437,9 +2437,13 @@ get_update_query_def(Query *query, deparse_context *context)
 		appendStringInfoChar(buf, ' ');
 		context->indentLevel += PRETTYINDENT_STD;
 	}
-	appendStringInfo(buf, "UPDATE %s%s SET ",
+	appendStringInfo(buf, "UPDATE %s%s",
 					 only_marker(rte),
 					 generate_relation_name(rte->relid));
+	if (rte->alias != NULL)
+		appendStringInfo(buf, " %s",
+						 quote_identifier(rte->alias->aliasname));
+	appendStringInfoString(buf, " SET ");
 
 	/* Add the comma separated list of 'attname = value' */
 	sep = "";
@@ -2511,12 +2515,15 @@ get_delete_query_def(Query *query, deparse_context *context)
 	Assert(rte->rtekind == RTE_RELATION);
 	if (PRETTY_INDENT(context))
 	{
-		context->indentLevel += PRETTYINDENT_STD;
 		appendStringInfoChar(buf, ' ');
+		context->indentLevel += PRETTYINDENT_STD;
 	}
 	appendStringInfo(buf, "DELETE FROM %s%s",
 					 only_marker(rte),
 					 generate_relation_name(rte->relid));
+	if (rte->alias != NULL)
+		appendStringInfo(buf, " %s",
+						 quote_identifier(rte->alias->aliasname));
 
 	/* Add the USING clause if given */
 	get_from_clause(query, " USING ", context);
@@ -4465,10 +4472,19 @@ get_const_expr(Const *constval, deparse_context *context, int showtype)
 				 *
 				 * In reality we only need to defend against infinity and NaN,
 				 * so we need not get too crazy about pattern matching here.
+				 *
+				 * There is a special-case gotcha: if the constant is signed,
+				 * we need to parenthesize it, else the parser might see a
+				 * leading plus/minus as binding less tightly than adjacent
+				 * operators --- particularly, the cast that we might attach
+				 * below.
 				 */
 				if (strspn(extval, "0123456789+-eE.") == strlen(extval))
 				{
-					appendStringInfoString(buf, extval);
+					if (extval[0] == '+' || extval[0] == '-')
+						appendStringInfo(buf, "(%s)", extval);
+					else
+						appendStringInfoString(buf, extval);
 					if (strcspn(extval, "eE.") != strlen(extval))
 						isfloat = true; /* it looks like a float */
 				}

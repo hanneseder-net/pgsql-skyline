@@ -128,8 +128,6 @@ static double convert_one_bytea_to_scalar(unsigned char *value, int valuelen,
 							int rangelo, int rangehi);
 static char *convert_string_datum(Datum value, Oid typid);
 static double convert_timevalue_to_scalar(Datum value, Oid typid);
-static bool get_variable_range(PlannerInfo *root, VariableStatData *vardata,
-					 Oid sortop, Datum *min, Datum *max);
 static Selectivity prefix_selectivity(VariableStatData *vardata,
 				   Oid vartype, Oid opfamily, Const *prefixcon);
 static Selectivity pattern_selectivity(Const *patt, Pattern_Type ptype);
@@ -3961,7 +3959,7 @@ get_variable_numdistinct(VariableStatData *vardata)
  * sortop is the "<" comparison operator to use.  This should generally
  * be "<" not ">", as only the former is likely to be found in pg_statistic.
  */
-static bool
+bool
 get_variable_range(PlannerInfo *root, VariableStatData *vardata, Oid sortop,
 				   Datum *min, Datum *max)
 {

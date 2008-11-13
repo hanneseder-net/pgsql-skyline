@@ -479,8 +479,9 @@ ExecMayReturnRawTuples(PlanState *node)
 		case T_MaterialState:
 		case T_UniqueState:
 		case T_LimitState:
+		case T_ElimFilterState:
 			return ExecMayReturnRawTuples(node->lefttree);
-
+        
 		case T_AppendState:
 			{
 				AppendState *appendstate = (AppendState *) node;
@@ -495,7 +496,12 @@ ExecMayReturnRawTuples(PlanState *node)
 			}
 
 			/* All projecting node types come here */
-		/* FIXME: what about skyline */
+		/*
+		 * FIXME: skyline does not project yet
+		 */
+		case T_SkylineState:
+			return ExecMayReturnRawTuples(node->lefttree);
+
 		default:
 			break;
 	}

@@ -805,9 +805,8 @@ standard_join_search(PlannerInfo *root, int levels_needed, List *initial_rels)
  * differentTypes[k] is set true if column k has different type in any
  * component.
  *
- * 4. If the subquery contains SKYLINE OF we cannot push quals into
- * it, because that would change the results.
- * FIXME: ^^^ is it true, think about it!
+ * 4. FIXME: Analzye what the case for a subquery with SKYLINE OF is.
+ * Is it safe to push down quals?  For the moment we disable it.
  */
 static bool
 subquery_is_pushdown_safe(Query *subquery, Query *topquery,
@@ -819,7 +818,7 @@ subquery_is_pushdown_safe(Query *subquery, Query *topquery,
 	if (subquery->limitOffset != NULL || subquery->limitCount != NULL)
 		return false;
 
-	/* Check point 2 */
+	/* Check point 4 */
 	if (subquery->skylineClause != NULL)
 		return false;
 

@@ -1,116 +1,92 @@
-*** ../pgsql-cvshead/src/backend/main/main.c	Wed Mar  7 14:35:02 2007
---- src/backend/main/main.c	Sun Oct 14 15:50:02 2007
-***************
-*** 50,56 ****
---- 50,58 ----
-  
-  static void startup_hacks(const char *progname);
-  static void help(const char *progname);
-+ #ifndef DISABLE_ROOT_CHECK
-  static void check_root(const char *progname);
-+ #endif
-  static char *get_current_username(const char *progname);
-  
-  
-***************
-*** 152,160 ****
---- 154,168 ----
-  	}
-  
-  	/*
-+ 	 * By defining DISABLE_ROOT_CHECK, checking for root can be
-+ 	 * disabled.
-+ 	 */
-+ #ifndef DISABLE_ROOT_CHECK
-+ 	/*
-  	 * Make sure we are not running as root.
-  	 */
-  	check_root(progname);
-+ #endif
-  
-  	/*
-  	 * Dispatch to one of various subprograms depending on first argument.
-***************
-*** 323,329 ****
-  }
-  
-  
-! 
-  static void
-  check_root(const char *progname)
-  {
---- 331,337 ----
-  }
-  
-  
-! #ifndef DISABLE_ROOT_CHECK
-  static void
-  check_root(const char *progname)
-  {
-***************
-*** 363,369 ****
-  	}
-  #endif   /* WIN32 */
-  }
-! 
-  
-  
-  static char *
---- 371,377 ----
-  	}
-  #endif   /* WIN32 */
-  }
-! #endif
-  
-  
-  static char *
-*** ../pgsql-cvshead/src/bin/initdb/initdb.c	Sun Sep 30 12:29:55 2007
---- src/bin/initdb/initdb.c	Sun Oct 14 15:55:55 2007
-***************
-*** 2414,2422 ****
---- 2414,2424 ----
-  	char		bin_dir[MAXPGPATH];
-  	char	   *pg_data_native;
-  
-+ #ifndef DISABLE_ROOT_CHECK
-  #ifdef WIN32
-  	char	   *restrict_env;
-  #endif
-+ #endif
-  	static const char *subdirs[] = {
-  		"global",
-  		"pg_xlog",
-***************
-*** 2609,2614 ****
---- 2611,2617 ----
-  	pg_data_native = pg_data;
-  	canonicalize_path(pg_data);
-  
-+ #ifndef DISABLE_ROOT_CHECK
-  #ifdef WIN32
-  
-  	/*
-***************
-*** 2652,2657 ****
---- 2655,2661 ----
-  		}
-  	}
-  #endif
-+ #endif
-  
-  	/*
-  	 * we have to set PGDATA for postgres rather than pass it on the command
-*** ../pgsql-cvshead/src/include/pg_config_manual.h	Sat Jun  9 13:02:41 2007
---- src/include/pg_config_manual.h	Sun Oct 14 15:58:12 2007
-***************
-*** 260,262 ****
---- 260,268 ----
-  /* #define HEAPDEBUGALL */
-  /* #define ACLDEBUG */
-  /* #define RTDEBUG */
-+ 
-+ /*
-+  * Disable check for root user. If defined this allows PostgreSQL to
-+  * be ran as root user (or admin on a windows box).
-+  */
-+ #define DISABLE_ROOT_CHECK 1
+Index: src/backend/main/main.c
+===================================================================
+--- src/backend/main/main.c	(revision 700)
++++ src/backend/main/main.c	(working copy)
+@@ -50,7 +50,9 @@
+ 
+ static void startup_hacks(const char *progname);
+ static void help(const char *progname);
++#ifndef DISABLE_ROOT_CHECK
+ static void check_root(const char *progname);
++#endif
+ static char *get_current_username(const char *progname);
+ 
+ 
+@@ -152,9 +154,15 @@
+ 	}
+ 
+ 	/*
++	 * By defining DISABLE_ROOT_CHECK, checking for root can be
++	 * disabled.
++	 */
++#ifndef DISABLE_ROOT_CHECK
++	/*
+ 	 * Make sure we are not running as root.
+ 	 */
+ 	check_root(progname);
++#endif
+ 
+ 	/*
+ 	 * Dispatch to one of various subprograms depending on first argument.
+@@ -324,6 +332,7 @@
+ 
+ 
+ 
++#ifndef DISABLE_ROOT_CHECK
+ static void
+ check_root(const char *progname)
+ {
+@@ -363,6 +372,7 @@
+ 	}
+ #endif   /* WIN32 */
+ }
++#endif
+ 
+ 
+ 
+Index: src/bin/initdb/initdb.c
+===================================================================
+--- src/bin/initdb/initdb.c	(revision 700)
++++ src/bin/initdb/initdb.c	(working copy)
+@@ -2438,9 +2438,11 @@
+ 	char		bin_dir[MAXPGPATH];
+ 	char	   *pg_data_native;
+ 
++#ifndef DISABLE_ROOT_CHECK
+ #ifdef WIN32
+ 	char	   *restrict_env;
+ #endif
++#endif
+ 	static const char *subdirs[] = {
+ 		"global",
+ 		"pg_xlog",
+@@ -2633,6 +2635,7 @@
+ 	pg_data_native = pg_data;
+ 	canonicalize_path(pg_data);
+ 
++#ifndef DISABLE_ROOT_CHECK
+ #ifdef WIN32
+ 
+ 	/*
+@@ -2676,6 +2679,7 @@
+ 		}
+ 	}
+ #endif
++#endif
+ 
+ 	/*
+ 	 * we have to set PGDATA for postgres rather than pass it on the command
+Index: src/include/pg_config_manual.h
+===================================================================
+--- src/include/pg_config_manual.h	(revision 694)
++++ src/include/pg_config_manual.h	(working copy)
+@@ -260,3 +260,9 @@
+ /* #define HEAPDEBUGALL */
+ /* #define ACLDEBUG */
+ /* #define RTDEBUG */
++
++/*
++ * Disable check for root user. If defined this allows PostgreSQL to
++ * be ran as root user (or admin on a windows box).
++ */
++#define DISABLE_ROOT_CHECK 1

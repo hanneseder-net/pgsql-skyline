@@ -26,6 +26,8 @@
 %http://www.tex.ac.uk/cgi-bin/texfaq2html?label=bold-extras
 %todo: see http://ssel.vub.ac.be/ssel/internal:boldextra
 \usepackage[cmbtt]{bold-extra}
+\usepackage{helvet}
+\usepackage{chngpage}
 
 
 %%%%% SETUP FANCYHEADERS
@@ -155,6 +157,7 @@
 %%% Title page: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \pagestyle{empty}
 \pdfbookmark[0]{Titlepage}{title}
+\include{01-titlepage-new-de}
 \include{01-titlepage-de}
 \include{01-titlepage-en}
 \pagenumbering{roman}
@@ -184,7 +187,7 @@
 
 %%% Chapter 1: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \pagenumbering{arabic}
-\include{04-body}
+%\include{04-body}
 
 %%% Appendix: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %\appendix

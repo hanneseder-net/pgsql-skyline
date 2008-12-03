@@ -1,0 +1,130 @@
+%  ----------------------------------------------------------------------------
+%  Template credits and license:
+%  ----------------------------------------------------------------------------
+%
+%       "Fakultaet fuer Informatik" diploma/master thesis template 2008
+%
+%       based upon "Diploma thesis template 2005" by lukas.silberbauer(at)gmx.at
+%       based upon "Diplomarbeit mit LaTeX" by Tobias Erbsland
+%       incorporating a title page by Informatik-Forum user "Baby"
+%       polished and ported to the TU fonts package by Jakob Petsovits
+%
+%       published under the terms of
+%
+%  ----------------------------------------------------------------------------
+%  "THE BEER-WARE LICENSE":
+%  <lukas.silberbauer(at)gmx.at> wrote this file. As long as you retain this
+%  notice you can do whatever you want with this stuff. If we meet some day,
+%  and you think this stuff is worth it, you can buy me (us) a beer in return.
+%  ----------------------------------------------------------------------------
+%
+%  (end of template credits)
+%
+
+\newlength{\oldtextwidth}
+\setlength{\oldtextwidth}{\textwidth}
+\newlength{\oldoddsidemargin}
+\setlength{\oldoddsidemargin}{\oddsidemargin}
+\newlength{\oldevensidemargin}
+\setlength{\oldevensidemargin}{\evensidemargin}
+\newlength{\oldtopmargin}
+\setlength{\oldtopmargin}{\topmargin}
+\newlength{\oldtextheight}
+\setlength{\oldtextheight}{\textheight}
+\newlength{\oldheadheight}
+\setlength{\oldheadheight}{\headheight}
+\newlength{\oldheadsep}
+\setlength{\oldheadsep}{\headsep}
+\newlength{\oldmarginparwidth}
+\setlength{\oldmarginparwidth}{\marginparwidth}
+
+\clearpage
+\thispagestyle{empty}
+
+\changepage{2cm}{2cm}{-\oldevensidemargin}{-\oldoddsidemargin}{0cm}{-2cm}{0cm}{0cm}{0cm}
+
+\begin{titlepage}
+{
+\fontfamily{phv}\selectfont
+
+\vspace*{-0.75cm}
+
+\noindent
+\begin{minipage}[t]{0.3\linewidth}
+\begin{flushleft}
+\includegraphics[width=3.49cm,height=1.65cm]{fakultaet-fuer-informatik-logo.png}
+\end{flushleft}
+\end{minipage}%
+\begin{minipage}[t]{0.7\linewidth}
+\begin{flushright}
+\vspace*{-1.65cm}
+\includegraphics[width=9.34cm,height=0.53cm]{fakultaet-fuer-informatik-text.png}
+\end{flushright}
+\end{minipage}
+
+\vspace{1.0cm}
+
+\begin{center}
+{\fontseries{db}\selectfont\huge{\textbf{On Extending PostgreSQL with \\the Skyline Operator \\}}}
+\end{center}
+
+\vspace{0.5cm}
+
+\renewcommand{\bigskip}{\vspace*{0.43cm}}
+
+\begin{center}
+\begin{Large}DIPLOMARBEIT \end{Large} \bigskip \\
+\begin{normalsize}zur Erlangung des akademischen Grades \end{normalsize} \bigskip \\
+\begin{Large}\textbf{Diplom-Ingenieur}\end{Large} \bigskip \\
+\begin{normalsize}im Rahmen des Studiums\end{normalsize} \bigskip \\
+\begin{large}\textbf{Computational Intelligence}\end{large} \bigskip \\
+\begin{normalsize}eingereicht von \end{normalsize} \bigskip \\
+\begin{large}\textbf{Ing. Bakk. techn. Hannes Eder}\end{large} \\
+\begin{normalsize}Matrikelnummer 9521554\end{normalsize} \\
+\end{center}
+
+\begin{flushleft}
+an der \\ Fakultät für Informatik der Technischen Universität Wien \\
+%\small{der \institutsuni} \\
+\end{flushleft}
+
+
+\begin{flushleft}
+\smallskip
+Betreuung: \\
+Betreuer: Univ.Prof. Mag.rer.nat. Dr.techn. Reinhard Pichler \\
+Mitwirkung: Univ.Ass. Dr.rer.nat. Fang Wei \\
+\end{flushleft}
+
+\date{\today}
+
+\footnotesize
+\vspace{1.5cm}
+
+\begin{flushleft}
+\begin{tabbing}%
+\hspace{4.5cm} \= \hspace{5cm} \= \hspace{5cm} \kill
+Wien, 15.01.2009 \> \underline{\hspace*{4cm}} \> \hfill \underline{\hspace*{4cm}} \\
+     \> \hspace{0.35cm} (Unterschrift Verfasser) \> \hspace{0.4cm} (Unterschrift Betreuer) \\
+\end{tabbing}
+\end{flushleft}
+
+\vspace{0.9cm}
+
+\noindent
+\begin{minipage}[b]{1.0\linewidth}
+\begin{center}
+%\underline{\hspace*{15.5cm}}
+\hrulefill \\
+\scriptsize{
+Technische Universit\"{a}t Wien \\
+A-1040 Wien \hspace{0.5cm} Karlsplatz 13 \hspace{0.5cm} Tel. +43 (1) 58801-0 \hspace{0.5cm} http://www.tuwien.ac.at/
+}
+\end{center}
+\end{minipage}
+
+\vspace*{-2.5cm}
+
+}
+\end{titlepage}
+

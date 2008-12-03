@@ -13,7 +13,7 @@ FILES=\
 	04-body.tex \
 	heder.sty skyline.bib
 
-TMPFILES=*.aux *.log *.toc *.lot *.lof *.bbl *.blg *.ind *.ilg *.idx *.out *.rai *.rao
+TMPFILES=*.aux *.log *.toc *.lot *.lof *.lol *.bbl *.blg *.ind *.ilg *.idx *.out *.rai *.rao
 TRASHFILES=*~ *.*~
 
 # use in `make realclean` to remove all files

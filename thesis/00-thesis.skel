@@ -10,8 +10,8 @@
 #endif
 
 \documentclass[OPTIONS]{book}
-\title{Skyline Operator Implementation into PostgreSQL}
-\author{Bakk.techn. Hannes Eder}
+\title{On Extending PostgreSQL with the Skyline Operator}
+\author{Ing. Bakk.techn. Hannes Eder}
 \date{\today}
 \usepackage{heder}
 
@@ -158,8 +158,8 @@
 \pagestyle{empty}
 \pdfbookmark[0]{Titlepage}{title}
 \include{01-titlepage-new-de}
-\include{01-titlepage-de}
-\include{01-titlepage-en}
+%\include{01-titlepage-de}
+%\include{01-titlepage-en}
 \pagenumbering{roman}
 
 %%% Preface: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -187,7 +187,7 @@
 
 %%% Chapter 1: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \pagenumbering{arabic}
-%\include{04-body}
+\include{04-body}
 
 %%% Appendix: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %\appendix

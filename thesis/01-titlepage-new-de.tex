@@ -21,28 +21,10 @@
 %  (end of template credits)
 %
 
-\newlength{\oldtextwidth}
-\setlength{\oldtextwidth}{\textwidth}
-\newlength{\oldoddsidemargin}
-\setlength{\oldoddsidemargin}{\oddsidemargin}
-\newlength{\oldevensidemargin}
-\setlength{\oldevensidemargin}{\evensidemargin}
-\newlength{\oldtopmargin}
-\setlength{\oldtopmargin}{\topmargin}
-\newlength{\oldtextheight}
-\setlength{\oldtextheight}{\textheight}
-\newlength{\oldheadheight}
-\setlength{\oldheadheight}{\headheight}
-\newlength{\oldheadsep}
-\setlength{\oldheadsep}{\headsep}
-\newlength{\oldmarginparwidth}
-\setlength{\oldmarginparwidth}{\marginparwidth}
-
 \clearpage
 \thispagestyle{empty}
 
-\changepage{2cm}{2cm}{-\oldevensidemargin}{-\oldoddsidemargin}{0cm}{-2cm}{0cm}{0cm}{0cm}
-
+\changepage{2cm}{2cm}{-1.5cm}{-1.5cm}{0cm}{0cm}{0cm}{0cm}{0cm}
 \begin{titlepage}
 {
 \fontfamily{phv}\selectfont
@@ -62,13 +44,13 @@
 \end{flushright}
 \end{minipage}
 
-\vspace{1.0cm}
+\vspace{2cm}
 
 \begin{center}
-{\fontseries{db}\selectfont\huge{\textbf{On Extending PostgreSQL with \\the Skyline Operator \\}}}
+{\fontseries{db}\selectfont\Huge{\textbf{On Extending PostgreSQL with\\the Skyline Operator\\}}}
 \end{center}
 
-\vspace{0.5cm}
+\vspace{1.5cm}
 
 \renewcommand{\bigskip}{\vspace*{0.43cm}}
 
@@ -77,11 +59,13 @@
 \begin{normalsize}zur Erlangung des akademischen Grades \end{normalsize} \bigskip \\
 \begin{Large}\textbf{Diplom-Ingenieur}\end{Large} \bigskip \\
 \begin{normalsize}im Rahmen des Studiums\end{normalsize} \bigskip \\
-\begin{large}\textbf{Computational Intelligence}\end{large} \bigskip \\
+\begin{Large}\textbf{Computational Intelligence}\end{Large} \bigskip \\
 \begin{normalsize}eingereicht von \end{normalsize} \bigskip \\
-\begin{large}\textbf{Ing. Bakk. techn. Hannes Eder}\end{large} \\
+\begin{Large}\textbf{Ing. Bakk. techn. Hannes Eder}\end{Large} \\
 \begin{normalsize}Matrikelnummer 9521554\end{normalsize} \\
 \end{center}
+
+\vspace{1.5cm}
 
 \begin{flushleft}
 an der \\ Fakultät für Informatik der Technischen Universität Wien \\
@@ -98,28 +82,24 @@ Mitwirkung: Univ.Ass. Dr.rer.nat. Fang Wei \\
 
 \date{\today}
 
-\footnotesize
-\vspace{1.5cm}
+\vspace{2cm}
 
 \begin{flushleft}
-\begin{tabbing}%
-\hspace{4.5cm} \= \hspace{5cm} \= \hspace{5cm} \kill
-Wien, 15.01.2009 \> \underline{\hspace*{4cm}} \> \hfill \underline{\hspace*{4cm}} \\
-     \> \hspace{0.35cm} (Unterschrift Verfasser) \> \hspace{0.4cm} (Unterschrift Betreuer) \\
-\end{tabbing}
+\hbox to 16cm{\hbox to 4.5cm{Wien, 15.01.2009\hfil}\hfill\underline{\hspace*{4.5cm}}\hfill\underline{\hspace*{4.5cm}}}
+\hbox to 16cm{\hbox to 4.5cm{\hfil}\hfill\hbox to 4.5cm{\hfil(Unterschrift Verfasser)\hfil}\hfill\hbox to 4.5cm{\hfil(Unterschrift Betreuer)\hfil}}
 \end{flushleft}
 
-\vspace{0.9cm}
+\vspace{1cm}
 
 \noindent
 \begin{minipage}[b]{1.0\linewidth}
 \begin{center}
 %\underline{\hspace*{15.5cm}}
 \hrulefill \\
-\scriptsize{
+%\scriptsize{
 Technische Universit\"{a}t Wien \\
 A-1040 Wien \hspace{0.5cm} Karlsplatz 13 \hspace{0.5cm} Tel. +43 (1) 58801-0 \hspace{0.5cm} http://www.tuwien.ac.at/
-}
+%}
 \end{center}
 \end{minipage}
 
@@ -127,4 +107,7 @@ A-1040 Wien \hspace{0.5cm} Karlsplatz 13 \hspace{0.5cm} Tel. +43 (1) 58801-0 \hs
 
 }
 \end{titlepage}
+
+\cleardoublepage
+\changepage{-2cm}{-2cm}{1cm}{1cm}{0cm}{2cm}{0cm}{0cm}{0cm}
 

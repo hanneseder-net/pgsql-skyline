@@ -136,39 +136,6 @@
 
 
 %%%
-%%% CHAPTER: TODO
-%%%
-
-
-
-\chapter{TODO}
-
-\section{TODO}
-\begin{itemize}
-\item \todo{casing of section headings?}{}
-\item \todo{ask Ali, which website for traveling by airplane uses skyline}{}
-\item \todo{has the order in which the skyline dimensions are checked an effect?}{}
-\item \todo{show how Preference SQL ABOUT can be emulated}{}
-\end{itemize}
-
-
-\begin{verbatim}
-pseudocode:
-
-In the real code we do concern issues of software engineering, like error handling, which we 
-ignore in the pseudocode to convey the essence of the algorithms more concisely.
-
-Pseudocode conventions: see \citep[Page 19]{Cormen2001}
-
-no begin/end only indent like in python
-
-we do explicitly break at the end of case statements as in some situations
-we fall through to the next case
-
-\end{verbatim}
-
-
-%%%
 %%% CHAPTER: Introduction
 %%%
 
@@ -500,6 +467,23 @@ readability, to emphasize a certain point, or just to work around the
 ``$\hookleftarrow$'' before the break and ``$\rightarrow$'' after the break.
 Furthermore at certain points we even allowed ourselves to strip some
 output, we indicated such omissions by an ellipsis (``$[\ldots]$'').
+
+\section{Pseudocode}
+In the real code for our implementation we do concern about issues of
+software engineering, like error handling, which we ignore in the
+pseudocode to convey the essence of the algorithms more concisely.
+
+For the presentation we adapt the convention in \citep[Page
+19]{Cormen2001}, in the very essence i.e.:
+
+\begin{itemize}
+\item No begin/end or curly brackets for blocks, we use \emph{indentation}
+to express the \emph{block structure}, like in languages such as Python.
+
+\item We do explicitly \emph{break} at the end of case statements, because
+in some rare situations we \emph{fall through} to the next case.
+\end{itemize}
+
 
 \section{Further Organization}
 \todo{}{}
@@ -5238,6 +5222,12 @@ filter in the index scan code, to use other data structures and
 policies for the EF window, and to optimize the order of attributes
 when comparing two tuples.
 
+\subsection{Order in which Columns are compared}
+Investigate the question, if the number of comparisons and the related
+costs can be reduced be choosing a specific order for the columns. Can
+histograms for the base relations be used for?  Or e.g. Compare
+integer data before strings.
+
 \section{Index Scan and SFS}
 As for SFS algorithms using indexes, what remains open is to
 investigate the behavior in case all skyline attributes and attributes
@@ -5336,6 +5326,12 @@ elimination filter is effective only if the selectivity factor of the
 dataset is not more than $0.1$; (2) for datasets up to $500$ tuples
 and of relative small dimension (e.g. up to five), BNL performs the
 best in all aspects.
+
+
+
+%%%
+%%% CHAPTER: SPARE PARTS
+%%%
 
 
 

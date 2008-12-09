@@ -473,16 +473,22 @@ In the real code for our implementation we do concern about issues of
 software engineering, like error handling, which we ignore in the
 pseudocode to convey the essence of the algorithms more concisely.
 
-For the presentation we adapt the convention in \citep[Page
-19]{Cormen2001}, in the very essence i.e.:
+For the presentation we adapt the convention in
+\citep[Page~19]{Cormen2001}, in the very essence i.e.:
 
 \begin{itemize}
 \item No begin/end or curly brackets for blocks, we use \emph{indentation}
-to express the \emph{block structure}, like in languages such as Python.
+to express the \emph{block structure}, like in
+\href{http://www.python.org/}{Python} or similar languages.
 
 \item We do explicitly \emph{break} at the end of case statements, because
 in some rare situations we \emph{fall through} to the next case.
 \end{itemize}
+
+\noindent
+Furthermore we took the freedom to simply some function names and
+remove some nasty details which are not essential to grasp the
+algorithms.
 
 
 \section{Further Organization}
@@ -2537,6 +2543,9 @@ in \autoref{fig:pgsql-arch}.
 \label{fig:pgsql-arch}%
 \end{figure}
 
+In the following subsections we describe some concepts of PostgreSQL
+which are essential to understand our implementation.
+
 \subsection{Pathkeys\index{pathkeys}}
 \label{sec:pathkeys}
 In a sole set oriented algebra there is no concept of \emph{nextness}
@@ -2569,7 +2578,6 @@ a certain relative order.
 
 
 \subsection{Pipelined execution}
-
 PostgreSQL query execution engine has a top down driven pipelined
 architecture, i.e. each node consumes the tuples from its children and
 produces tuples and in general no intermediate results are
@@ -2608,33 +2616,80 @@ something in each state and then if neccessary proceed to another
 state.  The whole state is stored in the node's execution state
 information and is preserved across calls.
 
+\subsection{Simple Object System: Nodes}
+\label{sec:simple-object-system}
+As described in \citep[Page 12-14]{Conway2006a} PostgreSQL has a very
+simple object system with the support for single inheritance.
+The C structure \texttt{Node} is the root of the class hierarchy.
+
+\begin{lstlisting}[language=pseudo,
+caption={PostgreSQL simple object system},
+label={code:simple-object-system}
+]
+typedef struct
+{
+	NodeTag type;
+} Node;
+
+typedef struct
+{
+	NodeTag type;
+	int	baseclass_field;
+} Baseclass;
+
+typedef struct
+{
+	Baseclass	baseclass;
+	int		subclass_field;
+} Subclass;
+\end{lstlisting}
+
+Since the memory layout for \texttt{Baseclass} and the first member of
+\texttt{Subclass} (\texttt{baseclass}) is the same, a pointer \texttt{Subclass *}
+can be treated like \texttt{Baseclass *}.  The first field of any class
+in this simple object system is \texttt{NodeTag}, which is used to determine
+a \texttt{Node}'s specific type at runtime.
+
+There are a couple of support functions to work with the object
+system: \texttt{makeNode} (create a new \texttt{Node}), \texttt{IsA}
+(runtime type testing), \texttt{equal} (deep equality test),
+\texttt{copyObject} (deep object copy),
+\texttt{nodeToString}/\texttt{stringToNode} (serialise/deserialise
+to/from text).
+
+When introducing new classes make sure to update these files:
+\srcref{src/backend/nodes/\{equalfuncs,copyfuncs,outfuncs\}.c}.
 
 \section{Parsing the \inlinesql{SKYLINE OF}-clause}
 In the parser component the textual representation of a query, namely
-SQL, is parsed into a data structure.  In this section we describe this
-process for the grammar of the \inlinesql{SKYLINE OF}-clause as defined
-in \autoref{sec:sql-extension}.
-
-
-
-
-see \srcref{src/backend/parser/gram.y} and 
-\srcref{src/backend/parser/keywords.c}
-
+SQL, is parsed into a data structure.  This is done as described in
+the PostgreSQL documenation for the \postgresdocu{parser-stage.html}
+{parser stage}.  The data structure uses PostgreSQL simple object
+system, as described in the previous section.  We extended this stage
+to handle the \inlinesql{SKYLINE OF}-clause as defined in
+\autoref{sec:sql-extension}, see in \srcref{src/backend/parser/gram.y}
+the definition of \texttt{skyline\_clause}.
 
 \section{Query Analyzing}
-
+In this phase, which is also described in PostgreSQL documentation on the
+\postgresdocu{parser-stage.html}{parser stage}, the raw parse tree
+from the previous stage is semantically analyzed.  Lookups into the
+system catalog are done in this stage to resolve references to tables,
+columns, functions, and operators, see
+\srcref{src/backend/parser/parse\_clause.c}
+\texttt{transformSkylineClause}.
 
 \section{Query Rewriting}
-\todo{is this the right place?}{}
+For our implemenation of the sklyline operator it was not necessary to
+modify the \emph{query rewriting} stage.  For details see
+documentation on the \postgresdocu{rule-system.html}{PostgreSQL Rule
+System}.
+
+\section{Query Planning}
 
 \todo{changeset: [140] \texttt{is\_simple\_subquery}, do not pull up subqueries with a skyline query}{}
 
-\todo{changeset: [657], \texttt{subquery\_is\_pushdown\_safe} @ \srcref{src/backend/optimizer/path/allpaths.c}, If the subquery contains SKYLINE OF we cannot push quals into
- * it, because that would change the results ... FIXME: is it true?}{}
-
-
-\section{Query Planning}
+\todo{}{}
 
 \subsection{Selecting Indexes}
 It is well known fact that the skyline operator is insensitive to the
@@ -2682,8 +2737,8 @@ A proof for this property is given in
 accordingly, c.f.  function \texttt{query\_planner}\footnote{in
 \srcref{src/backend/optimizer/plan/planmain.c}} and
 \texttt{grouping\_planner}\footnote{in \srcref{src/backend/optimizer/plan/planner.c}}.
-
-\todo{lookup make skyline pathkey, what is the name of the function that matches a pathkey against a skyline pathkeys}{}
+The matching of the pathkeys is done in \texttt{skyline\_pathkeys\_contained\_in}
+\footnote{in \srcref{src/backend/optimizer/path/pathkeys.c}}.
 
 \subsection{Preserving relative tuple order}
 \label{sec:relative-tuple-order}
@@ -2730,6 +2785,7 @@ EF              & yes & no  \\
 
 \subsection{Physical operator selection}
 \label{sec:operatorselection}
+\todo{}{}
 
 \subsection{Using relation statistics}
 
@@ -2840,16 +2896,13 @@ ORDER BY AVG(e.Salary) DESC
 \end{figure}
 
 
-\todo{explain ExecRestrPos, ExecMarkPos, ExecReScan, ExecProcNode}{}
-
 \subsection{Comments on the Pseudo Code}
 All the pseudo code presented in the following subsections is in a
 form of state machines, as required for the PostgreSQL query execution
 engine.
 
-\todo{write about slot, resultSlot that they are preserved over calls
-write about how pseudo code is related to the real implementation,
-we changed names an removed some nasty details}{}
+\todo{write about slot, resultSlot that they are preserved over calls}{}
+
 
 \subsection{Special case: one dimensional}
 \label{sec:onedim-nondistinct}

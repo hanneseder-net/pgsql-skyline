@@ -2005,6 +2005,9 @@ In addition, we extended the standard syntax to specify:
 \end{itemize}
 \end{itemize}
 
+In the following sections we describe in detail the extension to the SQL~syntax
+we have implemented.
+
 \subsection{Syntax (Railroad Diagrams)}
 \label{sec:syntax}
 To describe the formal grammar of the \inlinesql{SKYLINE OF}-clause
@@ -3602,7 +3605,7 @@ LESS.  However, the elimination filter is preserved in SFS+EF, which
 is essentially the gist of LESS.
 
 The implementation of EF is similar to BNL.  An elimination filter
-window is maintained in the main memory.  We use 8 KB as default
+window is maintained in the main memory.  We use 8~KB as default
 window size.  The difference between EF and BNL is that EF does not
 write tuples to a temporary file if the tuple window is full, and that
 the relative order of tuples going through the EF is preserved.

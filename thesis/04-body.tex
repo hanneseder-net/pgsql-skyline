@@ -2940,9 +2940,11 @@ ORDER BY AVG(e.Salary) DESC
 \subsection{Comments on the Pseudo Code}
 All the pseudo code presented in the following subsections is in a
 form of state machines, as required for the PostgreSQL query execution
-engine.
-
-\todo{write about slot, resultSlot that they are preserved over calls}{}
+engine.  On concept that we like to mention at this point is the
+\emph{tuple table}.  During query execution tuples are stored in a
+tuple table when passed around between the nodes of the execution plan.
+A tuple table is made up of a set of \emph{tuple table slots} or \emph{slots}
+for short.  This concept is used throughout the code.
 
 
 \subsection{Special case: one dimensional}
@@ -2991,7 +2993,6 @@ but this is even worse, and has a runtime complexity of $O(n^2)$, this
 approach corresponds to a \naive nested-loop, the query plan is
 accordingly:
 
-\todo{maybe skip this plan}{}
 \begin{interactive}
                                     QUERY PLAN                                   
 ---------------------------------------------------------------------------------

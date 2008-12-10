@@ -2633,14 +2633,14 @@ typedef struct
 
 typedef struct
 {
-	NodeTag type;
-	int	baseclass_field;
+	NodeTag	type;
+	int		baseclass_field;
 } Baseclass;
 
 typedef struct
 {
 	Baseclass	baseclass;
-	int		subclass_field;
+	int			subclass_field;
 } Subclass;
 \end{lstlisting}
 
@@ -2668,28 +2668,37 @@ the PostgreSQL documenation for the \postgresdocu{parser-stage.html}
 system, as described in the previous section.  We extended this stage
 to handle the \inlinesql{SKYLINE OF}-clause as defined in
 \autoref{sec:sql-extension}, see in \srcref{src/backend/parser/gram.y}
-the definition of \texttt{skyline\_clause}.
+the definition of \texttt{skyline\_clause}.  The result of this
+stage is called \emph{parse tree}.
 
 \section{Query Analyzing}
 In this phase, which is also described in PostgreSQL documentation on the
-\postgresdocu{parser-stage.html}{parser stage}, the raw parse tree
-from the previous stage is semantically analyzed.  Lookups into the
-system catalog are done in this stage to resolve references to tables,
-columns, functions, and operators, see
-\srcref{src/backend/parser/parse\_clause.c}
-\texttt{transformSkylineClause}.
+\postgresdocu{parser-stage.html}{parser stage}, the \emph{parse tree}
+from the previous stage is semantically analyzed, the outcome is
+called \emph{query tree}.  Lookups into the system catalog are done in
+this stage to resolve references to tables, columns, functions, and
+operators, see \texttt{transformSkylineClause}\footnote{in
+\srcref{src/backend/parser/parse\_clause.c}}.
 
 \section{Query Rewriting}
-For our implemenation of the sklyline operator it was not necessary to
-modify the \emph{query rewriting} stage.  For details see
-documentation on the \postgresdocu{rule-system.html}{PostgreSQL Rule
-System}.
+For our implemenation it was not necessary to modify the \emph{query
+rewriting} stage.  For details see documentation on the
+\postgresdocu{rule-system.html}{PostgreSQL Rule System}.
 
-\section{Query Planning}
+\section{Query Planning/Optimizing}
+The \emph{query tree} from the previous stage is transformed into a
+\emph{plan tree} during this stage.  Usually there are different
+possible plans for a given query.  The goal is to create an optimal
+plan.  Although it is computational feasible to examine each possible
+plan and selecting the best, often this exhaustive enumeration is
+to expensive.  
+%
+Various tradeoffs are made, more details see PostgreSQL documenation
+on \postgresdocu{planner-optimizer.html}{Planner/Optimizer}.
 
-\todo{changeset: [140] \texttt{is\_simple\_subquery}, do not pull up subqueries with a skyline query}{}
+In the following subsections we describe how We modified the query
+planner/optimizer:
 
-\todo{}{}
 
 \subsection{Selecting Indexes}
 It is well known fact that the skyline operator is insensitive to the
@@ -2740,6 +2749,16 @@ accordingly, c.f.  function \texttt{query\_planner}\footnote{in
 The matching of the pathkeys is done in \texttt{skyline\_pathkeys\_contained\_in}
 \footnote{in \srcref{src/backend/optimizer/path/pathkeys.c}}.
 
+This modification has an inpact on how the join trees are formed and
+which access paths are considered.
+
+\subsubsection{Pull up subqueries}
+If a subqueries contains a \inlinesql{SKYLINE~OF}-clause the query
+must to be flattened out, i.e. pull up the subquery.  The function
+\texttt{is\_simple\_subquery}\footnote{in
+\srcref{src/backend/optimizer/prep/prepjointree.c}} as modified
+accordingly.
+
 \subsection{Preserving relative tuple order}
 \label{sec:relative-tuple-order}
 The relative order of tuples is an important physical property of a
@@ -2782,20 +2801,39 @@ EF              & yes & no  \\
 \end{table}
 
 
-
 \subsection{Physical operator selection}
 \label{sec:operatorselection}
-\todo{}{}
+The physical operator selection, we also call this \emph{method}, is
+rather straight forward.  If a method is specified in the skyline options,
+this method is taken, only some sanity checks are performed.  
+
+In the one dimensional case either 1DIM or 1DIM\_DISTINCT is selected
+depending on the usage of \inlinesql{SKYLINE OF DISTINCT}.  This
+happens also if a suitable access path is present, as we do not make
+use of such an access path yet.  We justify this limitation as we
+believe one dimensional skyline is of limited use anyway (see
+\autoref{sec:index-scan-for-1dim}).
+
+In the presence of a suitable access path, for two dimensions
+2DIM\_PRESORT and for higher dimensions SFS is selected.
+
+BNL is the \emph{catch all} default. The physical operator selection
+is implemented in \texttt{skyline\_choose\_method}\footnote{in
+\srcref{src/backend/utils/skyline/skyline.c}}.  We acknowledge that
+this behavior is hardcoded and it should be more based on cardinality
+and cost estimation, here space for improvements is left, see
+\autoref{sec:cardinality-and-cost-estimation}.
+
 
 \subsection{Using relation statistics}
-
 PostgreSQL does not do a good job with statistics and subqueries.
 
 \todo{PostgreSQL as of 8.3 does not derive the stats for subselect like \inlinesql{explain analyze select * from (select * from i15d1e6s0 limit 1000) as a skyline of d1 min, d2 min with windowpolicy=ranked;}}{}
 
 \subsection{Cardinality and Cost Estimation}
+\label{sec:cardinality-and-cost-estimation}
 
-cite \citep{Buchta1989}
+cite \citep{Buchta1989}, \citep{Chaudhuri2006}
 
 \subsubsection{Tuple window size}
 One could be tempted to set the tuple window size according to the
@@ -2814,12 +2852,15 @@ number of comparisons per tuple could increase and therefore more CPU
 time is required, so there is a break even point. For experimental
 results see \autoref{sec:analysis-window-size}.
 
-\subsection{\inlinesql{LIMIT} / \inlinesql{TOP $k$}}
-how top k interacts with skyline, no special measures have to be taken
-as the upper node will stop fetching tuples. only in cost estimation.
-
-\texttt{skyline\_method\_can\_use\_limit}\footnote{in \srcref{src/backend/utils/skyline/skyline.c}}
-
+\subsubsection{\inlinesql{LIMIT} / \inlinesql{TOP $k$}}
+The \inlinesql{LIMIT}/\inlinesql{TOP $k$}-clause are used to limit the
+number of tuples in the result.  In the implementation no special
+measures had to be taken, as the \inlinesql{LIMIT}/\inlinesql{TOP
+$k$}-node will stop fetching tuple as soon as enough tuples have been
+seen.  If a \inlinesql{LIMIT}/\inlinesql{TOP $k$} is present we use
+this information in the cost and cardinality cost estimation.  Also
+see \texttt{skyline\_method\_can\_use\_limit}\footnote{in
+\srcref{src/backend/utils/skyline/skyline.c}}.
 
 \section{Query Execution}
 \label{sec:queryexecution}
@@ -5246,6 +5287,10 @@ the most effective EF window policy.
 
 \chapter{Future work}
 
+\section{Cost-based operator selection}
+see \autoref{sec:operatorselection, sec:cardinality-and-cost-estimation}.
+\todo{}{}
+
 \section{Different syntax for \inlinesql{SKYLINE OF DIFF}}
 We believe the syntax of \inlinesql{SKYLINE OF DIFF} is a bit
 cumbersome for the intended semantic to partition the input relation
@@ -5292,6 +5337,7 @@ to access the indexes for the query processing.  We believe this could
 yield good results.
 
 \section{Index scan for one dimensional skylines}
+\label{sec:index-scan-for-1dim}
 Since one dimensional skylines are a little bit of limited use anyway
 we did not yet make an attempt to make use of an suitable index for
 skyline computation in the one dimensional case. The computation of

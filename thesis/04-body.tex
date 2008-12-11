@@ -2622,6 +2622,8 @@ As described in \citep[Page 12-14]{Conway2006a} PostgreSQL has a very
 simple object system with the support for single inheritance.
 The C structure \texttt{Node} is the root of the class hierarchy.
 
+\pagebreak[2]
+
 \begin{lstlisting}[language=pseudo,
 caption={PostgreSQL simple object system},
 label={code:simple-object-system}
@@ -2657,6 +2659,7 @@ system: \texttt{makeNode} (create a new \texttt{Node}), \texttt{IsA}
 \texttt{nodeToString}/\texttt{stringToNode} (serialise/deserialise
 to/from text).
 
+\noindent
 When introducing new classes make sure to update these files:
 \srcref{src/backend/nodes/\{equalfuncs,copyfuncs,outfuncs\}.c}.
 
@@ -2826,9 +2829,31 @@ and cost estimation, here space for improvements is left, see
 
 
 \subsection{Using relation statistics}
-PostgreSQL does not do a good job with statistics and subqueries.
+\label{sec:using-relation-statistics}
+When using the tuple window placement policy \emph{entropy} a so
+called \emph{entropy value} for each tuple is computed, see
+\autoref{sec:tuplewindowpolicies}.
+In \eqref{eqn:entropy} it as assumed that the domain for each
+attribute is $[0, 1]$.  For a real world implementation this
+restriction must be relaxed.  To still be able to use
+\eqref{eqn:entropy} we scale the domain for each attribute to $[0,
+1]$.  We use PostgreSQL statistics on the base relations to get the
+information about the range of each attribute.  If at least one of
+them is missing, we do fall back to placment policy \emph{append}.  In
+future work we might engage \emph{sampling} here, see
+\autoref{sec:sampling}.
 
-\todo{PostgreSQL as of 8.3 does not derive the stats for subselect like \inlinesql{explain analyze select * from (select * from i15d1e6s0 limit 1000) as a skyline of d1 min, d2 min with windowpolicy=ranked;}}{}
+On downside we noticed is that PostgreSQL 8.3.5 does not do a good job
+with statistics and subqueries, i.e. PostgreSQL does not derive the
+stats for a the subselect in, even without the
+\inlinesql{LIMIT}-clause:
+
+\begin{interactive}
+SELECT * 
+FROM 
+    (SELECT * FROM i15d1e6s0 LIMIT 1000) AS a 
+SKYLINE OF d1 MIN, d2 MIN WITH WINDOWPOLICY=ENTROPY;
+\end{interactive}
 
 \subsection{Cardinality and Cost Estimation}
 \label{sec:cardinality-and-cost-estimation}
@@ -3460,6 +3485,15 @@ of the current tuple. We choose this approach because the tuple window
 is scanned anyway. With this policy and a \emph{forced insert}, in
 case the tuple window is full, the tuple with the lowest ranking is
 removed from the window to make space for a higher ranked tuple.
+
+Let $r$ be a tuple and $r_1, \ldots, r_m$ the attributes the skyline
+is computed on with $\forall i \in \{1, \ldots, m\}\colon: r_i \in [0,
+1]$, then the entropy value $E(r)$ for the tuple $r$ is defined as
+(see \citep{Chomicki2003,Chomicki2005}):
+
+\begin{equation}\label{eqn:entropy}
+E(t) = \sum_{i=1}^{m} \ln(r_m + 1)
+\end{equation}
 
 \item \emph{random: }
 behalves like \emph{entropy} but instead of a an computed entropy value
@@ -5400,6 +5434,7 @@ syntax, e.g. \dots \inlinesql{SKYLINE OF d3 DIFF USING myOp}, for this
 is subject to future work.
 
 \subsection{Sampling}
+\label{sec:sampling}
 In the absence of statistics for the relation in questions, sampling
 could be engaged. \todo{cite}{Chaurduri2006}
 

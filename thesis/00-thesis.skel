@@ -71,7 +71,7 @@
 	numbers=left, numberstyle=\tiny, 
 	%stepnumber=2, 
 	%numbersep=5pt,
-%	morekeywords={std,string,set,size_t,map},
+	morekeywords={bool, forever},
 	classoffset=1,
 %	keywordstyle=[1]\bf,
 %	morekeywords={ugVertex, tdVertex, void, VertexVector, ugGraph,
@@ -86,6 +86,8 @@
 	morecomment=[l]{//},
 	moredelim=[is][\bf]{|}{|}
 }
+
+\renewcommand\lstlistingname{listing}
 
 \makeatletter
 \renewcommand\tableofcontents{%

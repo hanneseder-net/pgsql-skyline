@@ -127,7 +127,7 @@
 	language=C,
 	mathescape=true, 
 	literate={:=}{{$\gets$}}1, 
-	morekeywords={function,begin,end,foreach,then}
+	morekeywords={function,foreach,forever,bool,true,false}
 }
 
 \newcommand\nospellcheck[1]{#1}%
@@ -477,12 +477,18 @@ For the presentation we adapt the convention in
 \citep[Page~19]{Cormen2001}, in the very essence i.e.:
 
 \begin{itemize}
-\item No begin/end or curly brackets for blocks, we use \emph{indentation}
-to express the \emph{block structure}, like in
-\href{http://www.python.org/}{Python} or similar languages.
+\item 
+No \texttt{\textbf{begin}}/\texttt{\textbf{end}} or curly brackets for
+blocks, we use \emph{indentation} to express the \emph{block
+structure}, like in \href{http://www.python.org/}{Python} or similar languages.
 
-\item We do explicitly \emph{break} at the end of case statements, because
-in some rare situations we \emph{fall through} to the next case.
+\item 
+We do explicitly \texttt{\textbf{break}} at the end of
+\texttt{\textbf{case}} block in a \texttt{\textbf{switch}}-statements,
+because in some rare situations we \emph{fall through} to the next
+case. Nevertheless we omit the \texttt{\textbf{break}} if it is
+unreachable, e.g. because it is preceded by a
+\texttt{\textbf{return}}-statement.
 \end{itemize}
 
 \noindent
@@ -1460,17 +1466,15 @@ $p \dominates q$ & point $p$ dominates point $q$
 caption={Pseudo code for Original Block-Nested-Loops (BNL) Algorithm, which does not terminate in all cases.},
 label={code:bnl}]
 function SkylineBNL($\mathcal{I}$)
-begin
 	// initialization
 	$\mathcal{O} \gets \emptyset$; $\mathcal{T} \gets \emptyset$; $\mathbb{W} \gets \emptyset$; $timestampIn \gets 0$; $timestampOut \gets 0$;
 
-	while $\neg$EOF($\mathcal{I}$) do begin
+	while $\neg$EOF($\mathcal{I}$)
 		// propagate points that have been compared to all
-		foreach $q \in \mathbb{W}$ do
-			if $q_{timestamp}$=$timestampIn$ then begin
+		foreach $q \in \mathbb{W}$
+			if $q_{timestamp}$=$timestampIn$
 				append($\mathcal{O}$, $q$);
 				release($\mathbb{W}$, $q$);
-			end
 
 		// fetch the next point
 		$p \gets$ next($\mathcal{I}$);
@@ -1479,44 +1483,36 @@ begin
 		$isCandidate \gets true$;
 
 		// compare $p$ to all points in the tuple window $\mathbb{W}$
-		foreach $q \in \mathbb{W}$ do begin
-			if $q \dominates p$ then begin
+		foreach $q \in \mathbb{W}$
+			if $q \dominates p$
 				free($p$);
 				$isCandidate \gets false$;
 				break;
-			end
-			else if $p \dominates q$ then
+			else if $p \dominates q$
 				release($\mathbb{W}$, $q$);
-		end
 
-		if $isCandidate$ then begin
-			if hasfreespace($\mathbb{W}$) then
+		if $isCandidate$
+			if hasfreespace($\mathbb{W}$)
 				// add $p$ to the tuple window $\mathbb{W}$
 				add($\mathbb{W}$, $p$);
-			else begin
+			else
 				// write $p$ to the tempfile $\mathcal{T}$
 				append($\mathcal{T}$, $p$);
 				free($p$);
 				$timestampOut \gets timestampOut + 1$;
-			end
-		end
 
 		// continue with next pass if necessary
-		if EOF($\mathcal{I}$) then begin
+		if EOF($\mathcal{I}$)
 			// switch to tempfile $\mathcal{T}$
 			$\mathcal{I} \gets \mathcal{T}$; $\mathcal{T} \gets \emptyset$;
 			$timestampIn \gets 0$; $timestampOut \gets 0$;
-		end
-	end
 
 	// flushing the tuple window
-	foreach $q \in \mathbb{W}$ do begin
+	foreach $q \in \mathbb{W}$
 		append($\mathcal{O}$, $q$);
 		release($\mathbb{W}$, $q$);
-	end
 
 	return ($\mathcal{O}$);
-end
 \end{lstlisting}
 %\caption{Pseudo code for Original Block-Nested-Loops (BNL) Algorithm, which does not terminate in all cases.}
 %\label{code:bnl}
@@ -1622,22 +1618,20 @@ caption={Pseudo code for Fixed Block-Nested-Loops (BNL) Algorithm},
 label={code:fixedbnl}
 ]
 function SkylineBNL($\mathcal{I}$) 
-begin 
 	// initialization
 	$\mathcal{O} \gets \emptyset$; $\mathcal{T} \gets \emptyset$;
 	$\mathbb{W} \gets \emptyset$; $timestampIn \gets 0$; $timestampOut
 \gets 0$;
 
-	while true do begin
+	forever
 		// propagate points that have been compared to all
-		foreach $q \in \mathbb{W}$ do
-			if $q_{timestamp}$=$timestampIn$ then begin
+		foreach $q \in \mathbb{W}$
+			if $q_{timestamp}$=$timestampIn$
 				append($\mathcal{O}$, $q$);
 				release($\mathbb{W}$, $q$);
-			end
 
 		// continue with next pass if necessary
-		if EOF($\mathcal{I}$) then begin
+		if EOF($\mathcal{I}$)
 			if EOF($\mathcal{T}$)
 				break; // we are done
 
@@ -1645,7 +1639,6 @@ begin
 			$\mathcal{I} \gets \mathcal{T}$; $\mathcal{T} \gets \emptyset$;
 			$timestampIn \gets 0$; $timestampOut \gets 0$;
 			continue;
-		end
 
 		// fetch the next point
 		$p \gets$ next($\mathcal{I}$);
@@ -1654,37 +1647,30 @@ begin
 		$isCandidate \gets true$;
 
 		// compare $p$ to all points in the tuple window $\mathbb{W}$
-		foreach $q \in \mathbb{W}$ do begin
-			if $q \dominates p$ then begin
+		foreach $q \in \mathbb{W}$
+			if $q \dominates p$
 				free($p$);
 				$isCandidate \gets false$;
 				break;
-			end
-			else if $p \dominates q$ then
+			else if $p \dominates q$
 				release($\mathbb{W}$, $q$);
-		end
 
-		if $isCandidate$ then begin
-			if hasfreespace($\mathbb{W}$) then
+		if $isCandidate$
+			if hasfreespace($\mathbb{W}$)
 				// add $p$ to the tuple window $\mathbb{W}$
 				add($\mathbb{W}$, $p$);
-			else begin
+			else
 				// write $p$ to the tempfile $\mathcal{T}$
 				append($\mathcal{T}$, $p$);
 				free($p$);
 				$timestampOut \gets timestampOut + 1$;
-			end
-		end
-	end
 
 	// flushing the tuple window
-	foreach $q \in \mathbb{W}$ do begin
+	foreach $q \in \mathbb{W}$
 		append($\mathcal{O}$, $q$);
 		release($\mathbb{W}$, $q$);
-	end
 
 	return ($\mathcal{O}$);
-end
 \end{lstlisting}
 %\caption{Pseudo code for Fixed Block-Nested-Loops (BNL) Algorithm}
 %\label{code:fixedbnl}
@@ -1745,7 +1731,7 @@ function SkylineSFS($\mathcal{I}$) begin
 	// initialization
 	$\mathcal{O} \gets \emptyset$; $\mathcal{T} \gets \emptyset$; $\mathbb{W} \gets \emptyset$;
 
-	while $\neg$EOF($\mathcal{I}_{presorted}$) do begin
+	while $\neg$EOF($\mathcal{I}_{presorted}$)
 		// loop invariant: $\mathcal{I}_{presorted}$ and $\mathcal{T}$ are sorted
 
 		// fetch the next point
@@ -1753,42 +1739,35 @@ function SkylineSFS($\mathcal{I}$) begin
 		$isSkyline \gets true$;
 
 		// compare $p$ to all points in the tuple window $\mathbb{W}$
-		foreach $q \in \mathbb{W}$ do begin
-			if $q \dominates p$ then begin
+		foreach $q \in \mathbb{W}$
+			if $q \dominates p$
 				free($p$);
 				$isSkyline \gets false$;
 				break;
-			end
-			else if $p \dominates q$ then
+			else if $p \dominates q$
 				release($\mathbb{W}$, $q$);
-		end
 
-		if $isSkyline$ then begin
-			if hasfreespace($\mathbb{W}$) then
+		if $isSkyline$
+			if hasfreespace($\mathbb{W}$)
 				// add $p$ to the tuple window $\mathbb{W}$
 				add($\mathbb{W}$, $p$);
-			else begin
+			else
 				// write $p$ to the tempfile $\mathcal{T}$
 				append($\mathcal{T}$, $p$);
 				free($p$);
-			end
 
 			// add tuple to the output
 			append($\mathcal{O}$, $p$);
-		end
 
 		// continue with next pass if necessary
-		if EOF($\mathcal{I}_{presorted}$) then begin
+		if EOF($\mathcal{I}_{presorted}$)
 			// switch to tempfile $\mathcal{T}$
 			$\mathcal{I}_{presorted} \gets \mathcal{T}$; $\mathcal{T} \gets \emptyset$;
 
 			// clean tuple window
 			$\mathbb{W} \gets \emptyset$;
-		end
-	end
 
 	return ($\mathcal{O}$);
-end
 \end{lstlisting}
 %\caption{Pseudo code for Sort-First-Skyline (SFS) Algorithm}
 %\label{code:sfs}
@@ -1871,49 +1850,41 @@ caption={Pseudo code for Elimination Filter (EF)},
 label={code:ef}
 ]
 function EliminationFilter($\mathcal{I}$, var $state$) begin 
-	while true do begin
-		switch state begin
+	forever
+		switch $state$
 		case INIT:
 			$\mathbb{W} \gets \emptyset$;
 			$state \gets $ PROCESS;
 			break;
 
 		case PROCESS:
-			if EOF($\mathcal{I}$) then begin
+			if EOF($\mathcal{I}$)
 				$state \gets $ DONE;
 				break;
-			end
 	
 			$p \gets$ next($\mathcal{I}$);
 			$isCandidate \gets true$;
 
 			// compare $p$ to all points in the tuple window $\mathbb{W}$
-			foreach $q \in \mathbb{W}$ do begin
-				if $q \dominates p$ then begin
+			foreach $q \in \mathbb{W}$
+				if $q \dominates p$
 					free($p$);
 					$isCandidate \gets false$;
 					break;
-				end
-				else if $p \dominates q$ then
+				else if $p \dominates q$
 					release($\mathbb{W}$, $q$);
-			end
 
-			if $isCandidate$ then begin
-				if hasfreespace($\mathbb{W}$) then begin
+			if $isCandidate$
+				if hasfreespace($\mathbb{W}$)
 					// add $p$ to the tuple window $\mathbb{W}$
 					add($\mathbb{W}$, $p$);
-				end
 
 				return $p$;
-			end
 
 			break;
 
 		case DONE:
 			return NULL;
-		end
-	end
-end
 \end{lstlisting}
 %\caption{Pseudo code for Elimination Filter (EF)}
 %\label{code:ef}
@@ -3051,52 +3022,43 @@ caption={Pseudo code for Special case: 1 dimensional},
 label={code:1dim}
 ]
 function ExecSkyline_1Dim(var $state$)
-begin
-	switch $state.status$ begin
+	switch $state.status$
 	case INIT:
 		tuplestore_init($state.tuplestore$);
 
 		$resultSlot \gets$ ExecProcNode(outerPlanState($state$));
 
-		if $resultSlot \not=$ NULL then begin
+		if $resultSlot \not=$ NULL
 			// input contains at least one tuple
 			$slot \gets$ ExecProcNode(outerPlanState($state$));
 
 			// while not end of input reached
-			while $slot \not=$ NULL do begin
-				if $slot \nondistinct resultSlot$ then
+			while $slot \not=$ NULL
+				if $slot \nondistinct resultSlot$
 					// we found another potential minimal tuple
 					tuplestore_put($state.tuplestore$, $slot$);
-				else if $slot \dominates resultSlot$ then begin
+				else if $slot \dominates resultSlot$
 					// we found a new lower bound
 					$resultSlot \gets slot$;
 					tuplestore_clearall($state.tuplestore$);
 					tuplestore_put($state.tuplestore$, $slot$);
-				end
 
 				$slot \gets$ ExecProcNode(outerPlanState($state$));
-			end
-		end
 
 		$state.status \gets$ PIPEOUT;
 
 		// fall through
 
 	case PIPEOUT:
-		if $\neg$tuplestore_eof($state.tuplestore$) then
+		if $\neg$tuplestore_eof($state.tuplestore$)
 			return tuplestore_get($state.tuplestore$);
-		else begin
+		else
 			tuplestore_done($state.tuplestore$);
 			$state.status \gets$ DONE;
 			return NULL;
-		end
-		break;
 
 	case DONE:
 		return NULL;
-		break;
-	end
-end
 \end{lstlisting}
 %\caption{Pseudo code for Special case: 1 dimensional}
 %\label{code:1dim}
@@ -3179,32 +3141,25 @@ caption={Pseudo code for Special case: 1 dimensional distinct},
 label={code:1dimdistinct}
 ]
 function ExecSkyline_1DimDistinct(var $state$)
-begin
-	switch $state.status$ begin
+	switch $state.status$
 	case INIT:
 		$resultSlot \gets$ ExecProcNode(outerPlanState($state$));
 
-		if $resultSlot \not=$ NULL then begin
+		if $resultSlot \not=$ NULL
 			$slot \gets$ ExecProcNode(outerPlanState($state$));
 
 			// while not end of input reached
-			while $slot \not=$ NULL do begin
-				if $slot \dominates resultSlot$ then
+			while $slot \not=$ NULL
+				if $slot \dominates resultSlot$
 					$resultSlot \gets slot$;
 
 				$slot \gets$ ExecProcNode(outerPlanState($state$));
-			end
-		end
 
 		$state.status \gets$ DONE;
 		return $resultSlot$;
-		break;
 
 	case DONE:
 		return NULL;
-		break;
-	end
-end
 \end{lstlisting}
 %\caption{Pseudo code for Special case: 1 dimensional distinct}
 %\label{code:1dimdistinct}
@@ -3264,45 +3219,35 @@ caption={Pseudo code for Special case: 2 dimensional with presort},
 label={code:2dimpresort}
 ]
 function ExecSkyline_2DimPresort(var $state$)
-begin
-	switch $state.status$ begin
+	switch $state.status$
         case INIT:
 		$resultSlot \gets$ ExecProcNode(outerPlanState($state$));
 
-		if $resultSlot\ =$ NULL then begin
+		if $resultSlot\ =$ NULL
 			// input does not contain a single tuple
 			$state.status \gets$ DONE;
 			return NULL;
-		end
 
 		$state.status \gets$ PROCESS
 		// the first tuple is already a skyline tuple
 		return $resultSlot$;
-		break;
 
 	case PROCESS:
-		forever do begin
+		forever
 			$slot \gets$ ExecProcNode(outerPlanState($state$));
 
-			if $slot\ =$ NULL then begin
+			if $slot\ =$ NULL
 				// end of input reached
 				$state.status \gets$ DONE;
 				return NULL;
-			end
 
-			if $slot \dominates returnSlot \lor (slot \nondistinct returnSlot\ \land$ DISTINCT$)$ then begin
+			if $slot \dominates returnSlot \lor (slot \nondistinct returnSlot\ \land$ DISTINCT$)$
 				// found another skyline tuple
 				$returnSlot \gets slot$;
 				return $returnSlot$;
-			end
-		end
-		break;
 
 	case DONE:
 		return NULL;
-		break;
-	end
-end
 \end{lstlisting}
 %\caption{Pseudo code for Special case: 2 dimensional with presort}
 %\label{code:2dimpresort}
@@ -3328,9 +3273,8 @@ caption={Pseudo code for MNL},
 label={code:mnl}
 ]
 function ExecSkyline_MaterializedNestedLoop(var $state$)
-begin
-	switch $state.status$ begin
-        case INIT:
+	switch $state.status$
+	case INIT:
 		ExecMarkPos(outerPlanState($state$));
 		$state.pos \gets 0$;
 		$state.status \gets$ PROCESS
@@ -3338,49 +3282,41 @@ begin
 		// fall through
 
 	case PROCESS:
-		forever do begin
+		forever
 			// get next current tuple
 			ExecRestrPos(outerPlanState($state$));
 			$slot \gets$ ExecProcNode(outerPlanState($state$));
 			$state.pos \gets state.pos + 1$;
 			ExecMarkPos(outerPlanState($state$));
 
-			if $slot\ =$ NULL then begin
+			if $slot\ =$ NULL
 				// end of input reached
 				$state.status \gets$ DONE;
 				return NULL;
-			end
 
 			// dominance check
 			ExecReScan(outerPlanState($state$));
 
 			$innerPos \gets 0$;
 
-			forever do begin
+			forever
 				$innerSlot \gets$ ExecProcNode(outerPlanState($state$));
 				$innerPos \gets innerPos + 1$;
 
-				if $innerSlot\ =$ NULL then begin
+				if $innerSlot\ =$ NULL
 					// no witness found
 					return $slot$;
-				end
 
-				if $innerSlot \dominates slot$ then
+				if $innerSlot \dominates slot$
 					break;
-				else if $innerSlot \nondistinct slot \land$ DISTINCT then begin
+				else if $innerSlot \nondistinct slot \land$ DISTINCT
 					// favor the first
-					if $innerPos < state.pos$ then
+					if $innerPos < state.pos$
 						break;
-				end
-			end
-		end
 		break;
 
 	case DONE:
 		return NULL;
-		break;
-	end
-end
 \end{lstlisting}
 %\caption{Pseudo code for MNL}
 %\label{code:mnl}
@@ -3520,9 +3456,8 @@ caption={Pseudo code for BNL},
 label={code:fixedbnl-statemachine}
 ]
 function ExecSkyline_BlockNestedLoop(var $state$)
-begin
-	forever do begin
-		switch $state.status$ begin
+	forever
+		switch $state.status$
 		case INIT: 
 			$state.source \gets$ OUTER; 
 			tuplestore_init($state.tempOut$);
@@ -3533,22 +3468,21 @@ begin
 			break;
 
 		case PROCESS:
-			if $state.source$ = OUTER then
+			if $state.source$ = OUTER
 				$slot \gets$ ExecProcNode(outerPlanState($state$));
 			else
 				$slot \gets$ tuplestore_get($state.tempIn$);
 
-			if $slot =$ NULL then begin
-				if $state.source$ = TEMP then
+			if $slot =$ NULL
+				if $state.source$ = TEMP
 					tuplestore_done($state.tempIn$);
 
-				if $state.tsOut = 0$ then begin
+				if $state.tsOut = 0$
 					// nothing written to temp -> done
 					tuplestore_done($state.tempOut$);
 					tuplewindow_rewind($state.window$);
 					$state.status \gets$ FINALPIPEOUT;
 					break;
-				end
 
 				$state.source \gets$ TEMP;
 				$state.tempIn \gets state.tempOut$;
@@ -3558,64 +3492,56 @@ begin
 				tuplewindow_rewind($state.window$);
 				$state.status \gets$ PIPEOUT;
 				break;
-			end
 
 			$state.tsIn \gets state.tsIn + 1$;
 
 			tuplewindow_rewind($state.window$);
-			if $state.ranked$ then
+			if $state.ranked$
 				tuplewindow_setinsertrank($state.window$, ExecSkylineRank($state$, $slot$);
 
-			forever do begin
-				if tuplewindow_ateof($state.window$) then begin
-					if tuplewindow_hasfreespace($state.window$) then
+			forever
+				if tuplewindow_ateof($state.window$)
+					if tuplewindow_hasfreespace($state.window$)
 						tuplewindow_put($state.window$, $slot$);
-					else begin
+					else
 						tuplestore_put($state.tempOut$, $slot$);
 						$state.tsOut \gets state.tsOut$;
-					end
+
 					break;
-				end
 
 				$innerSlot \gets$ tuplewindow_current($state.window$);
 
 				if $innerSlot \dominates slot \lor (innerSlot \nondistinct slot \land \text{DISTINCT})$
 					break;
-				else if $slot \dominates innerSlot$ then
+				else if $slot \dominates innerSlot$
 					tuplewindow_removecurrent($state.window$);
 				else
 					tuplewindow_movenext($state.window$);
-			end
 
 			tuplewindow_rewind($state.window$);
 			$state.status \gets$ PIPEOUT;
 			break;
 
 		case PIPEOUT:
-			while $\neg$tuplewindow_ateof($state.window$) do begin
-				if tuplewindow_timestampcurrent($state.window$) = $state.tsIn$ then
+			while $\neg$tuplewindow_ateof($state.window$)
+				if tuplewindow_timestampcurrent($state.window$) = $state.tsIn$
 					return tuplewindow_get($state.window$);
 				
 				tuplewindow_movenext($state.window$);
-			end
+
 			$state.status \gets$ PROCESS;
 			break;
 
 		case FINALPIPEOUT:
-			if $\neg$tuplewindow_ateof($state.window$) then
+			if $\neg$tuplewindow_ateof($state.window$)
 				return tuplewindow_get($state.window$);
 
 			tuplewindow_done($state.window$);
 			$state.status \gets$ DONE;
 			return NULL;
-			break;
 
 		case DONE:
 			return NULL;
-			break;
-		end
-	end
-end
 \end{lstlisting}
 %\caption{Pseudo code for BNL}
 %\label{code:fixedbnl-statemachine}
@@ -3639,9 +3565,8 @@ caption={Pseudo code for SFS},
 label={code:sfs-statemachine}
 ]
 function ExecSkyline_SortFilterSkyline(var $state$)
-begin
-	forever do begin
-		switch $state.status$ begin
+	forever
+		switch $state.status$
 		case INIT: 
 			$state.source \gets$ OUTER; 
 			tuplestore_init($state.tempOut$);
@@ -3651,23 +3576,21 @@ begin
 			break;
 
 		case PROCESS:
-			if $state.source$ = OUTER then
+			if $state.source$ = OUTER
 				$slot \gets$ ExecProcNode(outerPlanState($state$));
 			else
 				$slot \gets$ tuplestore_get($state.tempIn$);
 
-			if $slot =$ NULL then begin
-				if $state.source$ = TEMP then
+			if $slot =$ NULL
+				if $state.source$ = TEMP
 					tuplestore_done($state.tempIn$);
 
-				if $\neg state.neednextrun$ then begin
+				if $\neg state.neednextrun$
 					// nothing written to temp -> done
 					tuplestore_done($state.tempOut$);
 					tuplewindow_rewind($state.window$);
 					$state.status \gets$ DONE;
 					return NULL;
-					break;
-				end
 
 				$state.source \gets$ TEMP;
 				$state.tempIn \gets state.tempOut$;
@@ -3675,24 +3598,21 @@ begin
 				tuplewindow_clean($state.window$);
 				$state.neednextrun \gets false$;
 				break;
-			end
 
 			tuplewindow_rewind($state.window$);
-			if $state.ranked$ then
+			if $state.ranked$
 				tuplewindow_setinsertrank($state.window$, ExecSkylineRank($state$, $slot$);
 
-			forever do begin
-				if tuplewindow_ateof($state.window$) then begin
-					if tuplewindow_hasfreespace($state.window$) then begin
+			forever
+				if tuplewindow_ateof($state.window$)
+					if tuplewindow_hasfreespace($state.window$)
 						tuplewindow_put($state.window$, $slot$);
 						return $slot$;
-					end
-					else begin
+					else
 						tuplestore_put($state.tempOut$, $slot$);
 						$state.neednextrun \gets true$;
-					end
+
 					break;
-				end
 
 				$innerSlot \gets$ tuplewindow_current($state.window$);
 
@@ -3700,15 +3620,10 @@ begin
 					break;
 
 				tuplewindow_movenext($state.window$);
-			end
 			break;
 
 		case DONE:
 			return NULL;
-			break;
-		end
-	end
-end
 \end{lstlisting}
 
 \subsection{Elimination Filter (EF)}

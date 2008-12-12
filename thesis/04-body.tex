@@ -3628,11 +3628,10 @@ function ExecSkyline_SortFilterSkyline(var $state$)
 
 \subsection{Elimination Filter (EF)}
 The pseudo code is already given in \autoref{sec:ef-tuple-order},
-cf. \autoref{code:ef}. 
-\todo{To complete the picture we describe here 
-the options that can be specified.}{?}
+cf. \autoref{code:ef}. We have used the elimination filter with
+SFS and BNL, see the following sections.
 
-\subsubsection{SFS+EF (a LESS Variant)}
+\subsection{SFS+EF (a LESS Variant)}
 In \citep{Godfrey2005} \nospellcheck{Godfrey et al.} proposed the LESS
 algorithm, which is an improvement of SFS due to the introduction of
 the concept of {\em elimination filter} (EF). With the original LESS
@@ -3659,16 +3658,13 @@ the relative order of tuples going through the EF is preserved.
 
 
 
-\subsubsection{BNL+EF}
+\subsection{BNL+EF}
 Inspired from the idea of the elimination filter in LESS, we
 experimented a new combination of BNL and EF. That is, the elimination
 filter is executed before the BNL algorithm. Since our implementation
 of the elimination filter is independent from the external sort
 routine, the coding of this variant is straightforward.  It turns out
 that the algorithm BNL+EF is a substantial improvement to BNL.
-
-
-\subsubsection{Presort+EF (for 2 dim only)}
 
 
 
@@ -3731,7 +3727,7 @@ queries directly and the query is evaluated in the same process.  So
 debugging or with Microsoft Visual C++ even \emph{edit \&
 continue}\index{edit \& continue}\footnote{Edit \& continue is the
 ability of modifying the source code while debugging, apply the changes
-and continue to debug.  Kind of deluxe for a C compiler.}  For further
+and continue to debug.  Kind of deluxe for a C compiler.}.  For further
 details see PostgreSQL documentation on
 \postgresdocu{app-postgres.html}{postgres}
 
@@ -3739,7 +3735,7 @@ details see PostgreSQL documentation on
 To facilitate regression testing we also integrated a test case in
 PostgreSQL regression test suite.  This test case tests just a few
 very basic scenarios, as a throughout test would take quite some time,
-and this would be appreciated as part of a checked build.  For the
+and this would not be appreciated as part of a checked build.  For the
 basic regression test see
 \srcref{src/test/regress/sql/skyline\_base.sql} and
 \srcref{src/test/regress/expected/skyline\_base.out}.
@@ -3748,13 +3744,13 @@ For a more extensive test see the Perl script \texttt{slregress.pl},
 here a larger set of test cases is produced and the result is always
 checked against the query expressed in standard SQL.  Instead of a
 table the random dataset returning function as described in
-\autoref{sec:set-returning-function}.
+\autoref{sec:set-returning-function} is used.
 
 We ran both, the PostgreSQL regression test suite and our Perl script
-\texttt{slregress.pl}, very frequently during development, to ensure that
-we do not break other parts of PostgreSQL and an already implemented
-feature of the skyline operator implementation, while we were
-integrating new parts or optimize and/or refactor other parts.
+\texttt{slregress.pl}, regularly during development, to ensure that
+we did not break other parts of PostgreSQL and an already implemented
+feature of the skyline operator, while we were integrating new parts
+or optimize and/or refactor other parts.
 
 
 

@@ -131,8 +131,8 @@
 }
 
 \newcommand\nospellcheck[1]{#1}%
-\newcommand\naive{\nospellcheck{na\"{\i}ve}}%
-\newcommand\Naive{\nospellcheck{Na\"{\i}ve}}%
+\newcommand\naive{\nospellcheck{na\"{\i}ve}\xspace}%
+\newcommand\Naive{\nospellcheck{Na\"{\i}ve}\xspace}%
 
 
 %%%
@@ -1146,6 +1146,7 @@ they are dominated. This can be formally expressed as:
 Computing the skyline in this way is expensive. \todo{}{}
 
 \subsubsection{Rewrite queries with \inlinesql{SKYLINE OF DISTINCT}}
+\label{sec:rewrite-queries-with-distinct}
 In the presents of the optional \inlinesql{DISTINCT} modifier in the
 \inlinesql{SKYLINE~OF}-clause situation is changed, such a query has
 following schema:
@@ -2017,8 +2018,8 @@ we have implemented.
 \subsection{Syntax (Railroad Diagrams)}
 \label{sec:syntax}
 To describe the formal grammar of the \inlinesql{SKYLINE OF}-clause
-extension to the SQL query syntax we use syntax diagrams (or railroad
-diagrams).  Railroad diagrams are a graphical alternative to
+extension to the SQL query syntax we use syntax diagrams (or \emph{railroad
+diagrams}).  Railroad diagrams are a graphical alternative to
 Backus-Naur form or EBNF and they have been made popular by books such
 as the ``Pascal User Manual'' written by Niklaus Wirth.  Nowadays
 railroad diagrams are used in user manuals such as the ``Oracle
@@ -2081,8 +2082,8 @@ The essential part is the comma separated list of
 \nt{skyline\_of\_expr}, and it is closed by the optional 
 \nt{skyline\_options} part. For the semantics of \inlinesql{DISTINCT}
 see \autoref{sec:rewrite-to-sql}. For the entire skyline clause we
-introduced just a single new reserved keyword, see
-\autoref{sec:reservedkeywords}.
+introduced just a single new reserved keyword (\inlinesql{SKYLINE}),
+see \autoref{sec:reservedkeywords}.
 
 \begin{rail}
 skylineclause : 
@@ -2099,7 +2100,7 @@ is because a similar concept (\inlinesql{ASC}/\inlinesql{DESC}) in the
 \inlinesql{ORDER~BY}-clause is also called direction.  Furthermore the
 treatment of null values can be specified using \inlinesql{NULLS
 FIRST} and \inlinesql{NULLS LAST}.  We have to same concept for the
-\inlinesql{ORDER BY}-clause, where this special treatment of null values 
+\inlinesql{ORDER BY}-clause. This special treatment of null values 
 was introduced in PostgreSQL 8.3.0 (see
 \postgresdocu{sql-select.html\#SQL-ORDERBY}{SQL SELECT/ORDER BY}. For
 the semantics of this see \autoref{sec:nullvalues}.
@@ -2158,8 +2159,8 @@ relative tuple order preserving property in
 desired, sort the query result by means of an appropriate
 \inlinesql{ORDER~BY}-clause.  We did so in regression testing, we
 ordered on the unique \inlinesql{ID} column, no matter what method and
-what options used the results are or at least should be the
-same. While the latter clearly indicates a flaw in the implementation.
+what options used the results are the same. If not this indicates a
+flaw in the implementation.
 
 The options fall into three groups: elimination filter
 (\inlinesql{EF}), physical operator (\inlinesql{BNL}, \inlinesql{SFS},
@@ -2192,8 +2193,8 @@ more details on how the physical operator is selected.
 
 
 The \inlinesql{PRESORT} method is more or less a special case of SFS,
-which only works in the 2 dimensional case it was pointed out by 
-\citet{Borzsonyi2001}. In the 2 dimensional case once the data
+which only works in the two dimensional case, it was pointed out by 
+\citet{Borzsonyi2001}. In the two dimensional case once the data
 are ordered according to the two skyline expressions a single tuple is
 enough to compute the skyline. See \autoref{sec:presort}.
 
@@ -2210,7 +2211,7 @@ other tuples in the tuple store. It is obvious that this algorithm has
 $O(n^2)$ run time complexity and very poor I/O behavior. Nevertheless
 it was easy to implement and gave us something to play with while
 implementing other parts of the system and of course for regression
-testing, because this method was just easier to get right and later on
+testing, because this method was easy to get right and later on
 use it to verify the results from other algorithms. See
 \autoref{sec:mnl}.
 
@@ -2218,15 +2219,15 @@ Two other special methods do exist, namely \texttt{1DIM} and
 \texttt{1DIMDISTINCT}, as the names suggest they are only for the 1
 dimensional non-distinct and distinct case.  These methods are
 directly selected by the query planner and no options can be set for
-them.  The tuplestore used by the method \texttt{1DIM} uses the
+them.  The tuple store used by the method \texttt{1DIM} uses the
 default \texttt{work\_mem} setting. See
 \autoref{sec:onedim-nondistinct} and
 \autoref{sec:onedim-distinct}.
 
-We modified the query optimizer to decided in a cost based way to use
-a \texttt{IndexScan} instead of a \texttt{SeqScan}, in case a suitable
+We modified the query planner/optimizer to decide in a cost based way to use
+an \texttt{IndexScan} instead of a \texttt{SeqScan}, in case a suitable
 index is present.  With \inlinesql{NOINDEX} option we enforce in the
-query planner to not use a \texttt{IndexScan}, this is especially of
+query planner to not use an \texttt{IndexScan}, this is especially of
 interest when profiling SFS, as SFS does a sort prior to skyline
 computation.
 
@@ -2254,7 +2255,7 @@ implementation allows to specify the size and the tuple placement
 policy. The size can be defined in two different terms, either
 in the number of slots or in the amount of RAM (in KB). When placing
 a tuple into the tuple window it takes up exactly one slot and
-as much RAM as required for the chunk of memory allocated with PostgreSQL
+as much RAM as required for the chunk of memory allocated with PostgreSQL's
 \texttt{palloc}. If both are given, i.e. \inlinesql{SLOTS} and \inlinesql{WINDOWSIZE}
 the tuple window is only limited in the number of available slots and
 the RAM constraints are ignored. When the \inlinesql{WINDOWSIZE}
@@ -2283,8 +2284,7 @@ windowpolicy : 'APPEND' | 'PREPEND' | 'ENTROPY' | 'RANDOM' ;
 \end{rail}
 
 At this point we would like to give a little example how the options can be
-used (we slightly reformatted the output to make it fit into the page with
-constraint):
+used (we slightly reformatted the output to make it fit onto this page):
 
 \begin{interactive}
 \sqlprompt{EXPLAIN ANALYZE} \rcomment{see the query plan and execution statistics}
@@ -2326,7 +2326,7 @@ constraint):
 (17 rows)
 \end{interactive}
 
-The reader might noticed that the grammar for \nt{skyline\_options}
+The alerted reader might noticed that the grammar for \nt{skyline\_options}
 contains a rather big amount of $\varepsilon$-productions and that this
 grammar would be easy to implement without any shift/reduce conflicts
 using yacc/bison. In fact we defined the grammar for
@@ -2400,11 +2400,11 @@ up the implementation of SQL aggregate functions.
 \section{Semantics}
 
 In this section and the following subsections we describe only these
-aspects of the skyline operator semantics which are not cleare through
+aspects of the skyline operator semantics which are not clear through
 the basic definition.  The semantics of the options for the
-\inlinesql{SKYLINE~OF}-clause is either already given in the describtion
+\inlinesql{SKYLINE~OF}-clause is either already given in the description
 of the syntax in \autoref{sec:syntax} or in the appropriate subsection
-in the describtion of query execution (cf. \autoref{sec:queryexecution}).
+in the description of query execution (cf. \autoref{sec:queryexecution}).
 The semantics of \inlinesql{SKYLINE OF DISTINCT}
 vs. non-\inlinesql{SKYLINE OF DISTINCT} is described in
 \autoref{sec:rewrite-to-sql}.
@@ -2453,7 +2453,7 @@ SELECT * FROM a15d1e5s0 SKYLINE OF d1 \textbf{USING <}, d2 \textbf{USING >};
 The issue of dealing with null values is usually not treated in the
 literature, but a real implemenation in a database system of course
 must be able to cope with null values.  Furthermore we have a syntax
-to specify how to deal with null values.  Once again this is a feature
+to specify how to treat null values when ordering values.  Once again this is a feature
 inspired by a feature of PostgreSQL's \inlinesql{ORDER~BY}-clause, where
 the keywords \inlinesql{NULLS FIRST} and \inlinesql{NULLS LAST} allows
 the user the specify how to treat null values.  When sorting ascending
@@ -2562,12 +2562,12 @@ according target list entry, furthermore the sort operator and a flag
 on how to treat NULL values (cf. \texttt{NULLS FIRST}/\texttt{NULLS
 LAST}). The information if the sort order is ascending (\texttt{ASC})
 or descending (\texttt{DESC}) is encoded in the sort operator used, as
-sort operator always appear in pairs an operator and its commutator,
+sort operator always appear in pairs, an operator and its commutator,
 i.e. the same order just reversed.  This pathkeys information plays an
-important role throughout the query plan.  A note within the query plan
-might creates, can make use of, or destroys a certain pathkey.  If
+important role throughout the query plan.  A node within the query plan
+might create, can make use of, or destroy a certain pathkeys.  If
 created or preserved the nodes higher up in the query plan can make
-use of it.  This information is considered by the query planner when
+use of it as well.  This information is considered by the query planner when
 deciding among different physical operators, e.g. \emph{stream
 aggregate operator} vs. \emph{hash aggregate operator}, or different
 forms of the \emph{join operator}, for \emph{duplicate elimination}
@@ -2579,7 +2579,7 @@ a certain relative order.
 
 \subsection{Pipelined execution}
 PostgreSQL query execution engine has a top down driven pipelined
-architecture, i.e. each node consumes the tuples from its children and
+architecture, i.e. each node consumes the tuples from its childrens and
 produces tuples and in general no intermediate results are
 materialized, see \srcref{src/backend/executor/README}.  A simple
 suitable interface for this iterator whould just expose these methods:
@@ -2587,7 +2587,7 @@ suitable interface for this iterator whould just expose these methods:
 PostgreSQL's iterator interface is a bit richer, the dispatch functions
 are in \srcref{src/backend/executor/execProcnode.c}. In order to specialize
 just add an approriate case in the these dispatch function and call
-our own code:
+your own code:
 
 \begin{lstlisting}[language=pseudo,numbers=none]
 ExecCountSlotsNode -- count tuple slots needed by plan tree
@@ -2735,7 +2735,7 @@ SELECT * FROM a15d1e4s0 ORDER BY d2, d1;
 \noindent
 Yet alone from this example one get the intuition that the
 \inlinesql{SKYLINE~OF}-clause can versatile a richer set of indexes
-(access paths) than the \inlinesql{ORDER~BY}-clause can.  To be
+(access paths) than the \inlinesql{ORDER~BY}-clause.  To be
 precise we must speak of \emph{pathkeys}\index{pathkeys}, i.e. both of
 the above skyline queries can make use of the following index, but
 only the first query with a \inlinesql{ORDER~BY}-clause:
@@ -2871,7 +2871,7 @@ as such that before seeing the actual skyline tuples a lot of
 anti-correlated tuples show up in the tuple stream.  The tuple window
 will fill up with non skyline tuples.
 
-We would like to also point out, that larger window and and less
+We would like also to point out, that larger window and and less
 passes do not always mean better runtime, as with larger windows the
 number of comparisons per tuple could increase and therefore more CPU
 time is required, so there is a break even point. For experimental
@@ -2992,7 +2992,7 @@ which rewrites to the following standard SQL query:
 
 \noindent
 As can be seen from the query plan below the standard SQL query takes
-to passes over the input, first finding the minimum by means of
+two passes over the input, first finding the minimum by means of
 aggregation and than filtering the input with the found minimum.
 
 \begin{interactive}
@@ -3218,7 +3218,7 @@ smallest case considered in literature and of course BNL and SFS can
 deal with it.  Nevertheless as pointed out in \citep{Borzsonyi2001}
 skylines for the two dimensional case can be computed in a simple way
 if the input relation is ordered according to the skyline criteria,
-then then the skyline can be computed with a single scan over the
+then the skyline can be computed with a single scan over the
 input, while keeping just the most recently found skyline tuple, see
 \autoref{code:2dimpresort}.  Of course in the presents of an
 suitable access path the input need not to be sorted, just perform an
@@ -3228,7 +3228,10 @@ perspective.
 
 An interesting aspect of this algorithm is how it deals with the
 \inlinesql{DISTINCT} modifier for the \inlinesql{SKYLINE~OF}-clause.
-\todo{}{give reference to semantics of distinct keyword}
+%
+For the semantics of the \inlinesql{DISTINCT}-modifier see
+\autoref{sec:rewrite-queries-with-distinct}.
+%
 In the pseudo code in \autoref{code:2dimpresort} \texttt{DISTINCT}
 is a Boolean variable, which is \emph{true} if the
 \inlinesql{DISTINCT} modifier is present, and \emph{false}
@@ -3316,7 +3319,7 @@ nested loop?  This \emph{materialized} stem from the fact that we
 materialize the tuples from the outer plan, to be able to read them
 over and over again, this is because the skyline operator can sit at
 any non leave node in the query plan and not only on top of a table or
-index scan.  The handle the \inlinesql{DISTINCT} case, we just use a
+index scan.  To handle the \inlinesql{DISTINCT} case, we just use a
 the counters $state.pos$ and $innerPos$ and favor the first tuple.
 
 %\begin{figure}[htbp]

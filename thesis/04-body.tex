@@ -150,13 +150,13 @@
 In everyday life we are used to make decisions based on multiple
 criteria, e.g. price and quality for products.  Frequently there is no
 clear winner over all criteria, i.e. a high priced product with high
-quality and a cheap product with lower qualtity.  For sure we are not
+quality and a cheap product with lower quality.  For sure we are not
 interested in a product with a high price and poor quality, we will
 later refer this situation as \emph{this product is dominated by
-anothers}, as there are others which better fulfill our criteria.  The
+another}, as there are others which better fulfill our criteria.  The
 products which are not dominated are more or less equally good based on
 our given criteria, and we need to apply more criteria to come to a
-descision.  These products are called to be \emph{pareto optimal}
+decision.  These products are called to be \emph{Pareto optimal}
 based on the given criteria. \citet{Borzsonyi2001} coined in their
 paper the term \emph{skyline operator} for this type of queries.
 
@@ -468,10 +468,10 @@ readability, to emphasize a certain point, or just to work around the
 Furthermore at certain points we even allowed ourselves to strip some
 output, we indicated such omissions by an ellipsis (``$[\ldots]$'').
 
-\section{Pseudocode}
+\section{Pseudo-code}
 In the real code for our implementation we do concern about issues of
 software engineering, like error handling, which we ignore in the
-pseudocode to convey the essence of the algorithms more concisely.
+pseudo-code to convey the essence of the algorithms more concisely.
 
 For the presentation we adapt the convention in
 \citep[Page~19]{Cormen2001}, in the very essence i.e.:
@@ -1216,7 +1216,7 @@ order on the tuples, then we are able to pick the first or the
 last\footnote{Of course we can also express to pick the second, the
 third and so forth, but all we know is that within a group we have at
 least one tuple.}.  In the presents of a unique and ordered
-key\footnote{On some RDBMS special pseudocolumns for such proposes do
+key\footnote{On some RDBMS special pseudo-columns for such proposes do
 exist.} this is obvious, in the other case as long as on each
 attribute a total order exists, we can construct a lexicographic
 order\index{lexicographic order}.  Duplicate elimination with
@@ -1422,6 +1422,8 @@ expression, so they are full general.
 
 \section{Main Memory Only Skyline Algorithms}
 \todo{}{}
+resent results \cite{Bentley1990, Bentley1993}
+
 
 \section{Non-indexed based Skyline Algorithms}
 The skyline algorithms we have implemented are: BNL, SFS, BNL+EF and
@@ -1456,14 +1458,14 @@ $\mathcal{T}$ & temporary file (\emph{type}: set of $d$-dimensional points) \\
 $\mathbb{W}$ & tuple window in main memory (\emph{type}: set of $d$-dimensional points with a timestamp value for each point and if the window policies \emph{entropy} or \emph{random} are used, then each point has an associated \emph{rank}) \\
 $p \dominates q$ & point $p$ dominates point $q$
 \end{tabular}
-\caption{Symbols used throughout the pseudo code}
+\caption{Symbols used throughout the pseudo-code}
 \label{tab:pseudocodesymboles}
 \end{table}
 
 
 %\begin{figure}[htbp]
 \begin{lstlisting}[language=pseudo, 
-caption={Pseudo code for Original Block-Nested-Loops (BNL) Algorithm, which does not terminate in all cases.},
+caption={Pseudo-code for Original Block-Nested-Loops (BNL) Algorithm, which does not terminate in all cases.},
 label={code:bnl}]
 function SkylineBNL($\mathcal{I}$)
 	// initialization
@@ -1514,7 +1516,7 @@ function SkylineBNL($\mathcal{I}$)
 
 	return ($\mathcal{O}$);
 \end{lstlisting}
-%\caption{Pseudo code for Original Block-Nested-Loops (BNL) Algorithm, which does not terminate in all cases.}
+%\caption{Pseudo-code for Original Block-Nested-Loops (BNL) Algorithm, which does not terminate in all cases.}
 %\label{code:bnl}
 %\end{figure}
 
@@ -1614,7 +1616,7 @@ implementation in PostgreSQL is based on our fixed version.
 
 %\begin{figure}[htbp]
 \begin{lstlisting}[language=pseudo,
-caption={Pseudo code for Fixed Block-Nested-Loops (BNL) Algorithm},
+caption={Pseudo-code for Fixed Block-Nested-Loops (BNL) Algorithm},
 label={code:fixedbnl}
 ]
 function SkylineBNL($\mathcal{I}$) 
@@ -1672,7 +1674,7 @@ function SkylineBNL($\mathcal{I}$)
 
 	return ($\mathcal{O}$);
 \end{lstlisting}
-%\caption{Pseudo code for Fixed Block-Nested-Loops (BNL) Algorithm}
+%\caption{Pseudo-code for Fixed Block-Nested-Loops (BNL) Algorithm}
 %\label{code:fixedbnl}
 %\end{figure}
 
@@ -1721,7 +1723,7 @@ path selection.  We modified the query optimizer accordingly.
 
 %\begin{figure}[htbp]
 \begin{lstlisting}[language=pseudo,
-caption={Pseudo code for Sort-First-Skyline (SFS) Algorithm},
+caption={Pseudo-code for Sort-First-Skyline (SFS) Algorithm},
 label={code:sfs}
 ]
 function SkylineSFS($\mathcal{I}$) begin 
@@ -1769,7 +1771,7 @@ function SkylineSFS($\mathcal{I}$) begin
 
 	return ($\mathcal{O}$);
 \end{lstlisting}
-%\caption{Pseudo code for Sort-First-Skyline (SFS) Algorithm}
+%\caption{Pseudo-code for Sort-First-Skyline (SFS) Algorithm}
 %\label{code:sfs}
 %\end{figure}
 
@@ -1818,7 +1820,7 @@ same way as BNL from a bad distribution of tuples in the input, e.g.
 the tuple window gets filled up by skyline tuples with a low dominance
 factor.
 
-\citet{Godfrey2005} do not give pseudo code for the elimination
+\citet{Godfrey2005} do not give pseudo-code for the elimination
 filter in there paper. In \autoref{code:ef} we give a sketch for
 the code as we used it in our implementation. Note that we are give
 the algorithm in a form that fits into a pipelined architecture liked
@@ -1846,7 +1848,7 @@ order as in the input.
 
 %\begin{figure}[htbp]
 \begin{lstlisting}[language=pseudo,
-caption={Pseudo code for Elimination Filter (EF)},
+caption={Pseudo-code for Elimination Filter (EF)},
 label={code:ef}
 ]
 function EliminationFilter($\mathcal{I}$, var $state$) begin 
@@ -1886,7 +1888,7 @@ function EliminationFilter($\mathcal{I}$, var $state$) begin
 		case DONE:
 			return NULL;
 \end{lstlisting}
-%\caption{Pseudo code for Elimination Filter (EF)}
+%\caption{Pseudo-code for Elimination Filter (EF)}
 %\label{code:ef}
 %\end{figure}
 
@@ -2422,20 +2424,20 @@ SELECT * FROM a15d1e5s0 SKYLINE OF d1 \textbf{USING <}, d2 \textbf{USING >};
 \subsection{Skyline in the presents of NULL values}
 \label{sec:nullvalues}
 The issue of dealing with null values is usually not treated in the
-literature, but a real implemenation in a database system of course
+literature, but a real implementation in a database system of course
 must be able to cope with null values.  Furthermore we have a syntax
 to specify how to treat null values when ordering values.  Once again this is a feature
 inspired by a feature of PostgreSQL's \inlinesql{ORDER~BY}-clause, where
 the keywords \inlinesql{NULLS FIRST} and \inlinesql{NULLS LAST} allows
 the user the specify how to treat null values.  When sorting ascending
 per default null values sort after non-null values and when sorting
-descedning null values sort before non-null values, as above see the
+descending null values sort before non-null values, as above see the
 PostgreSQL documentation on ORDER BY-clause.
 
 If \inlinesql{NULLS FIRST} or \inlinesql{NULLS LAST} is omitted, the
 default is to sort null values after all the non-null values on
 \inlinesql{SKYLINE OF MIN} and for \inlinesql{SKYLINE OF MAX} to have
-the null values before the non-null values.  Specifing
+the null values before the non-null values.  Specifying
 \inlinesql{NULLS FIRST/LAST} overrides this default.  The question
 may arise if \inlinesql{NULLS LAST} should be the default for
 \inlinesql{SKYLINE OF MAX}, but as this is not the case for the
@@ -2445,7 +2447,7 @@ be consistent.
 
 \subsection{\inlinesql{SKYLINE OF} and \inlinesql{GROUP BY}}
 It is well known that there are some dependencies between what one can
-specifiy in the \nt{target\_list} of a \inlinesql{SELECT}-clause and
+specify in the \nt{target\_list} of a \inlinesql{SELECT}-clause and
 the relvars\footnote{The term \emph{relvar} was coined by C. J. Date
 as an abbreviation for ``relation variable''.  This usually refers to
 a \emph{table}, but could also be a sub-select or such.} specified
@@ -2462,7 +2464,7 @@ LINE 1: select foo from a15d1e5s0;
 \noindent
 Clearly such limitation also apply to the expressions in the
 \inlinesql{SKYLINE~OF}-clause.  In the presents of a
-\inlinesql{GROUP~BY}-clause more limitations apply, which immediatly
+\inlinesql{GROUP~BY}-clause more limitations apply, which immediately
 becomes clear when we look at the operator tree
 (cf. \autoref{fig:qp-agg-skyline}).  Only does columns or expressions
 that appear in the \inlinesql{GROUP~BY}-clause or are part of an
@@ -2550,14 +2552,14 @@ a certain relative order.
 
 \subsection{Pipelined execution}
 PostgreSQL query execution engine has a top down driven pipelined
-architecture, i.e. each node consumes the tuples from its childrens and
+architecture, i.e. each node consumes the tuples from its children and
 produces tuples and in general no intermediate results are
 materialized, see \srcref{src/backend/executor/README}.  A simple
-suitable interface for this iterator whould just expose these methods:
+suitable interface for this iterator would just expose these methods:
 \texttt{open()}, \texttt{tuple next()} and \texttt{close()}.  Nevertheless
 PostgreSQL's iterator interface is a bit richer, the dispatch functions
 are in \srcref{src/backend/executor/execProcnode.c}. In order to specialize
-just add an approriate case in the these dispatch function and call
+just add an appropriate case in the these dispatch function and call
 your own code:
 
 \begin{lstlisting}[language=pseudo,numbers=none]
@@ -2583,7 +2585,7 @@ ExecSupportsBackwardScan -- does a plan type support backwards
 
 \noindent
 Each execution node is coded in the fashion of a state machine.  Do
-something in each state and then if neccessary proceed to another
+something in each state and then if necessary proceed to another
 state.  The whole state is stored in the node's execution state
 information and is preserved across calls.
 
@@ -2627,7 +2629,7 @@ There are a couple of support functions to work with the object
 system: \texttt{makeNode} (create a new \texttt{Node}), \texttt{IsA}
 (runtime type testing), \texttt{equal} (deep equality test),
 \texttt{copyObject} (deep object copy),
-\texttt{nodeToString}/\texttt{stringToNode} (serialise/deserialise
+\texttt{nodeToString}/\texttt{stringToNode} (serialize/deserialize
 to/from text).
 
 \noindent
@@ -2637,7 +2639,7 @@ When introducing new classes make sure to update these files:
 \section{Parsing the \inlinesql{SKYLINE OF}-clause}
 In the parser component the textual representation of a query, namely
 SQL, is parsed into a data structure.  This is done as described in
-the PostgreSQL documenation for the \postgresdocu{parser-stage.html}
+the PostgreSQL documentation for the \postgresdocu{parser-stage.html}
 {parser stage}.  The data structure uses PostgreSQL simple object
 system, as described in the previous section.  We extended this stage
 to handle the \inlinesql{SKYLINE OF}-clause as defined in
@@ -2649,13 +2651,13 @@ stage is called \emph{parse tree}.
 In this phase, which is also described in PostgreSQL documentation on the
 \postgresdocu{parser-stage.html}{parser stage}, the \emph{parse tree}
 from the previous stage is semantically analyzed, the outcome is
-called \emph{query tree}.  Lookups into the system catalog are done in
+called \emph{query tree}.  Look-ups into the system catalog are done in
 this stage to resolve references to tables, columns, functions, and
 operators, see \texttt{transformSkylineClause}\footnote{in
 \srcref{src/backend/parser/parse\_clause.c}}.
 
 \section{Query Rewriting}
-For our implemenation it was not necessary to modify the \emph{query
+For our implementation it was not necessary to modify the \emph{query
 rewriting} stage.  For details see documentation on the
 \postgresdocu{rule-system.html}{PostgreSQL Rule System}.
 
@@ -2667,7 +2669,7 @@ plan.  Although it is computational feasible to examine each possible
 plan and selecting the best, often this exhaustive enumeration is
 to expensive.  
 %
-Various tradeoffs are made, more details see PostgreSQL documenation
+Various trade-offs are made, more details see PostgreSQL documentation
 on \postgresdocu{planner-optimizer.html}{Planner/Optimizer}.
 
 In the following subsections we describe how We modified the query
@@ -2723,7 +2725,7 @@ accordingly, c.f.  function \texttt{query\_planner}\footnote{in
 The matching of the pathkeys is done in \texttt{skyline\_pathkeys\_contained\_in}
 \footnote{in \srcref{src/backend/optimizer/path/pathkeys.c}}.
 
-This modification has an inpact on how the join trees are formed and
+This modification has an impact on how the join trees are formed and
 which access paths are considered.
 
 \subsubsection{Pull up subqueries}
@@ -2810,7 +2812,7 @@ restriction must be relaxed.  To still be able to use
 \eqref{eqn:entropy} we scale the domain for each attribute to $[0,
 1]$.  We use PostgreSQL statistics on the base relations to get the
 information about the range of each attribute.  If at least one of
-them is missing, we do fall back to placment policy \emph{append}.  In
+them is missing, we do fall back to placement policy \emph{append}.  In
 future work we might engage \emph{sampling} here, see
 \autoref{sec:sampling}.
 
@@ -2828,8 +2830,76 @@ SKYLINE OF d1 MIN, d2 MIN WITH WINDOWPOLICY=ENTROPY;
 
 \subsection{Cardinality and Cost Estimation}
 \label{sec:cardinality-and-cost-estimation}
+For a full blown relational operator it is important to compute or at
+least estimate the \emph{cardinality} of the result, i.e. answer the
+question how many tuples will be in the output, based on the number of
+tuples in the input and possible other properties of the input.  A
+related question is what is the computational cost of computing the
+result.  It is sufficient to answer the last question relative to
+other operators.  
 
-cite \citep{Buchta1989}, \citep{Chaudhuri2006}
+Unfortunately neither question is easy two answer, at least for the
+non-trivial skyline algorithms like BNL and SFS it's not. Of course
+the question about the cardinality is independent from the algorithms
+selected.
+
+The first bounds for the number of comparisons required have been
+derived by \citet{Kung1975}, where the number of comparisons for
+$n$ vectors in $d$-dimensional space is denoted by $C_d(n)$. 
+Clearly $C_1(n) = n - 1$ and $C_d(n) \le O(n^2)$ for $d \ge 2$.
+In their paper they showed:
+
+\begin{eqnarray}
+C_d(n) &\le& O(n \log n) \quad \textnormal{for} \quad d = 2, 3, \\
+C_d(n) &\le& O(n (\log n)^{d-2}) \quad \textnormal{for} \quad d \ge 4, \quad \textnormal{and} \\
+C_d(n) &\ge& \lceil\log n!\rceil \quad \textnormal{for} \quad d \ge 2
+\end{eqnarray}
+
+The first result for the cardinality was obtained by
+\cite{Bentley1978}.  The result they derived is for set of $n$ vectors
+in a $d$-dimensional space under the assumption that all $(n!)^d$
+relative orderings are equally probable, the average number of maxima
+is:
+
+\begin{equation}
+O((\ln n)^{d-1})
+\end{equation}
+
+\noindent
+\citet{Buchta1989} refined this result to:
+
+\begin{equation}
+\Theta\left(\frac{(\ln n)^{d-1}}{(d-1)!}\right)
+\end{equation}
+
+\noindent
+The work of \citet{Godfrey2002} elaborates this results more in the
+context of skyline queries, but still under strong assumptions, like
+uniform distribution and unique real-valued attributes.
+%
+The most recent work we are aware of about cardinality and cost
+estimation for the skyline operator is the paper of
+\citet{Chaudhuri2006}. A theorem for estimating the cardinality of a skyline
+dataset drawn from an arbitrary distribution is derived.  This theorem is
+relaxed to estimate categorical attributes as well. Cost estimation
+for BNL and SFS is addressed.
+
+In our implementation we took the result from \citet{Buchta1989} for
+cardinality estimation see \texttt{estimate\_skyline\_cardinality}\footnote{in
+\srcref{src/backend/optimizer/plan/createplan.c}}.
+
+In PostgreSQL the costs are expressed in a multiple of these values:
+\texttt{seq\_page\_cost}, \texttt{random\_page\_cost}, \texttt{cpu\_tuple\_cost},
+\texttt{cpu\_index\_tuple\_cost}, and \texttt{cpu\_operator\_cost}
+\footnote{see \srcref{src/backend/optimizer/path/costsize.c}}.
+
+Our planner/optimizer is not yet cost-based, see
+\autoref{sec:cost-based-operator-selection}, therefore we took little
+effort to estimate the costs for the different physical skyline
+operators, especially the results from \citet{Chaudhuri2006} have not
+yet been integrated. Nevertheless a skeleton with some flesh is there,
+see \texttt{cost\_skyline}\footnote{in
+\srcref{src/backend/optimizer/path/costsize.c}}.
 
 \subsubsection{Tuple window size}
 One could be tempted to set the tuple window size according to the
@@ -2933,7 +3003,7 @@ ORDER BY AVG(e.Salary) DESC
 \end{figure}
 
 
-\subsection{Comments on the Pseudo Code}
+\subsection{Comments on the Pseudo-code}
 All the pseudo code presented in the following subsections is in a
 form of state machines, as required for the PostgreSQL query execution
 engine.  On concept that we like to mention at this point is the
@@ -3006,19 +3076,19 @@ this, i.e. another potential minimal/maximal tuple we add it to the
 tuple store.  On the other hand, if this tuple is dominated we clean
 the tuple store, and keep the dominating tuple.  After the initial
 scan over the input we pipe out the tuple store,
-cf. \autoref{code:1dim}.  For the sake of a clearer pseudo code we
+cf. \autoref{code:1dim}.  For the sake of a clearer pseudo-code we
 gave our self the freedom to present the tuple store interface
 (\texttt{tuplestore\_*}) a little different to the actual
 implementation.  A functionality we added to the tuple store is to
 remove all tuples from the tuple store, which is cheaper than
-recreating it.  In the pseudo code this function is called
+recreating it.  In the pseudo-code this function is called
 \texttt{tuplestore\_clearall}, while in the real implementation its name
 is \texttt{tuplestore\_catchup}, which fits better as we are just
 modifying read and write pointers.
 
 %\begin{figure}[htbp]
 \begin{lstlisting}[language=pseudo,
-caption={Pseudo code for Special case: 1 dimensional},
+caption={Pseudo-code for Special case: 1 dimensional},
 label={code:1dim}
 ]
 function ExecSkyline_1Dim(var $state$)
@@ -3060,7 +3130,7 @@ function ExecSkyline_1Dim(var $state$)
 	case DONE:
 		return NULL;
 \end{lstlisting}
-%\caption{Pseudo code for Special case: 1 dimensional}
+%\caption{Pseudo-code for Special case: 1 dimensional}
 %\label{code:1dim}
 %\end{figure}
 
@@ -3118,7 +3188,7 @@ would look like this:
 An ad hoc experiment that we conducted showed that Microsoft SQL Server
 2005 produces a very similar execution plan.
 
-In Oracle the pseudocolumn \inlinesql{ROWNUM}\index{ROWNUM@\texttt{ROWNUM}}
+In Oracle the pseudo-column \inlinesql{ROWNUM}\index{ROWNUM@\texttt{ROWNUM}}
 can be used the limit the number of tuples returned by a query.
 
 If the relation in question contains a unique identifier with a total
@@ -3137,7 +3207,7 @@ minimal tuples. The runtime complexity of this query is also in $O(n^2)$.
 
 %\begin{figure}[htbp]
 \begin{lstlisting}[language=pseudo,
-caption={Pseudo code for Special case: 1 dimensional distinct},
+caption={Pseudo-code for Special case: 1 dimensional distinct},
 label={code:1dimdistinct}
 ]
 function ExecSkyline_1DimDistinct(var $state$)
@@ -3161,7 +3231,7 @@ function ExecSkyline_1DimDistinct(var $state$)
 	case DONE:
 		return NULL;
 \end{lstlisting}
-%\caption{Pseudo code for Special case: 1 dimensional distinct}
+%\caption{Pseudo-code for Special case: 1 dimensional distinct}
 %\label{code:1dimdistinct}
 %\end{figure}
 
@@ -3187,7 +3257,7 @@ An interesting aspect of this algorithm is how it deals with the
 For the semantics of the \inlinesql{DISTINCT}-modifier see
 \autoref{sec:rewrite-queries-with-distinct}.
 %
-In the pseudo code in \autoref{code:2dimpresort} \texttt{DISTINCT}
+In the pseudo-code in \autoref{code:2dimpresort} \texttt{DISTINCT}
 is a Boolean variable, which is \emph{true} if the
 \inlinesql{DISTINCT} modifier is present, and \emph{false}
 otherwise. Let $p$ be the current skyline tuple, then a tuple $q$
@@ -3215,7 +3285,7 @@ q \dominates p \lor (q \nondistinct p \land \bot) = q \dominates p
 
 %\begin{figure}[htbp]
 \begin{lstlisting}[language=pseudo,
-caption={Pseudo code for Special case: 2 dimensional with presort},
+caption={Pseudo-code for Special case: 2 dimensional with presort},
 label={code:2dimpresort}
 ]
 function ExecSkyline_2DimPresort(var $state$)
@@ -3249,7 +3319,7 @@ function ExecSkyline_2DimPresort(var $state$)
 	case DONE:
 		return NULL;
 \end{lstlisting}
-%\caption{Pseudo code for Special case: 2 dimensional with presort}
+%\caption{Pseudo-code for Special case: 2 dimensional with presort}
 %\label{code:2dimpresort}
 %\end{figure}
 
@@ -3269,7 +3339,7 @@ the counters $state.pos$ and $innerPos$ and favor the first tuple.
 
 %\begin{figure}[htbp]
 \begin{lstlisting}[language=pseudo,
-caption={Pseudo code for MNL},
+caption={Pseudo-code for MNL},
 label={code:mnl}
 ]
 function ExecSkyline_MaterializedNestedLoop(var $state$)
@@ -3318,7 +3388,7 @@ function ExecSkyline_MaterializedNestedLoop(var $state$)
 	case DONE:
 		return NULL;
 \end{lstlisting}
-%\caption{Pseudo code for MNL}
+%\caption{Pseudo-code for MNL}
 %\label{code:mnl}
 %\end{figure}
 
@@ -3443,7 +3513,7 @@ for a tuple a random value is used
 \subsection{BNL}
 The implementation of the BNL algorithm is based on our fixed version
 of \citep{Borzsonyi2001}, see \autoref{code:fixedbnl}. In the
-following we give a pseudo code in terms of a state machine as
+following we give a pseudo-code in terms of a state machine as
 required by the PostgreSQL query execution engine, see
 \autoref{code:fixedbnl-statemachine}. This implementation is fully general, it can deal with any dimension $\ge 1$ and can treat the \inlinesql{DISTINCT} modifier. To ensure BNL is used for query execution specify the \inlinesql{BNL}
 keyword as an option to the skyline clause.  All other options that
@@ -3452,7 +3522,7 @@ can be specified effect the tuple window.
 
 %\begin{figure}[htbp]
 \begin{lstlisting}[language=pseudo,
-caption={Pseudo code for BNL},
+caption={Pseudo-code for BNL},
 label={code:fixedbnl-statemachine}
 ]
 function ExecSkyline_BlockNestedLoop(var $state$)
@@ -3543,7 +3613,7 @@ function ExecSkyline_BlockNestedLoop(var $state$)
 		case DONE:
 			return NULL;
 \end{lstlisting}
-%\caption{Pseudo code for BNL}
+%\caption{Pseudo-code for BNL}
 %\label{code:fixedbnl-statemachine}
 %\end{figure}
 
@@ -3561,7 +3631,7 @@ the way it fits into the query execution engine, see
 \autoref{code:sfs-statemachine}.
 
 \begin{lstlisting}[language=pseudo,
-caption={Pseudo code for SFS},
+caption={Pseudo-code for SFS},
 label={code:sfs-statemachine}
 ]
 function ExecSkyline_SortFilterSkyline(var $state$)
@@ -3627,7 +3697,7 @@ function ExecSkyline_SortFilterSkyline(var $state$)
 \end{lstlisting}
 
 \subsection{Elimination Filter (EF)}
-The pseudo code is already given in \autoref{sec:ef-tuple-order},
+The pseudo-code is already given in \autoref{sec:ef-tuple-order},
 cf. \autoref{code:ef}. We have used the elimination filter with
 SFS and BNL, see the following sections.
 
@@ -3913,7 +3983,7 @@ value $E[x] = \textnormal{med}$.
 This implementation is motivated through the central limit theorem and
 based on the observation that a $12$-fold sum of $[0,1]$ uniformly
 distributed random value yields a sufficient good normally distributed
-value. A pre-requirement for this to work, is that the $12$ uniformly
+value. A prerequirement for this to work, is that the $12$ uniformly
 distributed values are independent. While this can not be guaranteed
 for \lstinline{random_equal()} we verified that data generated by
 \lstinline{random_normal()} are sufficiently normally distributed with
@@ -4865,7 +4935,7 @@ workload was spread across seven computers (SKY01, $\ldots$, SKY07),
 and these computers have been busy for about six weeks.
 
 \section{Parameter Space}
-The parameter space that can be analized is quite large, the
+The parameter space that can be analyzed is quite large, the
 parameters and their ranges are as follows:
 
 \begin{itemize}
@@ -4901,7 +4971,7 @@ DIFF groups are used\footnote{not yet implemented, see \autoref{sec:speedup-skyl
 \item window policy (prepend, append, entropy\footnote{policy entropy needs table stats for scaling to $[0,1]$}, random) In case EF is used the window policy for EF and BNL/SFS can be selected independently, resulting in 16 possible combinations.
 \end{itemize}
 
-Exploring the entire parameter space is practicly infeasible.
+Exploring the entire parameter space is practically infeasible.
 The subset we selected an the according results are presented in the following section.
 
 \section{Comparisons and Analysis}
@@ -5227,8 +5297,10 @@ the most effective EF window policy.
 \chapter{Future work}
 
 \section{Cost-based operator selection}
+\label{sec:cost-based-operator-selection}
 see \autoref{sec:operatorselection, sec:cardinality-and-cost-estimation}.
 \todo{}{}
+incorporate the results from \citet{Chaudhuri2006}.
 
 \section{Different syntax for \inlinesql{SKYLINE OF DIFF}}
 We believe the syntax of \inlinesql{SKYLINE OF DIFF} is a bit

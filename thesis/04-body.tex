@@ -1382,10 +1382,6 @@ to any monotone function).\todo{from \citep{Papadias2005}}{rephrase}
 
 \chapter{Existing Skyline Algorithms}
 %\label{chap:relatedworks}
-\todo{}{}
-
-
-\todo{FLET (Fast Linear Expected-time), [BCL90]:}{}
 
 Since the introduction of the skyline operator \citep{Borzsonyi2001}, a
 number of secondary-memory algorithms have been developed for
@@ -1418,28 +1414,53 @@ skyline algorithms can only be placed an the leaves of an algebraic
 expression, where the non-indexed based skyline algorithms are first
 order citizens and can be placed any where in the relational algebra 
 expression, so they are full general.
-\todo{}{}
+
+There is a whole class of other skyline algorithms, referenced as
+\emph{continuous skyline computation}.  
+The task is here the initially compute the skyline and that update the
+skyline when tuples are added or removed from the dataset, e.g. in a
+streaming scenario. 
+Such algorithms are presented in \citep{Lin2005, Tao2006}. In this work
+we will not further consider this scenario.
+
 
 \section{Main Memory Only Skyline Algorithms}
-\todo{}{}
-resent results \cite{Bentley1990, Bentley1993}
+Historically this problem is known as the \emph{maximum vector
+problem} \citep{Kung1975,Preparata1985}.  The proposed solutions
+assume that the entire dataset, all intermediate results, and the
+result fit into main memory.  For an RDBMS it is not safe to assume
+that all data will fit into RAM, because either the relations on disk
+are so large or due to a large number of concurrent users the
+available RAM for each process is limited.  Same for handheld devices,
+where RAM is a limited resource.  As we were primarily interested in
+integration of the skyline operator into PostgreSQL we were not
+concerned with this algorithms, and for brevity we will not discuss
+them here.  More recent algorithm in this area is FLET
+\citep{Bentley1990, Bentley1993}
 
 
 \section{Non-indexed based Skyline Algorithms}
 The skyline algorithms we have implemented are: BNL, SFS, BNL+EF and
 SFS+EF. EF stands for {\em Elimination Filter}, which was introduced
 in \citep{Godfrey2005} as an essential routine for the LESS algorithm.
+Another algorithm in this category is D\&C. We give a brief description
+of them in the following subsections.
+
 
 \subsection{Block Nested Loops (BNL)}
-BNL was implemented according to the algorithm proposed in \citep{Borzsonyi2001}.
-A {\em tuple window} is maintained in the main memory for storing
-the potential skyline tuples. Once the window becomes full,
-an overflow file has to be generated.
-In the PostgreSQL execution engine, the BNL operator 
-lies in the iterator tree between the \texttt{ORDER BY} 
-and the \texttt{GROUP BY} node (see \autoref{fig:qp-agg-bnl-sort}),
-to directly reflect the intended semantic of the \texttt{SKYLINE OF}-extension
-to the SQL syntax.
+BNL \citep{Borzsonyi2001} works as follows.  A {\em tuple window} is
+maintained in the main memory for storing the potential skyline
+tuples.  Once the window becomes full, an overflow file (temp file)
+has to be generated.  At the end of the original input BNL switches to
+the temp file for reading to process these tuples in a second pass.
+If the window becomes full again, further overflow files are generated
+and BNL will make an other pass.  The tuples in the tuple window get a
+timestamp to be able the decide which tuples in the window have been
+compared against all other tuples and therefore can be written to the
+output and removed from the tuple window. See \autoref{code:bnl} for
+details, \autoref{tab:pseudocodesymboles} summarizes the symbols used
+in the pseudo-code. 
+
 
 % NOTE: it is actually between HAVING and ORDER BY, but HAVING is done 
 % more or less in the GROUP BY, as the WHERE clause to some
@@ -1608,8 +1629,8 @@ m$;
 \end{enumerate}
 
 The simplest case to reconstruct this non-termination behavior is with
-$n=m=1$.  A possible fix is to duplicate the lines 7--12 between 44
-and 45 in \autoref{code:bnl}, so the propagation is done once EOF
+$n=m=1$.  A possible fix is to duplicate the lines 7--10 between 38
+and 39 in \autoref{code:bnl}, so the propagation is done once EOF
 is reached.  Nevertheless we fixed it with a slight modification in
 the control flow, see \autoref{code:fixedbnl}.  And of course, our
 implementation in PostgreSQL is based on our fixed version.
@@ -1707,18 +1728,14 @@ an explicit sort can be omitted or for instance consider different
 physical operators for aggregation or joining.
 
 \subsection{Sort First Skyline (SFS)}
-The implementation of SFS is according to \citep{Chomicki2003}.  It
-differs from BNL in that the data is topologically sorted at start-up
-time.  We realize the sorting by utilizing the same physical operator
-as for the \texttt{ORDER BY}-clause.
-%
-In the presence of a suitable index, an explicit sort phase can be
-omitted.
-%The skyline operator can make use of more indexes than the \texttt{ORDER BY}-clause,
-%since the semantic of the skyline operator is insensitive to the order of attributes.
-While the skyline operator is insensitive to the order of attributes,
-more indexes can be considered by the query optimizer for the access
-path selection.  We modified the query optimizer accordingly.
+SFS \citep{Chomicki2003} differs from BNL in that the data is
+topologically sorted at start-up time.  It is shown in the original
+paper that this condition is sufficient for following property.  In
+SFS once a tuple is incomparable to all tuples in the tuple window it
+is know to be a skyline tuple as well, and it can be written to the
+output directly.  Further no timestamps have to be maintained and at
+the end of each pass the tuple window can be completely purged.
+The pseudo-code is given in \autoref{code:sfs}.
 
 
 %\begin{figure}[htbp]
@@ -1813,7 +1830,7 @@ $\mathbb{W}$, if $p$ is dominated by any tuple in the tuple window,
 then $p$ is dropped and the next tuple is read, otherwise $p$ is piped
 out and the next tuple is read.  Of course elimination filter does not
 guarantee to filter out all non-skyline tuples, but a skyline candidate
-is guaranteed to survive the elimination filter.  An other notable
+is guaranteed to survive the elimination filter.  Another notable
 difference to BNL and SFS is that EF does not produce any temporary
 file once the tuple window gets full.  This makes EF suffer in the
 same way as BNL from a bad distribution of tuples in the input, e.g.
@@ -1822,7 +1839,7 @@ factor.
 
 \citet{Godfrey2005} do not give pseudo-code for the elimination
 filter in there paper. In \autoref{code:ef} we give a sketch for
-the code as we used it in our implementation. Note that we are give
+the code as we used it in our implementation. Note that we give
 the algorithm in a form that fits into a pipelined architecture liked
 it is used in the PostgreSQL query execution engine. The function
 \texttt{EliminationFilter} has to be called for each output tuple,
@@ -1896,32 +1913,32 @@ function EliminationFilter($\mathcal{I}$, var $state$) begin
 \subsection{Divide and Conquer (D\&C)}
 \todo{}{}
 
-\subsection{TODO}
-We experimented with four window policies for both the tuple window
-(applied for BNL and SFS) and the EF window (for elimination filter):
-\emph{append}, \emph{prepend}, \emph{entropy} and \emph{random} \citep{Godfrey2007}.
-We implemented both windows with doubly linked lists with a sentinel,
-thus the time cost for insertion and deletion was in $O(1)$.
-Furthermore, as the insert position for the \emph{entropy} and
-\emph{random} window policy was determined while iterating over the
-tuple window, the insert operation was also in $O(1)$.
-
-If the EF window is full, in case of EF window policy 
-\emph{entropy} or \emph{random}, the tuple with the lowest ranking is 
-evicted to make space for a higher ranked tuple. Instead of
-calculating the entropy, a random value is used for ranking by the
-window policy \emph{random}.  With EF window policy \emph{append} and
-\emph{prepend}, once the EF window is full, space in the EF window is
-only gained if a tuple in the EF window is dominated by the incoming
-tuple and thus removed.  In our implementation the window policy
-\emph{entropy} can only be used if statistics for base tables is
-available.
-
-In summary, we conducted experiments of the four skyline algorithms:
-BNL, SFS, BNL+EF, SFS+EF, upon each of which four window policies were
-applied: \emph{append}, \emph{prepend}, \emph{entropy} and
-\emph{random}.  For BNL+EF and SFS+EF, we applied on both windows the
-same window policy in our experiments.
+% \subsection{TODO}
+% We experimented with four window policies for both the tuple window
+% (applied for BNL and SFS) and the EF window (for elimination filter):
+% \emph{append}, \emph{prepend}, \emph{entropy} and \emph{random} \citep{Godfrey2007}.
+% We implemented both windows with doubly linked lists with a sentinel,
+% thus the time cost for insertion and deletion was in $O(1)$.
+% Furthermore, as the insert position for the \emph{entropy} and
+% \emph{random} window policy was determined while iterating over the
+% tuple window, the insert operation was also in $O(1)$.
+% 
+% If the EF window is full, in case of EF window policy 
+% \emph{entropy} or \emph{random}, the tuple with the lowest ranking is 
+% evicted to make space for a higher ranked tuple. Instead of
+% calculating the entropy, a random value is used for ranking by the
+% window policy \emph{random}.  With EF window policy \emph{append} and
+% \emph{prepend}, once the EF window is full, space in the EF window is
+% only gained if a tuple in the EF window is dominated by the incoming
+% tuple and thus removed.  In our implementation the window policy
+% \emph{entropy} can only be used if statistics for base tables is
+% available.
+% 
+% In summary, we conducted experiments of the four skyline algorithms:
+% BNL, SFS, BNL+EF, SFS+EF, upon each of which four window policies were
+% applied: \emph{append}, \emph{prepend}, \emph{entropy} and
+% \emph{random}.  For BNL+EF and SFS+EF, we applied on both windows the
+% same window policy in our experiments.
 
 \section{Indexed based Skyline Algorithms}
 \todo{}{}
@@ -1942,11 +1959,6 @@ same window policy in our experiments.
 \citep{Papadias2003, Papadias2005}
 \todo{}{}
 
-\section{Continuous Skyline Computation}
-This is a whole other class of skyline algorithms, the task is here
-the initially compute the skyline and that update the skyline of tuples
-are added or removed from the dataset, e.g. in a streaming scenario.
-\todo{}{}
 
 
 

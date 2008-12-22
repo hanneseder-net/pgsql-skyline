@@ -5462,37 +5462,37 @@ best in all aspects.
 %%%
 %%% CHAPTER: SPARE PARTS
 %%%
-
-
-
-\chapter{Spare parts}
-
-\todo{show also a query plan when using EXCEPT}{}
-\begin{verbatim}
-explain select * from a15d1e4s0
-except
-select i.* from a15d1e4s0 o, a15d1e4s0 i 
-where i.d1 >= o.d1 and i.d2 >= o.d2 and (i.d1 > o.d1 or i.d2 > o.d2);
-
-
-
-
- SetOp Except  (cost=5366230.75..5629001.45 rows=618284 width=124)
-   ->  Sort  (cost=5366230.75..5381687.85 rows=6182840 width=124)
-         Sort Key: "*SELECT* 1".id, "*SELECT* 1".d1, "*SELECT* 1".d2, "*SELECT* 1".d3, \ellipsis
-         ->  Append  (cost=0.00..3062717.40 rows=6182840 width=124)
-               ->  Subquery Scan "*SELECT* 1"  (cost=0.00..393.00 rows=10000 width=124)
-                     ->  Seq Scan on a15d1e4s0  (cost=0.00..293.00 rows=10000 width=124)
-               ->  Subquery Scan "*SELECT* 2"  (cost=303.00..3062324.40 rows=6172840 width=124)
-                     ->  Nested Loop  (cost=303.00..3000596.00 rows=6172840 width=124)
-                           Join Filter: ((i.d1 >= o.d1) AND (i.d2 >= o.d2) AND ((i.d1 > o.d1) OR (i.d2 > o.d2)))
-                           ->  Seq Scan on a15d1e4s0 i  (cost=0.00..293.00 rows=10000 width=124)
-                           ->  Materialize  (cost=303.00..403.00 rows=10000 width=16)
-                                 ->  Seq Scan on a15d1e4s0 o  (cost=0.00..293.00 rows=10000 width=16)
-
-
-
-\end{verbatim}
+% 
+% 
+% 
+% \chapter{Spare parts}
+% 
+% \todo{show also a query plan when using EXCEPT}{}
+% \begin{verbatim}
+% explain select * from a15d1e4s0
+% except
+% select i.* from a15d1e4s0 o, a15d1e4s0 i 
+% where i.d1 >= o.d1 and i.d2 >= o.d2 and (i.d1 > o.d1 or i.d2 > o.d2);
+% 
+% 
+% 
+% 
+%  SetOp Except  (cost=5366230.75..5629001.45 rows=618284 width=124)
+%    ->  Sort  (cost=5366230.75..5381687.85 rows=6182840 width=124)
+%          Sort Key: "*SELECT* 1".id, "*SELECT* 1".d1, "*SELECT* 1".d2, "*SELECT* 1".d3, \ellipsis
+%          ->  Append  (cost=0.00..3062717.40 rows=6182840 width=124)
+%                ->  Subquery Scan "*SELECT* 1"  (cost=0.00..393.00 rows=10000 width=124)
+%                      ->  Seq Scan on a15d1e4s0  (cost=0.00..293.00 rows=10000 width=124)
+%                ->  Subquery Scan "*SELECT* 2"  (cost=303.00..3062324.40 rows=6172840 width=124)
+%                      ->  Nested Loop  (cost=303.00..3000596.00 rows=6172840 width=124)
+%                            Join Filter: ((i.d1 >= o.d1) AND (i.d2 >= o.d2) AND ((i.d1 > o.d1) OR (i.d2 > o.d2)))
+%                            ->  Seq Scan on a15d1e4s0 i  (cost=0.00..293.00 rows=10000 width=124)
+%                            ->  Materialize  (cost=303.00..403.00 rows=10000 width=16)
+%                                  ->  Seq Scan on a15d1e4s0 o  (cost=0.00..293.00 rows=10000 width=16)
+% 
+% 
+% 
+% \end{verbatim}
 
 % LocalWords:  tex skyband todo mathescape morekeywords foreach nightshot NN ef
 % LocalWords:  Pflügl Borzsonyi Preparata threeDskyline vienneseskyline nissan

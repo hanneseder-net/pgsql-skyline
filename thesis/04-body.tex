@@ -498,16 +498,16 @@ algorithms.
 
 
 \section{Further Organization}
-\todo{}{}
-\begin{verbatim}
-The paper is organized as follows: In \autoref{sec:algorithms} we
-introduce briefly the implemented skyline algorithms.
-\autoref{sec:configuration} describes the experimental setup.
-\autoref{sec:analysis} presents the extensive experiments over
-various data settings, followed by the analysis of the
-results. \autoref{sec:conclusion} concludes the paper and
-discusses future work.
-\end{verbatim}
+The paper is organized as follows: In \autoref{chap:preliminaries} we
+introduce the notation and show mathematical properties of the skyline
+operator.  In \autoref{chap:relatedworks} we introduce briefly the
+implemented skyline algorithms and speak about the closest related
+works. \autoref{chap:implementation} gives the very details of our
+implementation. \autoref{sec:results} describes the experimental setup
+and presents the extensive experiments over various data settings,
+followed by the analysis of the results. Directions of future work are
+discussed in \autoref{chap:future-work}. \autoref{chap:summary}
+concludes the paper.
 
 
 
@@ -996,6 +996,7 @@ refer not only to build-in predicates but also to other constructs,
 e.g., database relations.}{rephrase or cite}.
 
 \subsection{Skyline Stratum and $K$-Skyband}
+\section{sec:skyline-stratum}
 \todo{draw a nice diagram}{}
 
 In the context of \emph{winnow} operator this is references as
@@ -1380,8 +1381,8 @@ to any monotone function).\todo{from \citep{Papadias2005}}{rephrase}
 
 
 
-\chapter{Existing Skyline Algorithms}
-%\label{chap:relatedworks}
+\chapter{Existing Skyline Algorithms and Related Works}
+\label{chap:relatedworks}
 
 Since the introduction of the skyline operator \citep{Borzsonyi2001}, a
 number of secondary-memory algorithms have been developed for
@@ -1963,10 +1964,26 @@ function EliminationFilter($\mathcal{I}$, var $state$) begin
 % \todo{}{}
 
 \section{Related Works}
-\todo{}{}
-Implementation in Microsoft SQL Server 2005 Beta \citep{Chaudhuri2006}
+The closeset related works to this paper are \citep{Chaudhuri2006}
+and \citep{Goncalves2005, Goncalves2005a}.  Authors of both papers did an
+implementation of the skyline operator into an RDBMS as a fullblown
+relational operator.
 
-Implementation in PostgreSQL \citep{Goncalves2005a}
+\citet{Chaudhuri2006} at Mircorsoft Research extended a Beta
+Version of Microsoft SQL Server 2005.  To the best of our knowdledge
+neither source nor binary versions of this implementation are
+available.  The skyline operator is fully integrated into the
+cost-based optimizer.  The syntax they are using is Preference~SQL 
+\citep{Kiessling2002a}.
+
+
+\citep{Goncalves2005} extended PostgreSQL with an hyprid approach 
+between \emph{top-k} and \emph{skyline operator} called top-k skyline.
+Skyline Strati (see \autoref{sec:skyline-stratum}) are computed until
+at least $k$ records are returned.  With this approach all the second
+and higher order best records do get a chance to end up in the result,
+nevertheless the selectifity of this approach is even lower then
+skyline operator alone
 
 
 
@@ -1977,6 +1994,7 @@ Implementation in PostgreSQL \citep{Goncalves2005a}
 
 
 \chapter{Implementation}
+\label{chap:implemenation}
 \section{SQL Extension}
 \label{sec:sql-extension}
 
@@ -5315,19 +5333,26 @@ the most effective EF window policy.
 
 
 \chapter{Future work}
+\label{chap:future-work}
+In this chapter we have collected various directions of future work.
 
 \section{Cost-based operator selection}
 \label{sec:cost-based-operator-selection}
-see \autoref{sec:operatorselection, sec:cardinality-and-cost-estimation}.
-\todo{}{}
-incorporate the results from \citet{Chaudhuri2006}.
+To let the skyline operator be a fullblown relational operator one has
+to solve the associated cost- and cardinality estimation problems.
+The results from \citet{Chaudhuri2006} could be incorporated in our
+work.  Nevertheless the query optimizer of PostgreSQL is not fully
+generic nor only cost-based, so it would take quite some effort to
+build an optimizer that is only controlled by rules when a specific
+transformation is applicable and the associated costs. See
+also \autoref{sec:operatorselection, sec:cardinality-and-cost-estimation}.
+
 
 \section{Different syntax for \inlinesql{SKYLINE OF DIFF}}
 We believe the syntax of \inlinesql{SKYLINE OF DIFF} is a bit
-cumbersome for the intended semantic to partition the input relation
-into partitions, so that the skyline is computed with these
-partitions. Instead of \inlinesql{DIFF} a construct like this could be
-used:
+cumbersome for the intended semantic to partition the input relation,
+so that the skyline is computed with these partitions. Instead
+of \inlinesql{DIFF} a construct like this could be used:
 
 \begin{rail}
 skylineclause : 
@@ -5340,7 +5365,6 @@ partitions as induced by the \inlinesql{PARTITION BY} subclause. This
 syntax was inspired by Oracle's analytic functions \citep[Page~5-10]{Oracle2005}.
 
 \section{Index-based algorithms}
-
 In the future work we plan to implement and evaluate index-based algorithms 
 such as 
 {\em Index} \citep{Tan2001}, 
@@ -5348,17 +5372,18 @@ such as
 {\em Branch and Bound} (BBS) \citep{Papadias2003, Papadias2005}.
 
 \section{Speedup Tuple Comparison}
-We believe the concept of EF is very promising and plan to further
-improve its efficiency and effectiveness, e.g. to integrate it as a
-filter in the index scan code, to use other data structures and
-policies for the EF window, and to optimize the order of attributes
-when comparing two tuples.
+We believe the concept of EF (Elimination Filter) is very promising
+and plan to further improve its efficiency and effectiveness, e.g. to
+integrate it as a filter in the index scan code, to use other data
+structures and policies for the EF window, and to optimize the order
+of attributes when comparing two tuples.
 
 \subsection{Order in which Columns are compared}
 Investigate the question, if the number of comparisons and the related
 costs can be reduced be choosing a specific order for the columns. Can
-histograms for the base relations be used for?  Or e.g. Compare
-integer data before strings.
+histograms for the base relations be used for this?  On the other hand
+compare integer data before, floating point and in turn floating point
+before string data.
 
 \section{Index Scan and SFS}
 As for SFS algorithms using indexes, what remains open is to
@@ -5379,9 +5404,11 @@ start at the right end of the index and read as long as the value does
 not change.
 
 \section{Speedups for low cardinality domains}
-%
-use special algorithms if we deal with domains with small
-cardinalities, \citep{Preisinger2006, Preisinger2007, Morse2007}
+A couple of algorithms for low cardinality domains, e.g.
+the ``stars ranking of a hotel'' only one five discrete values (one
+to five stars), have been proposed \citep{Preisinger2006,
+Preisinger2007, Morse2007}.  Based on histograms for the base relations
+the query optimizer could select such specialized algorithms.
 
 \section{Speedups for \inlinesql{SKYLINE OF DIFF}}
 \label{sec:speedup-skyline-diff}
@@ -5396,8 +5423,9 @@ hashing could be engaged, i.e. allocate a fixed number of tuple
 windows and hash each \inlinesql{SKYLINE OF DIFF} group into one tuple
 window.
 
-For SFS differentiate between CMP\_INCOMPARABLE\_SAME\_GROUP and
-CMP\_INCOMPARABLE\_DIFFERENT\_GROUP.
+For SFS differentiate between \texttt{CMP\_INCOMPARABLE\_SAME\_GROUP} and
+\texttt{CMP\_INCOMPARABLE\_DIFFERENT\_GROUP}, because once we have
+a group change we can flush the tuple window.
 
 \section{Project Tuples before inserting into SFS Tuple Window}
 SFS emits a tuple directly after it has survived the test against all
@@ -5409,19 +5437,18 @@ now free lunch, this projection comes at some CPU cost as memory has
 to be copied and manipulated.  Some cost estimation or some heuristics
 could be developed when to perform this projection.
 
-\section{Heuristics}
-\subsection{Flush Elimination Filter}
-\todo{}{}
-If the elimination filter does not eliminate a certain amount of tuples
-an heuristic could be engaged to drop some tuples form the tuple
-window to make space for some new ones to get a better distribution in
-the tuple window so it is more effective.
+%\section{Heuristics}
+%\subsection{Flush Elimination Filter}
+%\todo{}{}
+%If the elimination filter does not eliminate a certain amount of tuples
+%an heuristic could be engaged to drop some tuples form the tuple
+%window to make space for some new ones to get a better distribution in
+%the tuple window so it is more effective.
+%
+%\todo{cite this has been mentioned in some Godfrey papers}{}
+%
 
-\todo{cite this has been mentioned in some Godfrey papers}{}
-
-\section{Extensions}
-
-\subsection{\inlinesql{USING} \emph{op} for \inlinesql{SKYLINE OF DIFF}}
+\section{\inlinesql{USING} \emph{op} for \inlinesql{SKYLINE OF DIFF}}
 While we do provide syntax to use user defined ordering operators
 instead for \inlinesql{SKYLINE OF MIN/MAX}, we do not do it yet for
 \inlinesql{SKYLINE OF DIFF}, which is used to partition the input
@@ -5430,17 +5457,18 @@ used, but in general any equality relation could be used, to provide
 syntax, e.g. \dots \inlinesql{SKYLINE OF d3 DIFF USING myOp}, for this
 is subject to future work.
 
-\subsection{Sampling}
+\section{Sampling}
 \label{sec:sampling}
-In the absence of statistics for the relation in questions, sampling
-could be engaged. \todo{cite}{Chaurduri2006}
+In the absence of statistics (histograms) for the relation in
+questions, sampling could be engaged. \citet{Chaurduri2006} do
+derive some results on this topic.
 
-\subsection{$K$-skyband}
-implement $K$-skyband (maintain dominance count in tuple window) do
-so for BNL and SFS.
-
-\subsection{$k$-dominance skyline}
-\todo{is this easy possible?}{}
+%\subsection{$K$-skyband}
+%implement $K$-skyband (maintain dominance count in tuple window) do
+%so for BNL and SFS.
+%
+%\subsection{$k$-dominance skyline}
+%\todo{is this easy possible?}{}
 
 
 
@@ -5451,6 +5479,7 @@ so for BNL and SFS.
 
 
 \chapter{Summary}
+\label{chap:summary}
 
 In this paper we presented the experiments with skyline algorithms
 applied on the open source RDBMS PostgreSQL.

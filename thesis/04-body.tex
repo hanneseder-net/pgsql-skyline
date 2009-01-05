@@ -23,13 +23,13 @@
 %\newcommand\dominatedby{\ensuremath{\prec}\xspace}
 %\newcommand\weakdominates{\ensuremath{\succeq}\xspace}
 \newcommand\dominates{\ensuremath{\vartriangleright}\xspace}
-\newcommand\notdominates{\ensuremath{\ntriangleright}\xspace}
+%\newcommand\notdominates{\ensuremath{\ntriangleright}\xspace}
 \newcommand\dominatedby{\ensuremath{\vartriangleleft}\xspace}
-\newcommand\notdominatedby{\ensuremath{\ntriangleleft}\xspace}
+%\newcommand\notdominatedby{\ensuremath{\ntriangleleft}\xspace}
 \newcommand\weakdominates{\ensuremath{\trianglerighteq}\xspace}
-\newcommand\notweakdominates{\ensuremath{\ntrianglerighteq}\xspace}
+%\newcommand\notweakdominates{\ensuremath{\ntrianglerighteq}\xspace}
 \newcommand\weakdominatedby{\ensuremath{\trianglelefteq}\xspace}
-\newcommand\notweakdominatedby{\ensuremath{\ntrianglelefteq}\xspace}
+%\newcommand\notweakdominatedby{\ensuremath{\ntrianglelefteq}\xspace}
 \newcommand\incomparable{\ensuremath{\parallel}\xspace}
 \newcommand\comparable{\ensuremath{\perp}\xspace}
 %\newcommand\nondistinct{\ensuremath{\doteq}\xspace}
@@ -342,25 +342,17 @@ employee (salary, revenue, years in the company)
 
 % Research Questions for this Thesis
 \section{Focus of this Thesis}
-\todo{}{}
-\todo{We consider only BNL, SFS and variants}{}
-
-\todo{}{}
-from \citep{Chaudhuri2006}:
-
-Special algorithms have been proposed for the case the whole relation
-fits into main memory \citep{Preparata1985}, nevertheless we do not
-take them into account as memory is always a short resource in a
-database scenario, either due to the number of concurrent users or
-limited total main memory, e.g. on a handheld device.
-
 The skyline operator \citep{Borzsonyi2001} filters out the
 \emph{interesting} points from a potentially large set of data
 points. The skyline operator returns the Pareto optimal\index{Pareto
 optimal} elements of a set. This is also know as maximum vector
 problem\index{maximum vector problem}.
 
-
+Special algorithms have been proposed for the case the whole relation
+fits into main memory \citep{Preparata1985}, nevertheless we do not
+take them into account as memory is always a short resource in a
+database scenario, either due to the number of concurrent users or
+limited total main memory, e.g. on a handheld device.
 
 %All of the algorithms are implemented as stand-alone algorithms,
 In this paper, we present our work on evaluating skyline algorithms in
@@ -531,8 +523,8 @@ data.  As we aim at an implementation of the skyline operator into a
 relational database management system (RDBMS)\index{RDBMS} we restrict
 to finite database\index{finite database} instances.
 
-We assume two \todo{infinite}{hm? although in a real computer is
-everything finite} domains: $N$ (numbers) and $D$ (uninterpreted
+We assume two infinite\footnote{Although in a real computer is
+everything finite.} domains: $N$ (numbers) and $D$ (uninterpreted
 constants). The domain $D$ will be used for attributes which are not
 subject to skyline computation, i.e. for the traveling example we
 will not use the name of the airline as a skyline criterion, therefore
@@ -629,9 +621,8 @@ partial orders ..... we have this in the 1 dim case}{}
 
 
 Non-transitive\index{non-transitive} preferences can be compute with
-the BEST algorithm (\citep{Torlone2002, Ciaccia2004}), we will not
-study this approach in this paper. \todo{$k$-skylines are also
-non-transitive?}{}
+the BEST algorithm \citep{Torlone2002, Ciaccia2004}, we will not
+study this approach in this paper.
 
 \begin{definition}
 \todo{}{}Let \relation{R} be a relation of schema \schema{R}.
@@ -659,6 +650,8 @@ i.e. $\skyline_\dominates(\relation{R}) \not= \emptyset$ holds.
 \def\Bigggr{\mathclose\bBigg@{3.5}}
 \makeatother
 
+\begin{definition}[Preference Relation and Preference Formula]
+%\noindent
 In a skyline query with the following skyline clause:
 \[
 \texttt{SKYLINE OF\ } a_1\,\texttt{MIN}, \ldots, a_k\,\texttt{MIN}, a_{k+1}\,\texttt{MAX}, \ldots, a_l\,\texttt{MAX}, a_{l+1}\,\texttt{DIFF}, \ldots, a_m\,\texttt{DIFF}
@@ -671,29 +664,35 @@ dominates a tuple
 \[
 s = (\underbrace{s_1, \ldots, s_k}_\texttt{MIN}, \underbrace{s_{k+1}, \ldots, s_l}_\texttt{MAX}, \underbrace{s_{l+1}, \ldots, s_m}_\texttt{DIFF}, \underbrace{s_{m+1}, \ldots, s_n}_\textit{extra})
 \]
-\emph{if and only if} the following condition holds
+denoted by
+\[
+r \dominates s
+\]
+iff
 \begin{eqnarray}\label{equ:skylinepf}
-\overbrace{\left( \bigland_{1 \le i \le k} r_i \le s_i \right)}^{\textit{``\/}\texttt{MIN}\textit{ at least as good''}} \,\land\,
+C(r,s) = \overbrace{\left( \bigland_{1 \le i \le k} r_i \le s_i \right)}^{\textit{``\/}\texttt{MIN}\textit{ at least as good''}} \,\land\,
 \overbrace{\left( \bigland_{k+1 \le i \le l} r_i \ge s_i \right)}^{\textit{``\/}\texttt{MAX}\textit{ at least as good''}} \,\land\,
 \overbrace{\left( \bigland_{l+1 \le i \le m} r_i = s_i \right)}^{\textit{``\/}\texttt{DIFF}\textit{ equal''}} \,\land\, \nonumber\\
 \,\land\,
 \Bigggl(\,\underbrace{\left( \biglor_{1 \le i \le k} r_i < s_i \right)}_{\textit{``\/}\texttt{MIN}\textit{ better than''}} \,\lor\,
        \underbrace{\left( \biglor_{k+1 \le i \le l} r_i > s_i \right)}_{\textit{``\/}\texttt{MAX}\textit{ better than''}}\,\Bigggr).
 \end{eqnarray}
+\end{definition}
 
-To state in an informal way, a tuple $r$ dominates a tuple $s$ if it
-is equal in all \inlinesql{DIFF} dimensions, at least as good in all
-\inlinesql{MIN}/\inlinesql{MAX} dimensions and better than in at least
-one of the \inlinesql{MIN}/\inlinesql{MAX} dimensions.
+The first order formula $C(r,s)$ is called \emph{preference formula}.
+Since the close relationship between this first order formular and the
+binary relation we use notations $\skyline_\dominates$ and
+$\skyline_C$ interchangable.
 
-\begin{equation}
-\succ_i\; := 
-\begin{cases}
-< & \text{if $1 \le i \le k$,} \\
-> & \text{if $k+1 \le i \le l$,} \\
-\text{undefined} & \text{otherwise}
-\end{cases}
-\end{equation}
+To state \eqref{equ:skylinepf} in an informal way, a tuple $r$
+dominates a tuple $s$ if it is equal in all \inlinesql{DIFF}
+dimensions, at least as good in all \inlinesql{MIN}/\inlinesql{MAX}
+dimensions and better than in at least one of the
+\inlinesql{MIN}/\inlinesql{MAX} dimensions.
+
+To simplify the definition of formula \eqref{equ:skylinepf} and
+combine the ``\inlinesql{MIN}- and \inlinesql{MAX}-at least as good''
+condition to a just ``at least as good'' condition we define:
 
 \begin{equation}
 \succeq_i\; := 
@@ -704,6 +703,21 @@ one of the \inlinesql{MIN}/\inlinesql{MAX} dimensions.
 \end{cases}
 \end{equation}
 
+\noindent
+Same for the ``better than'' condition:
+
+\begin{equation}
+\succ_i\; := 
+\begin{cases}
+< & \text{if $1 \le i \le k$,} \\
+> & \text{if $k+1 \le i \le l$,} \\
+\text{undefined} & \text{otherwise}
+\end{cases}
+\end{equation}
+
+\noindent
+Using the above two definition formula \eqref{equ:skylinepf}
+simplifies to:
 
 \begin{equation}
 r \dominates s := 
@@ -712,21 +726,29 @@ r \dominates s :=
 \underbrace{\left( \biglor_{1 \le i \le l} r_i \succ_i s_i \right)}_{\textit{``better than''}}
 \end{equation}
 
+\begin{definition}[Weak Preference]
+There is a weak preference between $r$ and $s$ if $r$ is equal in all
+\inlinesql{DIFF} dimensions and at least as good in all other skyline
+dimensions compared to $s$, formally:
 \begin{equation}
-r \weakdominates s := 
+r \weakdominates s :=
 \underbrace{\left( \bigland_{l+1 \le i \le m} r_i = s_i \right)}_{\textit{``\/}\texttt{DIFF}\textit{ equal''}} \,\land\,
 \underbrace{\left( \bigland_{1 \le i \le l} r_i \succeq_i s_i \right)}_{\textit{``at least as good''}}
 \end{equation}
+\end{definition}
 
+\begin{definition}[Non Distinct]
+If two tuples $r$ and $s$ are equal on all skyline dimensions, we say $r$ and $s$
+are \emph{non distinct}, denoted by:
 \begin{equation}\label{eqn:nondistinct}
 r \nondistinct s := \left( \bigland_{1 \le i \le m} r_i = s_i \right)
 \end{equation}
+\end{definition}
 
-\[
-r \nondistinct s \Leftrightarrow r \weakdominates s \land r \weakdominatedby s
-\]
 
-We say $s$ is dominated by $r$ iff $r$ dominates $s$, formally:
+%We say $s$ is dominated by $r$ iff $r$ dominates $s$, formally:
+\noindent
+For convinience we define following two \emph{commutator} relations:
 \[
 s \dominatedby r :\Leftrightarrow r \dominates s.
 \]
@@ -735,49 +757,65 @@ s \dominatedby r :\Leftrightarrow r \dominates s.
 s \weakdominatedby r :\Leftrightarrow r \weakdominates s.
 \]
 
+\noindent
+Without proof we give the following equivalences:
+
 \begin{equation}\label{eqn:weakdominats-dom-nondistinct}
 r \weakdominates s \Leftrightarrow r \dominates s \lor r \nondistinct s
 \end{equation}
 
-\[
+\begin{equation}
 r \dominates s \Leftrightarrow r \weakdominates s \land \neg (r \nondistinct s)
-\]
+\end{equation}
+
+\begin{equation}
+r \nondistinct s \Leftrightarrow r \weakdominates s \land r \weakdominatedby s
+\end{equation}
 
 
-\todo{make \dominates equal to \eqref{equ:skylinepf} and \weakdominates equal to just the $\le$ part, use $r \nondistinct s := r \weakdominates s \land s \weakdominates r = \forall i \in \{1, \ldots, m\}\colon r_i = s_i$, i.e. equal on all skyline dimensions}{}
+% make \dominates equal to \eqref{equ:skylinepf} and \weakdominates
+% equal to just the $\le$ part, use $r \nondistinct s := r
+% \weakdominates s \land s \weakdominates r = \forall i \in \{1, \ldots,
+% m\}\colon r_i = s_i$, i.e. equal on all skyline dimensions
 
+\begin{definition}[Incomparable] If neither $r$ dominates $s$ nor $s$ dominates $r$ than $r$ and $s$ are \emph{incomparable}:
 \[
-r \incomparable s := r \notdominates s \land s \notdominates r
+r \incomparable s := \neg (r \dominates s) \land \neg (s \dominates r)
 \]
+\end{definition}
 
+\noindent
+The commutativitiy of $\incomparable$ is obvious from its definition, i.e.
 \[
-r \incomparable s = s \incomparable r
+r \incomparable s = s \incomparable r.
 \]
 
 
+\begin{definition}[Compareable]The tuples are $r$ and $s$ are \emph{comparable} iif $r$ dominates $s$ or $s$ dominates $r$:
 \[
 r \comparable s := r \dominates s \lor s \dominates r
 \]
+\end{definition}
 
+\noindent
+It is clear from the definition that $\comparable$ is commutative, i.e.
 \[
-r \comparable s = s \comparable r
+r \comparable s = s \comparable r.
 \]
 
 
-% todo http://en.wikipedia.org/wiki/Strict_weak_order
-\todo{}{}
-Transitivity of equivalence does not hold for a strict partial order
-\[
-\neg \forall x, y, z\colon x \incomparable y \land y \incomparable z \imp x \incomparable z
-\]
-
-
-
-\todo{for a strict total order R the law (or axiom) of trichotomy holds:}{}
-\[
-\forall x, y\colon x R y \lor x = y \lor y R y
-\]
-
+%% todo http://en.wikipedia.org/wiki/Strict_weak_order
+%\todo{}{}
+%Transitivity of equivalence does not hold for a strict partial order
+%\[
+%\neg \forall x, y, z\colon x \incomparable y \land y \incomparable z \imp x \incomparable z
+%\]
+%
+%
+%\todo{for a strict total order R the law (or axiom) of trichotomy holds:}{}
+%\[
+%\forall x, y\colon x R y \lor x = y \lor y R y
+%\]
 
 If $\forall i \in \{1, \ldots, m\}\colon r_i = s_i$ holds, $r$ and $s$ are
 \todo{\emph{incomparable}}{use an other term for this special case of
@@ -798,13 +836,14 @@ attributes $a_{l+1}, \ldots, a_m$ are equal:
 \bigland_{l+1 \le i \le m} r_i = s_i.
 \end{equation}
 
-\todo{As noted in \citep{Chomicki2003}, the \inlinesql{DIFF} directive works as a group by within the skyline, and the skyline for each group of diff attributes' values is found.}{rephrase}
+As noted in \citep{Chomicki2003}, the \inlinesql{DIFF} directive works
+like a \inlinesql{GROUP~BY} within the skyline, and the skyline for
+each group of \inlinesql{DIFF} attributes' values is found.
 
 This property can be exploited, if an ordered index on any subset of
 the attributes $a_{l+1}, \ldots, a_m$ exists, since the tuple window
-can be flushed each time the group is changed.
-
-\todo{or in SFS due to the sort phase}{}, \todo{give an example with an table}{}
+can be flushed each time the group is changed, see
+\autoref{sec:speedup-skyline-diff}
 
 \subsection{Skyline as special case of winnow}
 The skyline operator is a special case of the \emph{winnow
@@ -826,25 +865,38 @@ $\skyline_C(\relation{R}) = \emptyset$, for example if \relation{R}
 contains all natural numbers and the standard ordering $<$ is used.
 
 
-\begin{lemma}
-Let $\relation{S} = \skyline_C(\relation{R})$, it is clear that
-condition \eqref{equ:skylinepf} does not for any two tuples in
-\relation{S}.
-\end{lemma}
+%\begin{lemma}
+%Let $\relation{S} = \skyline_C(\relation{R})$, it is clear that
+%condition \eqref{equ:skylinepf} does not for any two tuples in
+%\relation{S}.
+%\end{lemma}
 
 
 \subsection{Dominance and Anti-dominance regions}
-dominance, anti dominance region
+In the context of skyline operator the following two notions naturally
+arise:
 
 \begin{definition}[Dominance Region]
+The Dominance Region $DR_\dominates(r)$ of a data point $r$ in the
+schema $\schema R$ is the set of all possible data points in $\schema
+R$ that are dominated by $r$, formally:
 \[
 DR_\dominates(r) := \{ x \in \schema R | r \dominates x \}
 \]
 \end{definition}
 
-\todo{If a point is a skyline point can be answered by checking of the
-anti dominance region is empty. This can be done with a range query
-even facilitating an index.}{}
+\begin{definition}[Anti-Dominance Region]
+The Anti-Dominance Region $ADR_\dominates(r)$ of a data point $r$ in the
+schema $\schema R$ is the set of all possible data points in $\schema R$
+that dominate $r$, formally:
+\[
+ADR_\dominates(r) := \{ x \in \schema R | x \dominates r \}
+\]
+\end{definition}
+
+The question if a point is a skyline point can be answered by checking
+if the anti-dominance region is empty.  This can be done with a range
+query, or even facilitating an index.
 
 \subsection{How our implementation extends the mathematical model}
 Our implementation of the \inlinesql{SKYLINE~OF} clause is actually a
@@ -981,22 +1033,22 @@ NOTE: $\sigma_{Price>\textnormal{\euro}20}$ does not commute with $\skyline$.
 
 \texttt{TOP $k$} are realized with \inlinesql{LIMIT}
 
-\subsection{Preference hierarchies}
-(see 4.3 \citep{Chomicki2002}) ... I generally prefer red wine, but
-for fish I prefer white wine.
-\todo{}{I think this can not be formulated using skyline}
-
-
-\subsection{Intrinsic vs. extrinsic}
-According to the definition in 5.2 \citep{Chomicki2002} the skyline
-operator is \emph{intrinsic} as the preference relation between two
-tuples relies only on the values occurring in those two
-tuples. \todo{In contrast \emph{extrinsic} preference formulas may
-refer not only to build-in predicates but also to other constructs,
-e.g., database relations.}{rephrase or cite}.
+%\subsection{Preference hierarchies}
+%(see 4.3 \citep{Chomicki2002}) ... I generally prefer red wine, but
+%for fish I prefer white wine.
+%\todo{}{I think this can not be formulated using skyline}
+%
+%
+%\subsection{Intrinsic vs. extrinsic}
+%According to the definition in 5.2 \citep{Chomicki2002} the skyline
+%operator is \emph{intrinsic} as the preference relation between two
+%tuples relies only on the values occurring in those two
+%tuples. \todo{In contrast \emph{extrinsic} preference formulas may
+%refer not only to build-in predicates but also to other constructs,
+%e.g., database relations.}{rephrase or cite}.
 
 \subsection{Skyline Stratum and $K$-Skyband}
-\section{sec:skyline-stratum}
+\label{sec:skyline-stratum}
 \todo{draw a nice diagram}{}
 
 In the context of \emph{winnow} operator this is references as
@@ -1057,13 +1109,20 @@ greater than $K$ drop the tuple from the tuple window.
 An interesting combination of \inlinesql{SKYLINE OF} and
 \inlinesql{TOP $k$} is given by the
 \emph{top-$k$-skyline}\index{top-k-skyline} operator
-\todo{\citep{Brando2007, Goncalves2005a, Goncalves2005}}{check
-citation}, where as many skyline startum are computed till at least
-$k$ tuples are found, or the entire relation is returned.
+\citep{Brando2007, Goncalves2005a, Goncalves2005}, where as many
+skyline startum are computed till at least $k$ tuples are found, or
+the entire relation is returned.  Nevertheless it should be noted that
+the selectifity of the top-$k$-skyline operator is even less
+than the skyline operator alone.
 
 
 \subsection{Monotone vs. linear scoring functions}\label{sec:scoring}
-see \citep[Page 5, Theorem 4]{Chomicki2002a}
+
+
+\begin{theorem}[\citep{Chomicki2002a}]The skyline contains all, and only
+tuples yielding maximum values of monotone scoring functions.
+\end{theorem}
+%see \citep[Page 5, Theorem 4]{Chomicki2002a}
 
 from \citep{Borzsonyi2001}: One of the nice properties of the Skyline
 of a set $\mathcal{M}$ is that for any monotone scoring function
@@ -1079,8 +1138,8 @@ which are nobody's favorite.
 
 \subsection{Rewrite Skyline Queries into Standard SQL}
 \label{sec:rewrite-to-sql}
-
-\todo{such queries can not be unnested \citep{Grust1997, Braumandl1998}, from \citep[Page 4]{Borzsonyi2001}}{}
+%\todo{such queries can not be unnested \citep{Grust1997,
+%Braumandl1998}, from \citep[Page 4]{Borzsonyi2001}}{}
 
 Let $rel$ by a relation with the attributes $a_1, \ldots, a_n$, a non
 empty target list $\emptyset \not= target\_list \subseteq \{a_1,
@@ -1150,7 +1209,8 @@ they are dominated. This can be formally expressed as:
 \skyline(R) = R \backslash \{r \in R|\exists s \in R\colon s \dominates r\}
 \end{equation}
 
-Computing the skyline in this way is expensive. \todo{}{}
+Computing the skyline in this way is expensive, as the intermediate
+results could get very large.
 
 \subsubsection{Rewrite queries with \inlinesql{SKYLINE OF DISTINCT}}
 \label{sec:rewrite-queries-with-distinct}
@@ -1306,49 +1366,47 @@ other methods do exist, we show them in
 
 
 \subsection{Classification of Skyline Algorithms}
+%\begin{verbatim}
+%from \citep[Page 8]{Godfrey2007}
+%
+%There are additional criteria by which wemight judge
+%maximal-vector algorithms. In [28], a useful categorization
+%of existing skyline algorithms is presented (which
+%followsonthework in [21,24]).They use the criteria enumerated
+%below to characterize the behavior and appli-
+%cability of the algorithms. These are properties that they
+%and we would like a maximal-vector algorithm to have.
+%
+%1. progressiveness. The first results should be returned
+%almost instantly, and the output size should gradually
+%increase.
+%2. absence of false hits. The output should contain only
+%the skyline points (maximals).
+%3. absence of temporary false hits. The algorithm
+%should not discover temporary ~skyline~ points
+%(~maximals~) that will be later discarded.
+%4. fairness. The algorithm should not favor points that
+%are particularly good on one dimension (but not
+%necessarily others).
+%5. incorporation of preference. It should be possible to
+%specify an order by which the skyline points (maximals)
+%are reported.
+%6. universality. The algorithm should be applicable to
+%any data-set distribution and dimensionality
+%
+%28. Papadias, D., Tao, Y., Fu, G., Seeger, B.: Progressive skyline computation in database systems.ACMTrans. Database Syst.
+%30(1), 41~82 (2005)
+%
+%21. Hellerstein, J.M., Avnur, R., Chou, A., Hidber, C., Olston, C., Raman, V., Roth, T., Haas, P.J.: Interactive data analysis: The control project. IEEE Comput. 32(8), 51~59 (1999)
+%
+%24. Kossmann, D., Ramask, F., Rost, S.: Shooting stars in the
+%sky: An online algorithm for skyline queries. In: Proceedings
+%of 28th International Conference on Very Large Data Bases
+%(VLDB-2002), pp. 275~286 (2002)
+%\end{verbatim}
+%
 
-
-\begin{verbatim}
-from \citep[Page 8]{Godfrey2007}
-
-There are additional criteria by which wemight judge
-maximal-vector algorithms. In [28], a useful categorization
-of existing skyline algorithms is presented (which
-followsonthework in [21,24]).They use the criteria enumerated
-below to characterize the behavior and appli-
-cability of the algorithms. These are properties that they
-and we would like a maximal-vector algorithm to have.
-
-1. progressiveness. The first results should be returned
-almost instantly, and the output size should gradually
-increase.
-2. absence of false hits. The output should contain only
-the skyline points (maximals).
-3. absence of temporary false hits. The algorithm
-should not discover temporary ~skyline~ points
-(~maximals~) that will be later discarded.
-4. fairness. The algorithm should not favor points that
-are particularly good on one dimension (but not
-necessarily others).
-5. incorporation of preference. It should be possible to
-specify an order by which the skyline points (maximals)
-are reported.
-6. universality. The algorithm should be applicable to
-any data-set distribution and dimensionality
-
-28. Papadias, D., Tao, Y., Fu, G., Seeger, B.: Progressive skyline computation in database systems.ACMTrans. Database Syst.
-30(1), 41~82 (2005)
-
-21. Hellerstein, J.M., Avnur, R., Chou, A., Hidber, C., Olston, C., Raman, V., Roth, T., Haas, P.J.: Interactive data analysis: The control project. IEEE Comput. 32(8), 51~59 (1999)
-
-24. Kossmann, D., Ramask, F., Rost, S.: Shooting stars in the
-sky: An online algorithm for skyline queries. In: Proceedings
-of 28th International Conference on Very Large Data Bases
-(VLDB-2002), pp. 275~286 (2002)
-\end{verbatim}
-
-
-\todo{\citet{Kossmann2002} suggested a set of criteria for evaluating skyline algorithms:}{rephrase}
+\citet{Kossmann2002} suggested a set of criteria for evaluating skyline algorithms, that we like to cite here:
 
 \begin{enumerate}
 \item \emph{Progressiveness}: the first results should be reported to the user almost instantly and the output size should gradually increase.
@@ -1365,13 +1423,14 @@ of 28th International Conference on Very Large Data Bases
 \end{enumerate}
 
 \section{Related Problems}
-Convex hull, \emph{top-K} queries, and nearest-neighbor search
-(especially in the context of spacial skylines ``give me the next good
-restaurant'')
+Related to computing the skyline of a dataset are following problems:
+convex hull, \emph{top-K} queries, and nearest-neighbor search
+(especially in the context of spacial skylines like e.g. ``give me the
+next good restaurant'').
 
-In particular, the convex hull contains the subset of skyline points
-that may be optimal only for linear preference functions (as opposed
-to any monotone function).\todo{from \citep{Papadias2005}}{rephrase}
+In particular, as noted in \citep{Papadias2005}, the convex hull
+contains the subset of skyline points that may be optimal only for
+linear preference functions (as opposed to any monotone function).
 
 
 
@@ -1979,7 +2038,7 @@ cost-based optimizer.  The syntax they are using is Preference~SQL
 
 \citep{Goncalves2005} extended PostgreSQL with an hyprid approach 
 between \emph{top-k} and \emph{skyline operator} called top-k skyline.
-Skyline Strati (see \autoref{sec:skyline-stratum}) are computed until
+Skyline stratum (see \autoref{sec:skyline-stratum}) are computed until
 at least $k$ records are returned.  With this approach all the second
 and higher order best records do get a chance to end up in the result,
 nevertheless the selectifity of this approach is even lower then

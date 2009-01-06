@@ -637,13 +637,30 @@ $\skyline_\dominates(\relation{R}) := \{ r \in \relation{R} | \nexists
 s \in \relation{R}\colon s \dominates r \}$
 \end{definition}
 
-\begin{lemma}
-\todo{}{this is more or less theorem 2 from \citep{Chomicki2002}}
-Given the relation $\relation{R} \not= \emptyset$ and \dominates a
-strict partial order over \schema{R}, where \schema{R} is the schema
-for \relation{R}, the skyline is non empty,
-i.e. $\skyline_\dominates(\relation{R}) \not= \emptyset$ holds.
-\end{lemma}
+\begin{definition}[preference formula (pf) \citep{Chomicki2002}]
+A \emph{preference formula (pf)} $C(r,s)$ is a first-order formula
+defining a preference relation $\succ$ in the standard sense, namely
+\[
+r \succ s \textnormal{iff} C(r,s).
+\]
+\end{definition}
+
+\begin{definition}[winnow operator \citep{Chomicki2002}]
+If $\schema R$ is a relation schema and $C$ a preference formula defining
+a preference relation $\succ$ over $\schema R$, then the \emph{winnow operator}
+is written $\omega_C(\schema R)$, and for every instance $\relation R \in \schema R$:
+\[
+\omega_C(\relation R) := \{r \in \relation R|\nexists s \in \relation{R}\colon s \succ r \}
+\]
+\end{definition}
+
+% \begin{lemma}
+% \todo{}{this is more or less theorem 2 from \citep{Chomicki2002}}
+% Given the relation $\relation{R} \not= \emptyset$ and \dominates a
+% strict partial order over \schema{R}, where \schema{R} is the schema
+% for \relation{R}, the skyline is non empty,
+% i.e. $\skyline_\dominates(\relation{R}) \not= \emptyset$ holds.
+% \end{lemma}
 
 \makeatletter
 \def\Bigggl{\mathopen\bBigg@{3.5}}
@@ -850,18 +867,17 @@ The skyline operator is a special case of the \emph{winnow
 operator}\index{winnow operator} \citep{Chomicki2002}, where the
 preference formula has exactly the form of formula
 \eqref{equ:skylinepf}.
-
+%
 Since the preference relation induced by the skyline criteria is a
 strict partial order, the following theorem (a special case of a
 theorem in \citep{Chomicki2002}) holds:
 
 \begin{theorem}\label{theorem:nonempty}
 For every finite, nonempty instance \relation{R} of \schema{R},
-$\skyline_C(\relation{R})$ is nonempty.
+$\skyline_\dominates(\relation{R})$ is nonempty.
 \end{theorem}
-\todo{}{the criteria C must be clearly defined}
 If the relation \relation{R} fails to be finite, it may happen that
-$\skyline_C(\relation{R}) = \emptyset$, for example if \relation{R}
+$\skyline_\dominates(\relation{R}) = \emptyset$, for example if \relation{R}
 contains all natural numbers and the standard ordering $<$ is used.
 
 
@@ -898,37 +914,6 @@ The question if a point is a skyline point can be answered by checking
 if the anti-dominance region is empty.  This can be done with a range
 query, or even facilitating an index.
 
-\subsection{How our implementation extends the mathematical model}
-Our implementation of the \inlinesql{SKYLINE~OF} clause is actually a
-bit more flexible than the mathematical definition given above. With
-our implementation the skyline operator is not restricted to
-attributes with a numerical domain, it can be applied to any
-attribute, as long as a \emph{sort function} is defined for the domain
-in question, i.e.\/ any expression valid in a SQL \inlinesql{ORDER~BY}
-clause is valid as an expression in a \inlinesql{SKYLINE~OF} clause.
-
-This gives the opportunity to include expressions of almost any data
-type in a skyline query, even user defined ones, since it is possible
-to user define full-fledged data types in PostgreSQL. For more
-information on user defined data types see PostgreSQL documentation on
-\postgresdocu{xtypes.html}{User-Defined Types} and
-\postgresdocu{xindex.html\#XINDEX-OPFAMILY}{Operator Classes and
-Operator Families}
-
-Anyway it is somewhat questionable what it is good for the include a
-e.g. \inlinesql{VARCHAR} column in a skyline query, still it is
-possible, nevertheless this might be a good use case for a user
-defined ordering operator.
-
-Furthermore our implementation allows arbitrary expressions instead of
-a single attribute, e.g.
-
-\begin{sql}
-SELECT * FROM nba.players \\
-SKYLINE OF (h\_feet * 12 + h\_inches) MAX NULLS LAST, \\
-\ttspace{1}weight MAX NULLS LAST
-\end{sql}
-
 \subsection{Skyline Operator is Idempotent}
 We first proof a more general statement:
 \begin{theorem}\label{the:skyline-idempotent}
@@ -939,7 +924,7 @@ R)=\omega_C(\omega_C(\relation R))$.
 \todo{\nospellcheck{no na}}{}
 Let $\succ$ be the preference relation induced by $C$, then the result
 of the winnow operator is $\omega_C(\relation R) := \{r \in \relation
-R | \nexists s \in \relation{R} : s \succ r \}$, so
+R | \nexists s \in \relation{R}\colon s \succ r \}$, so
 $\omega_C(\relation R)$ already contains only the maximal elements
 according $\succ$, \todo{...}{complete}
 \end{proof}
@@ -956,10 +941,12 @@ The semantics of the skyline operator is independent from the order
 in which the attributes are specified in the query.
 \end{property}
 \begin{proof}
-\todo{proof}{}
-see \eqref{equ:skylinepf}
+This property immediatly becomes clear, when looking at the definition
+of the \emph{preference formula}, see \eqref{equ:skylinepf}, as
+logical and ($\land$) and logical or ($\lor$) or commutative.
 \end{proof}
 
+\noindent
 To give a simple example the following query will yield the same
 result:
 
@@ -1363,6 +1350,38 @@ such a query can not be expressed with standard SQL.
 For the border case of one dimensional skyline queries, i.e. $m = 1$,
 other methods do exist, we show them in
 \autoref{sec:onedim-nondistinct} and \ref{sec:onedim-distinct}.
+
+
+\subsection{How our implementation extends the mathematical model}
+Our implementation of the \inlinesql{SKYLINE~OF} clause is actually a
+bit more flexible than the mathematical definition given above. With
+our implementation the skyline operator is not restricted to
+attributes with a numerical domain, it can be applied to any
+attribute, as long as a \emph{sort function} is defined for the domain
+in question, i.e.\/ any expression valid in a SQL \inlinesql{ORDER~BY}
+clause is valid as an expression in a \inlinesql{SKYLINE~OF} clause.
+
+This gives the opportunity to include expressions of almost any data
+type in a skyline query, even user defined ones, since it is possible
+to user define full-fledged data types in PostgreSQL. For more
+information on user defined data types see PostgreSQL documentation on
+\postgresdocu{xtypes.html}{User-Defined Types} and
+\postgresdocu{xindex.html\#XINDEX-OPFAMILY}{Operator Classes and
+Operator Families}
+
+Anyway it is somewhat questionable what it is good for the include a
+e.g. \inlinesql{VARCHAR} column in a skyline query, still it is
+possible, nevertheless this might be a good use case for a user
+defined ordering operator.
+
+Furthermore our implementation allows arbitrary expressions instead of
+a single attribute, e.g.
+
+\begin{sql}
+SELECT * FROM nba.players \\
+SKYLINE OF (h\_feet * 12 + h\_inches) MAX NULLS LAST, \\
+\ttspace{1}weight MAX NULLS LAST
+\end{sql}
 
 
 \subsection{Classification of Skyline Algorithms}

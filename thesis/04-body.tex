@@ -762,6 +762,10 @@ r \nondistinct s := \left( \bigland_{1 \le i \le m} r_i = s_i \right)
 \end{equation}
 \end{definition}
 
+\noindent
+Please note that in general $r=s$ is not equal to $r \nondistinct s$
+especially when $m < n$, i.e. there are some extra attributes not
+subject to skyline computation.
 
 %We say $s$ is dominated by $r$ iff $r$ dominates $s$, formally:
 \noindent
@@ -1109,6 +1113,15 @@ than the skyline operator alone.
 
 \subsection{Monotone vs. linear scoring functions}\label{sec:scoring}
 
+One might be tempted to assume that the result of the skyline operator
+can also be produced with linear scoring functions, but that is not
+true, we take the example from \citep{Chomicki2002a} to show this.  
+It should also be noted that it might be difficult to come up with
+appropriate weights for the different attributes from a users
+perspective.
+
+% example:
+% \citep[page 6, near theorem 4]{Chomicki2002a}
 
 \begin{theorem}[\citep{Chomicki2002a}]The skyline contains all, and only
 tuples yielding maximum values of monotone scoring functions.

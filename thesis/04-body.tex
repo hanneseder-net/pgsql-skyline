@@ -512,12 +512,12 @@ concludes the paper.
 \chapter{Preliminaries}
 \label{chap:preliminaries}
 
-\todo{see \citep[section 1.1.1]{Simkovics1998} }{}
-
+%\todo{see \citep[section 1.1.1]{Simkovics1998} }{}
+%
 \section{Basic definitions}
 
-\todo{http://en.wikipedia.org/wiki/Relational\_model}{}
-
+%\todo{http://en.wikipedia.org/wiki/Relational\_model}{}
+%
 We are in the realm of the relational model\index{relational model} of
 data.  As we aim at an implementation of the skyline operator into a
 relational database management system (RDBMS)\index{RDBMS} we restrict
@@ -897,20 +897,20 @@ In the context of skyline operator the following two notions naturally
 arise:
 
 \begin{definition}[Dominance Region]
-The Dominance Region $DR_\dominates(r)$ of a data point $r$ in the
-schema $\schema R$ is the set of all possible data points in $\schema
-R$ that are dominated by $r$, formally:
+The Dominance Region $DR_\dominates(r)$ of a tuple $r$ of the relation
+$\relation R$ is the set of tuples in $\relation R$ that are dominated
+by $r$, formally:
 \[
-DR_\dominates(r) := \{ x \in \schema R | r \dominates x \}
+DR_\dominates(r) := \{ x \in \relation R | r \dominates x \}
 \]
 \end{definition}
 
 \begin{definition}[Anti-Dominance Region]
-The Anti-Dominance Region $ADR_\dominates(r)$ of a data point $r$ in the
-schema $\schema R$ is the set of all possible data points in $\schema R$
+The Anti-Dominance Region $ADR_\dominates(r)$ of a tuple $r$ of the
+relation $\relation R$ is the set of all tuples in the relation $\relation R$
 that dominate $r$, formally:
 \[
-ADR_\dominates(r) := \{ x \in \schema R | x \dominates r \}
+ADR_\dominates(r) := \{ x \in \relation R | x \dominates r \}
 \]
 \end{definition}
 

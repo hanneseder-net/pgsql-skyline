@@ -1036,13 +1036,12 @@ NOTE: $\sigma_{Price>\textnormal{\euro}20}$ does not commute with $\skyline$.
 
 \subsection{Skyline Stratum and $K$-Skyband}
 \label{sec:skyline-stratum}
-\todo{draw a nice diagram}{}
-
 In the context of \emph{winnow} operator this is references as
 \emph{ranking}\index{ranking}, we prefer to use the term
 \emph{stratum}\index{stratum}, as we reserve the term ranking for
-scoring functions (see \autoref{sec:scoring}).
-
+scoring functions (see \autoref{sec:scoring}).  The term skyline stratum
+appeares in \citep{Chan2005}, but probably was also early works.
+%
 The \nospellcheck{$n$-th} skyline startum $\skyline_C^n$ is recursively defined as:
 
 \begin{eqnarray}
@@ -1050,33 +1049,38 @@ The \nospellcheck{$n$-th} skyline startum $\skyline_C^n$ is recursively defined 
 \skyline_C^{n+1}(\relation{R}) & := & \skyline_C(\relation{R} \difference \bigunion_{1 \le i \le n} \skyline_C^i(\relation{R}))
 \end{eqnarray}
 
-To give an example, the query $\skyline_C^2(\relation{R})$ computes the set of ``second-best'' tuples.\todo{}{rephrase or cite}
+To give an example, the query $\skyline_C^2(\relation{R})$ returns
+the set of ``second-best'' tuples.
 
 The startum are of interest especially if there is a single
 \emph{killer tuple} or very few tuples which are dominating the entire
 dataset.  In the context of the relation \emph{Hotel(Price, Distance
 to beach)}, a barrack on the beach is cheaper and closer to the beach
-than any other accommodation, but might to meet our
-standards. \todo{restaurant, close, good, tiered of eating there}{}
+than any other accommodation, but might not meet our
+standards.  Another example, if we are bored always having lunch at the
+same ``best'' restaurant, we might want to try the ``second-best'' and
+enjoy to little bit longer walk we would have to take in that case.
 
 A \emph{$K$-skyband}\index{K-skyband@$K$-skyband} query, introduced by
 \citet{Papadias2005}, is a similar concept as skyline stratum. A
 $K$-skyband query reports all tuples which are dominated by at most
-$K$ points.
-
-\fixme{It is easy to see, that the following identities hold}{that's wrong}
-        x3
-  x1  
- 
-    x2
-
-x1, x2 are in stratum 1, x3 is in stratum 1 but while x1 and x2 are in
-0-skyband, x3 is not is 1-skyband because it is dominated by x1 and
-x2 so it is in 2-skyband. Hence no general relation can be established
-between K-skyband and skyline stratum.
-
+$K$ points.  
 The skyband rank of a point $p$ can be computed by counting the points
 in the anti-dominance region of $p$.
+
+It's might be tempting to see a direct relationship between
+\emph{skyline stratum} and \emph{$K$-skyband}, but as can be seen from
+following example: \\
+Let $\relation R = \{r, s, t\}$ and $\dominates =\{(r,t), (s,t)\}$, 
+i.e. $r \dominates t$ and $s \dominates t$, 
+then $\skyline_\dominates^1 = \{r, s\}$ and $\skyline_\dominates^2 = \{t\}$, 
+but $\skyband_\dominates^0 = \{r, s\}$, $\skyband_\dominates^1 = \emptyset$ and
+$\skyband_\dominates^2 = \{t\}$.
+
+\noindent
+Hence no easy general relation can be established between K-skyband
+and skyline stratum, so following holds:
+
 
 \begin{eqnarray}
 \skyband_C^0(\relation{R}) &=& \skyline_C^1(\relation{R}) \label{equ:skyband} \\
@@ -1097,7 +1101,7 @@ An interesting combination of \inlinesql{SKYLINE OF} and
 \inlinesql{TOP $k$} is given by the
 \emph{top-$k$-skyline}\index{top-k-skyline} operator
 \citep{Brando2007, Goncalves2005a, Goncalves2005}, where as many
-skyline startum are computed till at least $k$ tuples are found, or
+skyline startum are computed until at least $k$ tuples are found, or
 the entire relation is returned.  Nevertheless it should be noted that
 the selectivity of the top-$k$-skyline operator is even less
 than the skyline operator alone.

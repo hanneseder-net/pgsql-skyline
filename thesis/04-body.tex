@@ -892,34 +892,76 @@ contains all natural numbers and the standard ordering $<$ is used.
 
 
 \section{Properties of the Skyline Operator}
-\subsection{Monotone vs. linear scoring functions}
+\subsection{Monotone vs. Linear Scoring Functions}
 \label{sec:scoring}
 One might be tempted to assume that the result of the skyline operator
 can also be produced with linear scoring functions, but that is not
 true, we take the example from \citep{Chomicki2002a} to show this.  
-It should also be noted that it might be difficult to come up with
+Before going in to detail let us define the class of linear
+scoring functions:
+
+\begin{definition}[Linear Scoring Function]
+Let the $w_i$'s be positive real constants, then we define a 
+\emph{postive linear scoring function} $W$ over a the tuples 
+$r \in \relation R$ as:
+\[
+W(r) = \sum_{1 \le i \le k} w_i r_i.
+\]
+\end{definition}
+
+Let us consider the relation $\relation R = \{ (4,1), (2,2), (1,4)
+\}$.  It is clear that all tuples are part of the skyline,
+i.e. $\skyline(\relation R) = \relation R$.  Finding a linear scoring
+function that preferes $(4, 1)$ or $(1,4)$ is obvious.  Now let us try
+to find a linear scoring function that gives $(2, 2)$ the highest
+score.  We require that:
+\begin{enumerate}
+\item 
+$2 w_1 + 2 w_2 \ge 4 w_1 + 1 w_2$, which simplifies to $w_2 \ge 2 w_1$, which in turn
+is equivalent to $2 w_2 \ge 4 w_1$, and
+\item $2 w_1 + 2 w_2 \ge 1 w_1 + 4 w_2$, which simplifies to $w_1 \ge 2 w_2$
+\end{enumerate}
+Chaining the inequalities from (1) and (2) yields $w_1 \ge 2 w_2 \ge 4
+w_1$, i.e. $w_1 \ge 4 w_1$, which does not have a solution for $w_1 >
+0$.  Therefore there is not lineare scoring function which gives
+$(2,2)$ the best score.
+
+It should be noted that it might be difficult to come up with
 appropriate weights for the different attributes from a users
 perspective.
 
-% example:
-% \citep[page 6, near theorem 4]{Chomicki2002a}
+\bigskip
+\noindent
+On the other hand the class of monotone scoring function is defined as follows:
 
-\begin{theorem}[\citep{Chomicki2002a}]The skyline contains all, and only
-tuples yielding maximum values of monotone scoring functions.
+\begin{definition}[Monotone Scoring Function]
+Let the $f_i$'s be monotone increasing functions with $f_i\colon N
+\rightarrow \mathbb{R}$, where $N$ is domain of the attributes of
+schema $\schema R$, then a \emph{monotone scoring function} $S$ which
+ranks a tuple $r \in \relation R$, where $\relation R$ is an instance
+of $\schema R$, has the form:
+\[
+S(r) = \sum_{1 \le i \le k} f_i(r_i).
+\]
+\end{definition}
+
+\noindent
+A nice property of the skyline operator is stated in the following
+theorem:
+
+\begin{theorem}[\citep{Chomicki2002a}]
+\label{the:skyline-monotone}
+The skyline contains all, and only tuples yielding maximum values of
+monotone scoring functions.
 \end{theorem}
-%see \citep[Page 5, Theorem 4]{Chomicki2002a}
 
-from \citep{Borzsonyi2001}: One of the nice properties of the Skyline
-of a set $\mathcal{M}$ is that for any monotone scoring function
-$\mathcal{M} \rightarrow \mathbb{R}$, if $p \in \mathcal{M}$ maximizes
-that scoring function, then $p$ is in the Skyline.  In other words, no
-matter how you weight your personal preferences towards price and
-distance of hotels, you will find your favorite hotel in the Skyline.
-In addition, for every point $op$ in the Skyline, there exists a
-monotone scoring function such that $p$ maximizes that scoring
-function.  In other words, the Skyline does not contain any hotels
-which are nobody's favorite.
-
+One of the nice conclusion of \autoref{the:skyline-monotone} is, no
+matter how we weight our preferences along the attributes, our
+favorite is part of the skyline, as long we weight each attribute with
+a monotone increasing function.  Furthermore only tuples which
+monotone score best under at least one scoring function are part of
+the skyline, in other words, the skyline does not contain tuples which
+are nobody's favorite.
 
 % \subsection{Skyline Operator is Idempotent}
 % We first proof a more general statement:

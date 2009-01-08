@@ -641,7 +641,7 @@ s \in \relation{R}\colon s \dominates r \}$
 A \emph{preference formula (pf)} $C(r,s)$ is a first-order formula
 defining a preference relation $\succ$ in the standard sense, namely
 \[
-r \succ s \textnormal{iff} C(r,s).
+r \succ s \quad \textnormal{iff} \quad C(r,s).
 \]
 \end{definition}
 
@@ -763,10 +763,15 @@ r \nondistinct s := \left( \bigland_{1 \le i \le m} r_i = s_i \right)
 \end{definition}
 
 \noindent
+If $r \nondistinct s$, in case of \inlinesql{SKYLINE OF DISTINCT} it
+is left up to the imlementation to include either $r$ or $s$ in the
+skyline, otherwise $r$ \emph{and} $s$ are included.
+
 Please note that in general $r=s$ is not equal to $r \nondistinct s$
 especially when $m < n$, i.e. there are some extra attributes not
 subject to skyline computation.
 
+\bigskip
 %We say $s$ is dominated by $r$ iff $r$ dominates $s$, formally:
 \noindent
 For convenience we define following two \emph{commutator} relations:
@@ -806,6 +811,10 @@ r \incomparable s := \neg (r \dominates s) \land \neg (s \dominates r)
 \end{definition}
 
 \noindent
+In case of $r \incomparable s$, $r$ and $s$ may both be part of the
+skyline, if none of them is dominated by another tuple $t \in
+\relation R \backslash \{r, s\}$.
+%
 The commutativity of $\incomparable$ is obvious from its definition, i.e.
 \[
 r \incomparable s = s \incomparable r.
@@ -838,20 +847,10 @@ r \comparable s = s \comparable r.
 %\forall x, y\colon x R y \lor x = y \lor y R y
 %\]
 
-If $\forall i \in \{1, \ldots, m\}\colon r_i = s_i$ holds, $r$ and $s$ are
-\todo{\emph{incomparable}}{use an other term for this special case of
-incomparability}, if \inlinesql{DISTINCT} is specified it is left up
-to the implementation to include either $r$ or $s$ in the skyline, if
-\inlinesql{DISTINCT} is not specified $r$ and $s$ are included.
-
-
-In case condition \eqref{equ:skylinepf} does not hold $r$ and $s$ are
-\emph{incomparable} and may both be part of the skyline if not
-dominated by any other tuple from \relation{R}.
-
+\subsubsection{\inlinesql{DIFF}-Induced Equaltity Relation}
 Please note that the following subformula \eqref{equ:skylinepfdiff} of
 formula \eqref{equ:skylinepf} induces an equality relation on
-\relation{R}, i.e. \relation{R} is partitioned into groups where the
+\schema{R}, i.e. \schema{R} is partitioned into groups where the
 attributes $a_{l+1}, \ldots, a_m$ are equal:
 \begin{equation}\label{equ:skylinepfdiff}
 \bigland_{l+1 \le i \le m} r_i = s_i.
@@ -860,7 +859,7 @@ attributes $a_{l+1}, \ldots, a_m$ are equal:
 As noted in \citep{Chomicki2003}, the \inlinesql{DIFF} directive works
 like a \inlinesql{GROUP~BY} within the skyline, and the skyline for
 each group of \inlinesql{DIFF} attributes' values is found.
-
+%
 This property can be exploited, if an ordered index on any subset of
 the attributes $a_{l+1}, \ldots, a_m$ exists, since the tuple window
 can be flushed each time the group is changed, see
@@ -892,6 +891,156 @@ contains all natural numbers and the standard ordering $<$ is used.
 %\end{lemma}
 
 
+\section{Properties of the Skyline Operator}
+\subsection{Monotone vs. linear scoring functions}
+\label{sec:scoring}
+One might be tempted to assume that the result of the skyline operator
+can also be produced with linear scoring functions, but that is not
+true, we take the example from \citep{Chomicki2002a} to show this.  
+It should also be noted that it might be difficult to come up with
+appropriate weights for the different attributes from a users
+perspective.
+
+% example:
+% \citep[page 6, near theorem 4]{Chomicki2002a}
+
+\begin{theorem}[\citep{Chomicki2002a}]The skyline contains all, and only
+tuples yielding maximum values of monotone scoring functions.
+\end{theorem}
+%see \citep[Page 5, Theorem 4]{Chomicki2002a}
+
+from \citep{Borzsonyi2001}: One of the nice properties of the Skyline
+of a set $\mathcal{M}$ is that for any monotone scoring function
+$\mathcal{M} \rightarrow \mathbb{R}$, if $p \in \mathcal{M}$ maximizes
+that scoring function, then $p$ is in the Skyline.  In other words, no
+matter how you weight your personal preferences towards price and
+distance of hotels, you will find your favorite hotel in the Skyline.
+In addition, for every point $op$ in the Skyline, there exists a
+monotone scoring function such that $p$ maximizes that scoring
+function.  In other words, the Skyline does not contain any hotels
+which are nobody's favorite.
+
+
+% \subsection{Skyline Operator is Idempotent}
+% We first proof a more general statement:
+% \begin{theorem}\label{the:skyline-idempotent}
+% The winnow operator is idempotent, i.e. $\omega_C(\relation
+% R)=\omega_C(\omega_C(\relation R))$.
+% \end{theorem}
+% \begin{proof}
+% \todo{\nospellcheck{no na}}{}
+% Let $\succ$ be the preference relation induced by $C$, then the result
+% of the winnow operator is $\omega_C(\relation R) := \{r \in \relation
+% R | \nexists s \in \relation{R}\colon s \succ r \}$, so
+% $\omega_C(\relation R)$ already contains only the maximal elements
+% according $\succ$, \todo{...}{complete}
+% \end{proof}
+% Since the skyline operator is a special case of \emph{winnow} operator, 
+% \autoref{the:skyline-idempotent} holds as well.
+
+
+\subsection{Independence of Attribute Order}
+\label{sec:attributeorder}
+
+The following property is a well known fact about the skyline operator:
+
+\begin{property}[Independence of Attribute Order]\label{the:attributeorder}
+The semantics of the skyline operator is independent from the order
+in which the attributes are specified in the query.
+\end{property}
+\begin{proof}
+This property immediately becomes clear, when looking at the definition
+of the \emph{preference formula} \eqref{equ:skylinepf}, as
+logical and ($\land$) and logical or ($\lor$) or commutative.
+\end{proof}
+
+\noindent
+To give a simple example the following query will yield the same
+result:
+
+\begin{interactive}
+SELECT * FROM a15d1e5 SKYLINE OF d1 MIN, d2 MIN;
+SELECT * FROM a15d1e5 SKYLINE OF d2 MIN, d1 MIN;
+\end{interactive}
+
+% \subsection{Composition of Skyline Operator}
+% % \todo{For means of simplicity we assume set semantics?}{} 
+% % \todo{The proofs are for the non \inlinesql{SKYLINE OF DISTINCT} case}{?}.
+% 
+% In this section, we study several ways of composing the skyline
+% operator. (see \citep{Chomicki2002} 4.1) We assume two finite
+% instances \relation{R}, \relation{S} of schema \schema{R}, ...
+% 
+% \begin{equation}
+% \skyline(\relation{R} \intersection \relation{S}) = 
+%     \skyline(\relation{R}) \intersection \skyline(\relation{S})
+% \end{equation}
+% 
+% this identity could be exploited in the query optimizer. \todo{}{further work?}
+% is it really worth? what direction of the identity is actually interesting?
+% 
+% \begin{equation}\label{equ:skyline-composition-union}
+% \skyline(\relation{R} \union \relation{S}) \not= 
+%     \skyline(\relation{R}) \union \skyline(\relation{S})
+% \end{equation}
+% It is easy to see that an equality in
+% \eqref{equ:skyline-composition-union} would not hold, as e.g. a single
+% tuple $r_1$ could dominate the entire relation \relation{S}.
+% 
+% If the last property would hold, easy decompose, but due to
+% \autoref{theorem:nonempty} $skyline(\{t_1\}) = \{t_1\}$ would yield
+% $\forall \relation{R} : \skyline(\relation{R}) = \relation{R}$ if
+% decomposed to singletons.
+% 
+% \begin{equation}\label{equ:skyline-decompose}
+% \skyline(\relation{R} \union \relation{S}) = 
+%      \skyline(\skyline(\relation R) \union \skyline(\relation S))
+% \end{equation}
+% \begin{proof}
+% \todo{copy proof from manuscript}{}
+% \end{proof}
+% 
+% This property could be of interest in a distributed setting to reduce
+% data transfer between servers.
+% 
+% 
+% \begin{equation}
+% \skyline(\relation{R} \difference \relation{S}) \not= 
+%      \skyline(\relation{R}) \difference \skyline(\relation{S})
+% \end{equation}
+% 
+% \todo{}{make this plausible}
+% 
+% \todo{transitive closure}{4.2}
+% well all skyline query are transitive, so there is no need to
+% investigate this here. But e.g. I prefer to eat Tafelspitz than to eat
+% Schnitzel, and Schnitzel over Foobar. Thus, I also prefer to eat
+% Tafelspitz than to eat Foobar.
+% 
+% \todo{skyline and joins, cross products, selections, projects, top k}{}
+% 
+% $\sigma_{Price<\textnormal{\euro}20}(\skyline_{C_1}(\relation{R}))=
+% \skyline_{C_1}(\sigma_{Price<\textnormal{\euro}20}(\relation{R}))$
+% according to Theorem 3 (\citep{Chomicki2002}).
+% Such identities are not in our implementation.\todo{}{further work}
+% 
+% NOTE: $\sigma_{Price>\textnormal{\euro}20}$ does not commute with $\skyline$.
+
+%\subsection{Preference hierarchies}
+%(see 4.3 \citep{Chomicki2002}) ... I generally prefer red wine, but
+%for fish I prefer white wine.
+%\todo{}{I think this can not be formulated using skyline}
+%
+%
+%\subsection{Intrinsic vs. extrinsic}
+%According to the definition in 5.2 \citep{Chomicki2002} the skyline
+%operator is \emph{intrinsic} as the preference relation between two
+%tuples relies only on the values occurring in those two
+%tuples. \todo{In contrast \emph{extrinsic} preference formulas may
+%refer not only to build-in predicates but also to other constructs,
+%e.g., database relations.}{rephrase or cite}.
+
+\section{Further Notions}
 \subsection{Dominance and Anti-dominance regions}
 In the context of skyline operator the following two notions naturally
 arise:
@@ -917,126 +1066,6 @@ ADR_\dominates(r) := \{ x \in \relation R | x \dominates r \}
 The question if a point is a skyline point can be answered by checking
 if the anti-dominance region is empty.  This can be done with a range
 query, or even facilitating an index.
-
-\subsection{Skyline Operator is Idempotent}
-We first proof a more general statement:
-\begin{theorem}\label{the:skyline-idempotent}
-The winnow operator is idempotent, i.e. $\omega_C(\relation
-R)=\omega_C(\omega_C(\relation R))$.
-\end{theorem}
-\begin{proof}
-\todo{\nospellcheck{no na}}{}
-Let $\succ$ be the preference relation induced by $C$, then the result
-of the winnow operator is $\omega_C(\relation R) := \{r \in \relation
-R | \nexists s \in \relation{R}\colon s \succ r \}$, so
-$\omega_C(\relation R)$ already contains only the maximal elements
-according $\succ$, \todo{...}{complete}
-\end{proof}
-Since the skyline operator is a special case of \emph{winnow} operator, \autoref{the:skyline-idempotent} holds as well.
-
-
-\subsection{Independence of Attribute Order}
-\label{sec:attributeorder}
-
-The following property is a well known fact about the skyline operator:
-
-\begin{property}[Independence of Attribute Order]\label{the:attributeorder}
-The semantics of the skyline operator is independent from the order
-in which the attributes are specified in the query.
-\end{property}
-\begin{proof}
-This property immediately becomes clear, when looking at the definition
-of the \emph{preference formula}, see \eqref{equ:skylinepf}, as
-logical and ($\land$) and logical or ($\lor$) or commutative.
-\end{proof}
-
-\noindent
-To give a simple example the following query will yield the same
-result:
-
-\begin{interactive}
-SELECT * FROM a15d1e5 SKYLINE OF d1 MIN, d2 MIN;
-SELECT * FROM a15d1e5 SKYLINE OF d2 MIN, d1 MIN;
-\end{interactive}
-
-
-
-\subsection{Composition of Skyline Operator}
-\todo{For means of simplicity we assume set semantics?}{} 
-
-\todo{The proofs are for the non \inlinesql{SKYLINE OF DISTINCT} case}{?}.
-
-
-In this section, we study several ways of composing the skyline
-operator. (see \citep{Chomicki2002} 4.1) We assume two finite
-instances \relation{R}, \relation{S} of schema \schema{R}, ...
-
-\begin{equation}
-\skyline(\relation{R} \intersection \relation{S}) = \skyline(\relation{R}) \intersection \skyline(\relation{S})
-\end{equation}
-
-this identity could be exploited in the query optimizer. \todo{}{further work?}
-is it really worth? what direction of the identity is actually interesting?
-
-\begin{equation}\label{equ:skyline-composition-union}
-\skyline(\relation{R} \union \relation{S}) \not= \skyline(\relation{R}) \union \skyline(\relation{S})
-\end{equation}
-It is easy to see that an equality in
-\eqref{equ:skyline-composition-union} would not hold, as e.g. a single
-tuple $r_1$ could dominate the entire relation \relation{S}.
-
-If the last property would hold, easy decompose, but due to
-\autoref{theorem:nonempty} $skyline(\{t_1\}) = \{t_1\}$ would yield
-$\forall \relation{R} : \skyline(\relation{R}) = \relation{R}$ if
-decomposed to singletons.
-
-\begin{equation}\label{equ:skyline-decompose}
-\skyline(\relation{R} \union \relation{S}) = \skyline(\skyline(\relation R) \union \skyline(\relation S))
-\end{equation}
-\begin{proof}
-\todo{copy proof from manuscript}{}
-\end{proof}
-
-This property could be of interest in a distributed setting to reduce
-data transfer between servers.
-
-
-\begin{equation}
-\skyline(\relation{R} \difference \relation{S}) \not= \skyline(\relation{R}) \difference \skyline(\relation{S})
-\end{equation}
-
-\todo{}{make this plausible}
-
-\todo{transitive closure}{4.2}
-well all skyline query are transitive, so there is no need to
-investigate this here. But e.g. I prefer to eat Tafelspitz than to eat
-Schnitzel, and Schnitzel over Foobar. Thus, I also prefer to eat
-Tafelspitz than to eat Foobar.
-
-\todo{skyline and joins, cross products, selections, projects, top k}{}
-
-$\sigma_{Price<\textnormal{\euro}20}(\skyline_{C_1}(\relation{R}))=\skyline_{C_1}(\sigma_{Price<\textnormal{\euro}20}(\relation{R}))$
-according to Theorem 3 (\citep{Chomicki2002}).
-Such identities are not in our implementation.\todo{}{further work}
-
-NOTE: $\sigma_{Price>\textnormal{\euro}20}$ does not commute with $\skyline$.
-
-
-\texttt{TOP $k$} are realized with \inlinesql{LIMIT}
-
-%\subsection{Preference hierarchies}
-%(see 4.3 \citep{Chomicki2002}) ... I generally prefer red wine, but
-%for fish I prefer white wine.
-%\todo{}{I think this can not be formulated using skyline}
-%
-%
-%\subsection{Intrinsic vs. extrinsic}
-%According to the definition in 5.2 \citep{Chomicki2002} the skyline
-%operator is \emph{intrinsic} as the preference relation between two
-%tuples relies only on the values occurring in those two
-%tuples. \todo{In contrast \emph{extrinsic} preference formulas may
-%refer not only to build-in predicates but also to other constructs,
-%e.g., database relations.}{rephrase or cite}.
 
 \subsection{Skyline Stratum and $K$-Skyband}
 \label{sec:skyline-stratum}
@@ -1111,36 +1140,7 @@ the selectivity of the top-$k$-skyline operator is even less
 than the skyline operator alone.
 
 
-\subsection{Monotone vs. linear scoring functions}\label{sec:scoring}
-
-One might be tempted to assume that the result of the skyline operator
-can also be produced with linear scoring functions, but that is not
-true, we take the example from \citep{Chomicki2002a} to show this.  
-It should also be noted that it might be difficult to come up with
-appropriate weights for the different attributes from a users
-perspective.
-
-% example:
-% \citep[page 6, near theorem 4]{Chomicki2002a}
-
-\begin{theorem}[\citep{Chomicki2002a}]The skyline contains all, and only
-tuples yielding maximum values of monotone scoring functions.
-\end{theorem}
-%see \citep[Page 5, Theorem 4]{Chomicki2002a}
-
-from \citep{Borzsonyi2001}: One of the nice properties of the Skyline
-of a set $\mathcal{M}$ is that for any monotone scoring function
-$\mathcal{M} \rightarrow \mathbb{R}$, if $p \in \mathcal{M}$ maximizes
-that scoring function, then $p$ is in the Skyline.  In other words, no
-matter how you weight your personal preferences towards price and
-distance of hotels, you will find your favorite hotel in the Skyline.
-In addition, for every point $op$ in the Skyline, there exists a
-monotone scoring function such that $p$ maximizes that scoring
-function.  In other words, the Skyline does not contain any hotels
-which are nobody's favorite.
-
-
-\subsection{Rewrite Skyline Queries into Standard SQL}
+\section{Rewrite Skyline Queries into Standard SQL}
 \label{sec:rewrite-to-sql}
 %\todo{such queries can not be unnested \citep{Grust1997,
 %Braumandl1998}, from \citep[Page 4]{Borzsonyi2001}}{}
@@ -1216,7 +1216,7 @@ they are dominated. This can be formally expressed as:
 Computing the skyline in this way is expensive, as the intermediate
 results could get very large.
 
-\subsubsection{Rewrite queries with \inlinesql{SKYLINE OF DISTINCT}}
+\subsection{Rewrite queries with \inlinesql{SKYLINE OF DISTINCT}}
 \label{sec:rewrite-queries-with-distinct}
 In the presents of the optional \inlinesql{DISTINCT} modifier in the
 \inlinesql{SKYLINE~OF}-clause situation is changed, such a query has
@@ -1369,39 +1369,7 @@ other methods do exist, we show them in
 \autoref{sec:onedim-nondistinct} and \ref{sec:onedim-distinct}.
 
 
-\subsection{How our implementation extends the mathematical model}
-Our implementation of the \inlinesql{SKYLINE~OF} clause is actually a
-bit more flexible than the mathematical definition given above. With
-our implementation the skyline operator is not restricted to
-attributes with a numerical domain, it can be applied to any
-attribute, as long as a \emph{sort function} is defined for the domain
-in question, i.e.\/ any expression valid in a SQL \inlinesql{ORDER~BY}
-clause is valid as an expression in a \inlinesql{SKYLINE~OF} clause.
-
-This gives the opportunity to include expressions of almost any data
-type in a skyline query, even user defined ones, since it is possible
-to user define full-fledged data types in PostgreSQL. For more
-information on user defined data types see PostgreSQL documentation on
-\postgresdocu{xtypes.html}{User-Defined Types} and
-\postgresdocu{xindex.html\#XINDEX-OPFAMILY}{Operator Classes and
-Operator Families}
-
-Anyway it is somewhat questionable what it is good for the include a
-e.g. \inlinesql{VARCHAR} column in a skyline query, still it is
-possible, nevertheless this might be a good use case for a user
-defined ordering operator.
-
-Furthermore our implementation allows arbitrary expressions instead of
-a single attribute, e.g.
-
-\begin{sql}
-SELECT * FROM nba.players \\
-SKYLINE OF (h\_feet * 12 + h\_inches) MAX NULLS LAST, \\
-\ttspace{1}weight MAX NULLS LAST
-\end{sql}
-
-
-\subsection{Classification of Skyline Algorithms}
+\section{Classification of Skyline Algorithms}
 %\begin{verbatim}
 %from \citep[Page 8]{Godfrey2007}
 %
@@ -1457,6 +1425,39 @@ SKYLINE OF (h\_feet * 12 + h\_inches) MAX NULLS LAST, \\
 
 \item \emph{Universality}: the algorithm should be applicable to any dataset distribution and dimensionality, using some standard index structure.
 \end{enumerate}
+
+
+\section{How our implementation extends the mathematical model}
+Our implementation of the \inlinesql{SKYLINE~OF} clause is actually a
+bit more flexible than the mathematical definition given above. With
+our implementation the skyline operator is not restricted to
+attributes with a numerical domain, it can be applied to any
+attribute, as long as a \emph{sort function} is defined for the domain
+in question, i.e.\/ any expression valid in a SQL \inlinesql{ORDER~BY}
+clause is valid as an expression in a \inlinesql{SKYLINE~OF} clause.
+
+This gives the opportunity to include expressions of almost any data
+type in a skyline query, even user defined ones, since it is possible
+to user define full-fledged data types in PostgreSQL. For more
+information on user defined data types see PostgreSQL documentation on
+\postgresdocu{xtypes.html}{User-Defined Types} and
+\postgresdocu{xindex.html\#XINDEX-OPFAMILY}{Operator Classes and
+Operator Families}
+
+Anyway it is somewhat questionable what it is good for the include a
+e.g. \inlinesql{VARCHAR} column in a skyline query, still it is
+possible, nevertheless this might be a good use case for a user
+defined ordering operator.
+
+Furthermore our implementation allows arbitrary expressions instead of
+a single attribute, e.g.
+
+\begin{sql}
+SELECT * FROM nba.players \\
+SKYLINE OF (h\_feet * 12 + h\_inches) MAX NULLS LAST, \\
+\ttspace{1}weight MAX NULLS LAST
+\end{sql}
+
 
 \section{Related Problems}
 Related to computing the skyline of a dataset are following problems:
@@ -5431,7 +5432,8 @@ the most effective EF window policy.
 \label{chap:future-work}
 In this chapter we have collected various directions of future work.
 
-\section{Cost-based operator selection}
+\section{Query Planner/Optimizer}
+\subsection{Cost-based operator selection}
 \label{sec:cost-based-operator-selection}
 To let the skyline operator be a full-blown relational operator one has
 to solve the associated cost- and cardinality estimation problems.
@@ -5442,8 +5444,17 @@ build an optimizer that is only controlled by rules when a specific
 transformation is applicable and the associated costs. See
 also \autoref{sec:operatorselection} and \autoref{sec:cardinality-and-cost-estimation}.
 
+\subsection{Algebraic Optimizations}
+\todo{\citep{Kiessling2003}}{}
 
-\section{Index-based Algorithms}
+\subsection{Sampling}
+\label{sec:sampling}
+In the absence of statistics (histograms) for the relation in
+questions, sampling could be engaged. \citet{Chaudhuri2006} did
+derive some results on this topic.
+
+\section{Physical Operators}
+\subsection{Index-based Algorithms}
 In the future work we plan to implement and evaluate index-based algorithms 
 such as 
 {\em Index} \citep{Tan2001}, 
@@ -5451,7 +5462,7 @@ such as
 {\em Branch and Bound} (BBS) \citep{Papadias2003, Papadias2005}.
 
 
-\section{Index Scan for one Dimensional Skylines}
+\subsection{Index Scan for one Dimensional Skylines}
 \label{sec:index-scan-for-1dim}
 Since one dimensional skylines are a little bit of limited use anyway
 we did not yet make an attempt to make use of an suitable index for
@@ -5461,6 +5472,50 @@ performing an index scan. In the distinct case start at the minimum or
 maximum respectively and read a single tuple. For the non-distinct case
 start at the right end of the index and read as long as the value does
 not change.
+
+
+\subsection{SFS}
+\subsubsection{Index Scan and SFS}
+As for SFS algorithms using indexes, what remains open is to
+investigate the behavior in case all skyline attributes and attributes
+in the select clause are part of the index, such that it suffices only
+to access the indexes for the query processing.  We believe this could
+yield good results.
+
+
+\subsubsection{Project Tuples before inserting into SFS Tuple Window}
+SFS emits a tuple directly after it has survived the test against all
+tuples in the tuple window and the dominance check is only performed
+on the skyline attributes.  Because of this property it is possible to
+project the tuples only on the skyline attributes before inserting
+into the tuple window to safe space in the tuple window, but there is
+now free lunch, this projection comes at some CPU cost as memory has
+to be copied and manipulated.  Some cost estimation or some heuristics
+could be developed when to perform this projection.
+
+
+\subsection{Speedups for low Cardinality Domains}
+A couple of algorithms for low cardinality domains, e.g.
+the ``stars ranking of a hotel'' only one five discrete values (one
+to five stars), have been proposed \citep{Preisinger2006,
+Preisinger2007, Morse2007}.  Based on histograms for the base relations
+the query optimizer could select such specialized algorithms.
+
+
+\subsection{Speedup Tuple Comparison}
+We believe the concept of EF (Elimination Filter) is very promising
+and plan to further improve its efficiency and effectiveness, e.g. to
+integrate it as a filter in the index scan code, to use other data
+structures and policies for the EF window, and to optimize the order
+of attributes when comparing two tuples.
+
+
+\subsubsection{Order in which Columns are compared}
+Investigate the question, if the number of comparisons and the related
+costs can be reduced be choosing a specific order for the columns. Can
+histograms for the base relations be used for this?  On the other hand
+compare integer data before, floating point and in turn floating point
+before string data.
 
 
 \section{\inlinesql{SKYLINE OF DIFF}}
@@ -5508,56 +5563,6 @@ For SFS differentiate between \texttt{CMP\_INCOMPARABLE\_SAME\_GROUP} and
 \texttt{CMP\_INCOMPARABLE\_DIFFERENT\_GROUP}, because once we have
 a group change we can flush the tuple window.
 
-
-\section{SFS}
-\subsection{Index Scan and SFS}
-As for SFS algorithms using indexes, what remains open is to
-investigate the behavior in case all skyline attributes and attributes
-in the select clause are part of the index, such that it suffices only
-to access the indexes for the query processing.  We believe this could
-yield good results.
-
-
-\subsection{Project Tuples before inserting into SFS Tuple Window}
-SFS emits a tuple directly after it has survived the test against all
-tuples in the tuple window and the dominance check is only performed
-on the skyline attributes.  Because of this property it is possible to
-project the tuples only on the skyline attributes before inserting
-into the tuple window to safe space in the tuple window, but there is
-now free lunch, this projection comes at some CPU cost as memory has
-to be copied and manipulated.  Some cost estimation or some heuristics
-could be developed when to perform this projection.
-
-
-\section{Speedups for low Cardinality Domains}
-A couple of algorithms for low cardinality domains, e.g.
-the ``stars ranking of a hotel'' only one five discrete values (one
-to five stars), have been proposed \citep{Preisinger2006,
-Preisinger2007, Morse2007}.  Based on histograms for the base relations
-the query optimizer could select such specialized algorithms.
-
-
-\section{Speedup Tuple Comparison}
-We believe the concept of EF (Elimination Filter) is very promising
-and plan to further improve its efficiency and effectiveness, e.g. to
-integrate it as a filter in the index scan code, to use other data
-structures and policies for the EF window, and to optimize the order
-of attributes when comparing two tuples.
-
-
-\subsection{Order in which Columns are compared}
-Investigate the question, if the number of comparisons and the related
-costs can be reduced be choosing a specific order for the columns. Can
-histograms for the base relations be used for this?  On the other hand
-compare integer data before, floating point and in turn floating point
-before string data.
-
-
-\section{Sampling}
-\label{sec:sampling}
-In the absence of statistics (histograms) for the relation in
-questions, sampling could be engaged. \citet{Chaudhuri2006} did
-derive some results on this topic.
 
 %\section{Heuristics}
 %\subsection{Flush Elimination Filter}

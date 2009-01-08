@@ -5440,10 +5440,31 @@ work.  Nevertheless the query optimizer of PostgreSQL is not fully
 generic nor only cost-based, so it would take quite some effort to
 build an optimizer that is only controlled by rules when a specific
 transformation is applicable and the associated costs. See
-also \autoref{sec:operatorselection, sec:cardinality-and-cost-estimation}.
+also \autoref{sec:operatorselection} and \autoref{sec:cardinality-and-cost-estimation}.
 
 
-\section{Different syntax for \inlinesql{SKYLINE OF DIFF}}
+\section{Index-based Algorithms}
+In the future work we plan to implement and evaluate index-based algorithms 
+such as 
+{\em Index} \citep{Tan2001}, 
+{\em Nearest Neighbor} (NN) \citep{Kossmann2002}, and
+{\em Branch and Bound} (BBS) \citep{Papadias2003, Papadias2005}.
+
+
+\section{Index Scan for one Dimensional Skylines}
+\label{sec:index-scan-for-1dim}
+Since one dimensional skylines are a little bit of limited use anyway
+we did not yet make an attempt to make use of an suitable index for
+skyline computation in the one dimensional case. The computation of
+distinct and non-distinct one dimensional skyline could be speedup by
+performing an index scan. In the distinct case start at the minimum or
+maximum respectively and read a single tuple. For the non-distinct case
+start at the right end of the index and read as long as the value does
+not change.
+
+
+\section{\inlinesql{SKYLINE OF DIFF}}
+\subsection{Different syntax for \inlinesql{SKYLINE OF DIFF}}
 We believe the syntax of \inlinesql{SKYLINE OF DIFF} is a bit
 cumbersome for the intended semantic to partition the input relation,
 so that the skyline is computed with these partitions. Instead
@@ -5459,53 +5480,18 @@ With the intended semantic to compute the skyline within the
 partitions as induced by the \inlinesql{PARTITION BY} subclause. This
 syntax was inspired by Oracle's analytic functions \citep[Page~5-10]{Oracle2005}.
 
-\section{Index-based algorithms}
-In the future work we plan to implement and evaluate index-based algorithms 
-such as 
-{\em Index} \citep{Tan2001}, 
-{\em Nearest Neighbor} (NN) \citep{Kossmann2002}, and
-{\em Branch and Bound} (BBS) \citep{Papadias2003, Papadias2005}.
 
-\section{Speedup Tuple Comparison}
-We believe the concept of EF (Elimination Filter) is very promising
-and plan to further improve its efficiency and effectiveness, e.g. to
-integrate it as a filter in the index scan code, to use other data
-structures and policies for the EF window, and to optimize the order
-of attributes when comparing two tuples.
+\subsection{\inlinesql{USING} \emph{op} for \inlinesql{SKYLINE OF DIFF}}
+While we do provide syntax to use user defined ordering operators
+instead for \inlinesql{SKYLINE OF MIN/MAX}, we do not do it yet for
+\inlinesql{SKYLINE OF DIFF}, which is used to partition the input
+into groups.  For the moment only equality for the given data type is
+used, but in general any equality relation could be used, to provide
+syntax, e.g. \dots \inlinesql{SKYLINE OF d3 DIFF USING myOp}, for this
+is subject to future work.
 
-\subsection{Order in which Columns are compared}
-Investigate the question, if the number of comparisons and the related
-costs can be reduced be choosing a specific order for the columns. Can
-histograms for the base relations be used for this?  On the other hand
-compare integer data before, floating point and in turn floating point
-before string data.
 
-\section{Index Scan and SFS}
-As for SFS algorithms using indexes, what remains open is to
-investigate the behavior in case all skyline attributes and attributes
-in the select clause are part of the index, such that it suffices only
-to access the indexes for the query processing.  We believe this could
-yield good results.
-
-\section{Index scan for one dimensional skylines}
-\label{sec:index-scan-for-1dim}
-Since one dimensional skylines are a little bit of limited use anyway
-we did not yet make an attempt to make use of an suitable index for
-skyline computation in the one dimensional case. The computation of
-distinct and non-distinct one dimensional skyline could be speedup by
-performing an index scan. In the distinct case start at the minimum or
-maximum respectively and read a single tuple. For the non-distinct case
-start at the right end of the index and read as long as the value does
-not change.
-
-\section{Speedups for low cardinality domains}
-A couple of algorithms for low cardinality domains, e.g.
-the ``stars ranking of a hotel'' only one five discrete values (one
-to five stars), have been proposed \citep{Preisinger2006,
-Preisinger2007, Morse2007}.  Based on histograms for the base relations
-the query optimizer could select such specialized algorithms.
-
-\section{Speedups for \inlinesql{SKYLINE OF DIFF}}
+\subsection{Speedups for \inlinesql{SKYLINE OF DIFF}}
 \label{sec:speedup-skyline-diff}
 %
 Use a separate tuple window for each \inlinesql{SKYLINE OF DIFF}
@@ -5522,7 +5508,17 @@ For SFS differentiate between \texttt{CMP\_INCOMPARABLE\_SAME\_GROUP} and
 \texttt{CMP\_INCOMPARABLE\_DIFFERENT\_GROUP}, because once we have
 a group change we can flush the tuple window.
 
-\section{Project Tuples before inserting into SFS Tuple Window}
+
+\section{SFS}
+\subsection{Index Scan and SFS}
+As for SFS algorithms using indexes, what remains open is to
+investigate the behavior in case all skyline attributes and attributes
+in the select clause are part of the index, such that it suffices only
+to access the indexes for the query processing.  We believe this could
+yield good results.
+
+
+\subsection{Project Tuples before inserting into SFS Tuple Window}
 SFS emits a tuple directly after it has survived the test against all
 tuples in the tuple window and the dominance check is only performed
 on the skyline attributes.  Because of this property it is possible to
@@ -5531,6 +5527,37 @@ into the tuple window to safe space in the tuple window, but there is
 now free lunch, this projection comes at some CPU cost as memory has
 to be copied and manipulated.  Some cost estimation or some heuristics
 could be developed when to perform this projection.
+
+
+\section{Speedups for low Cardinality Domains}
+A couple of algorithms for low cardinality domains, e.g.
+the ``stars ranking of a hotel'' only one five discrete values (one
+to five stars), have been proposed \citep{Preisinger2006,
+Preisinger2007, Morse2007}.  Based on histograms for the base relations
+the query optimizer could select such specialized algorithms.
+
+
+\section{Speedup Tuple Comparison}
+We believe the concept of EF (Elimination Filter) is very promising
+and plan to further improve its efficiency and effectiveness, e.g. to
+integrate it as a filter in the index scan code, to use other data
+structures and policies for the EF window, and to optimize the order
+of attributes when comparing two tuples.
+
+
+\subsection{Order in which Columns are compared}
+Investigate the question, if the number of comparisons and the related
+costs can be reduced be choosing a specific order for the columns. Can
+histograms for the base relations be used for this?  On the other hand
+compare integer data before, floating point and in turn floating point
+before string data.
+
+
+\section{Sampling}
+\label{sec:sampling}
+In the absence of statistics (histograms) for the relation in
+questions, sampling could be engaged. \citet{Chaudhuri2006} did
+derive some results on this topic.
 
 %\section{Heuristics}
 %\subsection{Flush Elimination Filter}
@@ -5542,21 +5569,6 @@ could be developed when to perform this projection.
 %
 %\todo{cite this has been mentioned in some Godfrey papers}{}
 %
-
-\section{\inlinesql{USING} \emph{op} for \inlinesql{SKYLINE OF DIFF}}
-While we do provide syntax to use user defined ordering operators
-instead for \inlinesql{SKYLINE OF MIN/MAX}, we do not do it yet for
-\inlinesql{SKYLINE OF DIFF}, which is used to partition the input
-into groups.  For the moment only equality for the given data type is
-used, but in general any equality relation could be used, to provide
-syntax, e.g. \dots \inlinesql{SKYLINE OF d3 DIFF USING myOp}, for this
-is subject to future work.
-
-\section{Sampling}
-\label{sec:sampling}
-In the absence of statistics (histograms) for the relation in
-questions, sampling could be engaged. \citet{Chaurduri2006} do
-derive some results on this topic.
 
 %\subsection{$K$-skyband}
 %implement $K$-skyband (maintain dominance count in tuple window) do

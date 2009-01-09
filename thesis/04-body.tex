@@ -591,7 +591,7 @@ strict partial order a \emph{strict total order}, what distinguishes
 partial orders ..... we have this in the 1 dim case}{}
 
 \begin{itemize}
-\item \emph{totality:} $\forall x, y: x \dominates y \lor y \dominates x$.
+\item \emph{totality:} $\forall x, y: x \dominates y \lor y \dominates x \lor x = y$.
 \end{itemize}
 
 
@@ -620,9 +620,9 @@ partial orders ..... we have this in the 1 dim case}{}
 %\end{tabular}
 
 
-Non-transitive\index{non-transitive} preferences can be compute with
-the BEST algorithm \citep{Torlone2002, Ciaccia2004}, we will not
-study this approach in this paper.
+% Non-transitive\index{non-transitive} preferences can be compute with
+% the BEST algorithm \citep{Torlone2002, Ciaccia2004}, we will not
+% study this approach in this paper.
 
 \begin{definition}
 \todo{}{}Let \relation{R} be a relation of schema \schema{R}.
@@ -871,17 +871,17 @@ operator}\index{winnow operator} \citep{Chomicki2003a}, where the
 preference formula has exactly the form of formula
 \eqref{equ:skylinepf}.
 %
-Since the preference relation induced by the skyline criteria is a
-strict partial order, the following theorem (a special case of a
-theorem in \citep{Chomicki2003a}) holds:
-
-\begin{theorem}\label{theorem:nonempty}
-For every finite, nonempty instance \relation{R} of \schema{R},
-$\skyline_\dominates(\relation{R})$ is nonempty.
-\end{theorem}
-If the relation \relation{R} fails to be finite, it may happen that
-$\skyline_\dominates(\relation{R}) = \emptyset$, for example if \relation{R}
-contains all natural numbers and the standard ordering $<$ is used.
+% Since the preference relation induced by the skyline criteria is a
+% strict partial order, the following theorem (a special case of a
+% theorem in \citep{Chomicki2003a}) holds:
+% 
+% \begin{theorem}\label{theorem:nonempty}
+% For every finite, nonempty instance \relation{R} of \schema{R},
+% $\skyline_\dominates(\relation{R})$ is nonempty.
+% \end{theorem}
+% If the relation \relation{R} fails to be finite, it may happen that
+% $\skyline_\dominates(\relation{R}) = \emptyset$, for example if \relation{R}
+% contains all natural numbers and the standard ordering $<$ is used.
 
 
 %\begin{lemma}
@@ -1111,6 +1111,9 @@ query, or even facilitating an index.
 
 \subsection{Skyline Stratum and $K$-Skyband}
 \label{sec:skyline-stratum}
+
+\todo{\emph{iterated preference} \citep[section 8]{Chomicki2003a}}{}
+
 In the context of \emph{winnow} operator this is references as
 \emph{ranking}\index{ranking}, we prefer to use the term
 \emph{stratum}\index{stratum}, as we reserve the term ranking for

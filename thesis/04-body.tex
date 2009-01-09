@@ -536,26 +536,24 @@ it is not necessary for this paper. For $N$ we require that equality
 less than), $\le$ (less than or equal), $\ge$ (greater than or equal),
 and $>$ (strictly greater than) are defined with the usual properties.
 
-\begin{definition}[Schema]
+As the skyline operator is a special case of the \emph{winnow
+operator} \citep{Chomicki2003a}, we define it in a very similarg way.
+
+\begin{definition}[Preference Relation \citep{Chomicki2003a}]
 Given the domains $U_i, 1 \le i \le n$, such that $U_i$ is either
-equal to $D$ or $N$, we define the $n$-ary schema $\schema{R}$ as the
-Cartesian product of the $U_i$'s, i.e. $\schema{R} = U_1 \times U_2
-\times \ldots \times U_n$. The attributes of schema \schema{R} will be
-referred as $a_1, \ldots, a_n$.
+equal to $D$ or $N$ and the $n$-ary schema $\schema{R}(A_1, A_2, \ldots,
+A_n)$, such that the domain of the attribute $A_i$ is $U_i$, 
+a relation $\dominates$ is a \emph{preference relation} over
+$\schema R$ if it is a subset of $(U_1 \times U_2 \times \cdots \times U_n) \times 
+(U_1 \times U_2 \times \cdots \times U_n)$.
 \end{definition}
 
-Preferences will be defined in terms of \emph{binary preference
-relations}\index{preference relation}.
-\begin{definition}[Preference relation]
-Let \schema{R} be a $n$-ary schema, a relation \dominates is a
-preference relation over \schema{R} if it is a subset of $\schema{R}
-\times \schema{R}$.
-\end{definition}
-
-To give an intuition, \dominates will be a binary relation between
-pairs of tuples from the same (database) relation \relation{R} with
-schema \schema{R}, we say $r$ \emph{dominates} $s$ in \schema{R} iff
-$(r, s) \in \dominates$ (or in infix notation $r \dominates s$).
+To give an intuition, \dominates is a binary relation between pairs of
+tuples from the same database relation \relation{R} with schema
+\schema{R}. We say $r$ \emph{dominates} $s$ in \schema{R} iff $(r, s)
+\in \dominates$ (or in infix notation $r \dominates s$).  We use the
+term database relation in the usual sens, a (database) relation
+\relation{R} a finite instance a schema \schema{R}.
 
 We require the relation \dominates to be a \emph{strict partial
 order}\index{strict partial order}, i.e. \dominates is irreflexive,
@@ -573,7 +571,9 @@ $\forall x, y, z: (x \dominates y \land y \dominates z) \imp x \dominates z$
 
 \end{itemize}
 
-For \emph{partial order}:
+\noindent
+The properties for the corresponding \emph{partial order}
+$\weakdominates$ are formalized like this:
 \begin{itemize}
 \item \emph{reflexivity:} 
 $\forall x: x \weakdominates x$
@@ -585,15 +585,15 @@ $\forall x, y: x \weakdominates y \land y \weakdominates x \imp x \nondistinct y
 $\forall x, y, z: (x \weakdominates y \land y \weakdominates z) \imp x \weakdominates z$
 \end{itemize}
 
-\todo{
-In general a partial order is not a \emph{total order}, nor is a
-strict partial order a \emph{strict total order}, what distinguishes
-partial orders ..... we have this in the 1 dim case}{}
+\noindent
+If a strict partial order has also the property of
 
 \begin{itemize}
-\item \emph{totality:} $\forall x, y: x \dominates y \lor y \dominates x \lor x = y$.
+\item \emph{totality:} $\forall x, y: x \dominates y \lor y \dominates x \lor x = y$,
 \end{itemize}
 
+\noindent
+then it is a \emph{total order}.
 
 
 %\todo{some more properties, which hold}{}
@@ -624,35 +624,24 @@ partial orders ..... we have this in the 1 dim case}{}
 % the BEST algorithm \citep{Torlone2002, Ciaccia2004}, we will not
 % study this approach in this paper.
 
-\begin{definition}
-\todo{}{}Let \relation{R} be a relation of schema \schema{R}.
-\end{definition}
-
-\begin{definition}[Skyline]
-\label{def:skyline}
-The skyline of a relation \relation{R} with respect to the preference
-relation \dominates is the set of tuples $r \in \relation{R}$ which
-are not dominate by any other tuple $s \in \relation{R}$, formally
-$\skyline_\dominates(\relation{R}) := \{ r \in \relation{R} | \nexists
-s \in \relation{R}\colon s \dominates r \}$
-\end{definition}
-
 \begin{definition}[preference formula (pf) \citep{Chomicki2003a}]
 A \emph{preference formula (pf)} $C(r,s)$ is a first-order formula
-defining a preference relation $\succ$ in the standard sense, namely
+defining a preference relation $\dominates$ in the standard sense, namely
 \[
-r \succ s \quad \textnormal{iff} \quad C(r,s).
+r \dominates s \quad \textnormal{iff} \quad C(r,s).
 \]
 \end{definition}
 
-\begin{definition}[winnow operator \citep{Chomicki2003a}]
-If $\schema R$ is a relation schema and $C$ a preference formula defining
-a preference relation $\succ$ over $\schema R$, then the \emph{winnow operator}
-is written $\omega_C(\schema R)$, and for every instance $\relation R \in \schema R$:
-\[
-\omega_C(\relation R) := \{r \in \relation R|\nexists s \in \relation{R}\colon s \succ r \}
-\]
-\end{definition}
+Since this close relationship between the first-order formula $C$ and
+the binary relation $\dominates$ we will later use
+$\skyline_\dominates$ and $\skyline_C$ interchangeably.
+
+In our case we only focus on \emph{intrinsic} preference formulas, i.e.
+the value of $C(r,s)$ only depends on the attributes of $r$ and $s$ and
+not on other tuples in the same or other relations.  If the preference
+formula depends on other tuples, like in \emph{``we prefere tuples
+that are better than the average''}, which involes aggregation, it
+is called \emph{extrinsic} preference formula.
 
 % \begin{lemma}
 % \todo{}{this is more or less theorem 2 from \citep{Chomicki2003a}}
@@ -666,6 +655,8 @@ is written $\omega_C(\schema R)$, and for every instance $\relation R \in \schem
 \def\Bigggl{\mathopen\bBigg@{3.5}}
 \def\Bigggr{\mathclose\bBigg@{3.5}}
 \makeatother
+
+We now like to define a special form of preference formula.
 
 \begin{definition}[Skyline Preference Formula]
 \label{def:skyline-pf}
@@ -695,11 +686,6 @@ C(r,s) = \overbrace{\left( \bigland_{1 \le i \le k} r_i \le s_i \right)}^{\texti
        \underbrace{\left( \biglor_{k+1 \le i \le l} r_i > s_i \right)}_{\textit{``\/}\texttt{MAX}\textit{ better than''}}\,\Bigggr).
 \end{eqnarray}
 \end{definition}
-
-The first-order formula $C(r,s)$ is called \emph{preference formula}.
-Since the close relationship between this first-order formula and the
-binary relation we use notations $\skyline_\dominates$ and
-$\skyline_C$ interchangeably.
 
 To state \eqref{equ:skylinepf} in an informal way, a tuple $r$
 dominates a tuple $s$ if it is equal in all \inlinesql{DIFF}
@@ -742,6 +728,29 @@ r \dominates s :=
 \underbrace{\left( \bigland_{1 \le i \le l} r_i \succeq_i s_i \right)}_{\textit{``at least as good''}} \,\land\,
 \underbrace{\left( \biglor_{1 \le i \le l} r_i \succ_i s_i \right)}_{\textit{``better than''}}
 \end{equation}
+
+
+\begin{definition}[winnow operator \citep{Chomicki2003a}]
+If $\schema R$ is a relation schema and $C$ a preference formula defining
+a preference relation $\succ$ over $\schema R$, then the \emph{winnow operator}
+is written $\omega_C(\schema R)$, and for every instance $\relation R \in \schema R$:
+\[
+\omega_C(\relation R) := \{r \in \relation R|\nexists s \in \relation{R}\colon s \succ r \}
+\]
+\end{definition}
+
+\begin{definition}[Skyline Operator]
+\todo{cmp to winnow}{}
+\label{def:skyline}
+The skyline of a relation \relation{R} with respect to the preference
+relation \dominates is the set of tuples $r \in \relation{R}$ which
+are not dominate by any other tuple $s \in \relation{R}$, formally
+\[
+\skyline_\dominates(\relation{R}) := \{ r \in \relation{R} | \nexists
+s \in \relation{R}\colon s \dominates r \}
+\]
+\end{definition}
+
 
 \begin{definition}[Weak Preference]
 There is a weak preference between $r$ and $s$ if $r$ is equal in all
@@ -5479,11 +5488,9 @@ In this chapter we have collected various directions of future work.
 
 \section{Syntax}
 \subsection{More General Syntax}
-\todo{
-the syntax is not yet part of a standard
-
-maybe use Preference~SQL \citep{Kiessling2002a} like in \citep{Chaudhuri2006}
-}{}
+\todo{the syntax is not yet part of a standard %
+%
+maybe use Preference~SQL \citep{Kiessling2002a} like in \citep{Chaudhuri2006}}{}
 
 \subsection{Different Syntax for \inlinesql{SKYLINE OF DIFF}}
 We believe the syntax of \inlinesql{SKYLINE OF DIFF} is a bit

@@ -660,23 +660,28 @@ We now like to define a special form of preference formula.
 
 \begin{definition}[Skyline Preference Formula]
 \label{def:skyline-pf}
-In a skyline query with the following skyline clause:
-\[
-\texttt{SKYLINE OF\ } a_1\,\texttt{MIN}, \ldots, a_k\,\texttt{MIN}, a_{k+1}\,\texttt{MAX}, \ldots, a_l\,\texttt{MAX}, a_{l+1}\,\texttt{DIFF}, \ldots, a_m\,\texttt{DIFF}
-\]
-a tuple
-\[
+Given the two tuples 
+% $r, s \in \relation R$, with $\relation R$ being a $n$-ary 
+% relation and $1 < k \le l \le m \le n$
+% In a skyline query with the following skyline clause:
+%
+\emph{\[
 r = (\underbrace{r_1, \ldots, r_k}_\texttt{MIN}, \underbrace{r_{k+1}, \ldots, r_l}_\texttt{MAX}, \underbrace{r_{l+1}, \ldots, r_m}_\texttt{DIFF}, \underbrace{r_{m+1}, \ldots, r_n}_\textit{extra})
-\]
-dominates a tuple
-\[
+\]}
+%
+and
+%
+\emph{\[
 s = (\underbrace{s_1, \ldots, s_k}_\texttt{MIN}, \underbrace{s_{k+1}, \ldots, s_l}_\texttt{MAX}, \underbrace{s_{l+1}, \ldots, s_m}_\texttt{DIFF}, \underbrace{s_{m+1}, \ldots, s_n}_\textit{extra})
-\]
-denoted by
-\[
-r \dominates s
-\]
-iff
+\]}
+%
+both element of a $n$-ary relation $\relation R$, then the \emph{skyline preference formula} is of the form:
+%
+% \[
+% r \dominates s
+%\]
+% iff
+\emph{
 \begin{eqnarray}\label{equ:skylinepf}
 C(r,s) = \overbrace{\left( \bigland_{1 \le i \le k} r_i \le s_i \right)}^{\textit{``\/}\texttt{MIN}\textit{ at least as good''}} \,\land\,
 \overbrace{\left( \bigland_{k+1 \le i \le l} r_i \ge s_i \right)}^{\textit{``\/}\texttt{MAX}\textit{ at least as good''}} \,\land\,
@@ -685,6 +690,7 @@ C(r,s) = \overbrace{\left( \bigland_{1 \le i \le k} r_i \le s_i \right)}^{\texti
 \Bigggl(\,\underbrace{\left( \biglor_{1 \le i \le k} r_i < s_i \right)}_{\textit{``\/}\texttt{MIN}\textit{ better than''}} \,\lor\,
        \underbrace{\left( \biglor_{k+1 \le i \le l} r_i > s_i \right)}_{\textit{``\/}\texttt{MAX}\textit{ better than''}}\,\Bigggr).
 \end{eqnarray}
+}
 \end{definition}
 
 To state \eqref{equ:skylinepf} in an informal way, a tuple $r$
@@ -693,6 +699,14 @@ dimensions, at least as good in all \inlinesql{MIN}/\inlinesql{MAX}
 dimensions and better than in at least one of the
 \inlinesql{MIN}/\inlinesql{MAX} dimensions.
 
+The above formula corresponds to a skyline query with the following
+skyline clause:
+
+\[
+\texttt{SKYLINE OF\ } a_1\,\texttt{MIN}, \ldots, a_k\,\texttt{MIN}, a_{k+1}\,\texttt{MAX}, \ldots, a_l\,\texttt{MAX}, a_{l+1}\,\texttt{DIFF}, \ldots, a_m\,\texttt{DIFF}
+\]
+
+\bigskip
 To simplify the definition of formula \eqref{equ:skylinepf} and
 combine the ``\inlinesql{MIN}- and \inlinesql{MAX}-at least as good''
 condition to a just ``at least as good'' condition we define:
@@ -730,10 +744,16 @@ r \dominates s :=
 \end{equation}
 
 
+We now like to define the \emph{skyline operator} with is a special
+case of the \emph{winnow operator} \citep{Chomicki2003a}, where the
+preference formula has exactly the form of formula
+\eqref{equ:skylinepf}.
+
 \begin{definition}[winnow operator \citep{Chomicki2003a}]
-If $\schema R$ is a relation schema and $C$ a preference formula defining
-a preference relation $\succ$ over $\schema R$, then the \emph{winnow operator}
-is written $\omega_C(\schema R)$, and for every instance $\relation R \in \schema R$:
+If $\schema R$ is a relation schema and $C$ a preference formula
+defining a preference relation $\succ$ over $\schema R$, then the
+\emph{winnow operator} is written $\omega_C(\schema R)$, and for every
+instance $\relation R \in \schema R$:
 \[
 \omega_C(\relation R) := \{r \in \relation R|\nexists s \in \relation{R}\colon s \succ r \}
 \]
@@ -742,15 +762,16 @@ is written $\omega_C(\schema R)$, and for every instance $\relation R \in \schem
 \begin{definition}[Skyline Operator]
 \todo{cmp to winnow}{}
 \label{def:skyline}
-The skyline of a relation \relation{R} with respect to the preference
-relation \dominates is the set of tuples $r \in \relation{R}$ which
-are not dominate by any other tuple $s \in \relation{R}$, formally
+Let $\schema R$ be a relation schema and $C$ a skyline preference
+formula defining a preference relation $\dominates$ over $\schema R$,
+then the \emph{skyline operator} denoted by
+$\skyline_\dominates(\schema R)$, and for every instance $\relation R
+\in \schema R$:
 \[
 \skyline_\dominates(\relation{R}) := \{ r \in \relation{R} | \nexists
 s \in \relation{R}\colon s \dominates r \}
 \]
 \end{definition}
-
 
 \begin{definition}[Weak Preference]
 There is a weak preference between $r$ and $s$ if $r$ is equal in all
@@ -856,7 +877,7 @@ r \comparable s = s \comparable r.
 %\forall x, y\colon x R y \lor x = y \lor y R y
 %\]
 
-\subsubsection{\inlinesql{DIFF}-Induced Equaltity Relation}
+\subsubsection{\inlinesql{DIFF}-Induced Equalitity Relation}
 Please note that the following subformula \eqref{equ:skylinepfdiff} of
 formula \eqref{equ:skylinepf} induces an equality relation on
 \schema{R}, i.e. \schema{R} is partitioned into groups where the
@@ -874,11 +895,11 @@ the attributes $a_{l+1}, \ldots, a_m$ exists, since the tuple window
 can be flushed each time the group is changed, see
 \autoref{sec:speedup-skyline-diff}
 
-\subsection{Skyline as special case of winnow}
-The skyline operator is a special case of the \emph{winnow
-operator}\index{winnow operator} \citep{Chomicki2003a}, where the
-preference formula has exactly the form of formula
-\eqref{equ:skylinepf}.
+% \subsection{Skyline as special case of winnow}
+% The skyline operator is a special case of the \emph{winnow
+% operator}\index{winnow operator} \citep{Chomicki2003a}, where the
+% preference formula has exactly the form of formula
+% \eqref{equ:skylinepf}.
 %
 % Since the preference relation induced by the skyline criteria is a
 % strict partial order, the following theorem (a special case of a

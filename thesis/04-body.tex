@@ -637,7 +637,7 @@ $\skyline_\dominates(\relation{R}) := \{ r \in \relation{R} | \nexists
 s \in \relation{R}\colon s \dominates r \}$
 \end{definition}
 
-\begin{definition}[preference formula (pf) \citep{Chomicki2002}]
+\begin{definition}[preference formula (pf) \citep{Chomicki2003a}]
 A \emph{preference formula (pf)} $C(r,s)$ is a first-order formula
 defining a preference relation $\succ$ in the standard sense, namely
 \[
@@ -645,7 +645,7 @@ r \succ s \quad \textnormal{iff} \quad C(r,s).
 \]
 \end{definition}
 
-\begin{definition}[winnow operator \citep{Chomicki2002}]
+\begin{definition}[winnow operator \citep{Chomicki2003a}]
 If $\schema R$ is a relation schema and $C$ a preference formula defining
 a preference relation $\succ$ over $\schema R$, then the \emph{winnow operator}
 is written $\omega_C(\schema R)$, and for every instance $\relation R \in \schema R$:
@@ -655,7 +655,7 @@ is written $\omega_C(\schema R)$, and for every instance $\relation R \in \schem
 \end{definition}
 
 % \begin{lemma}
-% \todo{}{this is more or less theorem 2 from \citep{Chomicki2002}}
+% \todo{}{this is more or less theorem 2 from \citep{Chomicki2003a}}
 % Given the relation $\relation{R} \not= \emptyset$ and \dominates a
 % strict partial order over \schema{R}, where \schema{R} is the schema
 % for \relation{R}, the skyline is non empty,
@@ -867,13 +867,13 @@ can be flushed each time the group is changed, see
 
 \subsection{Skyline as special case of winnow}
 The skyline operator is a special case of the \emph{winnow
-operator}\index{winnow operator} \citep{Chomicki2002}, where the
+operator}\index{winnow operator} \citep{Chomicki2003a}, where the
 preference formula has exactly the form of formula
 \eqref{equ:skylinepf}.
 %
 Since the preference relation induced by the skyline criteria is a
 strict partial order, the following theorem (a special case of a
-theorem in \citep{Chomicki2002}) holds:
+theorem in \citep{Chomicki2003a}) holds:
 
 \begin{theorem}\label{theorem:nonempty}
 For every finite, nonempty instance \relation{R} of \schema{R},
@@ -1010,7 +1010,7 @@ SELECT * FROM a15d1e5 SKYLINE OF d2 MIN, d1 MIN;
 % % \todo{The proofs are for the non \inlinesql{SKYLINE OF DISTINCT} case}{?}.
 % 
 % In this section, we study several ways of composing the skyline
-% operator. (see \citep{Chomicki2002} 4.1) We assume two finite
+% operator. (see \citep{Chomicki2003a} 4.1) We assume two finite
 % instances \relation{R}, \relation{S} of schema \schema{R}, ...
 % 
 % \begin{equation}
@@ -1063,19 +1063,19 @@ SELECT * FROM a15d1e5 SKYLINE OF d2 MIN, d1 MIN;
 % 
 % $\sigma_{Price<\textnormal{\euro}20}(\skyline_{C_1}(\relation{R}))=
 % \skyline_{C_1}(\sigma_{Price<\textnormal{\euro}20}(\relation{R}))$
-% according to Theorem 3 (\citep{Chomicki2002}).
+% according to Theorem 3 (\citep{Chomicki2003a}).
 % Such identities are not in our implementation.\todo{}{further work}
 % 
 % NOTE: $\sigma_{Price>\textnormal{\euro}20}$ does not commute with $\skyline$.
 
 %\subsection{Preference hierarchies}
-%(see 4.3 \citep{Chomicki2002}) ... I generally prefer red wine, but
+%(see 4.3 \citep{Chomicki2003a}) ... I generally prefer red wine, but
 %for fish I prefer white wine.
 %\todo{}{I think this can not be formulated using skyline}
 %
 %
 %\subsection{Intrinsic vs. extrinsic}
-%According to the definition in 5.2 \citep{Chomicki2002} the skyline
+%According to the definition in 5.2 \citep{Chomicki2003a} the skyline
 %operator is \emph{intrinsic} as the preference relation between two
 %tuples relies only on the values occurring in those two
 %tuples. \todo{In contrast \emph{extrinsic} preference formulas may
@@ -2595,7 +2595,7 @@ borrowed this concept and integrated it into SQL extension for the
 SELECT * FROM a15d1e5s0 SKYLINE OF d1 \textbf{USING <}, d2 \textbf{USING >};
 \end{sql}
 
-%\citep{Chomicki2002} for red/white wine, meat/fish
+%\citep{Chomicki2003a} for red/white wine, meat/fish
 
 \subsection{Skyline in the presents of NULL values}
 \label{sec:nullvalues}
@@ -5474,6 +5474,41 @@ the most effective EF window policy.
 \label{chap:future-work}
 In this chapter we have collected various directions of future work.
 
+\section{Syntax}
+\subsection{More General Syntax}
+\todo{
+the syntax is not yet part of a standard
+
+maybe use Preference~SQL \citep{Kiessling2002a} like in \citep{Chaudhuri2006}
+}{}
+
+\subsection{Different Syntax for \inlinesql{SKYLINE OF DIFF}}
+We believe the syntax of \inlinesql{SKYLINE OF DIFF} is a bit
+cumbersome for the intended semantic to partition the input relation,
+so that the skyline is computed with these partitions. Instead
+of \inlinesql{DIFF} a construct like this could be used:
+
+\begin{rail}
+skylineclause : 
+    'SKYLINE OF' ( skylineofexpr + ',' ) \\ 'OVER' '(' 'PARTITION BY' (expr + ',') ')';
+\end{rail}
+
+\noindent
+With the intended semantic to compute the skyline within the
+partitions as induced by the \inlinesql{PARTITION BY} subclause. This
+syntax was inspired by Oracle's analytic functions \citep[Page~5-10]{Oracle2005}.
+
+
+\subsection{\inlinesql{USING} \emph{op} for \inlinesql{SKYLINE OF DIFF}}
+While we do provide syntax to use user defined ordering operators
+instead for \inlinesql{SKYLINE OF MIN/MAX}, we do not do it yet for
+\inlinesql{SKYLINE OF DIFF}, which is used to partition the input
+into groups.  For the moment only equality for the given data type is
+used, but in general any equality relation could be used, to provide
+syntax, e.g. \dots \inlinesql{SKYLINE OF d3 DIFF USING myOp}, for this
+is subject to future work.
+
+
 \section{Query Planner/Optimizer}
 \subsection{Cost-based operator selection}
 \label{sec:cost-based-operator-selection}
@@ -5487,7 +5522,7 @@ transformation is applicable and the associated costs. See
 also \autoref{sec:operatorselection} and \autoref{sec:cardinality-and-cost-estimation}.
 
 \subsection{Algebraic Optimizations}
-\todo{\citep{Kiessling2003}}{}
+\todo{\citep{Chomicki2003a} and \citep{Kiessling2003}}{}
 
 \subsection{Sampling}
 \label{sec:sampling}
@@ -5536,6 +5571,24 @@ to be copied and manipulated.  Some cost estimation or some heuristics
 could be developed when to perform this projection.
 
 
+\subsection{Speedups for \inlinesql{SKYLINE OF DIFF}}
+\label{sec:speedup-skyline-diff}
+%
+Use a separate tuple window for each \inlinesql{SKYLINE OF DIFF}
+group, so only the tuples with the same values on the
+\inlinesql{SKYLINE OF DIFF} attributes have to be compared to each
+other. This reduction of comparison would yield an overall speedup.
+In order to avoid an unbounded number of tuple windows instead of
+having a tuple window for each \inlinesql{SKYLINE OF DIFF} group
+hashing could be engaged, i.e. allocate a fixed number of tuple
+windows and hash each \inlinesql{SKYLINE OF DIFF} group into one tuple
+window.
+
+For SFS differentiate between \texttt{CMP\_INCOMPARABLE\_SAME\_GROUP} and
+\texttt{CMP\_INCOMPARABLE\_DIFFERENT\_GROUP}, because once we have
+a group change we can flush the tuple window.
+
+
 \subsection{Speedups for low Cardinality Domains}
 A couple of algorithms for low cardinality domains, e.g.
 the ``stars ranking of a hotel'' only one five discrete values (one
@@ -5558,52 +5611,6 @@ costs can be reduced be choosing a specific order for the columns. Can
 histograms for the base relations be used for this?  On the other hand
 compare integer data before, floating point and in turn floating point
 before string data.
-
-
-\section{\inlinesql{SKYLINE OF DIFF}}
-\subsection{Different syntax for \inlinesql{SKYLINE OF DIFF}}
-We believe the syntax of \inlinesql{SKYLINE OF DIFF} is a bit
-cumbersome for the intended semantic to partition the input relation,
-so that the skyline is computed with these partitions. Instead
-of \inlinesql{DIFF} a construct like this could be used:
-
-\begin{rail}
-skylineclause : 
-    'SKYLINE OF' ( skylineofexpr + ',' ) \\ 'OVER' '(' 'PARTITION BY' (expr + ',') ')';
-\end{rail}
-
-\noindent
-With the intended semantic to compute the skyline within the
-partitions as induced by the \inlinesql{PARTITION BY} subclause. This
-syntax was inspired by Oracle's analytic functions \citep[Page~5-10]{Oracle2005}.
-
-
-\subsection{\inlinesql{USING} \emph{op} for \inlinesql{SKYLINE OF DIFF}}
-While we do provide syntax to use user defined ordering operators
-instead for \inlinesql{SKYLINE OF MIN/MAX}, we do not do it yet for
-\inlinesql{SKYLINE OF DIFF}, which is used to partition the input
-into groups.  For the moment only equality for the given data type is
-used, but in general any equality relation could be used, to provide
-syntax, e.g. \dots \inlinesql{SKYLINE OF d3 DIFF USING myOp}, for this
-is subject to future work.
-
-
-\subsection{Speedups for \inlinesql{SKYLINE OF DIFF}}
-\label{sec:speedup-skyline-diff}
-%
-Use a separate tuple window for each \inlinesql{SKYLINE OF DIFF}
-group, so only the tuples with the same values on the
-\inlinesql{SKYLINE OF DIFF} attributes have to be compared to each
-other. This reduction of comparison would yield an overall speedup.
-In order to avoid an unbounded number of tuple windows instead of
-having a tuple window for each \inlinesql{SKYLINE OF DIFF} group
-hashing could be engaged, i.e. allocate a fixed number of tuple
-windows and hash each \inlinesql{SKYLINE OF DIFF} group into one tuple
-window.
-
-For SFS differentiate between \texttt{CMP\_INCOMPARABLE\_SAME\_GROUP} and
-\texttt{CMP\_INCOMPARABLE\_DIFFERENT\_GROUP}, because once we have
-a group change we can flush the tuple window.
 
 
 %\section{Heuristics}

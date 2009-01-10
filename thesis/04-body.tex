@@ -537,12 +537,12 @@ less than), $\le$ (less than or equal), $\ge$ (greater than or equal),
 and $>$ (strictly greater than) are defined with the usual properties.
 
 As the skyline operator is a special case of the \emph{winnow
-operator} \citep{Chomicki2003a}, we define it in a very similarg way.
+operator} \citep{Chomicki2003a}, we define it in a very similar way.
 
 \begin{definition}[Preference Relation \citep{Chomicki2003a}]
 Given the domains $U_i, 1 \le i \le n$, such that $U_i$ is either
-equal to $D$ or $N$ and the $n$-ary schema $\schema{R}(A_1, A_2, \ldots,
-A_n)$, such that the domain of the attribute $A_i$ is $U_i$, 
+equal to $D$ or $N$ and the $n$-ary schema $\schema{R}(a_1, a_2, \ldots,
+a_n)$, such that the domain of the attribute $a_i$ is $U_i$, 
 a relation $\dominates$ is a \emph{preference relation} over
 $\schema R$ if it is a subset of $(U_1 \times U_2 \times \cdots \times U_n) \times 
 (U_1 \times U_2 \times \cdots \times U_n)$.
@@ -573,7 +573,7 @@ $\forall x, y, z: (x \dominates y \land y \dominates z) \imp x \dominates z$
 
 \noindent
 The properties for the corresponding \emph{partial order}
-$\weakdominates$ are formalized like this:
+$\weakdominates$ are formalized as:
 \begin{itemize}
 \item \emph{reflexivity:} 
 $\forall x: x \weakdominates x$
@@ -640,8 +640,10 @@ In our case we only focus on \emph{intrinsic} preference formulas, i.e.
 the value of $C(r,s)$ only depends on the attributes of $r$ and $s$ and
 not on other tuples in the same or other relations.  If the preference
 formula depends on other tuples, like in \emph{``we prefere tuples
-that are better than the average''}, which involes aggregation, it
-is called \emph{extrinsic} preference formula.
+that are better than the average''}, which involves aggregation, it
+is called \emph{extrinsic} preference formula. 
+%
+We now like to define a special form of preference formula.
 
 % \begin{lemma}
 % \todo{}{this is more or less theorem 2 from \citep{Chomicki2003a}}
@@ -656,7 +658,7 @@ is called \emph{extrinsic} preference formula.
 \def\Bigggr{\mathclose\bBigg@{3.5}}
 \makeatother
 
-We now like to define a special form of preference formula.
+
 
 \begin{definition}[Skyline Preference Formula]
 \label{def:skyline-pf}
@@ -698,7 +700,7 @@ dominates a tuple $s$ if it is equal in all \inlinesql{DIFF}
 dimensions, at least as good in all \inlinesql{MIN}/\inlinesql{MAX}
 dimensions and better than in at least one of the
 \inlinesql{MIN}/\inlinesql{MAX} dimensions.
-
+%
 The above formula corresponds to a skyline query with the following
 skyline clause:
 
@@ -773,15 +775,25 @@ s \in \relation{R}\colon s \dominates r \}
 \]
 \end{definition}
 
+To give the intuition, the skyline operator returns all tuples which
+are \emph{not dominated}, in other words all tuples that do \emph{not}
+have a \emph{wittness}.
+
+\bigskip
+\noindent
+We now like to introduce some futher concepts:
+
 \begin{definition}[Weak Preference]
 There is a weak preference between $r$ and $s$ if $r$ is equal in all
 \inlinesql{DIFF} dimensions and at least as good in all other skyline
 dimensions compared to $s$, formally:
+\emph{
 \begin{equation}
 r \weakdominates s :=
 \underbrace{\left( \bigland_{l+1 \le i \le m} r_i = s_i \right)}_{\textit{``\/}\texttt{DIFF}\textit{ equal''}} \,\land\,
 \underbrace{\left( \bigland_{1 \le i \le l} r_i \succeq_i s_i \right)}_{\textit{``at least as good''}}
 \end{equation}
+}
 \end{definition}
 
 \begin{definition}[Non Distinct]
@@ -793,13 +805,12 @@ r \nondistinct s := \left( \bigland_{1 \le i \le m} r_i = s_i \right)
 \end{definition}
 
 \noindent
-If $r \nondistinct s$, in case of \inlinesql{SKYLINE OF DISTINCT} it
-is left up to the imlementation to include either $r$ or $s$ in the
+If $r \nondistinct s$ and in case of \inlinesql{SKYLINE OF DISTINCT}, then it
+is left up to the implementation to include either $r$ or $s$ in the
 skyline, otherwise $r$ \emph{and} $s$ are included.
-
-Please note that in general $r=s$ is not equal to $r \nondistinct s$
-especially when $m < n$, i.e. there are some extra attributes not
-subject to skyline computation.
+%
+Please note that in general $r=s$ is not equivalent to $r \nondistinct s$,
+only when $m = n$, i.e. all attributes are subject to skyline computation.
 
 \bigskip
 %We say $s$ is dominated by $r$ iff $r$ dominates $s$, formally:
@@ -989,7 +1000,7 @@ One of the nice conclusion of \autoref{the:skyline-monotone} is, no
 matter how we weight our preferences along the attributes, our
 favorite is part of the skyline, as long we weight each attribute with
 a monotone increasing function.  Furthermore only tuples which
-monotone score best under at least one scoring function are part of
+score best under at least one scoring function are part of
 the skyline, in other words, the skyline does not contain tuples which
 are nobody's favorite.
 
@@ -1142,13 +1153,12 @@ query, or even facilitating an index.
 \subsection{Skyline Stratum and $K$-Skyband}
 \label{sec:skyline-stratum}
 
-\todo{\emph{iterated preference} \citep[section 8]{Chomicki2003a}}{}
-
-In the context of \emph{winnow} operator this is references as
+In \citep{Chomicki2003a} the concept of skyline stratum is called
+\emph{iterated preference}, and the speak of 
 \emph{ranking}\index{ranking}, we prefer to use the term
 \emph{stratum}\index{stratum}, as we reserve the term ranking for
 scoring functions (see \autoref{sec:scoring}).  The term skyline stratum
-appeares in \citep{Chan2005}, but probably was also early works.
+appeares in \citep{Chan2005}, but probably was also in early works.
 %
 The \nospellcheck{$n$-th} skyline startum $\skyline_C^n$ is recursively defined as:
 
@@ -1159,7 +1169,7 @@ The \nospellcheck{$n$-th} skyline startum $\skyline_C^n$ is recursively defined 
 
 To give an example, the query $\skyline_C^2(\relation{R})$ returns
 the set of ``second-best'' tuples.
-
+%
 The startum are of interest especially if there is a single
 \emph{killer tuple} or very few tuples which are dominating the entire
 dataset.  In the context of the relation \emph{Hotel(Price, Distance
@@ -1223,7 +1233,7 @@ than the skyline operator alone.
 Let $rel$ by a relation with the attributes $a_1, \ldots, a_n$, a non
 empty target list $\emptyset \not= target\_list \subseteq \{a_1,
 \ldots, a_n\}$, then a skyline query with at least one criterion ($0
-\le k \le l \le m \le n$ and $1 \le m \le n$) and following schema:
+\le k \le l \le m \le n$ and $1 < m \le n$) and following schema:
 %
 \begin{sql}
 SELECT $target\_list$ FROM $rel$ AS $r$ WHERE $condition$ \\
@@ -1249,17 +1259,17 @@ SELECT $o.target\_list$ FROM $rel$ AS $o$ WHERE ($condition\{r \gets o\}$) AND N
 
 Note that the attributes specified as a criterion in the skyline query
 need not necessarily appear in the $target\_list$.
-
+%
 The correspondence with the basic definition of the skyline operator
 (cf. \autoref{def:skyline}) and with the definition of the binary
 preference relation \eqref{equ:skylinepf} is obvious.
-
+%
 The join is a $\theta$-join and not an equi-join.
-
+%
 A little notion we use here is $condition\{r \gets o\}$ to express
 that a any reference to the relation alias $r$ must be replace with
 the alias $o$.
-
+%
 Another way to rewrite the query is given in
 \citep[Page~3]{Godfrey2004}:
 
@@ -1318,7 +1328,7 @@ or $s$ is retained, the choice is left to the implementation. Note
 that the attributes $a_{m+1}, \ldots, a_n$ are not effected by this,
 there are still part of the retained tuple, i.e no implicit projection
 is performed. This indicates some difficulties, standard SQL does not
-have some non-deterministic feature, so we some how have to express if
+have some non-deterministic feature, so we somehow have to express if
 a set of tuples coincide on the skyline criteria $\{a_1, \ldots,
 a_m\}$, i.e. $r \nondistinct s$, how to:
 
@@ -1334,7 +1344,7 @@ eliminate duplicates.
 \end{enumerate}
 
 \noindent
-The later is easy, as we just of to eliminate duplicates, which can be
+The later is easy, as we just have to eliminate duplicates, which can be
 done with the \inlinesql{DISTINCT} keyword in the
 \inlinesql{SELECT}-clause.  The rewritten query of
 \eqref{sql:rewrite-distinct} is besides an additional
@@ -1351,6 +1361,7 @@ SELECT \textbf{DISTINCT} $o.target\_list$ FROM $rel$ AS $o$ \\
 The same effect can be achieved by aggregating over all attributes in
 the target list.
 
+\bigskip
 Matters get more involved in the first case.  If we can establish a
 order on the tuples, then we are able to pick the first or the
 last\footnote{Of course we can also express to pick the second, the
@@ -1439,7 +1450,7 @@ the same access path will be used.  The \inlinesql{LIMIT}-clause is
 used, which is not part of the SQL 2003 standard. We conjecture that
 such a query can not be expressed with standard SQL.
 
-For the border case of one dimensional skyline queries, i.e. $m = 1$,
+For the corner case of one dimensional skyline queries, i.e. $m = 1$,
 other methods do exist, we show them in
 \autoref{sec:onedim-nondistinct} and \ref{sec:onedim-distinct}.
 

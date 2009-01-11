@@ -2704,7 +2704,6 @@ in an aggregate function
 \end{interactive}
 
 %\subsection{\inlinesql{SKYLINE OF} is different to SQL:2003 \inlinesql{WINDOW} clause}
-%\todo{}{explain more}
 
 \section{PostgreSQL Architecture and Concepts}
 
@@ -4233,7 +4232,6 @@ for (d = 0; d < dim; d++)
 	x[d] = random_equal(0, 1);
 \end{lstlisting}
 
-% TODO: place table and picture next to each other instead of below
 \begin{figure}[htbp]
 \centering
 \sbox{\tempbox}{\includegraphics[width=100mm]{plots-density/density-2d-i2d1e5}}%
@@ -5565,7 +5563,12 @@ transformation is applicable and the associated costs. See
 also \autoref{sec:operatorselection} and \autoref{sec:cardinality-and-cost-estimation}.
 
 \subsection{Algebraic Optimizations}
-\todo{\citep{Chomicki2003a} and \citep{Kiessling2003}}{}
+\citet{Chomicki2003a} and \citet{Kiessling2003} show in their
+papers algebraic optimizations of preference (skyline) operator,
+e.g. when and how to push a skyline operator through a join, who to
+simlify multiple preference operators, and so forth, together with
+sufficient conditions when the rules are applicable.  It is future
+work to integrate such optimizations into the query planner/optimizer.
 
 \subsection{Sampling}
 \label{sec:sampling}

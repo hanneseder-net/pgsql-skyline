@@ -512,12 +512,11 @@ concludes the paper.
 \chapter{Preliminaries}
 \label{chap:preliminaries}
 
-%\todo{see \citep[section 1.1.1]{Simkovics1998} }{}
-%
 \section{Basic definitions}
 
-%\todo{http://en.wikipedia.org/wiki/Relational\_model}{}
-%
+% see \citep[section 1.1.1]{Simkovics1998}
+% see http://en.wikipedia.org/wiki/Relational\_model
+
 We are in the realm of the relational model\index{relational model} of
 data.  As we aim at an implementation of the skyline operator into a
 relational database management system (RDBMS)\index{RDBMS} we restrict
@@ -596,29 +595,28 @@ If a strict partial order has also the property of
 then it is a \emph{total order}.
 
 
-%\todo{some more properties, which hold}{}
-%\begin{itemize}
-%\item \emph{intranstivity} 
-%$\neg\forall x, y, z: (x \dominates y \land y \dominates z) \imp x \dominates z$
+% some more properties, which hold
+% \begin{itemize}
+% \item \emph{intranstivity} 
+% $\neg\forall x, y, z: (x \dominates y \land y \dominates z) \imp x \dominates z$
 %
-%\item \emph{anti-transtivity} 
-%$\forall x, y, z: (x \dominates y \land y \dominates z) \imp \neg x \dominates z$
-%\end{itemize}
+% \item \emph{anti-transtivity} 
+% $\forall x, y, z: (x \dominates y \land y \dominates z) \imp \neg x \dominates z$
+% \end{itemize}
 %
-%\begin{tabular}{lll}
-%E1  & reflexiv:             & $\forall s\ sRs$ \\
-%E2  & symmetric:            & $\forall s\forall t\ sRt \rightarrow tRs$ \\
-%E3  & serial:               & $\forall s\exists t\ sRt$\\
-%E4  & transitive:           & $\forall s\forall t\forall u\ (sRt \wedge tRu) \rightarrow sRu$ \\
-%E5  & euclidian:            & $\forall s\forall t\forall u\ (sRt \wedge sRu) \rightarrow tRu$ \\
-%E6  & partially functional: & $\forall s\forall t\forall u\ (sRt \wedge sRu) \rightarrow t=u$ \\
-%E7  & functional:           & $\forall s\exists!t\ sRt$ i.e. there exists exactly one:\\
+% \begin{tabular}{lll}
+% E1  & reflexiv:             & $\forall s\ sRs$ \\
+% E2  & symmetric:            & $\forall s\forall t\ sRt \rightarrow tRs$ \\
+% E3  & serial:               & $\forall s\exists t\ sRt$\\
+% E4  & transitive:           & $\forall s\forall t\forall u\ (sRt \wedge tRu) \rightarrow sRu$ \\
+% E5  & euclidian:            & $\forall s\forall t\forall u\ (sRt \wedge sRu) \rightarrow tRu$ \\
+% E6  & partially functional: & $\forall s\forall t\forall u\ (sRt \wedge sRu) \rightarrow t=u$ \\
+% E7  & functional:           & $\forall s\exists!t\ sRt$ i.e. there exists exactly one:\\
 %    &                       & $\forall s\ (\exists t\ sRt \wedge \forall u\ (sRu \rightarrow u=t))$\\
-%E8  & (weakly) dense:       & $\forall s\forall t\ sRt \rightarrow \exists u\ (sRu \wedge uRt)$\\
-%E9  & (weakly) connected:   & $\forall s\forall t\forall u\ (sRt \wedge sRu) \rightarrow (tRu \vee t=u \vee uRt)$\\
-%E10 & (weakly) directed:     & $\forall s\forall t\forall u\ (sRt \wedge sRu) \rightarrow \exists v\ (tRv \wedge uRv)$\\
-%\end{tabular}
-
+% E8  & (weakly) dense:       & $\forall s\forall t\ sRt \rightarrow \exists u\ (sRu \wedge uRt)$\\
+% E9  & (weakly) connected:   & $\forall s\forall t\forall u\ (sRt \wedge sRu) \rightarrow (tRu \vee t=u \vee uRt)$\\
+% E10 & (weakly) directed:     & $\forall s\forall t\forall u\ (sRt \wedge sRu) \rightarrow \exists v\ (tRv \wedge uRv)$\\
+% \end{tabular}
 
 % Non-transitive\index{non-transitive} preferences can be compute with
 % the BEST algorithm \citep{Torlone2002, Ciaccia2004}, we will not
@@ -646,7 +644,7 @@ is called \emph{extrinsic} preference formula.
 We now like to define a special form of preference formula.
 
 % \begin{lemma}
-% \todo{}{this is more or less theorem 2 from \citep{Chomicki2003a}}
+% this is more or less theorem 2 from \citep{Chomicki2003a}:
 % Given the relation $\relation{R} \not= \emptyset$ and \dominates a
 % strict partial order over \schema{R}, where \schema{R} is the schema
 % for \relation{R}, the skyline is non empty,
@@ -762,7 +760,6 @@ preference formula has exactly the form of formula
 % \end{definition}
 
 \begin{definition}[Skyline Operator]
-\todo{cmp to winnow}{}
 \label{def:skyline}
 Let $\schema R$ be a relation schema and $C$ a skyline preference
 formula defining a preference relation $\dominates$ over $\schema R$,
@@ -875,18 +872,16 @@ r \comparable s = s \comparable r.
 \]
 
 
-%% todo http://en.wikipedia.org/wiki/Strict_weak_order
-%\todo{}{}
-%Transitivity of equivalence does not hold for a strict partial order
-%\[
-%\neg \forall x, y, z\colon x \incomparable y \land y \incomparable z \imp x \incomparable z
-%\]
+% http://en.wikipedia.org/wiki/Strict_weak_order
+% Transitivity of equivalence does not hold for a strict partial order
+% \[
+% \neg \forall x, y, z\colon x \incomparable y \land y \incomparable z \imp x \incomparable z
+% \]
 %
-%
-%\todo{for a strict total order R the law (or axiom) of trichotomy holds:}{}
-%\[
-%\forall x, y\colon x R y \lor x = y \lor y R y
-%\]
+% for a strict total order R the law (or axiom) of trichotomy holds:
+% \[
+% \forall x, y\colon x R y \lor x = y \lor y R y
+% \]
 
 \subsubsection{\inlinesql{DIFF}-Induced Equalitity Relation}
 Please note that the following subformula \eqref{equ:skylinepfdiff} of
@@ -1011,12 +1006,12 @@ are nobody's favorite.
 % R)=\omega_C(\omega_C(\relation R))$.
 % \end{theorem}
 % \begin{proof}
-% \todo{\nospellcheck{no na}}{}
+% no na
 % Let $\succ$ be the preference relation induced by $C$, then the result
 % of the winnow operator is $\omega_C(\relation R) := \{r \in \relation
 % R | \nexists s \in \relation{R}\colon s \succ r \}$, so
 % $\omega_C(\relation R)$ already contains only the maximal elements
-% according $\succ$, \todo{...}{complete}
+% according $\succ$, ...
 % \end{proof}
 % Since the skyline operator is a special case of \emph{winnow} operator, 
 % \autoref{the:skyline-idempotent} holds as well.
@@ -5517,12 +5512,18 @@ the most effective EF window policy.
 \chapter{Future work}
 \label{chap:future-work}
 In this chapter we have collected various directions of future work.
+This chapter is organized as the stages a query takes during
+execution.
 
 \section{Syntax}
 \subsection{More General Syntax}
-\todo{the syntax is not yet part of a standard %
-%
-maybe use Preference~SQL \citep{Kiessling2002a} like in \citep{Chaudhuri2006}}{}
+The syntax for the skyline operator as proposed
+in \citep{Borzsonyi2001} is not part of any standard, hence our
+extended syntax is not part of a standard either.  Other extension to
+SQL have been proposed, like Preference~SQL \citep{Kiessling2002a}.  A
+subset of Preference~SQL was used in \citep{Chaudhuri2006}.  Our
+current syntax is quite limited to a special purpose, a more general
+syntax for preference queries is desireable.
 
 \subsection{Different Syntax for \inlinesql{SKYLINE OF DIFF}}
 We believe the syntax of \inlinesql{SKYLINE OF DIFF} is a bit

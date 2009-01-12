@@ -310,7 +310,7 @@ On the other hand the query for \autoref{ex:visibility} looks like:
 SELECT * FROM building SKYLINE OF x DIFF, y MIN, z MAX;
 \end{interactive}
 
-\subsection{Why extending SQL?}
+\section{Why extending SQL?}
 The skyline operator is within the expressive power of SQL and in
 \autoref{sec:rewrite-to-sql} we show how to rewrite a SQL query with
 a \inlinesql{SKYLINE~OF}-clause into standard SQL. 
@@ -335,28 +335,28 @@ The study of preference queries on their own gave birth to a new set
 of optimization opportunities \citep{Chomicki2003a, Kiessling2003}
 \end{itemize}
 
-\subsection{Fields of Application}
-motivation: green computing: less CPU time,
-less computers, less energy --> safe the planet
-
-stocks: risk vs. costs (--> streaming skyline see [Tao2006])
-
-example of skyline
-
-when traveling by airplane: time vs. costs
-
-TODO: more dim: \#stops, total dist travel by bus: \#of visited cities
-
-it is shown on some website. which?
-
-Credit To: Ali (room mate)
-
-employee (salary, revenue, years in the company)
-
+% \subsection{Fields of Application}
+% motivation: green computing: less CPU time,
+% less computers, less energy --> safe the planet
+% 
+% stocks: risk vs. costs (--> streaming skyline see [Tao2006])
+% 
+% example of skyline
+% 
+% when traveling by airplane: time vs. costs
+% 
+% TODO: more dim: \#stops, total dist travel by bus: \#of visited cities
+% 
+% it is shown on some website. which?
+% 
+% Credit To: Ali (room mate)
+% 
+% employee (salary, revenue, years in the company)
+%
 
 
 % Research Questions for this Thesis
-\section{Focus of this Thesis}
+\section{Focus of this Thesis and Main Results}
 The skyline operator \citep{Borzsonyi2001} filters out the
 \emph{interesting} points from a potentially large set of data
 points. The skyline operator returns the Pareto optimal\index{Pareto
@@ -370,8 +370,9 @@ database scenario, either due to the number of concurrent users or
 limited total main memory, e.g. on a handheld device.
 
 %All of the algorithms are implemented as stand-alone algorithms,
-In this paper, we present our work on evaluating skyline algorithms in
-PostgreSQL. Building the skyline query operation in an RDBMS has
+In this thesis we focus on extending PostgreSQL with the skyline
+operator and the evaluating of skyline algorithms in the RDBMS context.
+Building the skyline query operation in an RDBMS has
 several advantages.  First, skyline can be integrated with other
 relational operators, thus more sophisticated queries can be
 constructed.  Moreover, no work on concurrency control and transaction
@@ -384,6 +385,14 @@ algorithms we have so far implemented reveal that there does not exist
 a clear winner in all aspects.  The efficiency of the algorithms
 depend on the properties of the data sets such as dimension,
 distribution, cardinality and so on.
+
+We discovered several \emph{hidden rules}, which are remarkably simple
+and useful, but hard to obtain from the theoretical investigation.  We
+expect that our exposition of experimental results on skyline
+algorithms could serve as a guideline for developing heuristics of a
+skyline query optimizer, and in the meantime, provide some insight for
+a deeper understanding of the skyline query characteristics.
+
 %(more details are given in \autoref{sec:contribution}).
 For instance, BNL is more efficient than SFS and even LESS, if the
 dimension of the data is less than 5 and the number of tuples is
@@ -418,16 +427,6 @@ queries is a non-trivial task \citep{Chaudhuri2006} since the
 performance of a skyline query is sensitive to a number of parameters
 \citep{Godfrey2007}.  To achieve this goal, we conducted extensive
 experiments on the skyline implementations.
-
-
-\section{Main Results}
-\todo{}{TODO:}
-We discovered several \emph{hidden rules}, which are remarkably simple
-and useful, but hard to obtain from the theoretical investigation.  We
-expect that our exposition of experimental results on skyline
-algorithms could serve as a guideline for developing heuristics of a
-skyline query optimizer, and in the meantime, provide some insight for
-a deeper understanding of the skyline query characteristics.
 
 For the purpose of repeatability we have set up a website to present
 our experimental results. The source code, and the log-files from our

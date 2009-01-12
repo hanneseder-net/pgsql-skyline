@@ -160,6 +160,25 @@ decision.  These products are called to be \emph{Pareto optimal}
 based on the given criteria. \citet{Borzsonyi2001} coined in their
 paper the term \emph{skyline operator} for this type of queries.
 
+\begin{figure}[htbp]
+% this is from: 
+% http://www.istockphoto.com/file_closeup/where/scenics/cityscapes/
+% 2358169_lightning_traffic_over_danube_bridge_and_vienna_skyline.php
+% ?id=2358169
+%
+% Photographers Description:
+%
+% viennese skyline with cars driving on a street shot by night with a
+% long time exposure. I added high contrast, therefore image gets very
+% little grainy.
+%
+\centering
+\includegraphics[scale=1.0]{photos/iStock_000002358169Large_100mm}%
+\caption{Viennese skyline (nightshot with long exposure time, 
+taken by Franz Pflügl / Vienna)}%
+\label{fig:vienneseskyline}%
+\end{figure}
+
 When thinking of a \emph{skyline} images like
 \autoref{fig:vienneseskyline} might come to ones mind, the
 popularity of such photographs is illustrated by following figures:
@@ -179,26 +198,6 @@ The Merriam-Webster's online dictionary gives following definition for \emph{sky
 \item an outline (as of buildings or a mountain range) against the
 background of the sky
 \end{enumerate}
-
-
-\begin{figure}[htbp]
-% this is from: 
-% http://www.istockphoto.com/file_closeup/where/scenics/cityscapes/
-% 2358169_lightning_traffic_over_danube_bridge_and_vienna_skyline.php
-% ?id=2358169
-%
-% Photographers Description:
-%
-% viennese skyline with cars driving on a street shot by night with a
-% long time exposure. I added high contrast, therefore image gets very
-% little grainy.
-%
-\centering
-\includegraphics[scale=1.0]{photos/iStock_000002358169Large_100mm}%
-\caption{Viennese skyline (nightshot with long exposure time, 
-taken by Franz Pflügl / Vienna)}%
-\label{fig:vienneseskyline}%
-\end{figure}
 
 From a more abstract point of view a skyline is made up of objects
 (buildings, maintains and such) which do not have another object
@@ -287,6 +286,7 @@ is obvious that $c$ and $d$ are part of the answer. The complete
 answer is $\{b, c, d, f\}$.
 \end{example}
 
+\noindent
 The question from \autoref{ex:touchsky} could be formalized in the
 following way:
 
@@ -311,14 +311,29 @@ SELECT * FROM building SKYLINE OF x DIFF, y MIN, z MAX;
 \end{interactive}
 
 \subsection{Why extending SQL?}
-\begin{itemize}
-\item \todo{skyline is within the expressiveness of SQL}{}
-\item \todo{easier to spec. that a correlated query / SQL with except}{}
-\item \todo{faster to evaluate}{}
-\item \todo{new optimization opportunities}{}
-\end{itemize}
+The skyline operator is within the expressive power of SQL and in
+\autoref{sec:rewrite-to-sql} we show how to rewrite a SQL query with
+a \inlinesql{SKYLINE~OF}-clause into standard SQL. 
+However there are good reasons for including a \emph{skyline} or 
+\emph{preference operator} into SQL:
 
-\todo{see \citep[Page 3]{Godfrey2004}}{}
+\begin{itemize}
+\item 
+From a users perspective, it is easier to specify and easier to grasp
+what's going on, than a query with a correlated subquery or using
+SQL's \inlinesql{EXCEPT} (see \autoref{sql:rewrite-with-except}.
+
+\item
+It is faster to evaluate, as there a numerous algorithms for skyline
+queries. Furthermore when this preference query is with a correlated
+subselect it boiles down to a \naive ``nested-loop'' and
+\citet{Grust1997, Braumandl1998} show that such query cannot be
+unnested.
+
+\item
+The study of preference queries on their own gave birth to a new set
+of optimization opportunities \citep{Chomicki2003a, Kiessling2003}
+\end{itemize}
 
 \subsection{Fields of Application}
 motivation: green computing: less CPU time,
@@ -406,7 +421,7 @@ experiments on the skyline implementations.
 
 
 \section{Main Results}
-\todo{}{}
+\todo{}{TODO:}
 We discovered several \emph{hidden rules}, which are remarkably simple
 and useful, but hard to obtain from the theoretical investigation.  We
 expect that our exposition of experimental results on skyline
@@ -495,10 +510,10 @@ introduce the notation and show mathematical properties of the skyline
 operator.  In \autoref{chap:relatedworks} we introduce briefly the
 implemented skyline algorithms and speak about the closest related
 works. \autoref{chap:implementation} gives the very details of our
-implementation. \autoref{sec:results} describes the experimental setup
+implementation. Chapter \ref{chap:results} describes the experimental setup
 and presents the extensive experiments over various data settings,
 followed by the analysis of the results. Directions of future work are
-discussed in \autoref{chap:future-work}. \autoref{chap:summary}
+discussed in \autoref{chap:future-work}. Chapter \ref{chap:summary}
 concludes the paper.
 
 
@@ -1268,7 +1283,7 @@ the alias $o$.
 Another way to rewrite the query is given in
 \citep[Page~3]{Godfrey2004}:
 
-\begin{sql}
+\begin{sql}\label{sql:rewrite-with-except}
 \newcommand\abox[1]{\hbox to 2.5em{#1\hfil}}%
 \newcommand\bbox[1]{\hbox to 2em{#1\hfil}}%
 SELECT $target\_list$ FROM $rel$ WHERE ($condition$) \\
@@ -2171,7 +2186,7 @@ skyline operator alone
 
 
 \chapter{Implementation}
-\label{chap:implemenation}
+\label{chap:implementation}
 \section{SQL Extension}
 \label{sec:sql-extension}
 
@@ -4046,7 +4061,7 @@ or optimize and/or refactor other parts.
 
 
 \chapter{Results}
-\label{chap:Results}
+\label{chap:results}
 
 
 \section{Experimental Setup}

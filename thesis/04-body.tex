@@ -5702,9 +5702,23 @@ before string data.
 \chapter{Summary}
 \label{chap:summary}
 
-In this paper we presented the experiments with skyline algorithms
-applied on the open source RDBMS PostgreSQL.
+In this paper we presented our achievements in extending the open source
+RDBMS PostgreSQL with the skyline operator.  In our strong believe with
+this effort the skyline operator is in the habbitat it belongs to.
 
+A note worthy result of our efforts the web-site
+\url{http://skyline.dbai.tuwien.ac.at/}, where it is possible to
+test-drive our implementation and get a intuition for the behaviour of
+the skyline operator.  Furthermore we provide a series of patches,
+applicable against the PostgreSQL 8.3 stable release. By means of that
+we hope to acquaint the skyline operator to a bigger audience, and a
+lay a brick for further research in the direction of integrating
+preference query concepts into RDBMS's.  As we wish that at least one
+flavor of SQL extension with a preference clause will make it into an
+SQL standard in near future.
+
+We have conducted extensive experiments on various datasets.
+%
 From our experimental results we were able to expose several findings
 which are difficult to be verified theoretically.  There are: (1) the
 elimination filter is effective only if the selectivity factor of the

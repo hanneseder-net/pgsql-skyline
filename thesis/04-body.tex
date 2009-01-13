@@ -153,7 +153,7 @@ clear winner over all criteria, i.e. a high priced product with high
 quality and a cheap product with lower quality.  For sure we are not
 interested in a product with a high price and poor quality, we will
 later refer this situation as \emph{this product is dominated by
-another}, as there are others which better fulfill our criteria.  The
+another one}, as there are others which better fulfill our criteria.  The
 products which are not dominated are more or less equally good based on
 our given criteria, and we need to apply more criteria to come to a
 decision.  These products are called to be \emph{Pareto optimal}
@@ -250,7 +250,7 @@ For sure building $c$ (the green in the background) and building $f$
 (the blue one in the foreground) are part of the answer and $d$ and $e$
 are not.  As $a$ and $b$ do have the same height, we could take them
 both or make an arbitrary choice among $a$ and $b$.  We will later
-see that this tacking both or choose an arbitrary one can be
+see that this taking both or choosing an arbitrary one can be
 influenced by the keyword \inlinesql{DISTINCT}. So overall, possible
 answers are $\{a, c, f\}$, $\{b, c, f\}$, or $\{a, b, c, f\}$.
 \end{example}
@@ -279,8 +279,8 @@ $f$ & 2 & 0 & 0.75 & blue & front
 \end{table}
 
 \begin{example}[Which buildings are visible?]\label{ex:visibility}
-To answer this question we have also to take into account how close a
-building as, i.e. the $y$ coordinate.  Building $a$ is covered by $b$
+To answer this question we also have to take into account how close a
+building is, i.e. the $y$ coordinate.  Building $a$ is covered by $b$
 and $e$ by $f$, we will later call this property \emph{dominance}. It
 is obvious that $c$ and $d$ are part of the answer. The complete
 answer is $\{b, c, d, f\}$.
@@ -295,7 +295,7 @@ SELECT * FROM building SKYLINE OF x DIFF, z MAX;
 \end{interactive}
 
 \noindent
-in above query $a$ and $b$ will be part of the answer, will in the following
+in above query $a$ and $b$ will be part of the answer, whereas in the following
 it is up to the database system to make a choice between $a$ or $b$, as they 
 are equally good:
 
@@ -319,7 +319,7 @@ However there are good reasons for including a \emph{skyline} or
 
 \begin{itemize}
 \item 
-From a users perspective, it is easier to specify and easier to grasp
+From a user's perspective, it is easier to specify and easier to grasp
 what's going on, than a query with a correlated subquery or using
 SQL's \inlinesql{EXCEPT} (see \autoref{sql:rewrite-with-except}.
 
@@ -327,7 +327,7 @@ SQL's \inlinesql{EXCEPT} (see \autoref{sql:rewrite-with-except}.
 It is faster to evaluate, as there a numerous algorithms for skyline
 queries. Furthermore when this preference query is with a correlated
 subselect it boiles down to a \naive ``nested-loop'' and
-\citet{Grust1997, Braumandl1998} show that such query cannot be
+\citet{Grust1997, Braumandl1998} show that such a query cannot be
 unnested.
 
 \item
@@ -498,7 +498,7 @@ unreachable, e.g. because it is preceded by a
 \end{itemize}
 
 \noindent
-Furthermore we took the freedom to simply some function names and
+Furthermore we took the freedom to simplify some function names and
 remove some nasty details which are not essential to grasp the
 algorithms.
 
@@ -506,7 +506,7 @@ algorithms.
 \section{Further Organization}
 The paper is organized as follows: In \autoref{chap:preliminaries} we
 introduce the notation and show mathematical properties of the skyline
-operator.  In \autoref{chap:relatedworks} we introduce briefly the
+operator.  In \autoref{chap:relatedworks} we briefly introduce the
 implemented skyline algorithms and speak about the closest related
 works. \autoref{chap:implementation} gives the very details of our
 implementation. Chapter \ref{chap:results} describes the experimental setup
@@ -533,13 +533,13 @@ concludes the paper.
 
 We are in the realm of the relational model\index{relational model} of
 data.  As we aim at an implementation of the skyline operator into a
-relational database management system (RDBMS)\index{RDBMS} we restrict
+relational database management system (RDBMS)\index{RDBMS} we restrict ourselves
 to finite database\index{finite database} instances.
 
-We assume two infinite\footnote{Although in a real computer is
-everything finite.} domains: $N$ (numbers) and $D$ (uninterpreted
+We assume two infinite\footnote{Although in a real computer 
+everything is finite.} domains: $N$ (numbers) and $D$ (uninterpreted
 constants). The domain $D$ will be used for attributes which are not
-subject to skyline computation, i.e. for the traveling example we
+subject to skyline computation, i.e. for the travelling example we
 will not use the name of the airline as a skyline criterion, therefore
 $D$ will be used as domain for this attribute.  For attributes or
 expressions which are subject to skyline computation we use the domain
@@ -599,7 +599,7 @@ $\forall x, y, z: (x \weakdominates y \land y \weakdominates z) \imp x \weakdomi
 \end{itemize}
 
 \noindent
-If a strict partial order has also the property of
+If a strict partial order also has the property of
 
 \begin{itemize}
 \item \emph{totality:} $\forall x, y: x \dominates y \lor y \dominates x \lor x = y$,
@@ -644,14 +644,14 @@ r \dominates s \quad \textnormal{iff} \quad C(r,s).
 \]
 \end{definition}
 
-Since this close relationship between the first-order formula $C$ and
+Because of this close relationship between the first-order formula $C$ and
 the binary relation $\dominates$ we will later use
 $\skyline_\dominates$ and $\skyline_C$ interchangeably.
 
 In our case we only focus on \emph{intrinsic} preference formulas, i.e.
 the value of $C(r,s)$ only depends on the attributes of $r$ and $s$ and
 not on other tuples in the same or other relations.  If the preference
-formula depends on other tuples, like in \emph{``we prefere tuples
+formula depends on other tuples, like in \emph{``we prefer tuples
 that are better than the average''}, which involves aggregation, it
 is called \emph{extrinsic} preference formula. 
 %
@@ -689,7 +689,7 @@ and
 s = (\underbrace{s_1, \ldots, s_k}_\texttt{MIN}, \underbrace{s_{k+1}, \ldots, s_l}_\texttt{MAX}, \underbrace{s_{l+1}, \ldots, s_m}_\texttt{DIFF}, \underbrace{s_{m+1}, \ldots, s_n}_\textit{extra})
 \]}
 %
-both element of a $n$-ary relation $\relation R$, then the \emph{skyline preference formula} is of the form:
+both elements of a $n$-ary relation $\relation R$, then the \emph{skyline preference formula} is of the form:
 %
 % \[
 % r \dominates s
@@ -758,7 +758,7 @@ r \dominates s :=
 \end{equation}
 
 
-We now like to define the \emph{skyline operator} with is a special
+We now define the \emph{skyline operator} which is a special
 case of the \emph{winnow operator} \citep{Chomicki2003a}, where the
 preference formula has exactly the form of formula
 \eqref{equ:skylinepf}.
@@ -777,7 +777,7 @@ preference formula has exactly the form of formula
 \label{def:skyline}
 Let $\schema R$ be a relation schema and $C$ a skyline preference
 formula defining a preference relation $\dominates$ over $\schema R$,
-then the \emph{skyline operator} denoted by
+then the \emph{skyline operator} is denoted by
 $\skyline_\dominates(\schema R)$, and for every instance $\relation R
 \in \schema R$:
 \[
@@ -788,7 +788,7 @@ s \in \relation{R}\colon s \dominates r \}
 
 To give the intuition, the skyline operator returns all tuples which
 are \emph{not dominated}, in other words all tuples that do \emph{not}
-have a \emph{wittness}.
+have a \emph{witness}.
 
 \bigskip
 \noindent
@@ -826,7 +826,7 @@ only when $m = n$, i.e. all attributes are subject to skyline computation.
 \bigskip
 %We say $s$ is dominated by $r$ iff $r$ dominates $s$, formally:
 \noindent
-For convenience we define following two \emph{commutator} relations:
+For convenience we define the following two \emph{commutator} relations:
 \[
 s \dominatedby r :\Leftrightarrow r \dominates s.
 \]
@@ -873,7 +873,7 @@ r \incomparable s = s \incomparable r.
 \]
 
 
-\begin{definition}[Compareable]The tuples are $r$ and $s$ are \emph{comparable} iff $r$ dominates $s$ or $s$ dominates $r$:
+\begin{definition}[Comparable]The tuples are $r$ and $s$ are \emph{comparable} iff $r$ dominates $s$ or $s$ dominates $r$:
 \[
 r \comparable s := r \dominates s \lor s \dominates r
 \]
@@ -947,22 +947,22 @@ can be flushed each time the group is changed, see
 One might be tempted to assume that the result of the skyline operator
 can also be produced with linear scoring functions, but that is not
 true, we take the example from \citep{Chomicki2002a} to show this.  
-Before going in to detail let us define the class of linear
+Before going into detail let us define the class of linear
 scoring functions:
 
 \begin{definition}[Linear Scoring Function]
 Let the $w_i$'s be positive real constants, then we define a 
-\emph{postive linear scoring function} $W$ over a the tuples 
+\emph{positive linear scoring function} $W$ over all the tuples 
 $r \in \relation R$ as:
 \[
-W(r) = \sum_{1 \le i \le k} w_i r_i.
+W(r) = \sum_{1 \le i \le n} w_i r_i.
 \]
 \end{definition}
 
 Let us consider the relation $\relation R = \{ (4,1), (2,2), (1,4)
 \}$.  It is clear that all tuples are part of the skyline,
 i.e. $\skyline(\relation R) = \relation R$.  Finding a linear scoring
-function that preferes $(4, 1)$ or $(1,4)$ is obvious.  Now let us try
+function that prefers $(4, 1)$ or $(1,4)$ is obvious.  Now let us try
 to find a linear scoring function that gives $(2, 2)$ the highest
 score.  We require that:
 \begin{enumerate}
@@ -973,11 +973,11 @@ is equivalent to $2 w_2 \ge 4 w_1$, and
 \end{enumerate}
 Chaining the inequalities from (1) and (2) yields $w_1 \ge 2 w_2 \ge 4
 w_1$, i.e. $w_1 \ge 4 w_1$, which does not have a solution for $w_1 >
-0$.  Therefore there is not lineare scoring function which gives
+0$.  Therefore there is not linear scoring function which gives
 $(2,2)$ the best score.
 
 It should be noted that it might be difficult to come up with
-appropriate weights for the different attributes from a users
+appropriate weights for the different attributes from a user's
 perspective.
 
 \bigskip
@@ -986,12 +986,12 @@ On the other hand the class of monotone scoring function is defined as follows:
 
 \begin{definition}[Monotone Scoring Function]
 Let the $f_i$'s be monotone increasing functions with $f_i\colon N
-\rightarrow \mathbb{R}$, where $N$ is domain of the attributes of
+\rightarrow \mathbb{R}$, where $N$ is the domain of the attributes of
 schema $\schema R$, then a \emph{monotone scoring function} $S$ which
 ranks a tuple $r \in \relation R$, where $\relation R$ is an instance
 of $\schema R$, has the form:
 \[
-S(r) = \sum_{1 \le i \le k} f_i(r_i).
+S(r) = \sum_{1 \le i \le n} f_i(r_i).
 \]
 \end{definition}
 
@@ -1005,9 +1005,9 @@ The skyline contains all, and only tuples yielding maximum values of
 monotone scoring functions.
 \end{theorem}
 
-One of the nice conclusion of \autoref{the:skyline-monotone} is, no
+One of the nice conclusions of \autoref{the:skyline-monotone} is, no
 matter how we weight our preferences along the attributes, our
-favorite is part of the skyline, as long we weight each attribute with
+favorite is part of the skyline, as long as we weight each attribute with
 a monotone increasing function.  Furthermore only tuples which
 score best under at least one scoring function are part of
 the skyline, in other words, the skyline does not contain tuples which
@@ -1043,7 +1043,7 @@ in which the attributes are specified in the query.
 \begin{proof}
 This property immediately becomes clear, when looking at the definition
 of the \emph{preference formula} \eqref{equ:skylinepf}, as
-logical and ($\land$) and logical or ($\lor$) or commutative.
+logical and ($\land$) and logical or ($\lor$) are commutative.
 \end{proof}
 
 \noindent
@@ -1134,7 +1134,7 @@ SELECT * FROM a15d1e5 SKYLINE OF d2 MIN, d1 MIN;
 
 \section{Further Notions}
 \subsection{Dominance and Anti-dominance regions}
-In the context of skyline operator the following two notions naturally
+In the context of the skyline operator the following two notions naturally
 arise:
 
 \begin{definition}[Dominance Region]
@@ -1166,9 +1166,9 @@ In \citep{Chomicki2003a} the concept of skyline stratum is called
 \emph{iterated preference}, and the speak of 
 \emph{ranking}\index{ranking}, we prefer to use the term
 \emph{stratum}\index{stratum}, as we reserve the term ranking for
-scoring functions (see \autoref{sec:scoring}).  The term skyline stratum
-appeares in \citep{Chan2005}, but probably was also in early works.
-%
+scoring functions (see \autoref{sec:scoring}).
+To the best of our knowledge the term \emph{skyline stratum} first 
+appered in \citep{Chan2005}.
 The \nospellcheck{$n$-th} skyline startum $\skyline_C^n$ is recursively defined as:
 
 \begin{eqnarray}
@@ -5579,8 +5579,8 @@ also \autoref{sec:operatorselection} and \autoref{sec:cardinality-and-cost-estim
 \subsection{Algebraic Optimizations}
 \citet{Chomicki2003a} and \citet{Kiessling2003} show in their
 papers algebraic optimizations of preference (skyline) operator,
-e.g. when and how to push a skyline operator through a join, who to
-simlify multiple preference operators, and so forth, together with
+e.g. when and how to push a skyline operator through a join, how to
+simplify multiple preference operators, and so forth, together with
 sufficient conditions when the rules are applicable.  It is future
 work to integrate such optimizations into the query planner/optimizer.
 

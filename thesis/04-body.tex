@@ -1605,13 +1605,13 @@ of these methods are presented in several works
 
 Furthermore from a relational algebraic point of view, index-based
 skyline algorithms can only be placed at the leaves of an algebraic
-expression, where the non-indexed based skyline algorithms are first
+expression, whereas the non-indexed based skyline algorithms are first
 order citizens and can be placed anywhere in the relational algebra 
 expression.
 
-There is a whole class of other skyline algorithms, referenced as
+There is a whole class of other skyline algorithms, referred as
 \emph{continuous skyline computation}.  
-The task is here to initially compute the skyline and then update the
+The task here is to initially compute the skyline and then update the
 skyline when tuples are added or removed from the dataset, e.g. in a
 streaming scenario. 
 Such algorithms are presented in \citep{Lin2005, Tao2006}. In this work
@@ -1741,14 +1741,17 @@ function SkylineBNL($\mathcal{I}$)
 
 \subsection{Non-termination of Block-Nested-Loops (BNL) Algorithm}
 During the implementation of BNL into PostgreSQL we discovered a flaw in
-the algorithm from the original paper \citep{Borzsonyi2001}.  Besides
+the algorithm from the original paper \citep{Borzsonyi2001}.  
+%fang
+Besides
 a little difference in notation and the fact that a tuple is only
 added to the tuple window when there is actual space in the tuple
 window and not like in \citep{Borzsonyi2001} where a tuple is first
 added and then removed if there is no more space the code of
 \citep{Borzsonyi2001} for BNL is the same as in \autoref{code:bnl}.
+%fang: this sentence is too long, I can not understand it.
 Under certain conditions the code from \autoref{code:bnl} does not
-terminate.  To show this property, we construct a data set like this:
+terminate.  To show this property, we construct a data set as follows:
 
 \begin{eqnarray}
 \mathcal{I} = \{a_1, \ldots, a_n, b_1, \ldots, b_m, c_1, \ldots, c_n\}
@@ -1756,7 +1759,7 @@ terminate.  To show this property, we construct a data set like this:
 
 \noindent
 where $n$ is the number of tuples that fit into the tuple window
-$\mathbb{W}$ and $m \ge 1$, with following dominance structure:
+$\mathbb{W}$ and $m \ge 1$, with the following dominance structure:
 
 \begin{align}
 \forall i \in \{1, \ldots, n\}\colon & c_i \dominates a_i \label{eqn:bnlntds1} \\
@@ -1772,7 +1775,7 @@ In terms of a binary relation the dominance can be expressed as:
 \end{equation}
 
 \noindent
-in essence this means every $a_i$ is dominated by $c_i$ and all other
+In essence this means every $a_i$ is dominated by $c_i$ and all other
 tuples are incomparable.  To construct such a dataset, generate $a_1,
 \ldots, a_n, b_1, \ldots b_m$ anti-correlated and let the $c_i$'s just be
 a little better in each dimension than the $a_i$'s.  It is easy to see
@@ -1918,11 +1921,11 @@ is
 where $b_1$ and $c_1$ have changed their relative order.  It is easy
 to imagine that this can happen in other configurations as well and
 therefore BNL does not preserve the relative order of tuples.  This
-physical property of BNL is important during query planing, as the
-relative order of tuples is an important aspect here, e.g. if a prior
-operator in the query plan establishes a certain order or preserves it
-an explicit sort can be omitted or for instance consider different
-physical operators for aggregation or joining.
+physical property of BNL is important during the query planing, as the
+relative order of tuples is an important aspect here. Very offen, a prior
+operator in the query plan needs to establish a certain order or preserve such an order
+to save an explicit sorting operation, in order to execute further 
+physical operators such as aggregation or natural join.
 
 \section{Sort First Skyline (SFS)}
 SFS \citep{Chomicki2003} differs from BNL in that the data is
@@ -2001,7 +2004,7 @@ to the output.
 
 \section{Linear Elimination Sort for Skyline (LESS)}
 \citet{Godfrey2005} proposed the LESS algorithm, an improvement
-over SFS \citep{Chomicki2003}. LESS is generally considered as fastest
+over SFS \citep{Chomicki2003}. LESS is generally considered as the fastest
 known non-index based skyline algorithm in literature. The essential
 differences between SFS and LESS are:
 
@@ -2020,7 +2023,7 @@ difference is mere an implementation detail.
 
 \subsection{Elimination Filter (EF)}
 \label{sec:ef-tuple-order}
-The concept of elimination Filter (EF) is simply but effective.  It
+The concept of elimination Filter (EF) is simple but effective.  It
 tries to eliminate as many non-skyline tuples in an early stage.  To
 do so it compares every incoming tuple $p$ against a tuple window
 $\mathbb{W}$, if $p$ is dominated by any tuple in the tuple window,
@@ -2034,7 +2037,7 @@ same way as BNL from a bad distribution of tuples in the input, e.g.
 the tuple window gets filled up by skyline tuples with a low dominance
 factor.
 
-\citet{Godfrey2005} do not give pseudo-code for the elimination
+\citet{Godfrey2005} did not give pseudo-code for the elimination
 filter in there paper. In \autoref{code:ef} we give a sketch for
 the code as we used it in our implementation. Note that we give
 the algorithm in a form that fits into a pipelined architecture liked
@@ -2051,7 +2054,7 @@ and the tuple window placement policy, in the same way as this parameters
 are tunable for BNL and SFS.
 
 In \Citep{Godfrey2005} the elimination filter is only used in
-conjunction with as SFS style algorithm, in this paper we demonstrate
+conjunction with as SFS style algorithm, in our implementation we demonstrate
 that this concept is also very effective when used with an BNL style
 algorithm, we call it BNL+EF, cf. \autoref{sec:analysis}
 
@@ -2175,7 +2178,7 @@ between \emph{top-k} and \emph{skyline operator} called top-k skyline.
 Skyline stratum (see \autoref{sec:skyline-stratum}) are computed until
 at least $k$ records are returned.  With this approach all the second
 and higher order best records do get a chance to end up in the result,
-nevertheless the selectivity of this approach is even lower then
+nevertheless the selectivity of this approach is even lower than
 skyline operator alone
 
 
@@ -2225,8 +2228,8 @@ we have implemented.
 \label{sec:syntax}
 To describe the formal grammar of the \inlinesql{SKYLINE OF}-clause
 extension to the SQL query syntax we use syntax diagrams (or \emph{railroad
-diagrams}).  Railroad diagrams are a graphical alternative to
-Backus-Naur form or EBNF and they have been made popular by books such
+diagrams}).  A railroad diagram is a graphical alternative to
+Backus-Naur form or EBNF and it has been made popular by books such
 as the ``Pascal User Manual'' written by Niklaus Wirth.  Nowadays
 railroad diagrams are used in user manuals such as the ``Oracle
 Database SQL Reference'' (see \citep{Oracle2005}).  We believe the
@@ -2267,7 +2270,7 @@ BY}-clause, denoted by \nt{group\_clause} / \nt{having\_clause} and
 from the context that \nt{target\_list}, \nt{into\_clause},
 \nt{from\_clause}, \nt{where\_clause}, \nt{group\_clause},
 \nt{having\_clause}, \nt{sort\_clause}, and \nt{select\_limit} have
-there usual meaning. We refer you to the according SQL standard and
+there usual meaning. We refer the readers to the corresponding SQL standard and
 especially to the PostgreSQL documentation on SQL
 \postgresdocu{sql-select.html}{SELECT}. For the non-terminals that we omitted
 here we selected the same name as in the implementation (see
@@ -2350,9 +2353,9 @@ operators, and various options for the physical operators we
 introduced a set of options. This options list is preluded by the
 keyword \inlinesql{WITH}.
 
-Except from order of the tuples in the output all of the following
+Except for order of the tuples in the output all of the following
 options do not have an impact on the result of the skyline
-computation. Using either BNL or SFS will change to order of tuples in
+computation. Using either BNL or SFS will change the order of tuples in
 the output, as SFS does a sort prior to skyline
 computation. Furthermore the size of the tuple window and the tuple
 window policy have an impact on the order of tuples. And even the
@@ -2361,9 +2364,13 @@ output order, as a different amount of potential skyline tuples reach
 the final skyline computation node, although the elimination filter
 does not change the relative order.  See detailed discussion on
 relative tuple order preserving property in
-\autoref{sec:relative-tuple-order}.  To work around this reordering if
+\autoref{sec:relative-tuple-order}.  
+%fang
+To work around this reordering if
 desired, sort the query result by means of an appropriate
-\inlinesql{ORDER~BY}-clause.  We did so in regression testing, we
+\inlinesql{ORDER~BY}-clause.  
+%fang: I cannot understand this sentence
+We did so in regression testing, we
 ordered on the unique \inlinesql{ID} column, no matter what method and
 what options used the results are the same. If not this indicates a
 flaw in the implementation.
@@ -2373,12 +2380,15 @@ The options fall into three groups: elimination filter
 etc.), and access path selection (\inlinesql{NOINDEX}) and associated
 options if applicable.
 
+%fang
 To tell the query planner to include a elimination filter (EF) in the
-query plan specify the option \inlinesql{EF}.  If the
+query plan specify the option \inlinesql{EF}.  
+%fang: it is not a sentence
+If the
 \nt{efwindowoptions} are omitted, the query planner uses the defaults
 and plans the elimination filter with a 8~KB tuple window and the
 tuple window policy \inlinesql{APPEND}. The 8~KB tuple window size
-stem from PostgreSQL page size \texttt{BLCKSZ}, which is 8~KB on most
+stems from PostgreSQL page size \texttt{BLCKSZ}, which is 8~KB on most
 platforms.
 
 The next group of options is to specify the main algorithm used for
@@ -2386,8 +2396,11 @@ skyline computation.
 %
 Currently the work horses of our skyline operator implementation into
 PostgreSQL are the BNL and the SFS algorithm. BNL is the catch all
-default in the query optimizer, only if a suitable index access path
-is available SFS is selected. This automatic can be overruled by
+default in the query optimizer, %fang: what is work horse, ???
+only if a suitable index access path
+is available SFS is selected. 
+%fang: ???
+This automatic can be overruled by
 specifying \inlinesql{BNL} or \inlinesql{SFS} as an option. Furthermore
 the size and the tuple placement policy for the tuple window used by
 BNL or SFS can be specified with the \nt{windowoptions}, see below.
@@ -2399,13 +2412,14 @@ more details on how the physical operator is selected.
 
 
 The \inlinesql{PRESORT} method is more or less a special case of SFS,
-which only works in the two dimensional case, it was pointed out by 
+which only works in the two dimensional case, it was proposed by 
 \citet{Borzsonyi2001}. In the two dimensional case once the data
 are ordered according to the two skyline expressions a single tuple is
 enough to compute the skyline. See \autoref{sec:presort}.
 
 \inlinesql{MNL} stands for \emph{materialized nested loop}, which
 is our own very basic and experimental nevertheless full general
+%fang:???
 skyline computation algorithm, i.e. skylines of any dimensionality,
 distinct and non-distinct with the same type of expressions and
 directions (\inlinesql{MIN}, \inlinesql{MAX}, $\ldots$) can be
@@ -2543,17 +2557,17 @@ skylineoptions:
     'WITH' ( () | ( name ( '=' value ) ? ) + )
 \end{rail}
 
-While the definition given above describes exactly the indented
-semantics this definition gave as maximum flexibility during
+While the definition given above describes exactly the intented
+semantics, this definition gave us the full flexibility during the
 development. Using the short definition above we were able to
 introduce new options as we liked on the fly.  The options are passed
 around from the parser, through query planing to the execution engine
-as a simple \emph{name/value} list.  So when ever we needed a new
+as a simple \emph{name/value} list.  So whenever we needed a new
 option we just had to query this list at the desired point in the
 code. If the equal sign and the value are omitted, this has the
 semantics of assigning the integer constant 1 to the name.
 
-To tell the whole truth the grammar for \nt{select\_clause} is defined
+Note that the grammar for \nt{select\_clause} is defined
 a little bit different\footnote{see \srcref{src/backend/parser/gram.y}
 for details} but only in the aspect of the associativity of the entire
 \inlinesql{SKYLINE OF} clause, this is because the SQL:1992 Standard
@@ -2610,7 +2624,7 @@ aspects of the skyline operator semantics which are not clear through
 the basic definition.  The semantics of the options for the
 \inlinesql{SKYLINE~OF}-clause is either already given in the description
 of the syntax in \autoref{sec:syntax} or in the appropriate subsection
-in the description of query execution (cf. \autoref{sec:queryexecution}).
+of \autoref{sec:queryexecution}.
 The semantics of \inlinesql{SKYLINE OF DISTINCT}
 vs. non-\inlinesql{SKYLINE OF DISTINCT} is described in
 \autoref{sec:rewrite-to-sql}.
@@ -2637,7 +2651,7 @@ vs. non-\inlinesql{SKYLINE OF DISTINCT} is described in
 
 \subsection{\inlinesql{USING}~\emph{qualOp}}
 \label{sec:using-qualop}
-PostgreSQL has the feature to use user defined ordering operators for
+PostgreSQL has the feature of applying the user-defined ordering operators for
 the \inlinesql{ORDER~BY}-clause, where \inlinesql{ASC} is equivalent to
 \inlinesql{USING <} and \inlinesql{DESC} is equivalent to \inlinesql{USING >}, 
 but the creator of a the user-defined ordering operator can give it
@@ -2654,7 +2668,7 @@ SELECT * FROM a15d1e5s0 SKYLINE OF d1 \textbf{USING <}, d2 \textbf{USING >};
 
 %\citep{Chomicki2003a} for red/white wine, meat/fish
 
-\subsection{Skyline in the presents of NULL values}
+\subsection{Skyline in the presence of NULL values}
 \label{sec:nullvalues}
 The issue of dealing with null values is usually not treated in the
 literature, but a real implementation in a database system of course
@@ -2662,19 +2676,22 @@ must be able to cope with null values.  Furthermore we have a syntax
 to specify how to treat null values when ordering values.  Once again this is a feature
 inspired by a feature of PostgreSQL's \inlinesql{ORDER~BY}-clause, where
 the keywords \inlinesql{NULLS FIRST} and \inlinesql{NULLS LAST} allows
-the user the specify how to treat null values.  When sorting ascending
+the user the specify how to treat null values.  
+%fang
+When sorting ascending
 per default null values sort after non-null values and when sorting
 descending null values sort before non-null values, as above see the
 PostgreSQL documentation on ORDER BY-clause.
+%fang: please rewrite this sentence
 
 If \inlinesql{NULLS FIRST} or \inlinesql{NULLS LAST} is omitted, the
 default is to sort null values after all the non-null values on
 \inlinesql{SKYLINE OF MIN} and for \inlinesql{SKYLINE OF MAX} to have
 the null values before the non-null values.  Specifying
-\inlinesql{NULLS FIRST/LAST} overrides this default.  The question
+\inlinesql{NULLS FIRST/LAST} overrides this default.  Questions
 may arise if \inlinesql{NULLS LAST} should be the default for
 \inlinesql{SKYLINE OF MAX}, but as this is not the case for the
-\inlinesql{ORDER BY DESC} we stick with \inlinesql{NULLS FIRST} to
+\inlinesql{ORDER BY DESC} we stick with \inlinesql{NULLS FIRST} in order to
 be consistent.
 
 

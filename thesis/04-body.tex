@@ -1194,7 +1194,7 @@ enjoy the little bit longer walk we would have to take in that case.
 
 A \emph{$K$-skyband}\index{K-skyband@$K$-skyband} query, introduced by
 \citet{Papadias2005}, is a similar concept as skyline stratum. A
-$K$-skyband query reports all tuples which are dominated by at most
+$K$-skyband query reports all tuples which are dominated by \emph{at most}
 $K$ points.  
 The skyband rank of a point $p$ can be computed by counting the points
 in the anti-dominance region of $p$.
@@ -1205,14 +1205,8 @@ following example, no easy relationship can be established: \\
 Let $\relation R = \{r, s, t\}$ and $\dominates =\{(r,t), (s,t)\}$, 
 i.e. $r \dominates t$ and $s \dominates t$, 
 then $\skyline_\dominates^1 = \{r, s\}$ and $\skyline_\dominates^2 = \{t\}$, 
-but $\skyband_\dominates^0 = \{r, s\}$, $\skyband_\dominates^1 = \emptyset$ and
-$\skyband_\dominates^2 = \{t\}$.
-
-% Chris: Muessten nach obiger Definition ("dominated by _at most_ K points") 
-% nicht
-% $\skyband_\dominates^1 = \{r, s\}$ und
-% $\skyband_\dominates^2 = \{r, s, t\}$ gelten?
-
+but $\skyband_\dominates^0 = \{r, s\}$, $\skyband_\dominates^1 = \{r, s\}$ and
+$\skyband_\dominates^2 = \{r, s, t\}$.
 
 \noindent
 Hence no easy general relation can be established between K-skyband
@@ -5717,7 +5711,8 @@ RDBMS PostgreSQL with the skyline operator.  In our strong believe with
 this effort the skyline operator is in the habbitat it belongs to.
 
 The algorithms we have implemented so far are BNL, SFS, and a variant
-of LESS.
+of LESS.  We have extended the syntax as proposed in
+\citep{Borzsonyi2001} to ... \todo{}{}
 
 A note worthy result of our efforts is the site
 \url{http://skyline.dbai.tuwien.ac.at/}, where it is possible to

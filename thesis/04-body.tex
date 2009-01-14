@@ -147,10 +147,10 @@
 \section{General Introduction}
 \label{sec:generalintroduction}
 
-In everyday life we are used to make decisions based on multiple
+In everyday-life we are used to making decisions based on multiple
 criteria, e.g. price and quality for products.  Frequently there is no
-clear winner over all criteria, i.e. a high priced product with high
-quality and a cheap product with lower quality.  For sure we are not
+clear winner over all criteria, i.e. a high-priced product with high
+quality and a cheap product with lower quality.  Surely we are not
 interested in a product with a high price and poor quality, we will
 later refer this situation as \emph{this product is dominated by
 another one}, as there are others which better fulfill our criteria.  The
@@ -175,13 +175,13 @@ paper the term \emph{skyline operator} for this type of queries.
 \centering
 \includegraphics[scale=1.0]{photos/iStock_000002358169Large_100mm}%
 \caption{Viennese skyline (nightshot with long exposure time, 
-taken by Franz Pflügl / Vienna)}%
+taken by Franz Pfl\"ugl / Vienna)}%
 \label{fig:vienneseskyline}%
 \end{figure}
 
-When thinking of a \emph{skyline} images like
-\autoref{fig:vienneseskyline} might come to ones mind, the
-popularity of such photographs is illustrated by following figures:
+When thinking of the term \emph{skyline}, images like 
+\autoref{fig:vienneseskyline} might come to our mind.
+The popularity of such photographs is illustrated by following figures:
 \emph{Google images} returns $\approx 3{,}580{,}000$ hits, not
 counting the hits for the Nissan's skyline sports car, for the search
 term
@@ -216,8 +216,8 @@ In the realm of database systems the \emph{skyline operator} is
 important for supporting multi-criteria decision making applications.
 Given a set of $d$-dimensional data points, the \emph{skyline}
 consists of the points, called \emph{skyline points}, which are not
-{\em dominated} by another data point. One data point $r$ dominates
-another data $s$ point if it is at least has good as $s$ in all
+{\em dominated} by any other data points. One data point $r$ dominates
+another data point $s$ if it is at least has good as $s$ in all
 dimensions and better in at least one.
 \citet{Borzsonyi2001} proposed a {\em skyline} extension of the SQL
 syntax with this form:
@@ -321,7 +321,7 @@ However there are good reasons for including a \emph{skyline} or
 \item 
 From a user's perspective, it is easier to specify and easier to grasp
 what's going on, than a query with a correlated subquery or using
-SQL's \inlinesql{EXCEPT} (see \autoref{sql:rewrite-with-except}.
+SQL's \inlinesql{EXCEPT} (see \autoref{sql:rewrite-with-except}).
 
 \item
 It is faster to evaluate, as there are numerous algorithms for skyline
@@ -355,23 +355,22 @@ of optimization opportunities \citep{Chomicki2003a, Kiessling2003}
 %
 
 
-% Research Questions for this Thesis
-\section{Focus of this Thesis and Main Results}
+\section{Main Results} 
 The skyline operator \citep{Borzsonyi2001} filters out the
 \emph{interesting} points from a potentially large set of data
 points. The skyline operator returns the Pareto optimal\index{Pareto
 optimal} elements of a set. This is also known as maximum vector
 problem\index{maximum vector problem}.
 
-Special algorithms have been proposed for the case the whole relation
+Dedicated algorithms have been proposed for the case the whole relation
 fits into main memory \citep{Preparata1985}, nevertheless we do not
-take them into account as memory is always a short resource in a
+take them into account as memory is always a rare resource in a
 database scenario, either due to the number of concurrent users or
 limited total main memory, e.g. on a handheld device.
 
 %All of the algorithms are implemented as stand-alone algorithms,
 In this thesis we focus on extending PostgreSQL with the skyline
-operator and the evaluating of skyline algorithms in the RDBMS context.
+operator and the evaluation of skyline algorithms in the RDBMS context.
 Building the skyline query operation in an RDBMS has
 several advantages.  First, skyline can be integrated with other
 relational operators, thus more sophisticated queries can be
@@ -1317,8 +1316,8 @@ results can get very large.
 \subsection{Rewrite queries with \inlinesql{SKYLINE OF DISTINCT}}
 \label{sec:rewrite-queries-with-distinct}
 In the presence of the optional \inlinesql{DISTINCT} modifier in the
-\inlinesql{SKYLINE~OF}-clause the situation is changed, such a query has
-following schema:
+\inlinesql{SKYLINE~OF}-clause the situation is changed, such a query has the
+following form:
 %
 \begin{sql}\label{sql:rewrite-distinct}
 SELECT $target\_list$ FROM $rel$ AS $r$ WHERE $condition$ \\
@@ -1328,18 +1327,18 @@ SKYLINE OF \textbf{DISTINCT} $a_1$ MIN$, \ldots, a_k$ MIN$, a_{k+1}$ MAX$, \ldot
 %
 Before we describe how to rewrite such a query into standard SQL and
 where the limits of this transformation are, we shall repeat what the
-intended semantics of \inlinesql{SKYLINE~OF DISTINCT} is
+intended semantics of \inlinesql{SKYLINE~OF DISTINCT} is from
 \citep{Borzsonyi2001}.  If the \inlinesql{DISTINCT} modifier is
-present, then duplicates are eliminated in the following way; if for
+present, then duplicates are eliminated in the following way: if for
 two tuples $r$ and $s$ the condition
 \[
 \bigland_{1 \le i \le m} r_i = s_i,
 \]
-i.e. they are equal on all skyline criteria, in other terms $r
-\nondistinct s$ (cf. \eqref{eqn:nondistinct}), holds then either $r$
-or $s$ is retained, the choice is left to the implementation. Note
+(i.e. they are equal on all skyline criteria, in other terms $r
+\nondistinct s$ (cf. \eqref{eqn:nondistinct})) holds, then either $r$
+or $s$ is retained, and the choice is left to the implementation. Note
 that the attributes $a_{m+1}, \ldots, a_n$ are not affected by this,
-they are still part of the retained tuple, i.e no implicit projection
+they are still part of the retained tuple, i.e., no implicit projection
 is performed. This indicates some difficulties, standard SQL does not
 have any non-deterministic feature, so we somehow have to express whether
 a set of tuples coincides on the skyline criteria $\{a_1, \ldots,
@@ -1359,9 +1358,9 @@ eliminate duplicates.
 \noindent
 The latter is easy, as we just have to eliminate duplicates, which can be
 done with the \inlinesql{DISTINCT} keyword in the
-\inlinesql{SELECT}-clause.  The rewritten query of
-\eqref{sql:rewrite-distinct} is besides an additional
-\inlinesql{DISTINCT} the same as in \eqref{sql:rewritten-non-distinct}:
+\inlinesql{SELECT}-clause. As a result, the rewritten query of
+\eqref{sql:rewrite-distinct} is the same as in \eqref{sql:rewritten-non-distinct},
+except for an additional \inlinesql{DISTINCT}:
 %
 \begin{sql}
 \newcommand\abox[1]{\hbox to 2.5em{#1\hfil}}%
@@ -1375,7 +1374,7 @@ The same effect can be achieved by aggregating over all attributes in
 the target list.
 
 \bigskip
-Matters get more involved in the first case.  If we can establish an
+Things get more involved in the first case.  If we can establish an
 order on the tuples, then we are able to pick the first or the
 last\footnote{Of course we can also express to pick the second, the
 third and so forth, but all we know is that within a group we have at
@@ -1388,8 +1387,8 @@ order\index{lexicographic order}.  Duplicate elimination with
 
 To exemplify this, let the target list be $\{a_{j_1}, \ldots,
 a_{j_h}\}$, $\{j_1, \ldots, j_h\} = J$, with $J \subseteq \{1, \ldots,
-n\}$ and $J \cap \{m+1, \ldots, n\} \neq \emptyset$, i.e the target
-list contains at least one attribute not part of the skyline
+n\}$ and $J \cap \{m+1, \ldots, n\} \neq \emptyset$, i.e., the target
+list contains at least one attribute that is not a part of the skyline
 criteria. Then the query~\eqref{sql:rewrite-distinct} can be rewritten
 into:
 
@@ -1457,7 +1456,7 @@ FROM\\
 \end{sql}
 
 This returns only the correct result if all the subselects will return
-their attribute from the same tuple, which can be expected as the same
+their attributes from the same tuple, which can be expected as the same
 filter condition on the same relation is used, then almost for sure
 the same access path will be used.  The \inlinesql{LIMIT}-clause is
 used, which is not part of the SQL 2003 standard. We conjecture that
@@ -1536,17 +1535,16 @@ in question, i.e.\/ any expression valid in a SQL \inlinesql{ORDER~BY}
 clause is valid as an expression in a \inlinesql{SKYLINE~OF} clause.
 
 This gives the opportunity to include expressions of almost any data
-type in a skyline query, even user defined ones, since it is possible
+type in a skyline query, even user-defined ones, since it is possible
 to user define full-fledged data types in PostgreSQL. For more
-information on user defined data types see PostgreSQL documentation on
+information on user-defined data types see PostgreSQL documentation on
 \postgresdocu{xtypes.html}{User-Defined Types} and
 \postgresdocu{xindex.html\#XINDEX-OPFAMILY}{Operator Classes and
 Operator Families}
 
-Anyway it is somewhat questionable what it is good for to include a
-e.g. \inlinesql{VARCHAR} column in a skyline query, still it is
-possible. Nevertheless this might be a good use case for a user
-defined ordering operator.
+Although viable, it is questionable whether it is of practical use to include a
+e.g. \inlinesql{VARCHAR} column in a skyline query.
+Nevertheless this might be a good use case for a user-defined ordering operator.
 
 Furthermore our implementation allows arbitrary expressions instead of
 a single attribute, e.g.
@@ -5798,7 +5796,7 @@ deeper understanding of the skyline query characteristics.
 % \end{verbatim}
 
 % LocalWords:  tex skyband todo mathescape morekeywords foreach nightshot NN ef
-% LocalWords:  Pflügl Borzsonyi Preparata threeDskyline vienneseskyline nissan
+% LocalWords:  Pfl\"ugl Borzsonyi Preparata threeDskyline vienneseskyline nissan
 % LocalWords:  istockphoto BNL SFS PostgreSQL RDBMS tuples tuple EF timestamp
 % LocalWords:  NOINDEX psql  preprocessing nextness EOF MNL Naur EBNF Niklaus
 % LocalWords:  iff whitespace incomparability online irreflexive Google prepend

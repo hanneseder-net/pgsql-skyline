@@ -8,15 +8,28 @@
 \chapter*{Abstract\revision}
 \addcontentsline{toc}{chapter}{Abstract\revision}
 
-In this paper, we present our work on evaluating the skyline
-algorithms BNL, SFS, and a variant of LESS in PostgreSQL. It is well
-known that the performance of skyline queries is sensitive to a number
-of parameters.  From extensive experiments on skyline implementations
-we have discovered several rules, which are remarkably simple and
-useful, but hard to obtain from theoretical investigation.  Our
-findings are beneficial for developing heuristics for the skyline
-query optimization, and in the meantime, provide some insight for a
-deeper understanding of the skyline query characteristics.
+The \emph{skyline operator} filters out the \emph{interesting} tuples
+from a potentially large dataset.  A tuple is of interest if not
+dominated by any other tuple.  The skyline is also called 
+\emph{pareto optimal set} and the computation of it as
+\emph{maximum vector problem}.
 
-\bigskip
-\todo{}{}
+In this paper, we present our work on extending PostgreSQL, an open
+source database system, with the skyline operator.  Our implementation
+provides several physical operators for computing the skyline, namely:
+BNL, SFS, and a variant of LESS.  While at it we discovered and fixed
+a flaw in the original version of BNL.  With this effort we hope to
+lay the ground for future work in this area and move the skyline
+operator from standalone implementations to the habitat it belongs to:
+an RDBMS.
+
+It is well known that the performance of skyline queries is sensitive
+to a number of parameters.  From extensive experiments on skyline
+implementations we have discovered several rules, which are remarkably
+simple and useful, but hard to obtain from theoretical investigation.
+Our findings are beneficial for developing heuristics for the skyline
+query optimization, and in the meantime, provide some insight for a
+deeper understanding of the skyline query characteristics. 
+
+All results and source code is available at: 
+\url{http://skyline.dbai.tuwien.ac.at/}.

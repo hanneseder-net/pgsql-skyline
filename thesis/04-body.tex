@@ -5708,13 +5708,29 @@ before string data.
 
 In this paper we presented our achievements in extending the open source
 RDBMS PostgreSQL with the skyline operator.  In our strong believe with
-this effort the skyline operator is in the habbitat it belongs to.
+this effort the skyline operator is in the habitat it belongs to.
 
 The algorithms we have implemented so far are BNL, SFS, and a variant
-of LESS.  We have extended the syntax as proposed in
-\citep{Borzsonyi2001} to ... \todo{}{}
+of LESS.  
+We have extended the basic syntax of the \inlinesql{SKYLINE~OF}-clause
+\citep{Borzsonyi2001} in order to specify:
 
-A note worthy result of our efforts is the site
+\begin{itemize}
+\item The treatment of NULL values (\texttt{NULLS FIRST} and \texttt{NULLS LAST})
+\item The usage of order relations other than $<$ and $>$ (\texttt{USING \emph{Op}})
+\item Operational aspects of skyline computation, such as 
+\begin{itemize}
+\item \emph{method} (BNL, SFS, MNL, PRESORT (2 dim only))
+\item \emph{tuple window size} in terms of memory and/or number of slots
+\item \emph{tuple window policy} (append, prepend, ranked by entropy, ranked by a random value)
+\item \emph{usage of indexes} (\texttt{NOINDEX})
+\item \emph{usage of elimination filter (EF), 
+  	with the possibility to influence the EF window in the same way
+  	as for the BNL or SFS node}
+\end{itemize}
+\end{itemize}
+
+A noteworthy result of our efforts is the site
 \url{http://skyline.dbai.tuwien.ac.at/}, where it is possible to
 test-drive our implementation and get a intuition for the behaviour of
 the skyline operator.  Furthermore we provide a series of patches,
@@ -5722,14 +5738,16 @@ applicable against the PostgreSQL 8.3 stable release. By means of that
 we hope to acquaint the skyline operator to a bigger audience, and a
 lay a brick for further research in the direction of integrating
 preference query concepts into RDBMS's.  As we wish that at least one
-flavor of SQL extension with a preference clause will make it into an
-SQL standard in near future.
+flavor of SQL preference clauses will make it into a future SQL
+standard.
 
-It is well known that the performance of skyline queries is sensitive
-to a number of parameters.
-%
 We have conducted extensive experiments with a total workload of 
 more than 200~days of CPU time on various datasets.
+The experimental environment we have designed and setup up for this
+task is noteworthy on its own.
+%
+It is well known that the performance of skyline queries is sensitive
+to a number of parameters.
 %
 From our experimental results we were able to expose several findings
 which are difficult to be verified theoretically.  There are: (1) the

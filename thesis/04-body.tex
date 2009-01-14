@@ -429,7 +429,7 @@ experiments on the skyline implementations.
 
 For the purpose of repeatability we have set up a website to present
 our experimental results. The source code, and the log-files from our
-experiments are accessible via
+experiments are online accessible at:
 \url{http://skyline.dbai.tuwien.ac.at/}.
 
 
@@ -2191,6 +2191,8 @@ skyline operator alone
 \section{SQL Extension}
 \label{sec:sql-extension}
 
+\enlargethispage{\baselineskip}
+
 \citet{Borzsonyi2001} proposed the following extension to the SQL's
 \inlinesql{SELECT} statement with an optional \inlinesql{SKYLINE~OF}-clause:
 \begin{sql}
@@ -2863,7 +2865,7 @@ system: \texttt{makeNode} (create a new \texttt{Node}), \texttt{IsA}
 to/from text).
 
 \noindent
-When introducing new classes make sure to update these files:
+When introducing new classes make sure to update these files: \\
 \srcref{src/backend/nodes/\{equalfuncs,copyfuncs,outfuncs\}.c}.
 
 \section{Parsing the \inlinesql{SKYLINE OF}-clause}
@@ -2902,7 +2904,7 @@ to expensive.
 Various trade-offs are made, more details see PostgreSQL documentation
 on \postgresdocu{planner-optimizer.html}{Planner/Optimizer}.
 
-In the following subsections we describe how We modified the query
+In the following subsections we describe how we modified the query
 planner/optimizer:
 
 
@@ -3024,7 +3026,7 @@ In the presence of a suitable access path, for two dimensions
 2DIM\_PRESORT and for higher dimensions SFS is selected.
 
 BNL is the \emph{catch all} default. The physical operator selection
-is implemented in \texttt{skyline\_choose\_method}\footnote{in
+is implemented in the function \texttt{skyline\_choose\_method}\footnote{in
 \srcref{src/backend/utils/skyline/skyline.c}}.  We acknowledge that
 this behavior is hardcoded and it should be more based on cardinality
 and cost estimation, here space for improvements is left, see
@@ -3145,8 +3147,9 @@ will fill up with non skyline tuples.
 We would like also to point out, that larger window and and less
 passes do not always mean better runtime, as with larger windows the
 number of comparisons per tuple could increase and therefore more CPU
-time is required, so there is a break even point. For experimental
-results see \autoref{sec:analysis-window-size}.
+time is required, so there is a break even point. 
+% For experimental results see \autoref{sec:analysis-window-size}.
+% NOTE: we did not analyse this data, so this section is missing
 
 \subsubsection{\inlinesql{LIMIT} / \inlinesql{TOP $k$}}
 The \inlinesql{LIMIT}/\inlinesql{TOP $k$}-clause are used to limit the
@@ -3512,7 +3515,7 @@ Otherwise if \texttt{DISTINCT} is \emph{false}:
 q \dominates p \lor (q \nondistinct p \land \bot) = q \dominates p
 \end{equation}
 
-
+\pagebreak[4]
 %\begin{figure}[htbp]
 \begin{lstlisting}[language=pseudo,
 caption={Pseudo-code for Special case: 2 dimensional with presort},

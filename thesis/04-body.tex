@@ -188,8 +188,8 @@ term
 \emph{skyline -nissan}, and 
 %
 \href{http://www.istockphoto.com/}{istockphoto.com}, 
-a popular collection of member-generated royalty-free images websites,
-has $\approx 25{,}000$ photos in the stock for the search term
+a popular website with a collection of member-generated royalty-free images,
+has $\approx 25{,}000$ photos in stock for the search term
 \emph{skyline}, as of May 23 2008. 
 % http://www.merriam-webster.com/cgi-bin/dictionary?book=Dictionary&va=skyline
 The Merriam-Webster's online dictionary gives following definition for \emph{skyline}:
@@ -238,15 +238,15 @@ problem} \citep{Kung1975, Preparata1985}. The terms \emph{skyline} and
 \inlinesql{DIFF} and \inlinesql{DISTINCT} keyword.
 
 In \autoref{fig:threeDskyline} the yellow arrow indicates the
-direction of view and the colored cuboids should illustrate
-buildings. \autoref{tab:threeDskyline} shows the coordinate of the
+direction of view and the colored cuboids illustrate
+buildings. \autoref{tab:threeDskyline} shows the coordinates of the
 lower left edge of each building and gives them names ($a, b,
 \ldots$). The same color indicates the same $x$ coordinate. For $y$ we
-have only to cases \emph{front} and
+have only two cases, \emph{front} and
 \emph{back}.
 
 \begin{example}[Which buildings are touching the sky?]\label{ex:touchsky}
-For sure building $c$ (the green in the background) and building $f$
+For sure building $c$ (the green one in the background) and building $f$
 (the blue one in the foreground) are part of the answer and $d$ and $e$
 are not.  As $a$ and $b$ do have the same height, we could take them
 both or make an arbitrary choice among $a$ and $b$.  We will later
@@ -312,7 +312,7 @@ SELECT * FROM building SKYLINE OF x DIFF, y MIN, z MAX;
 
 \section{Why extending SQL?}
 The skyline operator is within the expressive power of SQL and in
-\autoref{sec:rewrite-to-sql} we show how to rewrite a SQL query with
+\autoref{sec:rewrite-to-sql} we show how to rewrite an SQL query with
 a \inlinesql{SKYLINE~OF}-clause into standard SQL. 
 However there are good reasons for including a \emph{skyline} or 
 \emph{preference operator} into SQL:
@@ -324,7 +324,7 @@ what's going on, than a query with a correlated subquery or using
 SQL's \inlinesql{EXCEPT} (see \autoref{sql:rewrite-with-except}.
 
 \item
-It is faster to evaluate, as there a numerous algorithms for skyline
+It is faster to evaluate, as there are numerous algorithms for skyline
 queries. Furthermore when this preference query is with a correlated
 subselect it boils down to a \naive ``nested-loop'' and
 \citet{Grust1997, Braumandl1998} show that such a query cannot be
@@ -360,7 +360,7 @@ of optimization opportunities \citep{Chomicki2003a, Kiessling2003}
 The skyline operator \citep{Borzsonyi2001} filters out the
 \emph{interesting} points from a potentially large set of data
 points. The skyline operator returns the Pareto optimal\index{Pareto
-optimal} elements of a set. This is also know as maximum vector
+optimal} elements of a set. This is also known as maximum vector
 problem\index{maximum vector problem}.
 
 Special algorithms have been proposed for the case the whole relation
@@ -383,7 +383,7 @@ available in an RDBMS, the system is able to select the most efficient
 one for the given data sets.  Indeed, the comparisons of the skyline
 algorithms we have so far implemented reveal that there does not exist
 a clear winner in all aspects.  The efficiency of the algorithms
-depend on the properties of the data sets such as dimension,
+depends on the properties of the data sets such as dimension,
 distribution, cardinality and so on.
 
 We discovered several \emph{hidden rules}, which are remarkably simple
@@ -490,7 +490,7 @@ structure}, like in \href{http://www.python.org/}{Python} or similar languages.
 
 \item 
 We do explicitly \texttt{\textbf{break}} at the end of
-\texttt{\textbf{case}} block in a \texttt{\textbf{switch}}-statements,
+\texttt{\textbf{case}} blocks in a \texttt{\textbf{switch}}-statement,
 because in some rare situations we \emph{fall through} to the next
 case. Nevertheless we omit the \texttt{\textbf{break}} if it is
 unreachable, e.g. because it is preceded by a
@@ -565,8 +565,8 @@ To give an intuition, \dominates is a binary relation between pairs of
 tuples from the same database relation \relation{R} with schema
 \schema{R}. We say $r$ \emph{dominates} $s$ in \schema{R} iff $(r, s)
 \in \dominates$ (or in infix notation $r \dominates s$).  We use the
-term database relation in the usual sens, a (database) relation
-\relation{R} a finite instance a schema \schema{R}.
+term database relation in the usual sense, a (database) relation
+\relation{R} is a finite instance of a schema \schema{R}.
 
 We require the relation \dominates to be a \emph{strict partial
 order}\index{strict partial order}, i.e. \dominates is irreflexive,
@@ -655,7 +655,7 @@ formula depends on other tuples, like in \emph{``we prefer tuples
 that are better than the average''}, which involves aggregation, it
 is called \emph{extrinsic} preference formula. 
 %
-We now like to define a special form of preference formula.
+We now define a special form of preference formula.
 
 % \begin{lemma}
 % this is more or less theorem 2 from \citep{Chomicki2003a}:
@@ -689,7 +689,7 @@ and
 s = (\underbrace{s_1, \ldots, s_k}_\texttt{MIN}, \underbrace{s_{k+1}, \ldots, s_l}_\texttt{MAX}, \underbrace{s_{l+1}, \ldots, s_m}_\texttt{DIFF}, \underbrace{s_{m+1}, \ldots, s_n}_\textit{extra})
 \]}
 %
-both elements of a $n$-ary relation $\relation R$, then the \emph{skyline preference formula} is of the form:
+both elements of an $n$-ary relation $\relation R$, then the \emph{skyline preference formula} is of the form:
 %
 % \[
 % r \dominates s
@@ -747,7 +747,7 @@ Same for the ``better than'' condition:
 \end{equation}
 
 \noindent
-Using the above two definition formula \eqref{equ:skylinepf}
+Using the above two definitions formula \eqref{equ:skylinepf}
 simplifies to:
 
 \begin{equation}
@@ -856,7 +856,7 @@ r \nondistinct s \Leftrightarrow r \weakdominates s \land r \weakdominatedby s
 % \weakdominates s \land s \weakdominates r = \forall i \in \{1, \ldots,
 % m\}\colon r_i = s_i$, i.e. equal on all skyline dimensions
 
-\begin{definition}[Incomparable] If neither $r$ dominates $s$ nor $s$ dominates $r$ than $r$ and $s$ are \emph{incomparable}:
+\begin{definition}[Incomparable] If neither $r$ dominates $s$ nor $s$ dominates $r$ then $r$ and $s$ are \emph{incomparable}:
 \[
 r \incomparable s := \neg (r \dominates s) \land \neg (s \dominates r)
 \]
@@ -873,7 +873,7 @@ r \incomparable s = s \incomparable r.
 \]
 
 
-\begin{definition}[Comparable]The tuples are $r$ and $s$ are \emph{comparable} iff $r$ dominates $s$ or $s$ dominates $r$:
+\begin{definition}[Comparable]The tuples $r$ and $s$ are \emph{comparable} iff $r$ dominates $s$ or $s$ dominates $r$:
 \[
 r \comparable s := r \dominates s \lor s \dominates r
 \]
@@ -973,7 +973,7 @@ is equivalent to $2 w_2 \ge 4 w_1$, and
 \end{enumerate}
 Chaining the inequalities from (1) and (2) yields $w_1 \ge 2 w_2 \ge 4
 w_1$, i.e. $w_1 \ge 4 w_1$, which does not have a solution for $w_1 >
-0$.  Therefore there is not linear scoring function which gives
+0$.  Therefore there is no linear scoring function which gives
 $(2,2)$ the best score.
 
 It should be noted that it might be difficult to come up with
@@ -982,7 +982,7 @@ perspective.
 
 \bigskip
 \noindent
-On the other hand the class of monotone scoring function is defined as follows:
+On the other hand the class of monotone scoring functions is defined as follows:
 
 \begin{definition}[Monotone Scoring Function]
 Let the $f_i$'s be monotone increasing functions with $f_i\colon N
@@ -1012,6 +1012,10 @@ a monotone increasing function.  Furthermore only tuples which
 score best under at least one scoring function are part of
 the skyline, in other words, the skyline does not contain tuples which
 are nobody's favorite.
+
+% Chris: falls du das noch ausdehnen willst, wuerde sich hier ein Beispiel fuer 
+% monotone weighting functions, das fuer $\relation R = \{ (4,1), (2,2), (1,4)
+% \}$ funktioniert, aufdraengen... :-)
 
 % \subsection{Skyline Operator is Idempotent}
 % We first proof a more general statement:
@@ -1047,7 +1051,7 @@ logical and ($\land$) and logical or ($\lor$) are commutative.
 \end{proof}
 
 \noindent
-To give a simple example the following query will yield the same
+To give a simple example the following queries will yield the same
 result:
 
 \begin{interactive}
@@ -1169,7 +1173,7 @@ In \citep{Chomicki2003a} the concept of skyline stratum is called
 scoring functions (see \autoref{sec:scoring}).
 To the best of our knowledge the term \emph{skyline stratum} first 
 appeared in \citep{Chan2005}.
-The \nospellcheck{$n$-th} skyline startum $\skyline_C^n$ is recursively defined as:
+The \nospellcheck{$n$-th} skyline stratum $\skyline_C^n$ is recursively defined as:
 
 \begin{eqnarray}
 \skyline_C^1(\relation{R}) & := & \skyline_C(\relation{R}) \\
@@ -1179,14 +1183,14 @@ The \nospellcheck{$n$-th} skyline startum $\skyline_C^n$ is recursively defined 
 To give an example, the query $\skyline_C^2(\relation{R})$ returns
 the set of ``second-best'' tuples.
 %
-The startum are of interest especially if there is a single
+The strata are of interest especially if there is a single
 \emph{killer tuple} or very few tuples which are dominating the entire
 dataset.  In the context of the relation \emph{Hotel(Price, Distance
 to beach)}, a barrack on the beach is cheaper and closer to the beach
 than any other accommodation, but might not meet our
 standards.  Another example, if we are bored always having lunch at the
 same ``best'' restaurant, we might want to try the ``second-best'' and
-enjoy to little bit longer walk we would have to take in that case.
+enjoy the little bit longer walk we would have to take in that case.
 
 A \emph{$K$-skyband}\index{K-skyband@$K$-skyband} query, introduced by
 \citet{Papadias2005}, is a similar concept as skyline stratum. A
@@ -1195,18 +1199,24 @@ $K$ points.
 The skyband rank of a point $p$ can be computed by counting the points
 in the anti-dominance region of $p$.
 
-It's might be tempting to see a direct relationship between
+It might be tempting to see a direct relationship between
 \emph{skyline stratum} and \emph{$K$-skyband}, but as can be seen from
-following example: \\
+following example, no easy relationship can be established: \\
 Let $\relation R = \{r, s, t\}$ and $\dominates =\{(r,t), (s,t)\}$, 
 i.e. $r \dominates t$ and $s \dominates t$, 
 then $\skyline_\dominates^1 = \{r, s\}$ and $\skyline_\dominates^2 = \{t\}$, 
 but $\skyband_\dominates^0 = \{r, s\}$, $\skyband_\dominates^1 = \emptyset$ and
 $\skyband_\dominates^2 = \{t\}$.
 
+% Chris: Muessten nach obiger Definition ("dominated by _at most_ K points") 
+% nicht
+% $\skyband_\dominates^1 = \{r, s\}$ und
+% $\skyband_\dominates^2 = \{r, s, t\}$ gelten?
+
+
 \noindent
 Hence no easy general relation can be established between K-skyband
-and skyline stratum, so following holds:
+and skyline stratum, so the following holds:
 
 
 \begin{eqnarray}
@@ -1215,10 +1225,10 @@ and skyline stratum, so following holds:
 \skyline_C^n(\relation{R}) &\not=& \skyband_C^{n+1}(\relation{R}) \difference \skyband_C^n(\relation{R}) \quad \textnormal{for}\ n \ge 1
 \end{eqnarray}
 
-The branch-and-bound-skyline (BBS) \citep{Papadias2005} supports the
+The branch-and-bound-skyline (BBS) algorithm \citep{Papadias2005} supports the
 computation of $K$-skyband queries, as stated by \citet{Papadias2005},
 BNL and SFS can compute $K$-skybands, this can be easily done by
-maintaining a the number of tuples that dominate a tuple in the tuple
+maintaining the number of tuples that dominate a tuple in the tuple
 window. Increase the number by one each time a tuple in the tuple
 window is dominated by the current tuple and once this count is
 greater than $K$ drop the tuple from the tuple window.
@@ -1227,8 +1237,8 @@ greater than $K$ drop the tuple from the tuple window.
 An interesting combination of \inlinesql{SKYLINE OF} and
 \inlinesql{TOP $k$} is given by the
 \emph{top-$k$-skyline}\index{top-k-skyline} operator
-\citep{Brando2007, Goncalves2005a, Goncalves2005}, where as many
-skyline startum are computed until at least $k$ tuples are found, or
+\citep{Brando2007, Goncalves2005a, Goncalves2005}, where as many 
+skyline strata are computed until at least $k$ tuples are found, or
 the entire relation is returned.  Nevertheless it should be noted that
 the selectivity of the top-$k$-skyline operator is even less
 than the skyline operator alone.
@@ -1239,10 +1249,10 @@ than the skyline operator alone.
 %\todo{such queries can not be unnested \citep{Grust1997,
 %Braumandl1998}, from \citep[Page 4]{Borzsonyi2001}}{}
 
-Let $rel$ by a relation with the attributes $a_1, \ldots, a_n$, a non
+Let $rel$ be a relation with the attributes $a_1, \ldots, a_n$, a non
 empty target list $\emptyset \not= target\_list \subseteq \{a_1,
 \ldots, a_n\}$, then a skyline query with at least one criterion ($0
-\le k \le l \le m \le n$ and $1 < m \le n$) and following schema:
+\le k \le l \le m \le n$ and $1 < m \le n$) and following form:
 %
 \begin{sql}
 SELECT $target\_list$ FROM $rel$ AS $r$ WHERE $condition$ \\
@@ -1266,11 +1276,11 @@ SELECT $o.target\_list$ FROM $rel$ AS $o$ WHERE ($condition\{r \gets o\}$) AND N
 \ttspace{1})
 \end{sql}
 
-Note that the attributes specified as a criterion in the skyline query
+Note that the attributes specified as criteria in the skyline query
 need not necessarily appear in the $target\_list$.
 %
 The correspondence with the basic definition of the skyline operator
-(cf. \autoref{def:skyline}) and with the definition of the binary
+(cf. \autoref{def:skyline}) and with the definition of a binary
 preference relation \eqref{equ:skylinepf} is obvious.
 %
 The join is a $\theta$-join and not an equi-join.
@@ -1307,13 +1317,13 @@ they are dominated. This can be formally expressed as:
 \skyline(R) = R \backslash \{r \in R|\exists s \in R\colon s \dominates r\}
 \end{equation}
 
-Computing the skyline in this way is expensive, as the intermediate
-results could get very large.
+Computing the skyline this way is expensive, as the intermediate
+results can get very large.
 
 \subsection{Rewrite queries with \inlinesql{SKYLINE OF DISTINCT}}
 \label{sec:rewrite-queries-with-distinct}
-In the presents of the optional \inlinesql{DISTINCT} modifier in the
-\inlinesql{SKYLINE~OF}-clause situation is changed, such a query has
+In the presence of the optional \inlinesql{DISTINCT} modifier in the
+\inlinesql{SKYLINE~OF}-clause the situation is changed, such a query has
 following schema:
 %
 \begin{sql}\label{sql:rewrite-distinct}
@@ -1334,12 +1344,12 @@ two tuples $r$ and $s$ the condition
 i.e. they are equal on all skyline criteria, in other terms $r
 \nondistinct s$ (cf. \eqref{eqn:nondistinct}), holds then either $r$
 or $s$ is retained, the choice is left to the implementation. Note
-that the attributes $a_{m+1}, \ldots, a_n$ are not effected by this,
-there are still part of the retained tuple, i.e no implicit projection
+that the attributes $a_{m+1}, \ldots, a_n$ are not affected by this,
+they are still part of the retained tuple, i.e no implicit projection
 is performed. This indicates some difficulties, standard SQL does not
-have some non-deterministic feature, so we somehow have to express if
-a set of tuples coincide on the skyline criteria $\{a_1, \ldots,
-a_m\}$, i.e. $r \nondistinct s$, how to:
+have any non-deterministic feature, so we somehow have to express whether
+a set of tuples coincides on the skyline criteria $\{a_1, \ldots,
+a_m\}$, i.e. if $r \nondistinct s$:
 
 \begin{enumerate}
 \item
@@ -1353,7 +1363,7 @@ eliminate duplicates.
 \end{enumerate}
 
 \noindent
-The later is easy, as we just have to eliminate duplicates, which can be
+The latter is easy, as we just have to eliminate duplicates, which can be
 done with the \inlinesql{DISTINCT} keyword in the
 \inlinesql{SELECT}-clause.  The rewritten query of
 \eqref{sql:rewrite-distinct} is besides an additional
@@ -1371,12 +1381,12 @@ The same effect can be achieved by aggregating over all attributes in
 the target list.
 
 \bigskip
-Matters get more involved in the first case.  If we can establish a
+Matters get more involved in the first case.  If we can establish an
 order on the tuples, then we are able to pick the first or the
 last\footnote{Of course we can also express to pick the second, the
 third and so forth, but all we know is that within a group we have at
-least one tuple.}.  In the presents of a unique and ordered
-key\footnote{On some RDBMS special pseudo-columns for such proposes do
+least one tuple.}.  In the presence of a unique and ordered
+key\footnote{On some RDBMS special pseudo-columns for such purposes do
 exist.} this is obvious, in the other case as long as on each
 attribute a total order exists, we can construct a lexicographic
 order\index{lexicographic order}.  Duplicate elimination with
@@ -1437,7 +1447,7 @@ FROM (\\
 \end{sql}
 
 In PostgreSQL subselects which return at most one value can be used as
-expression, by means of that duplicates can be eliminate in a way we
+expression, by means of that duplicates can be eliminated in a way we
 just like to sketch\footnote{We would like to thank Chris Roschger,
 who came up with this idea.}:
 
@@ -1452,8 +1462,8 @@ FROM\\
 \ttspace{1}) as $o$
 \end{sql}
 
-This returns only the correct result of all the subselects will return
-the attribute form the same tuple, which can be expected as the same
+This returns only the correct result if all the subselects will return
+their attribute from the same tuple, which can be expected as the same
 filter condition on the same relation is used, then almost for sure
 the same access path will be used.  The \inlinesql{LIMIT}-clause is
 used, which is not part of the SQL 2003 standard. We conjecture that
@@ -1505,7 +1515,7 @@ other methods do exist, we show them in
 %\end{verbatim}
 %
 
-\citet{Kossmann2002} suggested a set of criteria for evaluating skyline algorithms, that we like to cite here:
+\citet{Kossmann2002} suggested a set of criteria for evaluating skyline algorithms that we like to cite here:
 
 \begin{enumerate}
 \item \emph{Progressiveness}: the first results should be reported to the user almost instantly and the output size should gradually increase.
@@ -1539,9 +1549,9 @@ information on user defined data types see PostgreSQL documentation on
 \postgresdocu{xindex.html\#XINDEX-OPFAMILY}{Operator Classes and
 Operator Families}
 
-Anyway it is somewhat questionable what it is good for the include a
+Anyway it is somewhat questionable what it is good for to include a
 e.g. \inlinesql{VARCHAR} column in a skyline query, still it is
-possible, nevertheless this might be a good use case for a user
+possible. Nevertheless this might be a good use case for a user
 defined ordering operator.
 
 Furthermore our implementation allows arbitrary expressions instead of
@@ -1601,15 +1611,15 @@ and space costs for building and maintaining the indexes.  Comparisons
 of these methods are presented in several works
 \citep{Tan2001, Kossmann2002, Chomicki2003}.
 
-Furthermore from an relational algebraic point of view, index-based
-skyline algorithms can only be placed an the leaves of an algebraic
+Furthermore from a relational algebraic point of view, index-based
+skyline algorithms can only be placed at the leaves of an algebraic
 expression, where the non-indexed based skyline algorithms are first
-order citizens and can be placed any where in the relational algebra 
-expression, so they are full general.
+order citizens and can be placed anywhere in the relational algebra 
+expression.
 
 There is a whole class of other skyline algorithms, referenced as
 \emph{continuous skyline computation}.  
-The task is here the initially compute the skyline and that update the
+The task is here to initially compute the skyline and then update the
 skyline when tuples are added or removed from the dataset, e.g. in a
 streaming scenario. 
 Such algorithms are presented in \citep{Lin2005, Tao2006}. In this work
@@ -1649,8 +1659,8 @@ tuples.  Once the window becomes full, an overflow file (temp file)
 has to be generated.  At the end of the original input BNL switches to
 the temp file for reading to process these tuples in a second pass.
 If the window becomes full again, further overflow files are generated
-and BNL will make an other pass.  The tuples in the tuple window get a
-timestamp to be able the decide which tuples in the window have been
+and BNL will make another pass.  The tuples in the tuple window get a
+timestamp to be able to decide which tuples in the window have been
 compared against all other tuples and therefore can be written to the
 output and removed from the tuple window. See \autoref{code:bnl} for
 details, \autoref{tab:pseudocodesymboles} summarizes the symbols used
@@ -1743,9 +1753,9 @@ the algorithm from the original paper \citep{Borzsonyi2001}.  Besides
 a little difference in notation and the fact that a tuple is only
 added to the tuple window when there is actual space in the tuple
 window and not like in \citep{Borzsonyi2001} where a tuple is first
-added and than removed if there is no more space the code of
-\citep{Borzsonyi2001} for BNL is the same is in \autoref{code:bnl}.
-Under certain condition the code from \autoref{code:bnl} does not
+added and then removed if there is no more space the code of
+\citep{Borzsonyi2001} for BNL is the same as in \autoref{code:bnl}.
+Under certain conditions the code from \autoref{code:bnl} does not
 terminate.  To show this property, we construct a data set like this:
 
 \begin{eqnarray}
@@ -1753,7 +1763,7 @@ terminate.  To show this property, we construct a data set like this:
 \end{eqnarray}
 
 \noindent
-where $n$ is number of tuples that fit into the tuple window
+where $n$ is the number of tuples that fit into the tuple window
 $\mathbb{W}$ and $m \ge 1$, with following dominance structure:
 
 \begin{align}
@@ -1772,7 +1782,7 @@ In terms of a binary relation the dominance can be expressed as:
 \noindent
 in essence this means every $a_i$ is dominated by $c_i$ and all other
 tuples are incomparable.  To construct such a dataset, generate $a_1,
-\ldots, a_n, b_1, \ldots b_m$ anti-correlated and let the $c_i$'s just by
+\ldots, a_n, b_1, \ldots b_m$ anti-correlated and let the $c_i$'s just be
 a little better in each dimension than the $a_i$'s.  It is easy to see
 that following identities hold:
 
@@ -1792,7 +1802,7 @@ the tuples do have a sequence.
 \begin{enumerate}
 \item 
 the tuples $\{a_1, \ldots, a_n\}$ are processed, this entirely fills up
-the tuple window of size $n$ slots with this tuples as they are all
+the tuple window of size $n$ slots with these tuples as they are all
 incomparable
 
 \item 
@@ -1904,8 +1914,8 @@ we use a dataset as in the previous section with $n=m=1$, i.e.
 \mathcal{I} = \{a_1, b_1, c_1\},\quad\text{with}\ a_1 \incomparable b_1,\: b_1 \incomparable c_1,\: c_1 \dominates a_1.
 \]
 After the first pass the tuple window contains $c_1$ and $b_1$ is in
-the temp file, $a_1$ was eliminated by $c_1$. In the text pass $b_1$
-and $c_1$ are compared against each other, but as the are incomparable
+the temp file, $a_1$ was eliminated by $c_1$. In the next pass $b_1$
+and $c_1$ are compared against each other, but as they are incomparable
 $b_1$ ends up in the temp file again, but this time $c_1$ can be
 propagated to the output as it was compared against all other tuples.
 In the final pass $b_1$ is propagated to the output.  Hence the output
@@ -1915,7 +1925,7 @@ is
 \]
 where $b_1$ and $c_1$ have changed their relative order.  It is easy
 to imagine that this can happen in other configurations as well and
-therefor BNL does not preserve the relative order of tuples.  This
+therefore BNL does not preserve the relative order of tuples.  This
 physical property of BNL is important during query planing, as the
 relative order of tuples is an important aspect here, e.g. if a prior
 operator in the query plan establishes a certain order or preserves it
@@ -1925,9 +1935,9 @@ physical operators for aggregation or joining.
 \section{Sort First Skyline (SFS)}
 SFS \citep{Chomicki2003} differs from BNL in that the data is
 topologically sorted at start-up time.  It is shown in the original
-paper that this condition is sufficient for following property.  In
+paper that this condition is sufficient for the following property.  In
 SFS once a tuple is incomparable to all tuples in the tuple window it
-is know to be a skyline tuple as well, and it can be written to the
+is known to be a skyline tuple as well, and it can be written to the
 output directly.  Further no timestamps have to be maintained and at
 the end of each pass the tuple window can be completely purged.
 The pseudo-code is given in \autoref{code:sfs}.
@@ -1998,7 +2008,7 @@ to the output.
 
 
 \section{Linear Elimination Sort for Skyline (LESS)}
-In \citep{Godfrey2005} proposed the LESS algorithm, an improvement
+\citet{Godfrey2005} proposed the LESS algorithm, an improvement
 over SFS \citep{Chomicki2003}. LESS is generally considered as fastest
 known non-index based skyline algorithm in literature. The essential
 differences between SFS and LESS are:

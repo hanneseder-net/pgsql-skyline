@@ -2063,15 +2063,15 @@ out and the next tuple is read.  Of course elimination filter does not
 guarantee to filter out all non-skyline tuples, but a skyline candidate
 is guaranteed to survive the elimination filter.  Another notable
 difference to BNL and SFS is that EF does not produce any temporary
-file once the tuple window gets full.  This makes EF suffer in the
+files once the tuple window gets full.  This makes EF suffer in the
 same way as BNL from a bad distribution of tuples in the input, e.g.
 the tuple window gets filled up by skyline tuples with a low dominance
 factor.
 
 \citet{Godfrey2005} did not give pseudo-code for the elimination
-filter in there paper. In \autoref{code:ef} we give a sketch for
+filter in their paper. In \autoref{code:ef} we give a sketch for
 the code as we used it in our implementation. Note that we give
-the algorithm in a form that fits into a pipelined architecture liked
+the algorithm in a form that fits into a pipelined architecture like
 it is used in the PostgreSQL query execution engine. The function
 \texttt{EliminationFilter} has to be called for each output tuple,
 until \texttt{NULL} is returned. While doing so
@@ -2081,16 +2081,16 @@ over calls to \texttt{EliminationFilter} as it keeps the internal
 state of function, later we will call such a function an iterator.
 
 Tunable parameters for the elimination filter are the tuple window size
-and the tuple window placement policy, in the same way as this parameters
+and the tuple window placement policy, in the same way as these parameters
 are tunable for BNL and SFS.
 
 In \Citep{Godfrey2005} the elimination filter is only used in
-conjunction with as SFS style algorithm, in our implementation we demonstrate
-that this concept is also very effective when used with an BNL style
+conjunction with an SFS style algorithm, in our implementation we demonstrate
+that this concept is also very effective when used with a BNL style
 algorithm, we call it BNL+EF, cf. \autoref{sec:analysis}
 
 Furthermore it should be noted that the elimination filter preserves
-the relative order of tuples from the input in the output, i.e. does
+the relative order of tuples from the input in the output, i.e. those
 tuples that do survive the elimination filter are in the same relative
 order as in the input.
 
@@ -2206,7 +2206,7 @@ cost-based optimizer.  The syntax they are using is Preference~SQL
 
 \citep{Goncalves2005} extended PostgreSQL with an hybrid approach 
 between \emph{top-k} and \emph{skyline operator} called top-k skyline.
-Skyline stratum (see \autoref{sec:skyline-stratum}) are computed until
+Skyline strata (see \autoref{sec:skyline-stratum}) are computed until
 at least $k$ records are returned.  With this approach all the second
 and higher order best records do get a chance to end up in the result,
 nevertheless the selectivity of this approach is even lower than
@@ -2336,20 +2336,20 @@ A \nt{skyline\_of\_expr} specifies how to treat a single dimension
 of a skyline query. This includes the specification of the column
 or even an expression (\nt{c\_expr}) and the specification of
 \inlinesql{MIN}, \inlinesql{MAX}, \inlinesql{DIFF}, and 
-\inlinesql{USING}~\emph{qualOp}. We call the later specification 
+\inlinesql{USING}~\emph{qualOp}. We call the latter specification 
 \emph{skyline direction} or just \emph{direction} for short, this
 is because a similar concept (\inlinesql{ASC}/\inlinesql{DESC}) in the
 \inlinesql{ORDER~BY}-clause is also called direction.  Furthermore the
 treatment of null values can be specified using \inlinesql{NULLS
-FIRST} and \inlinesql{NULLS LAST}.  We have to same concept for the
+FIRST} and \inlinesql{NULLS LAST}.  We have the same concept for the
 \inlinesql{ORDER BY}-clause. This special treatment of null values 
 was introduced in PostgreSQL 8.3.0 (see
-\postgresdocu{sql-select.html\#SQL-ORDERBY}{SQL SELECT/ORDER BY}. For
+\postgresdocu{sql-select.html\#SQL-ORDERBY}{SQL SELECT/ORDER BY}). For
 the semantics of this see \autoref{sec:nullvalues}.
 
-The introduction of \inlinesql{USING}~\emph{qualOp} to skyline queries
+The introduction of \inlinesql{USING}~\emph{qualOp} in skyline queries
 is our idea, but as for the treatment of null values it was inspired
-by a PostgreSQL extension to \inlinesql{ORDER~BY}-clause. See
+by a PostgreSQL extension to the \inlinesql{ORDER~BY}-clause. See
 \autoref{sec:using-qualop} for more details.
 
 In the \nt{target\_list} of the \nt{select\_clause} and in many other
@@ -2358,12 +2358,12 @@ and the heart of the expression syntax. In certain places \nt{b\_expr}
 is used, which is a restricted subset to avoid shift/reduce conflicts.
 
 \nt{c\_expr} contains all the productions that are common to \nt{a\_expr}
-and \nt{b\_expr} it is factored out to eliminate redundant coding, but
+and \nt{b\_expr}, it is factored out to eliminate redundant coding, but
 in our case we use it directly to avoid shift/reduce conflicts. Please
 note that \texttt{'('} \nt{a\_expr} \texttt{')'} is a \nt{c\_expr}, so
 an unrestricted expression can always be used by surrounding it with
-parenthesis. Furthermore \nt{c\_expr} contains to most common case a column
-reference (\nt{columnref}) anyway and also function calls can be used
+parenthesis. Furthermore \nt{c\_expr} contains the most common case, a column
+reference (\nt{columnref}), anyway and also function calls can be used
 without an extra pair of parenthesis.
 
 \begin{rail}
@@ -2405,7 +2405,7 @@ desired, sort the query result by means of an appropriate
 %done:fang: I cannot understand this sentence
 We did so in regression testing, we
 ordered on the unique \inlinesql{ID} column, no matter what method and
-what options used the results are the same. If not this indicates a
+what options used, the results are the same. If not this indicates a
 flaw in the implementation.
 
 The options fall into three groups: elimination filter
@@ -2457,7 +2457,7 @@ enough to compute the skyline. See \autoref{sec:presort}.
 \inlinesql{MNL} stands for \emph{materialized nested loop}, which
 is our own \naive skyline computation algorithm.
 %done:fang: ???
-Nevertheless it is full generic, i.e. skylines of any dimensionality,
+Nevertheless it is fully generic, i.e. skylines of any dimensionality,
 distinct and non-distinct with the same type of expressions and
 directions (\inlinesql{MIN}, \inlinesql{MAX}, $\ldots$) can be
 computed. The approach is very simple: materialize all tuples from the
@@ -2483,8 +2483,8 @@ default \texttt{work\_mem} setting. See
 
 We modified the query planner/optimizer to decide in a cost based way to use
 an \texttt{IndexScan} instead of a \texttt{SeqScan}, in case a suitable
-index is present.  With \inlinesql{NOINDEX} option we enforce in the
-query planner to not use an \texttt{IndexScan}, this is especially of
+index is present.  With the \inlinesql{NOINDEX} option we force the
+query planner not to use an \texttt{IndexScan}, this is especially of
 interest when profiling SFS, as SFS does a sort prior to skyline
 computation.
 
@@ -2514,11 +2514,11 @@ in the number of slots or in the amount of RAM (in KB). When placing
 a tuple into the tuple window it takes up exactly one slot and
 as much RAM as required for the chunk of memory allocated with PostgreSQL's
 \texttt{palloc}. If both are given, i.e. \inlinesql{SLOTS} and \inlinesql{WINDOWSIZE}
-the tuple window is only limited in the number of available slots and
+the tuple window is only limited by the number of available slots and
 the RAM constraints are ignored. When the \inlinesql{WINDOWSIZE}
 option is used an according amount of RAM is used for the tuple window.
 \inlinesql{WINDOW} is just an alias for \inlinesql{WINDOWSIZE}.  If
-neither \inlinesql{SLOTS} nor \inlinesql{WINDOWSIZE} is given the
+neither \inlinesql{SLOTS} nor \inlinesql{WINDOWSIZE} are given the
 configuration variable \texttt{work\_mem} is used, which is 1~MB per
 default. The other property which can be influenced is the order in which
 tuples are placed in the tuple window, where the default is \inlinesql{APPEND}.
@@ -2583,7 +2583,7 @@ used (we slightly reformatted the output to make it fit onto this page):
 (17 rows)
 \end{interactive}
 
-The alerted reader might noticed that the grammar for \nt{skyline\_options}
+The alert reader might notice that the grammar for \nt{skyline\_options}
 contains a rather big amount of $\varepsilon$-productions and that this
 grammar would be easy to implement without any shift/reduce conflicts
 using yacc/bison. In fact we defined the grammar for
@@ -3803,7 +3803,7 @@ E(t) = \sum_{i=1}^{m} \ln(r_m + 1)
 \end{equation}
 
 \item \emph{random: }
-behalves like \emph{entropy} but instead of a an computed entropy value
+behaves like \emph{entropy} but instead of a an computed entropy value
 for a tuple a random value is used
 
 \end{enumerate}

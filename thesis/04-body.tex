@@ -2369,11 +2369,11 @@ the final skyline computation node, although the elimination filter
 does not change the relative order.  See detailed discussion on
 relative tuple order preserving property in
 \autoref{sec:relative-tuple-order}.  
-%fang
-To work around this reordering if
+%done:fang
+To enforce a specific order, if
 desired, sort the query result by means of an appropriate
 \inlinesql{ORDER~BY}-clause.  
-%fang: I cannot understand this sentence
+%done:fang: I cannot understand this sentence
 We did so in regression testing, we
 ordered on the unique \inlinesql{ID} column, no matter what method and
 what options used the results are the same. If not this indicates a
@@ -2384,10 +2384,10 @@ The options fall into three groups: elimination filter
 etc.), and access path selection (\inlinesql{NOINDEX}) and associated
 options if applicable.
 
-%fang
-To tell the query planner to include a elimination filter (EF) in the
-query plan specify the option \inlinesql{EF}.  
-%fang: it is not a sentence
+%done:fang
+When the skyline option \inlinesql{EF} is present the query planner
+will include an elimination filter (EF) in the query plan.
+%done:fang: it is not a sentence
 If the
 \nt{efwindowoptions} are omitted, the query planner uses the defaults
 and plans the elimination filter with a 8~KB tuple window and the

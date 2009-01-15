@@ -40,7 +40,8 @@
 
 \newcommand\inlinesql[1]{{\tt #1}}
 \newcommand\srcref[1]{{\tt #1}}
-\newcommand\postgresdocu[2]{\href{http://www.postgresql.org/docs/8.3/static/#1}{#2}\footnote{\url{http://www.postgresql.org/docs/8.3/static/#1}}}
+\newcommand\postgresdocu[2]{\href{http://www.postgresql.org/docs/8.3/static/#1}{#2}%
+\footnote{\url{http://www.postgresql.org/docs/8.3/static/#1}}}
 \newcommand\ttbackslash{{\char92}}
 \newcommand\ttdolar{{\char36}}
 \newcommand\ttspace[1]{{\hbox to #1em{\hfil}}}%
@@ -1016,9 +1017,9 @@ score best under at least one scoring function are part of
 the skyline, in other words, the skyline does not contain tuples which
 are nobody's favorite.
 
-% Chris: falls du das noch ausdehnen willst, wuerde sich hier ein Beispiel fuer 
-% monotone weighting functions, das fuer $\relation R = \{ (4,1), (2,2), (1,4)
-% \}$ funktioniert, aufdraengen... :-)
+%chris: falls du das noch ausdehnen willst, wuerde sich hier ein Beispiel fuer 
+%monotone weighting functions, das fuer $\relation R = \{ (4,1), (2,2), (1,4)
+%\}$ funktioniert, aufdraengen... :-)
 
 % \subsection{Skyline Operator is Idempotent}
 % We first proof a more general statement:
@@ -1761,16 +1762,27 @@ function SkylineBNL($\mathcal{I}$)
 \subsection{Non-termination of Block-Nested-Loops (BNL) Algorithm}
 During the implementation of BNL into PostgreSQL we discovered a flaw in
 the algorithm from the original paper \citep{Borzsonyi2001}.  
-%fang
-Besides
-a little difference in notation and the fact that a tuple is only
-added to the tuple window when there is actual space in the tuple
-window and not like in \citep{Borzsonyi2001} where a tuple is first
-added and then removed if there is no more space the code of
-\citep{Borzsonyi2001} for BNL is the same as in \autoref{code:bnl}.
-%fang: this sentence is too long, I can not understand it.
-Under certain conditions the code from \autoref{code:bnl} does not
-terminate.  To show this property, we construct a data set as follows:
+%done:fang
+%Besides
+%a little difference in notation and the fact that a tuple is only
+%added to the tuple window when there is actual space in the tuple
+%window and not like in \citep{Borzsonyi2001} where a tuple is first
+%added and then removed if there is no more space the code of
+%\citep{Borzsonyi2001} for BNL is the same as in \autoref{code:bnl}.
+We are using a little bit different notation to present to algorithm.
+In our pseudo code (see \autoref{code:bnl}) we only add a tuple to the
+tuple window if there is enough space.  
+%
+The original version a tuple is added in any case and later removed
+again if space was exhausted.  
+%
+Besides from that the original and our version in \autoref{code:bnl}
+coincide.
+%done:fang: this sentence is too long, I can not understand it.
+
+Our finding is that under certain conditions the code from
+\autoref{code:bnl} does not terminate.  To show this property, we
+construct a data set as follows:
 
 \begin{eqnarray}
 \mathcal{I} = \{a_1, \ldots, a_n, b_1, \ldots, b_m, c_1, \ldots, c_n\}
@@ -2249,8 +2261,8 @@ To describe the formal grammar of the \inlinesql{SKYLINE OF}-clause
 extension to the SQL query syntax we use syntax diagrams (or \emph{railroad
 diagrams}).  Railroad diagrams are a graphical alternative to
 Backus-Naur form or EBNF and they have been made popular by books such
-% fang: Railroad _diagram is_ ....  _it has_
-% hannes: I think the plural is correct here.
+%done:fang: Railroad _diagram is_ ....  _it has_
+%hannes: I think the plural is correct here.
 as the ``Pascal User Manual'' written by Niklaus Wirth.  Nowadays
 railroad diagrams are used in user manuals such as the ``Oracle
 Database SQL Reference'' (see \citep{Oracle2005}).  We believe the
@@ -2415,14 +2427,16 @@ platforms.
 The next group of options is to specify the main algorithm used for
 skyline computation.
 %
-Currently the work horses of our skyline operator implementation into
-%fang: what is work horse?
-PostgreSQL are the BNL and the SFS algorithm. 
-BNL is the catch all default in the query optimizer, 
-%fang: ???
-only if a suitable index access path
-is available SFS is selected. 
-%fang: ???
+%done:fang: what is work horse?
+%hannes: work horses (Arbeitspferde), that's that part that
+%	 does the most work
+Currently the work horses of our skyline operator implementation
+are the BNL and the SFS algorithm. 
+BNL is the default in the query optimizer.
+%done:fang: ???
+If a suitable index access path (i.e. index) is available SFS is
+selected.
+%done:fang: ???
 This automatic can be overruled by
 specifying \inlinesql{BNL} or \inlinesql{SFS} as an option. Furthermore
 the size and the tuple placement policy for the tuple window used by
@@ -2441,9 +2455,9 @@ are ordered according to the two skyline expressions a single tuple is
 enough to compute the skyline. See \autoref{sec:presort}.
 
 \inlinesql{MNL} stands for \emph{materialized nested loop}, which
-is our own very basic and experimental nevertheless full general
-%fang:???
-skyline computation algorithm, i.e. skylines of any dimensionality,
+is our own \naive skyline computation algorithm.
+%done:fang: ???
+Nevertheless it is full generic, i.e. skylines of any dimensionality,
 distinct and non-distinct with the same type of expressions and
 directions (\inlinesql{MIN}, \inlinesql{MAX}, $\ldots$) can be
 computed. The approach is very simple: materialize all tuples from the
@@ -2700,12 +2714,20 @@ to specify how to treat null values when ordering values.  Once again this is a 
 inspired by a feature of PostgreSQL's \inlinesql{ORDER~BY}-clause, where
 the keywords \inlinesql{NULLS FIRST} and \inlinesql{NULLS LAST} allows
 the user the specify how to treat null values.  
-%fang
-When sorting ascending
-per default null values sort after non-null values and when sorting
-descending null values sort before non-null values, as above see the
-PostgreSQL documentation on ORDER BY-clause.
-%fang: please rewrite this sentence
+%done:fang
+%When sorting ascending
+%per default null values sort after non-null values and when sorting
+%descending null values sort before non-null values, as above see the
+%PostgreSQL documentation on ORDER BY-clause.
+If sorting ascending (\inlinesql{ORDER BY} \emph{expr}
+\inlinesql{ASC}), then the default is to sort null values \emph{after}
+non-null values.
+%
+The default for \inlinesql{ORDER BY} \emph{expr} \inlinesql{DESC}, i.e. sort
+descending, is to sort null values \emph{before} non-null values.
+%
+For more details see the PostgreSQL documentation on ORDER BY-clause.
+%done:fang: please rewrite this sentence
 
 If \inlinesql{NULLS FIRST} or \inlinesql{NULLS LAST} is omitted, the
 default is to sort null values after all the non-null values on
@@ -5226,7 +5248,11 @@ in case the data are stored on disk
 (omit sort phase), BNL and SFS could benefit from a index scan if
 DIFF groups are used\footnote{not yet implemented, see \autoref{sec:speedup-skyline-diff}}.
 
-\item \emph{sequence of tuples in tuple stream} (random, high entropy first/last) for BNL and EF if a very good tuple is very early in the tuple stream it will eliminate a lot of tuples in a very early stage
+\item 
+\emph{sequence of tuples in tuple stream} 
+(random, high entropy first/last) for BNL and EF if a very good tuple
+is very early in the tuple stream it will eliminate a lot of tuples in
+a very early stage
 \end{itemize}
 \item \emph{methods = algorithms}
 
@@ -5243,11 +5269,16 @@ DIFF groups are used\footnote{not yet implemented, see \autoref{sec:speedup-skyl
 \end{itemize}
 
 \item window size in KB or \# slots (e.g. 1~KB, 2~KB, 4~KB, 8~KB, \ldots)
-\item window policy (prepend, append, entropy\footnote{policy entropy needs table stats for scaling to $[0,1]$}, random) In case EF is used the window policy for EF and BNL/SFS can be selected independently, resulting in 16 possible combinations.
+\item
+window policy (prepend, append, entropy\footnote{policy entropy needs
+table stats for scaling to $[0,1]$}, random) In case EF is used the
+window policy for EF and BNL/SFS can be selected independently,
+resulting in 16 possible combinations.
 \end{itemize}
 
-Exploring the entire parameter space is practically infeasible.
-The subset we selected an the according results are presented in the following section.
+Exploring the entire parameter space is practically infeasible.  The
+subset we selected and the according results are presented in the
+following section.
 
 \section{Comparisons and Analysis}
 \label{sec:analysis}

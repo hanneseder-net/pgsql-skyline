@@ -12,7 +12,8 @@
 \documentclass[OPTIONS]{book}
 \title{On Extending PostgreSQL with the Skyline Operator}
 \author{Ing. Bakk.techn. Hannes Eder}
-\date{\today}
+\newcommand\thedate{28.01.2009}
+\date{\thedate}
 \usepackage{heder}
 
 %\usepackage[T1]{fontenc}

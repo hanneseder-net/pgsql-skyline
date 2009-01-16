@@ -3030,7 +3030,7 @@ which access paths are considered.
 If a subqueries contains a \inlinesql{SKYLINE~OF}-clause the query
 must to be flattened out, i.e. pull up the subquery.  The function
 \texttt{is\_simple\_subquery}\footnote{in
-\srcref{src/backend/optimizer/prep/prepjointree.c}} as modified
+\srcref{src/backend/optimizer/prep/prepjointree.c}} is modified
 accordingly.
 
 \subsection{Preserving relative tuple order}
@@ -3039,8 +3039,8 @@ The relative order of tuples is an important physical property of a
 tuple stream, knowledge about this is encoded in terms of
 \emph{pathkeys}\index{pathkeys} as described in \autoref{sec:pathkeys}. As a
 full-blown operator we have to provide this information for the skyline
-operator es well.  In the \autoref{sec:bnl-tuple-order},
-\ref{sec:sfs-tuple-order}, and \ref{sec:ef-tuple-order} in subsections
+operator as well.  In the \autoref{sec:bnl-tuple-order},
+\ref{sec:sfs-tuple-order}, and \ref{sec:ef-tuple-order}
 respectively, we bring forward arguments why BNL does \emph{not}
 preserve the relative tuple order, independent from the tuple window
 policy used, and that SFS and EF \emph{do} preserve the relative tuple
@@ -3077,7 +3077,7 @@ EF              & yes & no  \\
 
 \subsection{Physical operator selection}
 \label{sec:operatorselection}
-The physical operator selection, we also call this \emph{method}, is
+The physical operator selection, also called as \emph{method}, is
 rather straight forward.  If a method is specified in the skyline options,
 this method is taken, only some sanity checks are performed.  
 
@@ -3116,7 +3116,7 @@ future work we might engage \emph{sampling} here, see
 
 On downside we noticed is that PostgreSQL 8.3.5 does not do a good job
 with statistics and subqueries, i.e. PostgreSQL does not derive the
-stats for a the subselect in, even without the
+statistics for the subselect in the query below, even when omitting the 
 \inlinesql{LIMIT}-clause:
 
 \begin{interactive}
@@ -3129,15 +3129,15 @@ SKYLINE OF d1 MIN, d2 MIN WITH WINDOWPOLICY=ENTROPY;
 \subsection{Cardinality and Cost Estimation}
 \label{sec:cardinality-and-cost-estimation}
 For a full-blown relational operator it is important to compute or at
-least estimate the \emph{cardinality} of the result, i.e. answer the
+least estimate the \emph{cardinality} of the result, i.e., answer the
 question how many tuples will be in the output, based on the number of
 tuples in the input and possible other properties of the input.  A
 related question is what is the computational cost of computing the
 result.  It is sufficient to answer the last question relative to
 other operators.  
 
-Unfortunately neither question is easy two answer, at least for the
-non-trivial skyline algorithms like BNL and SFS it's not. Of course
+Unfortunately neither question is easy to answer, and it is at least the case for the
+non-trivial skyline algorithms like BNL and SFS. Of course
 the question about the cardinality is independent from the algorithms
 selected.
 
@@ -3315,8 +3315,8 @@ for short.  This concept is used throughout the code.
 \subsection{Special case: one dimensional}
 \label{sec:onedim-nondistinct}
 Although this case is of limited use, the general case algorithms like
-BNL and SFS can handle this case, and more over it is expressible in
-SQL in a very natural way, we have a special implementation for this
+BNL and SFS can handle this case. Moreover it is expressible in
+SQL in a very natural way, thus we have a special implementation for this
 case.  A skyline query of this type typically looks like:
 
 \begin{interactive}
@@ -3376,8 +3376,8 @@ tuple store.  On the other hand, if this tuple is dominated we clean
 the tuple store, and keep the dominating tuple.  After the initial
 scan over the input we pipe out the tuple store,
 cf. \autoref{code:1dim}.  For the sake of a clearer pseudo-code we
-gave our self the freedom to present the tuple store\index{tuple store} interface
-(\texttt{tuplestore\_*}) a little different to the actual
+gave ourself the freedom to present the tuple store\index{tuple store} interface
+(\texttt{tuplestore\_*}) a little differently to the actual
 implementation.  A functionality we added to the tuple store is to
 remove all tuples from the tuple store, which is cheaper than
 recreating it.  In the pseudo-code this function is called
@@ -3544,7 +3544,7 @@ skylines for the two dimensional case can be computed in a simple way
 if the input relation is ordered according to the skyline criteria,
 then the skyline can be computed with a single scan over the
 input, while keeping just the most recently found skyline tuple, see
-\autoref{code:2dimpresort}.  Of course in the presents of an
+\autoref{code:2dimpresort}.  Of course in the presence of an
 suitable access path the input need not to be sorted, just perform an
 index scan.  This method is simple to implement, and we believe the
 two dimensional case is already a quite useful one, from a users
@@ -3625,14 +3625,14 @@ function ExecSkyline_2DimPresort(var $state$)
 \subsection{\Naive method: \emph{MNL: materialized nested loop}}
 \label{sec:mnl}
 This method is the first general method which can deal with any
-dimensionality and treat the \inlinesql{DISTINCT} modifier.  In
+dimensionality and treat the \inlinesql{DISTINCT} modifier.  It
 directly corresponds to the \naive $O(n^2)$ nested loop approach,
-compare every tuple to all others as long no witness\index{witness} is found, which
+compare every tuple to all others as long as no witness\index{witness} is found, which
 dominates the current tuple.  Why is it called \emph{materialized}
 nested loop?  This \emph{materialized} stem from the fact that we
 materialize the tuples from the outer plan, to be able to read them
 over and over again, this is because the skyline operator can sit at
-any non leave node in the query plan and not only on top of a table or
+any non-leave node in the query plan and not only on top of a table or
 index scan.  To handle the \inlinesql{DISTINCT} case, we just use a
 the counters $state.pos$ and $innerPos$ and favor the first tuple.
 
@@ -3706,7 +3706,7 @@ functions\footnote{see \srcref{src/include/utils/tuplewindow.h}}:
 creates a tuple window with the maximum size of \lstinline|maxKBytes|
 KB or if a a maximum of \lstinline|maxSlots| slots. The number of
 slots is the stronger limit. For policy see
-\autoref{sec:tuplewindowpolicies}.  The returned value must be
+next sub-subsection.  The returned value must be
 used in all subsequent calls to the tuple window interface functions.
 
 \item \lstinline|void tuplewindow_end(TupleWindowState *state)| 
@@ -3716,8 +3716,8 @@ destroys a tuple window and frees all resources.
 removes all tuples from the tuple window.
 
 \item \lstinline|bool tuplewindow_has_freespace(TupleWindowState *state)|
-returns true of the tuple window can hold at least one more tuple.
-Note that we are ignore the fact that the tuple that is going to be
+returns true if the tuple window can hold at least one more tuple.
+Note that we ignore the fact that the tuple that is going to be
 inserted might consume a little more space than is actually left, but
 this eases the implementation and an existing PostgreSQL interface the
 \lstinline|tuplestore|\index{tuple store} interface is designed in the same way.
@@ -3732,12 +3732,12 @@ over the tuple window, so ensure to call
 insert the tuple in the tuple table slot \lstinline|slot| into the
 tuple window with the given timestamp.  For a ranked window policy
 \lstinline|forced| can be set to true, i.e. if the new tuple has a
-higher rank than the lowest ranked tuple in the window that this
-lowest ranked tuple is removed, if the space for the higher ranked
+higher rank than the lowest ranked tuple in the window then this
+lowest ranked tuple is removed --- if the space for the higher ranked
 tuple is needed.  We use this especially for the implementation of the
 elimination filter. We speak of a \emph{forced insert}\index{forced
 insert}.  Currently the \lstinline|timestamp| argument is only used
-by BNL all other algorithms set it to zero.
+by BNL and in all other algorithms it is set to zero.
 
 \item \lstinline|void tuplewindow_rewind(TupleWindowState *state)|
 set the \emph{cursor} to the first tuple.
@@ -3754,7 +3754,7 @@ So when calling \lstinline|tuplewindow_removecurrent|, calling
 \lstinline|tuplewindow_movenext| afterwards skips over a tuple.
 
 \item \lstinline|bool tuplewindow_gettupleslot(TupleWindowState *state, TupleTableSlot *slot, bool removeit)|
-get the tuple a the current position of the cursor.  When called with
+get the tuple at the current position of the cursor.  When called with
 \lstinline|removeit| true, the returned tuple is removed from the
 tuple window.  Note that this is not the same as calling
 \lstinline|tuplewindow_gettupleslot| and
@@ -3804,8 +3804,8 @@ E(t) = \sum_{i=1}^{m} \ln(r_m + 1)
 \end{equation}
 
 \item \emph{random: }
-behaves like \emph{entropy} but instead of a an computed entropy value
-for a tuple a random value is used
+behaves like \emph{entropy} but instead of a computed entropy value
+for a tuple a random value is used.
 
 \end{enumerate}
 
@@ -4059,7 +4059,7 @@ in our SVN repository, including the CVS metadata directories
 \texttt{CVS}.  By means of that we continuously merged \texttt{CVS HEAD}
 into our main development branch, called \texttt{trunk} in the
 SubVersion terminology.  In order to have a more stable and
-reproducibly setting we decided to base this thesis on the branch
+reproducible setting we decided to base this thesis on the branch
 \texttt{REL8\_3\_STABLE}, i.e. all experiments in this thesis are based
 on Version 8.3.0 of PostgreSQL with our patch for the skyline
 operator applied.
@@ -4103,7 +4103,7 @@ details see PostgreSQL documentation on
 \subsection{Regression Testing}
 To facilitate regression testing we also integrated a test case in
 PostgreSQL regression test suite.  This test case tests just a few
-very basic scenarios, as a throughout test would take quite some time,
+very basic scenarios, as a thorough test would take quite some time,
 and this would not be appreciated as part of a checked build.  For the
 basic regression test see
 \srcref{src/test/regress/sql/skyline\_base.sql} and

@@ -546,7 +546,7 @@ will not use the name of the hotel as a skyline criterion, therefore
 $D$ will be used as domain for this attribute.  For attributes or
 expressions which are subject to skyline computation we use the domain
 $N$. No distinction is made between different numeric domains, since
-it is not necessary for this paper. For $N$ we require that equality
+it is not necessary for this thesis. For $N$ we require that equality
 ($=$), inequality ($\not=$), and the binary relations $<$ (strictly
 less than), $\le$ (less than or equal), $\ge$ (greater than or equal),
 and $>$ (strictly greater than) are defined with the usual properties.
@@ -636,7 +636,7 @@ then it is a \emph{total order}\index{total order}.
 
 % Non-transitive\index{non-transitive} preferences can be compute with
 % the BEST algorithm \citep{Torlone2002, Ciaccia2004}, we will not
-% study this approach in this paper.
+% study this approach in this thesis.
 
 \begin{definition}[preference formula (pf) \citep{Chomicki2003a}]
 A \emph{preference formula (pf)} $C(r,s)$ is a first-order formula
@@ -2192,7 +2192,7 @@ function EliminationFilter($\mathcal{I}$, var $state$) begin
 % \todo{}{}
 
 \section{Related Works}
-The closest related works to this paper are \citep{Chaudhuri2006}
+The closest related works to this thesis are \citep{Chaudhuri2006}
 and \citep{Goncalves2005, Goncalves2005a}.  Authors of both papers did an
 implementation of the skyline operator into an RDBMS\index{RDBMS} as a full-blown
 relational operator.
@@ -4059,8 +4059,8 @@ in our SVN repository, including the CVS metadata directories
 \texttt{CVS}.  By means of that we continuously merged \texttt{CVS HEAD}
 into our main development branch, called \texttt{trunk} in the
 SubVersion terminology.  In order to have a more stable and
-reproducibly setting we decided to base this paper on the branch
-\texttt{REL8\_3\_STABLE}, i.e. all experiments in this paper are based
+reproducibly setting we decided to base this thesis on the branch
+\texttt{REL8\_3\_STABLE}, i.e. all experiments in this thesis are based
 on Version 8.3.0 of PostgreSQL with our patch for the skyline
 operator applied.
 
@@ -5786,7 +5786,7 @@ before string data.
 \chapter{Summary}
 \label{chap:summary}
 
-In this paper we presented our achievements in extending the open source
+In this thesis we presented our achievements in extending the open source
 RDBMS\index{RDBMS} PostgreSQL with the skyline operator.  In our strong believe with
 this effort the skyline operator is in the habitat it belongs to.
 
@@ -5812,12 +5812,12 @@ We have extended the basic syntax of the \inlinesql{SKYLINE~OF}-clause
 
 A noteworthy result of our efforts is the site
 \url{http://skyline.dbai.tuwien.ac.at/}, where it is possible to
-test-drive our implementation and get a intuition for the behaviour of
+test-drive our implementation and get an intuition for the behavior of
 the skyline operator.  Furthermore we provide a series of patches,
 applicable against the PostgreSQL 8.3 stable release. By means of that
-we hope to acquaint the skyline operator to a bigger audience, and a
+we hope to acquaint the skyline operator to a bigger audience and
 lay a brick for further research in the direction of integrating
-preference query concepts into RDBMS's.  As we wish that at least one
+preference query concepts into RDBMSs.  We wish that at least one
 flavor of SQL preference clauses will make it into a future SQL
 standard.
 
@@ -5830,14 +5830,14 @@ It is well known that the performance of skyline queries is sensitive
 to a number of parameters.
 %
 From our experimental results we were able to expose several findings
-which are difficult to be verified theoretically.  There are: (1) the
+which are difficult to be verified theoretically.  They are: (1) the
 elimination filter is effective only if the selectivity factor of the
 dataset is not more than $0.1$; (2) for datasets up to $500$ tuples
-and of relative small dimension (e.g. up to five), BNL performs the
+and of relative small dimension (e.g. up to five) BNL performs the
 best in all aspects.
 %
 Our findings are beneficial for developing heuristics for the skyline
-query optimization, and in the meantime, provide some insight for a
+query optimization, and in the meantime provide some insight for a
 deeper understanding of the skyline query characteristics.
 
 

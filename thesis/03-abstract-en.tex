@@ -8,28 +8,50 @@
 \chapter*{Abstract\revision}
 \addcontentsline{toc}{chapter}{Abstract\revision}
 
-The \emph{skyline operator} filters out the \emph{interesting} tuples
-from a potentially large dataset.  A tuple is of interest if not
-dominated by any other tuple.  The skyline is also called 
-\emph{pareto optimal set} and the computation of it as
-\emph{maximum vector problem}.
 
-In this paper, we present our work on extending PostgreSQL, an open
-source database system, with the skyline operator.  Our implementation
-provides several physical operators for computing the skyline, namely:
-BNL, SFS, and a variant of LESS.  While at it we discovered and fixed
-a flaw in the original version of BNL.  With this effort we hope to
-lay the ground for future work in this area and move the skyline
-operator from standalone implementations to the habitat it belongs to:
-an RDBMS.
+In the realm of multi-criteria optimization it is sometimes hard from
+a user's perspective to come up with an appropriate objective
+function.
+%
+The \emph{skyline operator} filters out the \emph{interesting} tuples
+from a potentially large dataset.  A tuple belongs to the skyline if
+it is not \emph{dominated} by any other tuple, i.e. there is no tuple
+which is at least as good in all criteria and better in at least one.
+%
+No matter how we weight our preferences along the attributes, only
+those tuples which score best under a monotone scoring function are
+part of the skyline.
+%
+To state it in other words, the skyline does not contain tuples with
+are nobody's favorite.
+%
+The notion of skyline is also called \emph{Pareto optimal set} and the
+computation of it \emph{maximum vector problem}.
+
+
+In this thesis we present our work on extending PostgreSQL, an open
+source relational database system, with the skyline operator.
+%
+Our implementation provides several physical operators for computing
+the skyline, namely: BNL, SFS, and a variant of LESS.
+%
+With this effort we hope to lay the ground for future work in this
+area and move the skyline operator from standalone implementations to
+the habitat it belongs to: an RDBMS.
+%
+Moreover we discovered a flaw in the original version of BNL and give
+a corrected version.
 
 It is well known that the performance of skyline queries is sensitive
-to a number of parameters.  From extensive experiments on skyline
-implementations we have discovered several rules, which are remarkably
-simple and useful, but hard to obtain from theoretical investigation.
+to a number of parameters.  
+%
+From extensive experiments on skyline implementations we have
+discovered several rules, which are remarkably simple and useful, but
+hard to obtain from theoretical investigation.
+%
 Our findings are beneficial for developing heuristics for the skyline
 query optimization, and in the meantime, provide some insight for a
-deeper understanding of the skyline query characteristics. 
+deeper understanding of the skyline query characteristics.
 
-All results and source code is available at: 
+All results and source code are available at:
 \url{http://skyline.dbai.tuwien.ac.at/}.

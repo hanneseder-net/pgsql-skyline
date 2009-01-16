@@ -157,7 +157,7 @@ later refer this situation as \emph{this product is dominated by
 another one}, as there are others which better fulfill our criteria.  The
 products which are not dominated are more or less equally good based on
 our given criteria, and we need to apply more criteria to come to a
-decision.  These products are called to be \emph{Pareto optimal}
+decision.  These products are called to be \emph{Pareto optimal}\index{Pareto optimal}
 based on the given criteria. \citet{Borzsonyi2001} coined in their
 paper the term \emph{skyline operator} for this type of queries.
 
@@ -231,7 +231,7 @@ ORDER BY ...
 \end{sql}
 
 Computing the skyline is also known as the \emph{maximum vector
-problem} \citep{Kung1975, Preparata1985}. The terms \emph{skyline} and
+problem}\index{maximum vector problem} \citep{Kung1975, Preparata1985}. The terms \emph{skyline} and
 \emph{skyline operator} in the realm of databases were coined by
 \citet{Borzsonyi2001}. The following examples give a motivation why 
 \emph{skyline operator} is a good name for this type of
@@ -322,7 +322,7 @@ However there are good reasons for including a \emph{skyline} or
 \item 
 From a user's perspective, it is easier to specify and easier to grasp
 what's going on, than a query with a correlated subquery or using
-SQL's \inlinesql{EXCEPT} (see \autoref{sql:rewrite-with-except}).
+SQL's \inlinesql{EXCEPT}\index{SQL!EXCEPT@\texttt{EXCEPT}} (see \autoref{sql:rewrite-with-except}).
 
 \item
 It is faster to evaluate, as there are numerous algorithms for skyline
@@ -371,7 +371,7 @@ limited total main memory, e.g. on a handheld device.
 
 %All of the algorithms are implemented as stand-alone algorithms,
 In this thesis we focus on extending PostgreSQL with the skyline
-operator and the evaluation of skyline algorithms in the RDBMS context.
+operator and the evaluation of skyline algorithms in the RDBMS\index{RDBMS} context.
 Building the skyline query operation in an RDBMS has
 several advantages.  First, skyline can be integrated with other
 relational operators, thus more sophisticated queries can be
@@ -539,9 +539,10 @@ to finite database\index{finite database} instances.
 We assume two infinite\footnote{Although in a real computer 
 everything is finite.} domains: $N$ (numbers) and $D$ (uninterpreted
 constants). The domain $D$ will be used for attributes which are not
-subject to skyline computation, i.e. for the traveling example we
-%manos: I didn't see the traveling example anywhere in the text
-will not use the name of the airline as a skyline criterion, therefore
+subject to skyline computation, i.e. for the hotel example from literature we
+%done:manos: I didn't see the traveling example anywhere in the text
+%hannes:let's use the standard example here
+will not use the name of the hotel as a skyline criterion, therefore
 $D$ will be used as domain for this attribute.  For attributes or
 expressions which are subject to skyline computation we use the domain
 $N$. No distinction is made between different numeric domains, since
@@ -586,7 +587,7 @@ $\forall x, y, z: (x \dominates y \land y \dominates z) \imp x \dominates z$
 \end{itemize}
 
 \noindent
-The properties for the corresponding \emph{partial order}
+The properties for the corresponding \emph{partial order}\index{partial order}
 $\weakdominates$ are formalized as:
 \begin{itemize}
 \item \emph{reflexivity:} 
@@ -607,7 +608,7 @@ If a strict partial order also has the property of
 \end{itemize}
 
 \noindent
-then it is a \emph{total order}.
+then it is a \emph{total order}\index{total order}.
 
 
 % some more properties, which hold
@@ -789,7 +790,7 @@ s \in \relation{R}\colon s \dominates r \}
 
 To give the intuition, the skyline operator returns all tuples which
 are \emph{not dominated}, in other words all tuples that do \emph{not}
-have a \emph{witness}.
+have a \emph{witness}\index{witness}.
 
 \bigskip
 \noindent
@@ -898,12 +899,13 @@ r \comparable s = s \comparable r.
 % \forall x, y\colon x R y \lor x = y \lor y R y
 % \]
 
-%manos: I'm not sure, but I think that the correct term in this case
+%done:manos: I'm not sure, but I think that the correct term in this case
 %       is equivalence (and equivalence class) since equality is
 %       supposed to express cases where the = sign holds.
-\subsubsection{\inlinesql{DIFF}-Induced Equality Relation}
+%hannes: you are right
+\subsubsection{\inlinesql{DIFF}-Induced Equivalence Relation}
 Please note that the following subformula \eqref{equ:skylinepfdiff} of
-formula \eqref{equ:skylinepf} induces an equality relation on
+formula \eqref{equ:skylinepf} induces an equivalence relation on
 \schema{R}, i.e. \schema{R} is partitioned into groups where the
 attributes $a_{l+1}, \ldots, a_m$ are equal:
 \begin{equation}\label{equ:skylinepfdiff}
@@ -1169,14 +1171,16 @@ query, or even facilitating an index.
 
 \subsection{Skyline Stratum and $K$-Skyband}
 \label{sec:skyline-stratum}
-
-%manos:
+\index{strata|see{stratum}}
+\index{K-skyband@$K$-skyband}
+%done:manos:
 %I don't understand the sentence exactly here. The "speak of ranking"
 %might be wrong, but I'm not sure.
-In \citep{Chomicki2003a} the concept of skyline stratum is called
-\emph{iterated preference}, and the speak of 
+%hannes: hm? might skip that ``ranking'' foo
+In \citep{Chomicki2003a} the concept of skyline stratum\index{stratum} is called
+\emph{iterated preference}, and they speak of 
 \emph{ranking}\index{ranking}, we prefer to use the term
-\emph{stratum}\index{stratum}, as we reserve the term ranking for
+\emph{stratum}\index{stratum}, and we reserve the term ranking for
 scoring functions (see \autoref{sec:scoring}).
 To the best of our knowledge the term \emph{skyline stratum} first 
 appeared in \citep{Chan2005}.
@@ -1190,7 +1194,7 @@ The \nospellcheck{$n$-th} skyline stratum $\skyline_C^n$ is recursively defined 
 To give an example, the query $\skyline_C^2(\relation{R})$ returns
 the set of ``second-best'' tuples.
 %
-The strata are of interest especially if there is a single
+The strata\index{stratum} are of interest especially if there is a single
 \emph{killer tuple} or very few tuples which are dominating the entire
 dataset.  In the context of the relation \emph{Hotel(Price, Distance
 to beach)}, a barrack on the beach is cheaper and closer to the beach
@@ -1206,12 +1210,10 @@ $K$ points.
 The skyband rank of a point $p$ can be computed by counting the points
 in the anti-dominance region of $p$.
 
-%manos:
-%I think that the "as can be seen from the following example" should have
-%a finishing part like "... there is no straightforward relation between
 It might be tempting to see a direct relationship between
 \emph{skyline stratum} and \emph{$K$-skyband}, but as can be seen from
-following example, no easy relationship can be established: \\
+following example, there is no straightforward relationship between these two
+concepts: \\
 Let $\relation R = \{r, s, t\}$ and $\dominates =\{(r,t), (s,t)\}$, 
 i.e. $r \dominates t$ and $s \dominates t$, 
 then $\skyline_\dominates^1 = \{r, s\}$ and $\skyline_\dominates^2 = \{t\}$, 
@@ -1244,9 +1246,9 @@ An interesting combination of \inlinesql{SKYLINE OF} and
 \inlinesql{TOP $k$} is given by the
 \emph{top-$k$-skyline}\index{top-k-skyline} operator
 \citep{Brando2007, Goncalves2005a, Goncalves2005}, where as many 
-skyline strata are computed until at least $k$ tuples are found, otherwise
+skyline strata\index{stratum} are computed until at least $k$ tuples are found, otherwise
 the entire relation is returned.  Nevertheless it should be noted that
-the selectivity of the top-$k$-skyline operator is even less
+the selectivity\index{selectivity} of the top-$k$-skyline operator is even less
 than the skyline operator alone.
 
 
@@ -1258,9 +1260,8 @@ than the skyline operator alone.
 Let $rel$ be a relation with the attributes $a_1, \ldots, a_n$, and a non
 empty target list $\emptyset \not= target\_list \subseteq \{a_1,
 \ldots, a_n\}$, then a skyline query with at least one criterion ($0
-\le k \le l \le m \le n$ and $1 < m \le n$) and the following form:
-%manos: I think for at least one criterion you should have 1 \le m \le n
-%
+\le k \le l \le m \le n$ and $1 \le m \le n$) and the following form:
+
 \begin{sql}
 SELECT $target\_list$ FROM $rel$ AS $r$ WHERE $condition$ \\
 SKYLINE OF $a_1$ MIN$, \ldots, a_k$ MIN$, a_{k+1}$ MAX$, \ldots, a_l$ MAX$, a_{l+1}$ DIFF$, \ldots, a_m$ DIFF
@@ -1290,13 +1291,13 @@ The correspondence with the basic definition of the skyline operator
 (cf. \autoref{def:skyline}) and with the definition of a binary
 preference relation \eqref{equ:skylinepf} is obvious.
 %
-The join is a $\theta$-join and not an equi-join.
+The join is a $\theta$-join\index{theta join@$\theta$-join} and not an equi-join\index{equi-join}.
 %
 A little notion we use here is $condition\{r \gets o\}$ to express
 that any reference to the relation alias $r$ must be replaced with
 the alias $o$.
 %
-Another way to rewrite the query is given in
+Another way\index{SQL!EXCEPT@\texttt{EXCEPT}} to rewrite the query is given in
 \citep[Page~3]{Godfrey2004}:
 
 \begin{sql}\label{sql:rewrite-with-except}
@@ -1357,11 +1358,12 @@ is performed. This indicates some difficulties, standard SQL does not
 have any non-deterministic feature, so we somehow have to express whether
 a set of tuples coincides on the skyline criteria $\{a_1, \ldots,
 a_m\}$, i.e. if $r \nondistinct s$:
-%manos:
+%done:manos:
 %I think that the above sentence reads a bit strange. Maybe:
 %so if a set of tuples coincide on the skyline criteria 
 %${a_1,\ldots,a_m}$, i.e. $r \nondistinct s$, we should define
 %a way to express the following:
+%hannes: uhm. I leave it for the moment as is.
 
 \begin{enumerate}
 \item
@@ -1398,7 +1400,7 @@ order on the tuples, then we are able to pick the first or the
 last\footnote{Of course we can also express to pick the second, the
 third and so forth, but all we know is that within a group we have at
 least one tuple.}.  In the presence of a unique and ordered
-key\footnote{On some RDBMS special pseudo-columns for such purposes do
+key\footnote{On some RDBMS\index{RDBMS} special pseudo-columns for such purposes do
 exist.} this is obvious, in the other case as long as on each
 attribute a total order exists, we can construct a lexicographic
 order\index{lexicographic order}.  Duplicate elimination with
@@ -1478,7 +1480,7 @@ This returns only the correct result if all the subselects will return
 their attributes from the same tuple, which can be expected as the same
 filter condition on the same relation is used, then almost for sure
 the same access path will be used.  The \inlinesql{LIMIT}-clause is
-used, which is not part of the SQL 2003 standard. We conjecture that
+used, which is not part of the SQL 2003 standard\index{SQL!standard 2003} \citep{SQL2003}. We conjecture that
 such a query cannot be expressed with standard SQL.
 
 For the corner case of one dimensional skyline queries, i.e. $m = 1$,
@@ -1561,7 +1563,6 @@ information on user-defined data types see PostgreSQL documentation on
 \postgresdocu{xindex.html\#XINDEX-OPFAMILY}{Operator Classes and
 Operator Families}
 
-%manos: I don't understand the sentence below well
 Although viable, it is questionable whether it is of practical use to include a
 e.g. \inlinesql{VARCHAR} column in a skyline query.
 Nevertheless this might be a good use case for a user-defined ordering operator.
@@ -1808,7 +1809,7 @@ In terms of a binary relation the dominance can be expressed as:
 \noindent
 In essence this means every $a_i$ is dominated by $c_i$ and all other
 tuples are incomparable.  To construct such a dataset, generate $a_1,
-\ldots, a_n, b_1, \ldots b_m$ anti-correlated and let the $c_i$'s just be
+\ldots, a_n, b_1, \ldots b_m$ anti-correlated\index{anti-correlated} and let the $c_i$'s just be
 a little better in each dimension than the $a_i$'s.  It is easy to see
 that following identities hold:
 
@@ -2193,7 +2194,7 @@ function EliminationFilter($\mathcal{I}$, var $state$) begin
 \section{Related Works}
 The closest related works to this paper are \citep{Chaudhuri2006}
 and \citep{Goncalves2005, Goncalves2005a}.  Authors of both papers did an
-implementation of the skyline operator into an RDBMS as a full-blown
+implementation of the skyline operator into an RDBMS\index{RDBMS} as a full-blown
 relational operator.
 
 \citet{Chaudhuri2006} at Microsoft Research extended a Beta
@@ -2205,11 +2206,11 @@ cost-based optimizer.  The syntax they are using is Preference~SQL
 
 
 \citep{Goncalves2005} extended PostgreSQL with an hybrid approach 
-between \emph{top-k} and \emph{skyline operator} called top-k skyline.
-Skyline strata (see \autoref{sec:skyline-stratum}) are computed until
+between \emph{top-k} and \emph{skyline operator} called top-k skyline\index{top-k-skyline}.
+Skyline strata\index{stratum} (see \autoref{sec:skyline-stratum}) are computed until
 at least $k$ records are returned.  With this approach all the second
 and higher order best records do get a chance to end up in the result,
-nevertheless the selectivity of this approach is even lower than
+nevertheless the selectivity\index{selectivity} of this approach is even lower than
 skyline operator alone
 
 
@@ -2477,7 +2478,7 @@ Two other special methods do exist, namely \texttt{1DIM} and
 dimensional non-distinct and distinct case.  These methods are
 directly selected by the query planner and no options can be set for
 them.  The tuple store used by the method \texttt{1DIM} uses the
-default \texttt{work\_mem} setting. See
+default \texttt{work\_mem}\index{work mem@work\_mem} setting. See
 \autoref{sec:onedim-nondistinct} and
 \autoref{sec:onedim-distinct}.
 
@@ -2519,7 +2520,7 @@ the RAM constraints are ignored. When the \inlinesql{WINDOWSIZE}
 option is used an according amount of RAM is used for the tuple window.
 \inlinesql{WINDOW} is just an alias for \inlinesql{WINDOWSIZE}.  If
 neither \inlinesql{SLOTS} nor \inlinesql{WINDOWSIZE} are given the
-configuration variable \texttt{work\_mem} is used, which is 1~MB per
+configuration variable \texttt{work\_mem}\index{work mem@work\_mem} is used, which is 1~MB per
 default. The other property which can be influenced is the order in which
 tuples are placed in the tuple window, where the default is \inlinesql{APPEND}.
 
@@ -2819,7 +2820,7 @@ which are essential to understand our implementation.
 \subsection{Pathkeys\index{pathkeys}}
 \label{sec:pathkeys}
 In a sole set oriented algebra there is no concept of \emph{nextness}
-or \emph{order of tuples}, but in an RDBMS the relative order of
+or \emph{order of tuples}, but in an RDBMS\index{RDBMS} the relative order of
 tuples is an important \emph{physical property} of a tuple stream.
 The knowledge about this is encoded in PostgreSQL in terms of so
 called \emph{pathkeys}, they arise naturally in conjunction with an
@@ -3069,7 +3070,7 @@ BNL             & no  & no  \\
 SFS             & yes & yes \\
 EF              & yes & no  \\
 \end{tabular}
-\caption{Tuple Order (Pathkeys) preserving / establishing Property}
+\caption{Tuple Order (Pathkeys\index{pathkeys}) preserving / establishing Property}
 \label{tab:tuple-order-preserving}
 \end{table}
 
@@ -3206,7 +3207,7 @@ hold. To see this imagine the BNL algorithm running on a uniformly
 distributed dataset, which implies the expected result set size is
 $\Theta(\log(n)^{d-1} / (d-1)!)$ but the order of the tuple stream is
 as such that before seeing the actual skyline tuples a lot of
-anti-correlated tuples show up in the tuple stream.  The tuple window
+anti-correlated\index{anti-correlated} tuples show up in the tuple stream.  The tuple window
 will fill up with non skyline tuples.
 
 We would like also to point out, that larger window and and less
@@ -3375,7 +3376,7 @@ tuple store.  On the other hand, if this tuple is dominated we clean
 the tuple store, and keep the dominating tuple.  After the initial
 scan over the input we pipe out the tuple store,
 cf. \autoref{code:1dim}.  For the sake of a clearer pseudo-code we
-gave our self the freedom to present the tuple store interface
+gave our self the freedom to present the tuple store\index{tuple store} interface
 (\texttt{tuplestore\_*}) a little different to the actual
 implementation.  A functionality we added to the tuple store is to
 remove all tuples from the tuple store, which is cheaper than
@@ -3451,9 +3452,9 @@ like:
 and will return at most one tuple, if more than one minimal tuple
 exists our implementation returns the first.
 
-The SQL:2003 Standard \citep{SQL2003} does not provide a way
+The SQL 2003 standard\index{SQL!standard 2003} \citep{SQL2003} does not provide a way
 to limit the size of a result set. Nevertheless PostgreSQL and other
-RDBMS do provide syntax for this and consider it during query
+RDBMS\index{RDBMS} do provide syntax for this and consider it during query
 planning. The query and the query plan for the above query in without
 the skyline operator would look like:
 
@@ -3626,7 +3627,7 @@ function ExecSkyline_2DimPresort(var $state$)
 This method is the first general method which can deal with any
 dimensionality and treat the \inlinesql{DISTINCT} modifier.  In
 directly corresponds to the \naive $O(n^2)$ nested loop approach,
-compare every tuple to all others as long no witness is found, which
+compare every tuple to all others as long no witness\index{witness} is found, which
 dominates the current tuple.  Why is it called \emph{materialized}
 nested loop?  This \emph{materialized} stem from the fact that we
 materialize the tuples from the outer plan, to be able to read them
@@ -3719,7 +3720,7 @@ returns true of the tuple window can hold at least one more tuple.
 Note that we are ignore the fact that the tuple that is going to be
 inserted might consume a little more space than is actually left, but
 this eases the implementation and an existing PostgreSQL interface the
-\lstinline|tuplestore| interface is designed in the same way.
+\lstinline|tuplestore|\index{tuple store} interface is designed in the same way.
 
 \item \lstinline|void tuplewindow_setinsertrank(TupleWindowState *state, double rank)|
 when policy \emph{entropy} or \emph{ranked} is used, the rank of the
@@ -4150,7 +4151,7 @@ with auto vacuuming disabled, and all other settings were left as
 default.
 
 If not otherwise mentioned, a tuple window size of 1024~KB (equal to
-the PostgreSQL \texttt{work\_mem} setting), and an EF tuple window
+the PostgreSQL \texttt{work\_mem}\index{work mem@work\_mem} setting), and an EF tuple window
 size of 8~KB (equal to the PostgreSQL block size) were used.
 
 The tables for the test runs have been generated using the extended
@@ -4158,7 +4159,7 @@ version \citep{Eder2007a} of the dataset generated presented in
 \citep{Borzsonyi2001}, which allows to generate tables with
 different initial seeds for the random generator. All experiments
 were carried out on three different sets with varying initial seed, for each
-distribution type (independent, correlated, and anti-correlated), and
+distribution type (independent\index{independent}, correlated\index{correlated}, and anti-correlated\index{anti-correlated}), and
 with 100, 500, 1k, 5k, 10k, 50k, 100k tuples.
 
 Each tuple consists of a unique 4 byte integer \emph{id} and 15
@@ -4219,6 +4220,9 @@ dataset are generated by the dataset generator.
 
 \subsubsection{Independent, Correlated, and Anti-Correlated Datasets}
 \label{sec:corr-anti-indep}
+\index{independent}
+\index{correlated}
+\index{anti-correlated}
 
 The main parameters one can vary for a generated dataset are
 \emph{cardinality}, i.e. number of tuples, \emph{dimensionality} and
@@ -4410,6 +4414,7 @@ d2	& 0.717 & 1.000 \\
 \pagebreak[3]
 
 \item \emph{anti}:
+\index{anti-correlated}
 an anti-correlated dataset represents an environment in which points
 which are good in one dimension are bad in one or all of the other
 dimensions. The standard example used in the skyline literature falls
@@ -4637,11 +4642,11 @@ following way (see \srcref{contrib/randdataset/randdataset.sql.in}):
 In the PostgreSQL execution engine a function scan node is responsible
 for retrieving tuples from a set returning function. The current
 implementation reads all the tuples from the set returning function
-and stores them in a \texttt{tuplestore} before returning the first
+and stores them in a \texttt{tuplestore}\index{tuple store} before returning the first
 tuple to the caller. A \texttt{tuplestore} maintains an in memory
 buffer once it runs out of memory the remaining tuples are written to
 a tempfile. The size of the in memory buffer is controlled through the
-configuration variable \texttt{work\_mem}. The default value is
+configuration variable \texttt{work\_mem}\index{work mem@work\_mem}. The default value is
 1024~KB. This configuration variable is also used to determine the amount
 of RAM used for sort operations, for merge joins, hash joins and many more.
 So RAM used for a single complex query can by multiple times the value of 
@@ -4663,11 +4668,11 @@ discard all tuples except one due to the
 
 This behavior is not desirable, at least we want that the tuples do
 not get swapped out to disk as
-\texttt{tuplestore}'s-\texttt{work\_mem} gets full, since for parts
+\texttt{tuplestore}'s-\texttt{work\_mem}\index{tuple store} gets full, since for parts
 of our experiments we were not willing to pay I/O penalty as we were
 studying just the CPU bounded behavior of the skyline algorithms.
 
-On the other hand we do not want to increase \texttt{work\_mem}, as
+On the other hand we do not want to increase \texttt{work\_mem}\index{work mem@work\_mem}, as
 this would as mentioned above influence the sort operation and the size
 of the tuple window for the skyline algorithms. Therefore we decided
 to introduce a new configuration variable
@@ -5344,7 +5349,7 @@ tuples.
 We also note that SFS performs extremely poor as the dimension is less
 than six for independent and anti-correlated data, and even worse for
 correlated data.  This can be justified that if the dimension is low,
-the skyline selectivity factor\footnote{selectivity factor = skyline
+the skyline selectivity\index{selectivity} factor\footnote{selectivity factor = skyline
 tuples / input tuples. A low selectivity factor means high
 selectivity.}  is low as well. Therefore, EF operation is effective,
 i.e., a number of tuples could be removed at this stage. However, this
@@ -5389,7 +5394,7 @@ interesting observation is that the performance of SFS is surprisingly
 better than others, except for the extremely low dimension values
 (three for independent, anti-correlated, and six for correlated
 distributions).  As illustrated by \autoref{fig:sf}, there exists a
-causal relation with the skyline selectivity factors.  It shows
+causal relation with the skyline selectivity\index{selectivity} factors.  It shows
 clearly that as the data cardinality decreases, the skyline
 selectivity factor increases. Therefore, in general, the EF operator
 is less effective with lower data cardinalities. To be more accurate,
@@ -5415,7 +5420,7 @@ four to five representative dimension values.  \autoref{fig:inde},
 \ref{fig:corre}, and \ref{fig:anti} illustrate the test results for
 independent, correlated, and anti-correlated datasets, respectively.
 
-Surprisingly, the \emph{rule of the selectivity factor} is proven to
+Surprisingly, the \emph{rule of the selectivity factor}\index{selectivity} is proven to
 be true in all the datasets.  That is, if the selectivity factor is
 higher than 0.1, the elimination filter does not have any advantage.
 
@@ -5442,7 +5447,7 @@ analysis can be applied as well.
 \subsubsection{Correlated datasets}
 For correlated datasets in \autoref{fig:corre}, SFS+EF is superior
 with a few exceptions. This again, can be perfectly explained by the
-selectivity factors for correlated datasets
+selectivity factors\index{selectivity} for correlated datasets
 (cf. \autoref{fig:sf-c}).  Except for the data cardinality of 100
 and 500, all the selectivity factors are remarkably low (most of them
 are less than 0.1), thus the EF operation pays off.
@@ -5555,7 +5560,7 @@ the index structure.  The data is physically ordered according to one
 of the indexed attributes, which is not guaranteed to be beneficial
 for the elimination filtering.  Therefore, one should be careful with
 applying EF in the presence of index, even on the datasets with low
-selectivity factors.
+selectivity factors\index{selectivity}.
 %
 The only significant exception is for correlated data, window policy
 append, and dim $\le 3$ (cf. \autoref{fig:sfs-index-c}).  We argue
@@ -5782,7 +5787,7 @@ before string data.
 \label{chap:summary}
 
 In this paper we presented our achievements in extending the open source
-RDBMS PostgreSQL with the skyline operator.  In our strong believe with
+RDBMS\index{RDBMS} PostgreSQL with the skyline operator.  In our strong believe with
 this effort the skyline operator is in the habitat it belongs to.
 
 The algorithms we have implemented so far are BNL, SFS, and a variant

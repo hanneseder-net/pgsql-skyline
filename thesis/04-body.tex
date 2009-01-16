@@ -508,7 +508,7 @@ The thesis is organized as follows: In \autoref{chap:preliminaries} we
 introduce the notation and show mathematical properties of the skyline
 operator.  In \autoref{chap:relatedworks} we briefly introduce the
 implemented skyline algorithms and speak about the closest related
-works. \autoref{chap:implementation} gives the very details of our
+works. Chapter \ref{chap:implementation} gives the very details of our
 implementation. Chapter \ref{chap:results} describes the experimental setup
 and presents the extensive experiments over various data settings,
 followed by the analysis of the results. Directions of future work are
@@ -540,7 +540,7 @@ We assume two infinite\footnote{Although in a real computer
 everything is finite.} domains: $N$ (numbers) and $D$ (uninterpreted
 constants). The domain $D$ will be used for attributes which are not
 subject to skyline computation, i.e. for the traveling example we
-% manos: I didn't see the traveling example anywhere in the text
+%manos: I didn't see the traveling example anywhere in the text
 will not use the name of the airline as a skyline criterion, therefore
 $D$ will be used as domain for this attribute.  For attributes or
 expressions which are subject to skyline computation we use the domain
@@ -898,9 +898,9 @@ r \comparable s = s \comparable r.
 % \forall x, y\colon x R y \lor x = y \lor y R y
 % \]
 
-% manos: I'm not sure, but I think that the correct term in this case
-%        is equivalence (and equivalence class) since equality is
-%        supposed to express cases where the = sign holds.
+%manos: I'm not sure, but I think that the correct term in this case
+%       is equivalence (and equivalence class) since equality is
+%       supposed to express cases where the = sign holds.
 \subsubsection{\inlinesql{DIFF}-Induced Equality Relation}
 Please note that the following subformula \eqref{equ:skylinepfdiff} of
 formula \eqref{equ:skylinepf} induces an equality relation on
@@ -1129,7 +1129,7 @@ SELECT * FROM a15d1e5 SKYLINE OF d2 MIN, d1 MIN;
 %\subsection{Preference hierarchies}
 %(see 4.3 \citep{Chomicki2003a}) ... I generally prefer red wine, but
 %for fish I prefer white wine.
-%\todo{}{I think this can not be formulated using skyline}
+%\todo{}{I think this cannot be formulated using skyline}
 %
 %
 %\subsection{Intrinsic vs. extrinsic}
@@ -1252,7 +1252,7 @@ than the skyline operator alone.
 
 \section{Rewrite Skyline Queries into Standard SQL}
 \label{sec:rewrite-to-sql}
-%\todo{such queries can not be unnested \citep{Grust1997,
+%\todo{such queries cannot be unnested \citep{Grust1997,
 %Braumandl1998}, from \citep[Page 4]{Borzsonyi2001}}{}
 
 Let $rel$ be a relation with the attributes $a_1, \ldots, a_n$, and a non
@@ -1440,7 +1440,7 @@ FROM $rel$ AS $o$ WHERE ($condition\{r \gets o\}$) AND NOT EXISTS \\
 \end{sql}
 %
 In the above query we retain the first tuple. In case such an order
-can not be established, e.g. an order operator is not defined for the
+cannot be established, e.g. an order operator is not defined for the
 used data type, then in Microsoft SQL we can work around this with the
 special aggregate functions \inlinesql{FIRST} and \inlinesql{LAST},
 which results in a query like this:
@@ -1479,7 +1479,7 @@ their attributes from the same tuple, which can be expected as the same
 filter condition on the same relation is used, then almost for sure
 the same access path will be used.  The \inlinesql{LIMIT}-clause is
 used, which is not part of the SQL 2003 standard. We conjecture that
-such a query can not be expressed with standard SQL.
+such a query cannot be expressed with standard SQL.
 
 For the corner case of one dimensional skyline queries, i.e. $m = 1$,
 other methods do exist, we show them in
@@ -1778,7 +1778,7 @@ again if space was exhausted.
 %
 Besides from that the original and our version in \autoref{code:bnl}
 coincide.
-%done:fang: this sentence is too long, I can not understand it.
+%done:fang: this sentence is too long, I cannot understand it.
 
 Our finding is that under certain conditions the code from
 \autoref{code:bnl} does not terminate.  To show this property, we
@@ -1952,7 +1952,7 @@ is
 where $b_1$ and $c_1$ have changed their relative order.  It is easy
 to imagine that this can happen in other configurations as well and
 therefore BNL does not preserve the relative order of tuples.  This
-physical property of BNL is important during the query planing, as the
+physical property of BNL is important during the query planning, as the
 relative order of tuples is an important aspect here. Very offen, a prior
 operator in the query plan needs to establish a certain order or preserve such an order
 to save an explicit sorting operation, in order to execute further 
@@ -2594,11 +2594,11 @@ skylineoptions:
     'WITH' ( () | ( name ( '=' value ) ? ) + )
 \end{rail}
 
-While the definition given above describes exactly the intented
+While the definition given above describes exactly the intended
 semantics, this definition gave us the full flexibility during the
 development. Using the short definition above we were able to
 introduce new options as we liked on the fly.  The options are passed
-around from the parser, through query planing to the execution engine
+around from the parser, through query planning to the execution engine
 as a simple \emph{name/value} list.  So whenever we needed a new
 option we just had to query this list at the desired point in the
 code. If the equal sign and the value are omitted, this has the
@@ -2631,7 +2631,7 @@ clause, therefore we parse it in the same way.
 On the lexical level we introduced one new \emph{reserved
 keyword}: ``\inlinesql{SKYLINE}''\footnote{see
 \srcref{src/backend/parser/keywords.c}}. Introducing a reserved
-keyword has the usual consequences: it can not be used as normal
+keyword has the usual consequences: it cannot be used as normal
 identifier, like illustrated in the following example:
 
 \begin{interactive}
@@ -2678,7 +2678,7 @@ vs. non-\inlinesql{SKYLINE OF DISTINCT} is described in
 %
 %sql min, max, distinct != skyline min, max, distinct
 %
-%\todo{1 dim with out distinct can be emulated with a subselect or a self-join}{}
+%\todo{1 dim without distinct can be emulated with a subselect or a self-join}{}
 %
 %select d1 from a2d100 skyline distinct d1 min = select min(d1) from a2d100;
 %
@@ -2760,7 +2760,7 @@ LINE 1: select foo from a15d1e5s0;
 \end{interactive}
 
 \noindent
-Clearly such limitation also apply to the expressions in the
+Clearly such limitations also apply to the expressions in the
 \inlinesql{SKYLINE~OF}-clause.  In the presents of a
 \inlinesql{GROUP~BY}-clause more limitations apply, which immediately
 becomes clear when we look at the operator tree
@@ -3758,7 +3758,7 @@ get the tuple a the current position of the cursor.  When called with
 tuple window.  Note that this is not the same as calling
 \lstinline|tuplewindow_gettupleslot| and
 \lstinline|tuplewindow_removecurrent|, as
-\lstinline|tuplewindow_removecurrent| also frees the tuple it self and
+\lstinline|tuplewindow_removecurrent| also frees the tuple itself and
 not only removing it from the tuple window.
 
 \item \lstinline|int64 tuplewindow_timestampcurrent(TupleWindowState *state)|
@@ -3772,7 +3772,7 @@ used by BNL.
 \subsubsection{Placement Policies}
 \label{sec:tuplewindowpolicies}
 With tuple window placement policy we want to express how tuples are
-organized in the window and in which order the are compared against
+organized in the window and in which order they are compared against
 each other \citep{Godfrey2007}. The implementation supports four
 different placement policies:
 \begin{enumerate}
@@ -4028,7 +4028,7 @@ the relative order of tuples going through the EF is preserved.
 
 \subsection{BNL+EF}
 Inspired from the idea of the elimination filter in LESS, we
-experimented a new combination of BNL and EF. That is, the elimination
+experimented with a new combination of BNL and EF. That is, the elimination
 filter is executed before the BNL algorithm. Since our implementation
 of the elimination filter is independent from the external sort
 routine, the coding of this variant is straightforward.  It turns out
@@ -4282,7 +4282,7 @@ This implementation is motivated through the central limit theorem and
 based on the observation that a $12$-fold sum of $[0,1]$ uniformly
 distributed random value yields a sufficient good normally distributed
 value. A pre-requirement for this to work, is that the $12$ uniformly
-distributed values are independent. While this can not be guaranteed
+distributed values are independent. While this cannot be guaranteed
 for \lstinline{random_equal()} we verified that data generated by
 \lstinline{random_normal()} are sufficiently normally distributed with
 the Shapiro-Wilk test.
@@ -4524,7 +4524,7 @@ COPY "i3d10" (id, d1, d2, d3) FROM STDIN DELIMITERS ',' CSV QUOTE '''';
 \subsubsection{PostgreSQL Random Dataset Generator Function}
 \label{sec:set-returning-function}
 
-To be able to generate test datasets on the fly, i.e. with out
+To be able to generate test datasets on the fly, i.e. without
 explicitly creating tables and filling them up, we create a PostgreSQL
 module which implements the functionality of \texttt{randdataset} as a
 set returning function. To create, backup and restore a test database
@@ -4950,7 +4950,7 @@ described in \autoref{tab:dirlayoutexpiriments}.
                     jobs up into logical and smaller units of lets say
                     a few hundred files.  The jobs from this
                     directories where moved to \texttt{jobs/} once
-                    there where not jobs left there by
+                    there no jobs left here.  This is done by
                     \texttt{feed.pl}.  The same is true for the
                     sibling directories \texttt{s1/} and
                     \texttt{s2/}. \\
@@ -5013,7 +5013,7 @@ files.
 \label{sec:jobscheduling}
 %We will speak of it as \emph{job scheduling}.  
 The concept behind this
-is simply but very effective.  We run a processes called \emph{job
+is simply but very effective.  We run a process called \emph{job
 scheduler}, realized in the Perl script \texttt{js.pl}, on each
 machine which is available to run some Jobs. The script \texttt{js.pl}
 waits to get an exclusive file lock on \texttt{js.lock}, checks for
@@ -5023,7 +5023,7 @@ same name as the machine \texttt{js.pl} is running one, next release
 the exclusive lock on \texttt{js.lock} and finally starts to work in
 the dequeued job by piping it through PostgreSQL interactive SQL
 processor \texttt{psql}. The output is redirected to a log file in the
-\texttt{log/} directory.  This steps are performed in a endless loop.
+\texttt{log/} directory.  These steps are performed in a endless loop.
 
 A simple lesson learned here is not to use Perl's \texttt{glob}
 function to read the content of a directory with thousands of
@@ -5036,7 +5036,7 @@ parallel, they are processed serially.  Instead rely on \texttt{opendir},
 The Perl script \texttt{feed.pl} is another simple script engaged with
 job scheduling.  Its task is to move batches of Jobs into the
 \texttt{jobs} directory once this got empty.  The idea is to have
-more control in which sequence the Jobs are processed, as we where a
+more control in which sequence the Jobs are processed, as we were a
 little bit more interested in some results than in some others.  The
 access to the \texttt{jobs} directory was once again synchronized via
 file locking \texttt{js.lock}.  A typical invocation of
@@ -5610,7 +5610,7 @@ execution.
 \subsection{More General Syntax}
 The syntax for the skyline operator as proposed
 in \citep{Borzsonyi2001} is not part of any standard, hence our
-extended syntax is not part of a standard either.  Other extension to
+extended syntax is not part of a standard either.  Other extensions to
 SQL have been proposed, like Preference~SQL \citep{Kiessling2002a}.  A
 subset of Preference~SQL was used in \citep{Chaudhuri2006}.  Our
 current syntax is quite limited to a special purpose, a more general
@@ -5680,7 +5680,7 @@ such as
 
 \subsection{Index Scan for one Dimensional Skylines}
 \label{sec:index-scan-for-1dim}
-Since one dimensional skylines are a little bit of limited use anyway
+Since one dimensional skylines are a little bit of limited use any way
 we did not yet make an attempt to make use of an suitable index for
 skyline computation in the one dimensional case. The computation of
 distinct and non-distinct one dimensional skyline could be speedup by

@@ -8,4 +8,57 @@
 \chapter*{Zusammenfassung\revision}
 \addcontentsline{toc}{chapter}{Zusammenfassung\revision}
 
-\todo{Deutsche Zusammenfassung schreiben sobald die englische Version steht.}{}
+Im Bereich der multi-objective Optimierung ist es aus Anwendersicht
+manchmal schwierig geeignete Zielfunktion zu finden.
+%
+Der \emph{Skyline Operator} filter aus einer potentiell gro\ss{}en
+Datenmenge \emph{interessante} Tuple heraus.
+%
+Ein Tuple geh\"ort genau dann zur \emph{Skyline}, wenn es nicht durch
+anderes \emph{dominiert} wird, d.h. es gibt kein Tuple das in allen
+Kriterien zumindest gleich gut ist und in zumindest einem besser ist.
+%
+Unabh\"angig wie die Pr\"aferenzen innerhalb der Attribute gew\"ahlt
+werden, sind nur jene Tuple, die unter einer \emph{monotonen
+Scoring-Funktion} am besten bewertet werden, Teil der Skyline.
+%
+Mit anderen Worten, die Skyline schlie\ss{}t alle Tuple aus die
+niemand als Favorit hat.
+%
+Das Konzept der Skyline ist auch unter dem Namen \emph{Pareto
+Optimalit\"at} und die ihre Berechnung als \emph{Maximum Vector
+Problem} bekannt.
+
+
+Diese Diplomarbeit pr\"asentiert unsere Arbeit PostgreSQL, ein Open
+Source relationales Datenbanksystem, um den Skyline Operator zu
+erweitern.
+%
+Unsere Implementierung bietet verschiedene \emph{physische Operatoren}
+um die Skyline zu berechnen und zwar: BNL, SFS und eine Variante von
+LESS.
+%
+Mit dieser Arbeit hoffen wir den Boden zu ebnen f\"ur weitere
+Forschung und den Skyline Operator von standalone Implementierungen in
+sein nat\"urliches Habitat, das RDBMS, zu verpflanzen.
+%
+Des Weiteren haben wir einen Fehler in der Originalversion von BNL
+entdeckt und liefern dazu eine korrigierte Version.
+
+
+Es ist wohlbekannt, dass die Performance von Skyline Abfragen von einer
+Reihe von Parametern abh\"angt.
+%
+Aus umfangreichen Experimenten mit unserer Implementierung haben wir
+mehrere Regeln abgeleitet, die bemerkenswert einfach und n\"utzlich
+sind, aber nur schwer durch theoretische Untersuchungen zu gewinnen
+sind.
+%
+Unsere Resultate sind von Vorteil bei der Entwicklung von Heuristiken
+f\"ur Skyline Abfrage-Optimierung und in der Zwischenzeit liefern sie
+einen Beitrag zum tieferen Verst\"andnis der Skyline Abfrage
+Charakteristik.
+
+
+Alle Resultate und der Source-Code sind auf
+\url{http://skyline.dbai.tuwien.ac.at/} online verf\"ugbar.

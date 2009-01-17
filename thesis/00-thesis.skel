@@ -105,11 +105,38 @@
     \if@restonecol\twocolumn\fi
     }
 
+\renewcommand\listoffigures{%
+	\if@twocolumn\@restonecoltrue\onecolumn\else\@restonecolfalse\fi
+	\chapter *{\pdfbookmark[0]{\listfigurename}{chapter*.5}\listfigurename }
+	\addtocontents{toc}{\protect \contentsline {chapter}{\listfigurename}{\thepage }{}}
+	\@mkboth {\MakeUppercase \listfigurename }{\MakeUppercase \listfigurename }
+	\@starttoc {lof}
+	\if@restonecol\twocolumn\fi
+}
+
+\renewcommand\listoftables{%
+	\if@twocolumn\@restonecoltrue\onecolumn\else\@restonecolfalse\fi
+	\chapter *{\pdfbookmark[0]{\listtablename}{chapter*.6}\listtablename }
+	\addtocontents{toc}{\protect \contentsline {chapter}{\listtablename}{\thepage }{}}
+	\@mkboth {\MakeUppercase \listtablename }{\MakeUppercase \listtablename }
+	\@starttoc {lot}
+	\if@restonecol\twocolumn\fi
+}
+
+\renewcommand\lstlistoflistings{%
+	\if@twocolumn\@restonecoltrue\onecolumn\else\@restonecolfalse\fi
+	\chapter *{\pdfbookmark[0]{List of \lstlistlistingname}{chapter*.7}List of \lstlistlistingname }
+	\addtocontents{toc}{\protect \contentsline {chapter}{List of \lstlistlistingname}{\thepage }{}}
+	\@mkboth {\MakeUppercase {List of \lstlistlistingname} }{\MakeUppercase {List of \lstlistlistingname} }
+	\@starttoc {lol}
+	\if@restonecol\twocolumn\fi
+}
+
 \newcommand\newpagechapter{\if@openright\cleardoublepage\else\clearpage\fi}
 
 \renewenvironment{thebibliography}[1]{%
-	\chapter*{\bibname}%
-      	\addcontentsline{toc}{chapter}{\bibname}%
+	\chapter*{\pdfbookmark[0]{\bibname}{chapter*.57}\bibname}%
+	\addtocontents{toc}{\protect \contentsline {chapter}{\bibname}{\thepage }{}}
       	\@mkboth{\MakeUppercase\bibname}{\MakeUppercase\bibname}%
       	\list{\@biblabel{\@arabic\c@enumiv}}%
            {\settowidth\labelwidth{\@biblabel{#1}}%
@@ -139,8 +166,8 @@
 	\fi
 	%\twocolumn[\@makeschapterhead{\indexname}]%
 	\twocolumn%
-	\chapter*{\indexname}%
-	\addcontentsline{toc}{chapter}{\indexname}%
+	\chapter*{\pdfbookmark[0]{\indexname}{chapter*.58}\indexname}%
+	\addtocontents{toc}{\protect \contentsline {chapter}{\indexname}{\thepage }{}}%
 	\@mkboth{\MakeUppercase\indexname}{\MakeUppercase\indexname}%
 	\thispagestyle{plain}\parindent\z@
 	\parskip\z@ \@plus .3\p@\relax
@@ -158,7 +185,6 @@
 
 %%% Title page: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \pagestyle{empty}
-\pdfbookmark[0]{Titlepage}{title}
 \include{01-titlepage-new-de}
 %\include{01-titlepage-de}
 %\include{01-titlepage-en}
@@ -178,14 +204,11 @@
 
 %%% TODO: Is a list of figures really required?
 \listoffigures
-\addcontentsline{toc}{chapter}{List of Figures}
 
 %%% TODO: Is a list of tables really required?
 \listoftables
-\addcontentsline{toc}{chapter}{List of Tables}
 
 \lstlistoflistings
-\addcontentsline{toc}{chapter}{List of Listings}
 \newpagechapter
 
 %%% Chapter 1: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

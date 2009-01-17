@@ -97,21 +97,21 @@
     \else
       \@restonecolfalse
     \fi
-    \chapter*{\contentsname
+    \chapter*{\pdfbookmark[0]{Contents}{contents}% contents.0
+ \contentsname
         \@mkboth{%
            \MakeUppercase\contentsname}{\MakeUppercase\contentsname}}%
-    \pdfbookmark[0]{Contents}{contents}% contents.0
     \@starttoc{toc}%
     \if@restonecol\twocolumn\fi
     }
 
 \newcommand\newpagechapter{\if@openright\cleardoublepage\else\clearpage\fi}
 
-\renewenvironment{thebibliography}[1]
-     {\chapter*{\bibname}%
-      \addcontentsline{toc}{chapter}{\bibname}%
-      \@mkboth{\MakeUppercase\bibname}{\MakeUppercase\bibname}%
-      \list{\@biblabel{\@arabic\c@enumiv}}%
+\renewenvironment{thebibliography}[1]{%
+ \chapter*{\bibname}%
+       \addcontentsline{toc}{chapter}{\bibname}%
+       \@mkboth{\MakeUppercase\bibname}{\MakeUppercase\bibname}%
+       \list{\@biblabel{\@arabic\c@enumiv}}%
            {\settowidth\labelwidth{\@biblabel{#1}}%
             \leftmargin\labelwidth
             \advance\leftmargin\labelsep
@@ -131,24 +131,23 @@
 
 \makeindex
 
-\renewenvironment{theindex}
-               {\if@twocolumn
-                  \@restonecolfalse
-                \else
-                  \@restonecoltrue
-                \fi
-                %\twocolumn[\@makeschapterhead{\indexname}]%
-  \twocolumn%
-  \chapter*{\indexname}%
-  \addcontentsline{toc}{chapter}{\indexname}%
-                \@mkboth{\MakeUppercase\indexname}%
-                        {\MakeUppercase\indexname}%
-                \thispagestyle{plain}\parindent\z@
-                \parskip\z@ \@plus .3\p@\relax
-                \columnseprule \z@
-                \columnsep 35\p@
-                \let\item\@idxitem}
-               {\if@restonecol\onecolumn\else\clearpage\fi}
+\renewenvironment{theindex}{%
+ \if@twocolumn
+         \@restonecolfalse
+ \else
+  \@restonecoltrue
+ \fi
+ %\twocolumn[\@makeschapterhead{\indexname}]%
+ \twocolumn%
+ \chapter*{\indexname}%
+ \addcontentsline{toc}{chapter}{\indexname}%
+ \@mkboth{\MakeUppercase\indexname}{\MakeUppercase\indexname}%
+ \thispagestyle{plain}\parindent\z@
+ \parskip\z@ \@plus .3\p@\relax
+ \columnseprule \z@
+ \columnsep 35\p@
+ \let\item\@idxitem}
+ {\if@restonecol\onecolumn\else\clearpage\fi}
 
 \makeatother
 

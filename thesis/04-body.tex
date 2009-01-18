@@ -322,7 +322,7 @@ However there are good reasons for including a \emph{skyline} or
 \item 
 From a user's perspective, it is easier to specify and easier to grasp
 what's going on, than a query with a correlated subquery or using
-SQL's \inlinesql{EXCEPT}\index{SQL!EXCEPT@\texttt{EXCEPT}} (see \autoref{sql:rewrite-with-except}).
+SQL's \inlinesql{EXCEPT}\index{EXCEPT (SQL)@\texttt{EXCEPT} (SQL)} (see \autoref{sql:rewrite-with-except}).
 
 \item
 It is faster to evaluate, as there are numerous algorithms for skyline
@@ -408,7 +408,7 @@ BNL, SFS, and a variant of LESS in PostgreSQL.
 In addition, 
 we extended the standard syntax to specify
 \begin{itemize}
-\item The treatment of NULL values (\texttt{NULLS FIRST} and \texttt{NULLS LAST})
+\item The treatment of NULL values (\texttt{NULLS FIRST}\index{NULLS FIRST (SQL)@\texttt{NULLS FIRST} (SQL)} and \texttt{NULLS LAST}\index{NULLS LAST (SQL)@\texttt{NULLS LAST} (SQL)})
 \item The usage of order relations other than $<$ and $>$ (\texttt{USING \emph{Op}})
 \item Operational aspects of skyline computation, such as 
 \begin{itemize}
@@ -1297,7 +1297,7 @@ A little notion we use here is $condition\{r \gets o\}$ to express
 that any reference to the relation alias $r$ must be replaced with
 the alias $o$.
 %
-Another way\index{SQL!EXCEPT@\texttt{EXCEPT}} to rewrite the query is given in
+Another way\index{EXCEPT (SQL)@\texttt{EXCEPT} (SQL)} to rewrite the query is given in
 \citep[Page~3]{Godfrey2004}:
 
 \begin{sql}\label{sql:rewrite-with-except}
@@ -2239,7 +2239,7 @@ ORDER BY ...
 \noindent
 In addition, we extended the standard syntax to specify:
 \begin{itemize}
-\item The treatment of NULL values (\texttt{NULLS FIRST} and \texttt{NULLS LAST})
+\item The treatment of NULL values (\texttt{NULLS FIRST}\index{NULLS FIRST (SQL)@\texttt{NULLS FIRST} (SQL)} and \texttt{NULLS LAST}\index{NULLS LAST (SQL)@\texttt{NULLS LAST} (SQL)})
 \item The usage of order relations other than $<$ and $>$ (\texttt{USING \emph{Op}})
 \item Operational aspects of skyline computation, such as 
 \begin{itemize}
@@ -2342,7 +2342,7 @@ or even an expression (\nt{c\_expr}) and the specification of
 is because a similar concept (\inlinesql{ASC}/\inlinesql{DESC}) in the
 \inlinesql{ORDER~BY}-clause is also called direction.  Furthermore the
 treatment of null values can be specified using \inlinesql{NULLS
-FIRST} and \inlinesql{NULLS LAST}.  We have the same concept for the
+FIRST}\index{NULLS FIRST (SQL)@\texttt{NULLS FIRST} (SQL)} and \inlinesql{NULLS LAST}\index{NULLS LAST (SQL)@\texttt{NULLS LAST} (SQL)}.  We have the same concept for the
 \inlinesql{ORDER BY}-clause. This special treatment of null values 
 was introduced in PostgreSQL 8.3.0 (see
 \postgresdocu{sql-select.html\#SQL-ORDERBY}{SQL SELECT/ORDER BY}). For
@@ -2713,7 +2713,7 @@ literature, but a real implementation in a database system of course
 must be able to cope with null values.  Furthermore we have a syntax
 to specify how to treat null values when ordering values.  Once again this is a feature
 inspired by a feature of PostgreSQL's \inlinesql{ORDER~BY}-clause, where
-the keywords \inlinesql{NULLS FIRST} and \inlinesql{NULLS LAST} allows
+the keywords \inlinesql{NULLS FIRST}\index{NULLS FIRST (SQL)@\texttt{NULLS FIRST} (SQL)} and \inlinesql{NULLS LAST}\index{NULLS LAST (SQL)@\texttt{NULLS LAST} (SQL)} allows
 the user the specify how to treat null values.  
 %done:fang
 %When sorting ascending
@@ -2831,7 +2831,7 @@ pathkey encodes the sort order on a single column, actually this can
 be an arbitrary expression and a pathkey contains a reference to the
 according target list entry, furthermore the sort operator and a flag
 on how to treat NULL values (cf. \texttt{NULLS FIRST}/\texttt{NULLS
-LAST}). The information if the sort order is ascending (\texttt{ASC})
+LAST}\index{NULLS FIRST (SQL)@\texttt{NULLS FIRST} (SQL)}\index{NULLS LAST (SQL)@\texttt{NULLS LAST} (SQL)}). The information if the sort order is ascending (\texttt{ASC})
 or descending (\texttt{DESC}) is encoded in the sort operator used, as
 sort operator always appear in pairs, an operator and its commutator,
 i.e. the same order just reversed.  This pathkeys information plays an
@@ -3487,7 +3487,7 @@ would look like this:
 An ad hoc experiment that we conducted showed that Microsoft SQL Server
 2005 produces a very similar execution plan.
 
-In Oracle the pseudo-column \inlinesql{ROWNUM}\index{ROWNUM@\texttt{ROWNUM}}
+In Oracle the pseudo-column \inlinesql{ROWNUM}\index{ROWNUM (SQL)@\texttt{ROWNUM} (SQL)}
 can be used the limit the number of tuples returned by a query.
 
 If the relation in question contains a unique identifier with a total
@@ -5349,7 +5349,7 @@ tuples.
 We also note that SFS performs extremely poor as the dimension is less
 than six for independent and anti-correlated data, and even worse for
 correlated data.  This can be justified that if the dimension is low,
-the skyline selectivity\index{selectivity} factor\footnote{selectivity factor = skyline
+the skyline selectivity\index{selectivity} factor\index{selectivity factor}\footnote{selectivity factor = skyline
 tuples / input tuples. A low selectivity factor means high
 selectivity.}  is low as well. Therefore, EF operation is effective,
 i.e., a number of tuples could be removed at this stage. However, this
@@ -5796,7 +5796,7 @@ We have extended the basic syntax of the \inlinesql{SKYLINE~OF}-clause
 \citep{Borzsonyi2001} in order to specify:
 
 \begin{itemize}
-\item The treatment of NULL values (\texttt{NULLS FIRST} and \texttt{NULLS LAST})
+\item The treatment of NULL values (\texttt{NULLS FIRST}\index{NULLS FIRST (SQL)@\texttt{NULLS FIRST} (SQL)} and \texttt{NULLS LAST}\index{NULLS LAST (SQL)@\texttt{NULLS LAST} (SQL)})
 \item The usage of order relations other than $<$ and $>$ (\texttt{USING \emph{Op}})
 \item Operational aspects of skyline computation, such as 
 \begin{itemize}

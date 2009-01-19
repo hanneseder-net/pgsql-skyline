@@ -1019,6 +1019,32 @@ score best under at least one scoring function are part of
 the skyline, in other words, the skyline does not contain tuples which
 are nobody's favorite.
 
+
+\bigskip
+\noindent
+Using the monotone increasing functions  $f_1$ and $f_2$ to define a
+monotone scoring function $S(r) = f_1(r_1) + f_2(r_2)$:
+
+\[
+f_1(x) = f_2(x) = 
+\begin{cases}
+0 & \text{if $x < 2$,} \\
+1 & \text{otherwise}
+\end{cases}
+\]
+
+\noindent
+we show that is possible to give the tuple $(2,2)$ a higher score
+than $(4,1)$ and $(1,4)$:
+
+\begin{enumerate}
+\item
+$S(\,(2,2)\,) = f_1(2) + f_2(2) = 1 + 1 = 2 > 1 = 1 + 0 = f_1(4) + f_2(1) = S(\,(4,1)\,)$, and
+
+\item
+$S(\,(2,2)\,) = f_1(2) + f_2(2) = 1 + 1 = 2 > 1 = 0 + 1 = f_1(1) + f_2(4) = S(\,(1,4)\,)$.
+\end{enumerate}
+
 %chris: falls du das noch ausdehnen willst, wuerde sich hier ein Beispiel fuer 
 %monotone weighting functions, das fuer $\relation R = \{ (4,1), (2,2), (1,4)
 %\}$ funktioniert, aufdraengen... :-)

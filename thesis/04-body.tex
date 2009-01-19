@@ -903,7 +903,7 @@ r \comparable s = s \comparable r.
 %       is equivalence (and equivalence class) since equality is
 %       supposed to express cases where the = sign holds.
 %hannes: you are right
-\subsubsection{\inlinesql{DIFF}-Induced Equivalence Relation}
+\subsection{\inlinesql{DIFF}-Induced Equivalence Relation}
 Please note that the following subformula \eqref{equ:skylinepfdiff} of
 formula \eqref{equ:skylinepf} induces an equivalence relation on
 \schema{R}, i.e. \schema{R} is partitioned into groups where the
@@ -1022,8 +1022,9 @@ are nobody's favorite.
 
 \bigskip
 \noindent
-Using the monotone increasing functions  $f_1$ and $f_2$ to define a
-monotone scoring function $S(r) = f_1(r_1) + f_2(r_2)$:
+We now give an example to emphasize our assertion, that it is possible
+to give the tuple $(2,2)$ a higher score than the tuples $(4,1)$ and
+$(1,4)$.  Using the monotone increasing functions
 
 \[
 f_1(x) = f_2(x) = 
@@ -1034,8 +1035,14 @@ f_1(x) = f_2(x) =
 \]
 
 \noindent
-we show that is possible to give the tuple $(2,2)$ a higher score
-than $(4,1)$ and $(1,4)$:
+we define the monotone scoring function
+
+\[
+S(r) = f_1(r_1) + f_2(r_2),
+\]
+
+\noindent
+which has the asserted propery:
 
 \begin{enumerate}
 \item

@@ -2085,7 +2085,7 @@ difference is merely an implementation detail.
 
 \subsection{Elimination Filter (EF)}
 \label{sec:ef-tuple-order}
-The concept of the Elimination Filter (EF) is simple but effective.  It
+The concept of the elimination filter (EF) is simple but effective.  It
 tries to eliminate as many non-skyline tuples at an early stage.  To
 do so it compares every incoming tuple $p$ against a tuple window
 $\mathbb{W}$, if $p$ is dominated by any tuple in the tuple window,
@@ -2241,7 +2241,7 @@ Skyline strata\index{stratum} (see \autoref{sec:skyline-stratum}) are computed u
 at least $k$ records are returned.  With this approach all the second
 and higher order best records do get a chance to end up in the result,
 nevertheless the selectivity\index{selectivity} of this approach is even lower than
-skyline operator alone
+skyline operator alone.
 
 
 
@@ -2424,7 +2424,7 @@ the output, as SFS does a sort prior to skyline
 computation. Furthermore the size of the tuple window and the tuple
 window policy have an impact on the order of tuples. And even the
 elimination filter and its tuple window size have an (indirect) impact on the
-output order, as a different amount of potential skyline tuples reach
+output order, as a different amount of potential skyline tuples reaches
 the final skyline computation node, although the elimination filter
 does not change the relative order.  See detailed discussion on
 relative tuple order preserving property in
@@ -2450,7 +2450,7 @@ will include an elimination filter (EF) in the query plan.
 %done:fang: it is not a sentence
 If the
 \nt{efwindowoptions} are omitted, the query planner uses the defaults
-and plans the elimination filter with a 8~KB tuple window and the
+and plans the elimination filter with an 8~KB tuple window and the
 tuple window policy \inlinesql{APPEND}. The 8~KB tuple window size
 stems from PostgreSQL page size \texttt{BLCKSZ}, which is 8~KB on most
 platforms.
@@ -2499,7 +2499,7 @@ other tuples in the tuple store. It is obvious that this algorithm has
 $O(n^2)$ run time complexity and very poor I/O behavior. Nevertheless
 it was easy to implement and gave us something to play with while
 implementing other parts of the system and of course for regression
-testing, because this method was easy to get right and later on
+testing, because this method was easy to get right and later on to
 use it to verify the results from other algorithms. See
 \autoref{sec:mnl}.
 
@@ -2571,7 +2571,7 @@ the default is \inlinesql{APPEND}. See
 windowpolicy : 'APPEND' | 'PREPEND' | 'ENTROPY' | 'RANDOM' ;
 \end{rail}
 
-At this point we would like to give a little example how the options can be
+At this point we give a little example how the options can be
 used (we slightly reformatted the output to make it fit onto this page):
 
 \begin{interactive}
@@ -2626,8 +2626,8 @@ skylineoptions:
 \end{rail}
 
 While the definition given above describes exactly the intended
-semantics, this definition gave us great flexibility during the
-development. Using the short definition above we were able to
+semantics, this definition gives us great flexibility during the
+development. Using the simple definition we were able to
 introduce new options as we liked on the fly.  The options are passed
 around from the parser, through query planning to the execution engine
 as a simple \emph{name/value} list.  So whenever we needed a new
@@ -2636,7 +2636,7 @@ code. If the equal sign and the value are omitted, this has the
 semantics of assigning the integer constant 1 to the name.
 
 Note that the grammar for \nt{select\_clause} is defined
-a little bit different\footnote{see \srcref{src/backend/parser/gram.y}
+a little bit differently\footnote{see \srcref{src/backend/parser/gram.y}
 for details} but only in the aspect of the associativity of the entire
 \inlinesql{SKYLINE OF} clause, this is because the SQL:1992 Standard
 \citep{SQL92} requires the following statement:
@@ -2685,9 +2685,9 @@ functions and are looked up at runtime and not directly hardcoded into
 the grammar. Defining these keywords as reserved keywords would mess
 up the implementation of SQL aggregate functions.
 
-\section{Semantics}
 
-In this section and the following subsections we describe only these
+\section{Semantics}
+In this section we describe only these
 aspects of the skyline operator semantics which are not clear through
 the basic definition.  The semantics of the options for the
 \inlinesql{SKYLINE~OF}-clause is either already given in the description
@@ -2719,13 +2719,13 @@ vs. non-\inlinesql{SKYLINE OF DISTINCT} is described in
 
 \subsection{\inlinesql{USING}~\emph{qualOp}}
 \label{sec:using-qualop}
-PostgreSQL has the feature of applying the user-defined ordering operators for
+PostgreSQL has the feature of applying user-defined ordering operators for
 the \inlinesql{ORDER~BY}-clause, where \inlinesql{ASC} is equivalent to
 \inlinesql{USING <} and \inlinesql{DESC} is equivalent to \inlinesql{USING >}, 
 but the creator of a user-defined ordering operator can give it
 any name, see PostgreSQL documentation on
 \postgresdocu{sql-select.html\#SQL-ORDERBY}{ORDER BY-clause}.  We
-borrowed this concept and integrated it into SQL extension for the
+borrowed this concept and integrated it into the SQL extension for the
 \inlinesql{SKYLINE~OF}-clause, where \inlinesql{MIN} is equivalent to
 \inlinesql{USING~<} and \inlinesql{MAX} is equivalent to
 \inlinesql{USING~>}, e.g.

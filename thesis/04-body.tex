@@ -540,8 +540,6 @@ We assume two infinite\footnote{Although in a real computer
 everything is finite.} domains: $N$ (numbers) and $D$ (uninterpreted
 constants). The domain $D$ will be used for attributes which are not
 subject to skyline computation, i.e. for the hotel example from literature we
-%done:manos: I didn't see the traveling example anywhere in the text
-%hannes:let's use the standard example here
 will not use the name of the hotel as a skyline criterion, therefore
 $D$ will be used as domain for this attribute.  For attributes or
 expressions which are subject to skyline computation we use the domain
@@ -899,10 +897,6 @@ r \comparable s = s \comparable r.
 % \forall x, y\colon x R y \lor x = y \lor y R y
 % \]
 
-%done:manos: I'm not sure, but I think that the correct term in this case
-%       is equivalence (and equivalence class) since equality is
-%       supposed to express cases where the = sign holds.
-%hannes: you are right
 \subsection{\inlinesql{DIFF}-Induced Equivalence Relation}
 Please note that the following subformula \eqref{equ:skylinepfdiff} of
 formula \eqref{equ:skylinepf} induces an equivalence relation on
@@ -1051,10 +1045,6 @@ $S(\,(2,2)\,) = f_1(2) + f_2(2) = 1 + 1 = 2 > 1 = 1 + 0 = f_1(4) + f_2(1) = S(\,
 \item
 $S(\,(2,2)\,) = f_1(2) + f_2(2) = 1 + 1 = 2 > 1 = 0 + 1 = f_1(1) + f_2(4) = S(\,(1,4)\,)$.
 \end{enumerate}
-
-%chris: falls du das noch ausdehnen willst, wuerde sich hier ein Beispiel fuer 
-%monotone weighting functions, das fuer $\relation R = \{ (4,1), (2,2), (1,4)
-%\}$ funktioniert, aufdraengen... :-)
 
 % \subsection{Skyline Operator is Idempotent}
 % We first proof a more general statement:
@@ -1206,10 +1196,6 @@ query, or even facilitating an index.
 \label{sec:skyline-stratum}
 \index{strata|see{stratum}}
 \index{K-skyband@$K$-skyband}
-%done:manos:
-%I don't understand the sentence exactly here. The "speak of ranking"
-%might be wrong, but I'm not sure.
-%hannes: hm? might skip that ``ranking'' foo
 In \citep{Chomicki2003a} the concept of skyline stratum\index{stratum} is called
 \emph{iterated preference}, and they speak of 
 \emph{ranking}\index{ranking}, we prefer to use the term
@@ -1737,10 +1723,7 @@ $p \dominates q$ & point $p$ dominates point $q$
 \end{table}
 
 
-%manos: It might be a good idea to keep the pseudo-code of the original bnl and
-%the fixed bnl each in their own page so that the reading and comparison is
-%easier (plus it will make it more readable since the tabs are not aligned from
-%one page to the other).
+%pagination: move both versions of BNL to their own page
 %\begin{figure}[htbp]
 \begin{lstlisting}[language=pseudo, 
 caption={Pseudo-code for Original Block-Nested-Loops (BNL) Algorithm, which does not terminate in all cases.},
@@ -1802,13 +1785,6 @@ function SkylineBNL($\mathcal{I}$)
 \subsection{Non-termination of Block-Nested-Loops (BNL) Algorithm}
 During the implementation of BNL into PostgreSQL we discovered a flaw in
 the algorithm from the original paper \citep{Borzsonyi2001}.  
-%done:fang
-%Besides
-%a little difference in notation and the fact that a tuple is only
-%added to the tuple window when there is actual space in the tuple
-%window and not like in \citep{Borzsonyi2001} where a tuple is first
-%added and then removed if there is no more space the code of
-%\citep{Borzsonyi2001} for BNL is the same as in \autoref{code:bnl}.
 We are using a little bit different notation to present to algorithm.
 In our pseudo code (see \autoref{code:bnl}) we only add a tuple to the
 tuple window if there is enough space.  
@@ -1818,7 +1794,6 @@ again if space was exhausted.
 %
 Besides from that the original and our version in \autoref{code:bnl}
 coincide.
-%done:fang: this sentence is too long, I cannot understand it.
 
 Our finding is that under certain conditions the code from
 \autoref{code:bnl} does not terminate.  To show this property, we
@@ -2438,11 +2413,9 @@ the final skyline computation node, although the elimination filter
 does not change the relative order.  See detailed discussion on
 relative tuple order preserving property in
 \autoref{sec:relative-tuple-order}.  
-%done:fang
 To enforce a specific order, if
 desired, sort the query result by means of an appropriate
 \inlinesql{ORDER~BY}-clause.  
-%done:fang: I cannot understand this sentence
 We did so in regression testing, we
 ordered on the unique \inlinesql{ID} column, no matter what method and
 what options used, the results are the same. If not this indicates a
@@ -2453,10 +2426,8 @@ The options fall into three groups: elimination filter
 etc.), and access path selection (\inlinesql{NOINDEX}) and associated
 options if applicable.
 
-%done:fang
 When the skyline option \inlinesql{EF} is present the query planner
 will include an elimination filter (EF) in the query plan.
-%done:fang: it is not a sentence
 If the
 \nt{efwindowoptions} are omitted, the query planner uses the defaults
 and plans the elimination filter with an 8~KB tuple window and the
@@ -2470,13 +2441,12 @@ skyline computation.
 %done:fang: what is work horse?
 %hannes: work horses (Arbeitspferde), that's that part that
 %	 does the most work
+%
 Currently the work horses of our skyline operator implementation
 are the BNL and the SFS algorithm. 
 BNL is the default in the query optimizer.
-%done:fang: ???
 If a suitable index access path (i.e. index) is available SFS is
 selected.
-%done:fang: ???
 This default procedure can be overruled by
 specifying \inlinesql{BNL} or \inlinesql{SFS} as an option. Furthermore
 the size and the tuple placement policy for the tuple window used by
@@ -2496,7 +2466,6 @@ enough to compute the skyline. See \autoref{sec:presort}.
 
 \inlinesql{MNL} stands for \emph{materialized nested loop}, which
 is our own \naive skyline computation algorithm.
-%done:fang: ???
 Nevertheless it is fully generic, i.e. skylines of any dimensionality,
 distinct and non-distinct with the same type of expressions and
 directions (\inlinesql{MIN}, \inlinesql{MAX}, $\ldots$) can be
@@ -2754,11 +2723,6 @@ to specify how to treat null values when ordering values.  Once again this is a 
 inspired by a feature of PostgreSQL's \inlinesql{ORDER~BY}-clause, where
 the keywords \inlinesql{NULLS FIRST}\index{NULLS FIRST (SQL)@\texttt{NULLS FIRST} (SQL)} and \inlinesql{NULLS LAST}\index{NULLS LAST (SQL)@\texttt{NULLS LAST} (SQL)} allows
 the user the specify how to treat null values.  
-%done:fang
-%When sorting ascending
-%per default null values sort after non-null values and when sorting
-%descending null values sort before non-null values, as above see the
-%PostgreSQL documentation on ORDER BY-clause.
 If sorting ascending (\inlinesql{ORDER BY} \emph{expr}
 \inlinesql{ASC}), then the default is to sort null values \emph{after}
 non-null values.
@@ -2767,15 +2731,14 @@ The default for \inlinesql{ORDER BY} \emph{expr} \inlinesql{DESC}, i.e. sort
 descending, is to sort null values \emph{before} non-null values.
 %
 For more details see the PostgreSQL documentation on ORDER BY-clause.
-%done:fang: please rewrite this sentence
 
 If \inlinesql{NULLS FIRST} or \inlinesql{NULLS LAST} is omitted, the
 default is to sort null values after all the non-null values for
 \inlinesql{SKYLINE OF MIN} and for \inlinesql{SKYLINE OF MAX} to have
 the null values before the non-null values.  Specifying
 \inlinesql{NULLS FIRST/LAST} overrides this default.  
-% fang: "Question my arise ..."
-% hannes: I think "The question my arise ..." is correct
+%done:fang: "Question my arise ..."
+%hannes: I think "The question my arise ..." is correct
 The question
 may arise if \inlinesql{NULLS LAST} should be the default for
 \inlinesql{SKYLINE OF MAX}, but as this is not the case for the

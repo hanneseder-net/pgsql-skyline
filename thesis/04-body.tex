@@ -2474,7 +2474,7 @@ outer query plan node in a tuple store\index{tuple
 store}\footnote{Tuple store is PostgreSQL concept for temporary files
 to store tuples.} and compare one tuple after the other against all
 other tuples in the tuple store. It is obvious that this algorithm has
-$O(n^2)$ run time complexity and very poor I/O behavior. Nevertheless
+$O(n^2)$ runtime complexity and very poor I/O behavior. Nevertheless
 it was easy to implement and gave us something to play with while
 implementing other parts of the system and of course for regression
 testing, because this method was easy to get right and later on to
@@ -4720,8 +4720,8 @@ We believe the systems environment in which we carried out our
 experiments is interesting on its own and therefore we sketch it in
 this section.
 %
-First of all we would like to give some definitions of terms we use to
-describe the experimental environment and how the relate to each
+First of all we give some definitions of terms we use to
+describe the experimental environment and how they relate to each
 other. To distinguish these terms from the general terms with the same
 name we start them with an upper case letter, i.e. Job vs. job.
 
@@ -4763,13 +4763,13 @@ used otherwise.
 
 In our experimental studies our focus is on the execution
 plan\footnote{We use execution plan and query plan interchangeable.}
-and the actual run times and not on the output of a query. The output
+and the actual runtime and not on the output of a query. The output
 of a query was of interest for us, when we did regression testing to
 ensure our implementation is correct. To accomplish this we prefixed
 our queries with \inlinesql{EXPLAIN ANALYZE}. \inlinesql{EXPLAIN}
 alone just shows the execution plan of a statement without actually
-running it, while \inlinesql{EXPLAIN ANALYZE} carries out the command
-and shows the actual run times. See PostgreSQL documentation on
+executing it.  Whereas \inlinesql{EXPLAIN ANALYZE} carries out the command
+and shows the actual runtime. See PostgreSQL documentation on
 \postgresdocu{sql-explain.html}{EXPLAIN} for more details.
 
 \begin{definition}[Setup Query]
@@ -4794,8 +4794,8 @@ EXPLAIN ANALYZE SELECT * FROM a15d1e5s0idx ORDER BY d1, d2;
 
 \noindent
 and given enough shared buffers the entire relation and the used index
-will be in the disk cache afterwards. As we set the shared buffer size
-why larger than our biggest relation we the associated indexes this
+will be in the disk cache afterwards. Since we set the shared buffer size
+way larger than our biggest relation with the associated indexes this
 was always the case.
 
 \begin{definition}[Run]
@@ -4834,7 +4834,7 @@ explain analyze select * from a15d1e5s0 \prebreak
   \postbreak with sfs windowpolicy=entropy ef efwindowpolicy=entropy;
 --</query>
 \end{interactive}
-\caption{A snipped from a job file, containing a setup query and two runs}
+\caption{A snipped from a Job file, containing a Setup Query and two Runs}
 \label{fig:jobfile}
 \end{figure}
 
@@ -4942,7 +4942,8 @@ explain analyze select * from a15d1e5s0 \prebreak
 \subsection{Machine and Network Configuration}
 In our experimental environment we had one machine (SKY00) to control
 and monitor the experiments and seven machines (SKY01, $\ldots$,
-SKY07), but this seven is just because of we did not have more.
+SKY07) to perform the experiments.
+This ``seven'' is just because of we did not have more.
 %
 To have exactly the same configuration, we cloned SKY02, $\ldots$, SKY07 from
 SKY01 using a fine piece of free software namely PING (Partimage Is
@@ -4951,7 +4952,7 @@ We also used Windows XP's \texttt{sysprep} during the clone process.
 
 For interprocess communication we used file sharing and we used file
 locking for synchronization. The machine SKY00 shared a folder, which
-was mounted by SKY01, $\ldots$, SKY07 with a directory layout is
+was mounted by SKY01, $\ldots$, SKY07 with a directory layout as
 described in \autoref{tab:dirlayoutexpiriments}.
 
 \newdimen\fixedcolumnwidth
@@ -5015,17 +5016,17 @@ to the \texttt{jobs/} directory once this had no more Jobs. The Jobs in
 moved the next Job into a directory with the same name as the machine
 which is running \texttt{js.pl}, SKY01 to SKY07 in our case. The job
 was then executed and finally moved to the directory
-\texttt{done/}. See \autoref{sec:jobscheduling} for more details.
+\texttt{done/}. See sub-subsection \emph{Job Scheduling} below for more details.
 As a result of the Job being executed a raw log file
 (cf. \autoref{fig:logfile}) is generated in the \texttt(log/)
 directory. We parse this raw log files to CSV format with comment
 lines (cf. \autoref{fig:parsedlogfile}) with a script called
-\texttt{qp2log}, see \autoref{sec:tocsvformat}. The last step
+\texttt{qp2log}, see sub-subsection \emph{To CSV Format} below. The last step
 before aggregating and analyzing the data (see
 \autoref{sec:aggregatingandanalyzing}) is to pivot and project the
 CSV files to a more compact representation
 (cf. \autoref{fig:pivot_log}) by script called \texttt{pivot\_log},
-see \autoref{sec:pivotlog}.
+see sub-subsection \emph{Pivoting the CSF File} below.
 
 
 \subsubsection{Generating the Jobs}
@@ -5252,11 +5253,11 @@ seen in \autoref{sec:analysis}
 \subsection{Total Computational Workload}
 \label{sec:totalworkload}
 In total we scheduled $301{,}196$ runs batched up in $18{,}072$ jobs
-consisting of $454{,}782$ queries in total with a total amount
+consisting of $454{,}782$ queries in total with a total CPU time of
 $17{,}154{,}401{,}205.424\textnormal{ms}
-\approx 200\textnormal{days}$ CPU time.  These figures do not include
+\approx 200\textnormal{days}$.  These figures do not include
 the work we had to repeat due to a bug we discovered in our code and
-the runs that have been skewed by automatic software update, screen
+the Runs that have been skewed by automatic software update, screen
 savers and so forth (cf. \autoref{sec:lessonlearned}).  The
 workload was spread across seven computers (SKY01, $\ldots$, SKY07),
 and these computers have been busy for about six weeks.
@@ -5649,7 +5650,7 @@ syntax for preference queries is desirable.
 \subsection{Different Syntax for \inlinesql{SKYLINE OF DIFF}}
 We believe the syntax of \inlinesql{SKYLINE OF DIFF} is a bit
 cumbersome for the intended semantic to partition the input relation,
-so that the skyline is computed with these partitions. Instead
+so that the skyline is computed within these partitions. Instead
 of \inlinesql{DIFF} a construct like this could be used:
 
 \begin{rail}
@@ -5664,13 +5665,13 @@ syntax was inspired by Oracle's analytic functions \citep[Page~5-10]{Oracle2005}
 
 
 \subsection{\inlinesql{USING} \emph{op} for \inlinesql{SKYLINE OF DIFF}}
-While we do provide syntax to use user defined ordering operators
-instead for \inlinesql{SKYLINE OF MIN/MAX}, we do not do it yet for
+While we do provide syntax to use user-defined ordering operators
+instead for \inlinesql{SKYLINE OF MIN/MAX}, we do not do so yet for
 \inlinesql{SKYLINE OF DIFF}, which is used to partition the input
 into groups.  For the moment only equality for the given data type is
-used, but in general any equality relation could be used, to provide
-syntax, e.g. \dots \inlinesql{SKYLINE OF d3 DIFF USING myOp}, for this
-is subject to future work.
+used, but in general any equality relation could be used.  E.g. a 
+syntax like \dots \inlinesql{SKYLINE OF d3 DIFF USING myOp} could be used,
+but, this is subject to future work.
 
 
 \section{Query Planner/Optimizer}
@@ -5724,8 +5725,8 @@ not change.
 \subsubsection{Index Scan and SFS}
 As for SFS algorithms using indexes, what remains open is to
 investigate the behavior in case all skyline attributes and attributes
-in the select clause are part of the index, such that it suffices only
-to access the indexes for the query processing.  We believe this could
+in the select clause are part of the index, such that it suffices
+to perform an index-scan.  We believe this could
 yield good results.
 
 
@@ -5733,8 +5734,8 @@ yield good results.
 SFS emits a tuple directly after it has survived the test against all
 tuples in the tuple window and the dominance check is only performed
 on the skyline attributes.  Because of this property it is possible to
-project the tuples only on the skyline attributes before inserting
-into the tuple window to safe space in the tuple window, but there is
+project the tuples on the skyline attributes before inserting
+into the tuple window to safe space in the tuple window.  But there is
 now free lunch, this projection comes at some CPU cost as memory has
 to be copied and manipulated.  Some cost estimation or some heuristics
 could be developed when to perform this projection.
@@ -5747,7 +5748,7 @@ Use a separate tuple window for each \inlinesql{SKYLINE OF DIFF}
 group, so only the tuples with the same values on the
 \inlinesql{SKYLINE OF DIFF} attributes have to be compared to each
 other. This reduction of comparison would yield an overall speedup.
-In order to avoid an unbounded number of tuple windows instead of
+In order to avoid an unbounded number of tuple windows and instead of
 having a tuple window for each \inlinesql{SKYLINE OF DIFF} group
 hashing could be engaged, i.e. allocate a fixed number of tuple
 windows and hash each \inlinesql{SKYLINE OF DIFF} group into one tuple
@@ -5760,7 +5761,7 @@ a group change we can flush the tuple window.
 
 \subsection{Speedups for low Cardinality Domains}
 A couple of algorithms for low cardinality domains, e.g.
-the ``stars ranking of a hotel'' only one five discrete values (one
+the ``stars ranking of a hotel'', only one five discrete values (one
 to five stars), have been proposed \citep{Preisinger2006,
 Preisinger2007, Morse2007}.  Based on histograms for the base relations
 the query optimizer could select such specialized algorithms.
@@ -5770,8 +5771,7 @@ the query optimizer could select such specialized algorithms.
 We believe the concept of EF (Elimination Filter) is very promising
 and plan to further improve its efficiency and effectiveness, e.g. to
 integrate it as a filter in the index scan code, to use other data
-structures and policies for the EF window, and to optimize the order
-of attributes when comparing two tuples.
+structures and policies for the EF window.
 
 
 \subsubsection{Order in which Columns are compared}

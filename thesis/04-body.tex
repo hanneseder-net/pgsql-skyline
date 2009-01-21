@@ -1481,8 +1481,8 @@ FROM (\\
 
 In PostgreSQL subselects which return at most one value can be used as
 expressions, by means of that duplicates can be eliminated in a way we
-just like to sketch\footnote{We would like to thank Chris Roschger,
-who came up with this idea.}:
+just like to sketch\footnote{We thank Chris Roschger.
+He came up with this idea.}:
 
 \begin{sql}
 SELECT \\
@@ -5155,8 +5155,8 @@ while the other are actual values. The fields with \texttt{.cost} are
 costs split up into startup costs \texttt{.start}, the time needed to
 return the first tuple, and total costs \texttt{.total}, the time
 needed to return all the tuples. Please note that the estimated costs
-are in an arbitrary unit and that the actual cost are in milliseconds,
-see PostgreSQL documentation on
+are in an arbitrary unit and that the actual costs are in milliseconds,
+see the PostgreSQL documentation on
 \postgresdocu{using-explain.html}{Using EXPLAIN}.
 
 The estimated average width of a row \texttt{.width} is measured in
@@ -5166,7 +5166,7 @@ The field \texttt{.rows} corresponds to the number of rows output by
 this node.
 
 It can happen that in certain query plans a node is executed more than
-once, e.g. as part of a subplan, than this number is reported by
+once, e.g. as part of a subplan, then this number is reported by
 \texttt{.loops}.
 \end{minipage} \\
 
@@ -5277,7 +5277,7 @@ parameters and their ranges are as follows:
 \item \emph{data distribution} (indep, corr, anti)
 \item \emph{data source} (disk, set returning function)
 
-in case the data are stored on disk
+in case the data are stored on disk:
 \begin{itemize}
 \item 
 \emph{sequential scan vs. index scan} SFS can benefit from index scan
@@ -5365,7 +5365,7 @@ even mentioned most of the time in literature.
 For the two dimensional case the specialized algorithms PRESORT is
 available.  Nevertheless we did exclude it from the performance
 study, because given that the tuple window size for SFS is large enough
-the behavior of PRESET is very much like SFS with tuple window placement
+the behavior of PRESORT is very much like SFS with tuple window placement
 policy \emph{prepend}.
 
 \subsubsection{Big datasets}
@@ -5435,7 +5435,7 @@ gained from EF is marginal.  This is confirmed by the results shown in
 
 The result is somehow contradictory to the claim that SFS+EF should
 perform consistently better than SFS, because at the EF stage there
-should be always some tuples eliminated. However, one should not
+should always be some tuples eliminated. However, one should not
 ignore the cost of the EF operation, where comparisons are
 executed. Moreover, if the \emph{entropy} window policy is applied,
 the time consumption is even higher. Hence, there exist data settings
@@ -5477,9 +5477,9 @@ analysis can be applied as well.
 
 \subsubsection{Correlated datasets}
 For correlated datasets in \autoref{fig:corre}, SFS+EF is superior
-with a few exceptions. This again, can be perfectly explained by the
+with a few exceptions. This, again, can be perfectly explained by the
 selectivity factors\index{selectivity} for correlated datasets
-(cf. \autoref{fig:sf-c}).  Except for the data cardinality of 100
+(cf. \autoref{fig:sf-c}).  Except for the data cardinalities of 100
 and 500, all the selectivity factors are remarkably low (most of them
 are less than 0.1), thus the EF operation pays off.
 
@@ -5586,7 +5586,7 @@ However, SFS+EF w/ index performs worse than SFS w/ index.  This is
 somehow counter intuitive, because for 100k tuples SFS+EF performs
 better than SFS, as we have discussed in
 \autoref{sec:big-datasets} (cf. \autoref{fig:all-dim}).  We
-argue that, the effectiveness of EF deteriorates in the presence of
+argue that the effectiveness of EF deteriorates in the presence of
 the index structure.  The data is physically ordered according to one
 of the indexed attributes, which is not guaranteed to be beneficial
 for the elimination filtering.  Therefore, one should be careful with
@@ -5654,7 +5654,7 @@ syntax for preference queries is desirable.
 
 \subsection{Different Syntax for \inlinesql{SKYLINE OF DIFF}}
 We believe the syntax of \inlinesql{SKYLINE OF DIFF} is a bit
-cumbersome for the intended semantic to partition the input relation,
+cumbersome for the intended semantics to partition the input relation,
 so that the skyline is computed within these partitions. Instead
 of \inlinesql{DIFF} a construct like this could be used:
 
@@ -5664,7 +5664,7 @@ skylineclause :
 \end{rail}
 
 \noindent
-With the intended semantic to compute the skyline within the
+With the intended semantics to compute the skyline within the
 partitions as induced by the \inlinesql{PARTITION BY} subclause. This
 syntax was inspired by Oracle's analytic functions \citep[Page~5-10]{Oracle2005}.
 
@@ -5675,8 +5675,8 @@ instead for \inlinesql{SKYLINE OF MIN/MAX}, we do not do so yet for
 \inlinesql{SKYLINE OF DIFF}, which is used to partition the input
 into groups.  For the moment only equality for the given data type is
 used, but in general any equality relation could be used.  E.g. a 
-syntax like \dots \inlinesql{SKYLINE OF d3 DIFF USING myOp} could be used,
-but, this is subject to future work.
+syntax like \dots \inlinesql{SKYLINE OF d3 DIFF USING myOp} could be used
+but this is subject to future work.
 
 
 \section{Query Planner/Optimizer}
@@ -5693,7 +5693,7 @@ also \autoref{sec:operatorselection} and \autoref{sec:cardinality-and-cost-estim
 
 \subsection{Algebraic Optimizations}
 \citet{Chomicki2003a} and \citet{Kiessling2003} show in their
-papers algebraic optimizations of preference (skyline) operator,
+papers algebraic optimizations of the preference (skyline) operator,
 e.g. when and how to push a skyline operator through a join, how to
 simplify multiple preference operators, and so forth, together with
 sufficient conditions when the rules are applicable.  It is future
@@ -5717,9 +5717,9 @@ such as
 \subsection{Index Scan for one Dimensional Skylines}
 \label{sec:index-scan-for-1dim}
 Since one dimensional skylines are a little bit of limited use any way
-we did not yet make an attempt to make use of an suitable index for
+we did not yet make an attempt to make use of a suitable index for
 skyline computation in the one dimensional case. The computation of
-distinct and non-distinct one dimensional skyline could be speedup by
+distinct and non-distinct one dimensional skylines could be speedup by
 performing an index scan. In the distinct case start at the minimum or
 maximum respectively and read a single tuple. For the non-distinct case
 start at the right end of the index and read as long as the value does
@@ -5741,7 +5741,7 @@ tuples in the tuple window and the dominance check is only performed
 on the skyline attributes.  Because of this property it is possible to
 project the tuples on the skyline attributes before inserting
 into the tuple window to safe space in the tuple window.  But there is
-now free lunch, this projection comes at some CPU cost as memory has
+no free lunch, this projection comes at some CPU cost as memory has
 to be copied and manipulated.  Some cost estimation or some heuristics
 could be developed when to perform this projection.
 
@@ -5759,14 +5759,14 @@ hashing could be engaged, i.e. allocate a fixed number of tuple
 windows and hash each \inlinesql{SKYLINE OF DIFF} group into one tuple
 window.
 
-For SFS differentiate between \texttt{CMP\_INCOMPARABLE\_SAME\_GROUP} and
+For SFS differentiate between \texttt{CMP\_INCOMPARABLE\_SAME\_GROUP} and \\
 \texttt{CMP\_INCOMPARABLE\_DIFFERENT\_GROUP}, because once we have
 a group change we can flush the tuple window.
 
 
 \subsection{Speedups for low Cardinality Domains}
 A couple of algorithms for low cardinality domains, e.g.
-the ``stars ranking of a hotel'', only one five discrete values (one
+the ``stars ranking of a hotel'', only five discrete values (one
 to five stars), have been proposed \citep{Preisinger2006,
 Preisinger2007, Morse2007}.  Based on histograms for the base relations
 the query optimizer could select such specialized algorithms.

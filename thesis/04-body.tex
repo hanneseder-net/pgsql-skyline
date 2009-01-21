@@ -1723,7 +1723,7 @@ $p \dominates q$ & point $p$ dominates point $q$
 \end{table}
 
 
-%pagination: move both versions of BNL to their own page
+%FIXME: move both versions of BNL to their own page
 %\begin{figure}[htbp]
 \begin{lstlisting}[language=pseudo, 
 caption={Pseudo-code for Original Block-Nested-Loops (BNL) Algorithm, which does not terminate in all cases.},
@@ -2794,7 +2794,7 @@ in an aggregate function
 \section{PostgreSQL Architecture and Concepts}
 
 Before we go into the details we would like to give a brief overview
-of PostgreSQL architecture. According to \citep{Conway2006a} PostgreSQL
+of the PostgreSQL architecture. According to \citep{Conway2006a} PostgreSQL
 has five main components:
 
 \begin{enumerate}
@@ -2824,14 +2824,14 @@ which are essential to understand our implementation.
 In a sole set oriented algebra there is no concept of \emph{nextness}
 or \emph{order of tuples}, but in an RDBMS\index{RDBMS} the relative order of
 tuples is an important \emph{physical property} of a tuple stream.
-The knowledge about this is encoded in PostgreSQL my means of so
+The knowledge about this is encoded in PostgreSQL by means of so
 called \emph{pathkeys}, they arise naturally in conjunction with an
 access path, e.g.  when scanning a tuple via a clustered index or
 using an index scan.
-\emph{Pathkeys} are essentially a list each member of which is a \emph{pathkey},
+\emph{Pathkeys} are essentially a list of which each member is a \emph{pathkey},
 which encodes the sort order on a single column. Actually this can
 be an arbitrary expression and a pathkey contains a reference to the
-according target list entry, the sort operator and a flag
+according target list entry, the sort operator, and a flag
 on how to treat NULL values (cf. \texttt{NULLS FIRST}/\texttt{NULLS
 LAST}\index{NULLS FIRST (SQL)@\texttt{NULLS FIRST} (SQL)}\index{NULLS LAST (SQL)@\texttt{NULLS LAST} (SQL)}). The information if the sort order is ascending (\texttt{ASC})
 or descending (\texttt{DESC}) is encoded in the sort operator used, as
@@ -2845,13 +2845,13 @@ deciding among different physical operators, e.g. \emph{stream
 aggregate operator} vs. \emph{hash aggregate operator}, or different
 forms of the \emph{join operator}, for \emph{duplicate elimination}
 and so forth. \emph{Selection}, \emph{projection} and their like
-typically preserve pathkey, i.e. relative tuple order remains the
+typically preserve pathkeys, i.e. the relative tuple order remains the
 same. Others like \emph{index scan} and \emph{sort operator} establish
 a certain relative order.
 
 
 \subsection{Pipelined execution}
-PostgreSQL query execution engine has a top down driven pipelined
+PostgreSQL's query execution engine has a top down driven pipelined
 architecture, i.e. each node consumes the tuples from its children and
 produces tuples and in general no intermediate results are
 materialized, see \srcref{src/backend/executor/README}.  A simple
@@ -2943,12 +2943,12 @@ the PostgreSQL documentation for the \postgresdocu{parser-stage.html}
 {parser stage}.  The data structure uses the PostgreSQL simple object
 system, as described in the previous section.  We extended this stage
 to handle the \inlinesql{SKYLINE OF}-clause as defined in
-\autoref{sec:sql-extension}, see in \srcref{src/backend/parser/gram.y}
+\autoref{sec:sql-extension}, see \srcref{src/backend/parser/gram.y} for
 the definition of \texttt{skyline\_clause}.  The result of this
 stage is called \emph{parse tree}.
 
 \section{Query Analyzing}
-In this phase, which is also described in PostgreSQL documentation on the
+In this phase, which is also described in the PostgreSQL documentation on the
 \postgresdocu{parser-stage.html}{parser stage}, the \emph{parse tree}
 from the previous stage is semantically analyzed, the outcome is
 called \emph{query tree}.  Look-ups into the system catalog are done in
@@ -2977,8 +2977,8 @@ planner/optimizer:
 
 
 \subsection{Selecting Indexes}
-It is well known fact that the skyline operator is insensitive to the
-order of attributes, i.e. the query
+It is a well known fact that the skyline operator is insensitive to the
+order of attributes, i.e. the queries
 
 \begin{interactive}
 SELECT * FROM a15d1e4s0 SKYLINE OF d1 MIN, d2 MIN;
@@ -3007,7 +3007,7 @@ SELECT * FROM a15d1e4s0 ORDER BY d2, d1;
 
 \noindent
 Yet from this example alone one gets the intuition that the
-\inlinesql{SKYLINE~OF}-clause can versatile a richer set of indexes
+\inlinesql{SKYLINE~OF}-clause can benefit from a richer set of indexes
 (access paths) than the \inlinesql{ORDER~BY}-clause.  To be
 precise we must speak of \emph{pathkeys}\index{pathkeys}, i.e. both of
 the above skyline queries can make use of the following index, but
@@ -3030,7 +3030,7 @@ which access paths are considered.
 
 \subsubsection{Pull up subqueries}
 If a subquery contains a \inlinesql{SKYLINE~OF}-clause the query
-must not be flattened out, i.e. pull up the subquery.  The function
+must not be flattened out, i.e. do not pull up the subquery.  The function
 \texttt{is\_simple\_subquery}\footnote{in
 \srcref{src/backend/optimizer/prep/prepjointree.c}} is modified
 accordingly.
@@ -3047,7 +3047,7 @@ as well.  In \autoref{sec:bnl-tuple-order},
 respectively, we bring forward arguments why BNL does \emph{not}
 preserve the relative tuple order, independent from the tuple window
 policy used, and that SFS and EF \emph{do} preserve the relative tuple
-order.  As the two dimensional with presort algorithm is a special
+order.  As the two dimensional algorithm with presort is a special
 case of SFS it shares the same properties.  For the one dimensional
 case and for our \naive algorithms it is easy to see that they
 preserve the relative tuple order.  The properties are summarized in
@@ -3080,9 +3080,10 @@ EF              & yes & no  \\
 
 \subsection{Physical operator selection}
 \label{sec:operatorselection}
-The physical operator selection, also called as \emph{method}, is
-rather straightforward.  If a method is specified in the skyline options,
-this method is taken, only some sanity checks are performed.  
+The physical operator selection is rather straightforward.  We call
+the \emph{physical operators} als \emph{methods}.  If a method is
+specified in the skyline options, this method is taken, only some
+sanity checks are performed.
 
 In the one dimensional case either 1DIM or 1DIM\_DISTINCT is selected
 depending on the usage of \inlinesql{SKYLINE OF DISTINCT}.  This
@@ -3129,6 +3130,8 @@ FROM
 SKYLINE OF d1 MIN, d2 MIN WITH WINDOWPOLICY=ENTROPY;
 \end{interactive}
 
+
+\enlargethispage{\baselineskip}
 \subsection{Cardinality and Cost Estimation}
 \label{sec:cardinality-and-cost-estimation}
 For a full-blown relational operator it is important to compute or at
@@ -3139,7 +3142,7 @@ related question is what is the computational cost of computing the
 result.  It is sufficient to answer the last question relative to
 other operators.  
 
-Unfortunately neither question is easy to answer, and it is at least the case for the
+Unfortunately neither question is easy to answer.  This is especially true for the
 non-trivial skyline algorithms like BNL and SFS. Of course
 the question about the cardinality is independent from the algorithms
 selected.
@@ -3157,7 +3160,7 @@ C_d(n) &\ge& \lceil\log n!\rceil \quad \textnormal{for} \quad d \ge 2
 \end{eqnarray}
 
 The first result for the cardinality was obtained by
-\cite{Bentley1978}.  The result they derived is for set of $n$ vectors
+\cite{Bentley1978}.  The result they derived is for a set of $n$ vectors
 in a $d$-dimensional space under the assumption that all $(n!)^d$
 relative orderings are equally probable, the average number of maxima
 is:
@@ -3186,12 +3189,12 @@ relaxed to estimate categorical attributes as well. Cost estimation
 for BNL and SFS is addressed.
 
 In our implementation we took the result from \citet{Buchta1989} for
-cardinality estimation see \texttt{estimate\_skyline\_cardinality}\footnote{in
+cardinality estimation, see \texttt{estimate\_skyline\_cardinality}\footnote{in
 \srcref{src/backend/optimizer/plan/createplan.c}}.
 
 In PostgreSQL the costs are expressed as a linear combination of the following values:
 \texttt{seq\_page\_cost}, \texttt{random\_page\_cost}, \texttt{cpu\_tuple\_cost},
-\texttt{cpu\_index\_tuple\_cost}, and \texttt{cpu\_operator\_cost}
+\texttt{cpu\_index\_tuple\_cost}, and \\ \texttt{cpu\_operator\_cost}
 \footnote{see \srcref{src/backend/optimizer/path/costsize.c}}.
 
 Our planner/optimizer is not yet cost-based, see
@@ -3203,7 +3206,7 @@ see \texttt{cost\_skyline}\footnote{in
 \srcref{src/backend/optimizer/path/costsize.c}}.
 
 \subsubsection{Tuple window size}
-One could be tempted to set the tuple window size according to the
+One could be tempted to set the tuple window size accordingly to the
 outcome of the cardinality estimation, but the assumption that at no
 time more than \texttt{output\_tuples} will be in the window does not
 hold. To see this imagine the BNL algorithm running on a uniformly
@@ -3230,12 +3233,13 @@ this information in the cost and cardinality estimation.  Also
 see \texttt{skyline\_method\_can\_use\_limit}\footnote{in
 \srcref{src/backend/utils/skyline/skyline.c}}.
 
+\enlargethispage{\baselineskip}
 \section{Query Execution}
 \label{sec:queryexecution}
 
 The original System R prototype compiled query plans into machine
 code, whereas other systems like INGRES, the grandfather of
-PostgreSQL, generated an interpretable query plan. In the 1980 query
+PostgreSQL, generated an interpretable query plan. In the 1980s query
 interpretation was considered a ``mistake'' by the INGRES
 authors. Because of the increasing CPU speed (Moore's law) and enabling cross-platform portability, every
 system now compiles queries into some kind of interpretable data
@@ -3357,7 +3361,7 @@ Another way to express this query in standard SQL is:
 \end{interactive}
 
 \noindent
-but this is even worse, and has a runtime complexity of $O(n^2)$, this
+but this is even worse and has a runtime complexity of $O(n^2)$. This
 approach corresponds to a \naive nested-loop, the query plan is
 accordingly:
 
@@ -3374,7 +3378,7 @@ accordingly:
 We took a different approach, while scanning over the input we collect
 all minimal tuples in a tuple store\index{tuple store}.  For
 comparison we need to keep just one tuple.  If a tuple is equal to
-this, i.e. another potential minimal/maximal tuple we add it to the
+this one, i.e. another potential minimal/maximal tuple we add it to the
 tuple store.  On the other hand, if this tuple is dominated we clean
 the tuple store, and keep the dominating tuple.  After the initial
 scan over the input we pipe out the tuple store,
@@ -3438,7 +3442,7 @@ function ExecSkyline_1Dim(var $state$)
 
 \subsection{Special case: one dimensional with distinct}
 \label{sec:onedim-distinct}
-Again this case is of limited use and all general skyline algorithms
+Again, although this case is of limited use and all general skyline algorithms
 can deal with it, we implemented a specialized algorithm for this
 case.  It is even simpler than the non-distinct case and it easy to
 see that a single scan over to input while keeping the current
@@ -3479,8 +3483,8 @@ the skyline operator would look like:
 
 \noindent
 Please note that again two scans over the input are done, although the
-second might stop earlier. For Microsoft SQL Server to same query
-would look like this:
+second one might stop earlier. For Microsoft SQL Server the same query
+looks like this:
 
 \begin{interactive}
 \textbf{SELECT TOP 1 * FROM a15d1e4s0 WHERE d1 = (SELECT MIN(d1) FROM a15d1e4s0);}
@@ -3503,9 +3507,8 @@ standard SQL can be found:
 \end{interactive}
 
 \noindent
-Note that condition \texttt{i.d1 = o.d1 AND i.id < o.id} is used to
-select the first, according to the order induced by \texttt{id}, of the
-minimal tuples. The runtime complexity of this query is also in $O(n^2)$.
+Note that the condition \texttt{i.d1 = o.d1 AND i.id < o.id} is used to
+select the first one of the minimal tuples, according to the order induced by \texttt{id}. The runtime complexity of this query is also in $O(n^2)$.
 
 %\begin{figure}[htbp]
 \begin{lstlisting}[language=pseudo,
@@ -3548,9 +3551,9 @@ if the input relation is ordered according to the skyline criteria,
 then the skyline can be computed with a single scan over the
 input, while keeping just the most recently found skyline tuple, see
 \autoref{code:2dimpresort}.  Of course in the presence of a
-suitable access path the input need not to be sorted, performing an
+suitable access path the input needs not to be sorted, performing an
 index scan suffices.  This method is simple to implement, and we believe the
-two dimensional case is already a quite useful one, from a users
+two dimensional case is already a quite useful one, from a user's
 perspective.
 
 An interesting aspect of this algorithm is how it deals with the
@@ -3707,8 +3710,8 @@ functions\footnote{see \srcref{src/include/utils/tuplewindow.h}}:
 \begin{itemize}
 \item \lstinline|TupleWindowState *tuplewindow_begin(int maxKBytes, int maxSlots, TupleWindowPolicy policy)|
 creates a tuple window with the maximum size of \lstinline|maxKBytes|
-KB or if a a maximum of \lstinline|maxSlots| slots. The number of
-slots is the stronger limit. For policy see
+KB or with a maximum of \lstinline|maxSlots| slots. The number of
+slots is the stronger limit. For policy see the
 next sub-subsection.  The returned value must be
 used in all subsequent calls to the tuple window interface functions.
 
@@ -3722,8 +3725,8 @@ removes all tuples from the tuple window.
 returns true if the tuple window can hold at least one more tuple.
 Note that we ignore the fact that the tuple that is going to be
 inserted might consume a little more space than is actually left, but
-this eases the implementation and an existing PostgreSQL interface the
-\lstinline|tuplestore|\index{tuple store} interface is designed in the same way.
+this eases the implementation and an existing PostgreSQL interface, the
+\lstinline|tuplestore|\index{tuple store} interface, is designed in the same way.
 
 \item \lstinline|void tuplewindow_setinsertrank(TupleWindowState *state, double rank)|
 when policy \emph{entropy} or \emph{ranked} is used, the rank of the
@@ -3732,7 +3735,7 @@ over the tuple window, so ensure to call
 \lstinline|tuplewindow_rewind| prior to this call.
 
 \item \lstinline|void tuplewindow_puttupleslot(TupleWindowState *state, TupleTableSlot *slot, int64 timestamp, bool forced)|
-insert the tuple in the tuple table slot \lstinline|slot| into the
+inserts the tuple in the tuple table slot \lstinline|slot| into the
 tuple window with the given timestamp.  For a ranked window policy
 \lstinline|forced| can be set to true, i.e. if the new tuple has a
 higher rank than the lowest ranked tuple in the window then this
@@ -3743,21 +3746,21 @@ insert}.  Currently the \lstinline|timestamp| argument is only used
 by BNL and in all other algorithms it is set to zero.
 
 \item \lstinline|void tuplewindow_rewind(TupleWindowState *state)|
-set the \emph{cursor} to the first tuple.
+sets the \emph{cursor} to the first tuple.
 
 \item \lstinline|bool tuplewindow_ateof(TupleWindowState *state)|
-return true of cursor is at the end of the tuple window.
+returns true if the cursor is at the end of the tuple window.
 
 \item \lstinline|void tuplewindow_movenext(TupleWindowState *state)|
-move the cursor to the next tuple.
+moves the cursor to the next tuple.
 
 \item \lstinline|void tuplewindow_removecurrent(TupleWindowState *state)|
-remove the current tuple.  Note that this also modifies the cursor.
+removes the current tuple.  Note that this also modifies the cursor.
 So when calling \lstinline|tuplewindow_removecurrent|, calling
 \lstinline|tuplewindow_movenext| afterwards skips over a tuple.
 
 \item \lstinline|bool tuplewindow_gettupleslot(TupleWindowState *state, TupleTableSlot *slot, bool removeit)|
-get the tuple at the current position of the cursor.  When called with
+gets the tuple at the current position of the cursor.  When called with
 \lstinline|removeit| true, the returned tuple is removed from the
 tuple window.  Note that this is not the same as calling
 \lstinline|tuplewindow_gettupleslot| and
@@ -3784,11 +3787,11 @@ different placement policies:
 a new tuple is always inserted at the \emph{end} of the list
 
 \item \emph{prepend:}
-instead at the end, new tuples are inserted at the \emph{beginning} of
+instead of the end, new tuples are inserted at the \emph{beginning} of
 the list
 
 \item \emph{entropy:}
-tuples are keep in \emph{rank descending order}. The insertion position
+tuples are kept in \emph{rank descending order}. The insertion position
 is found in $O(n)$, this is done by computing the rank before starting
 to scan over the window and the pointer is only incremented as long as
 the rank of the tuple to be inserted is smaller or equal to the rank
@@ -4041,7 +4044,7 @@ that the algorithm BNL+EF is a substantial improvement to BNL.
 
 
 \section{Development}
-In this section we would share some of the experience we have made 
+In this section we share some of the experiences we made 
 during development.
 
 \subsection{Source Code and Version Control}
@@ -4051,7 +4054,7 @@ We started out our implementation effort of the skyline operator, when
 under development.  PostgreSQL's source is kept in a Concurrent Versions
 System (CVS) repository.  We have used the very handy
 \href{http://www.tortoisecvs.org/}{Tortoise CVS} to checkout and
-update the PostgreSQL source.  We keep our source in a
+update our copy of the PostgreSQL source.  We keep our source in a
 \href{http://subversion.tigris.org/}{SubVersion} (SVN) repository, and use
 \href{http://tortoisesvn.tigris.org/}{TortoiseSVN} to interact with our
 repository.
@@ -4096,21 +4099,22 @@ debugging a bit unpleasant.  Nevertheless there is a good work around
 for this, just operate the PostgreSQL in \emph{single user
 mode}\index{single user mode}.  This gives one a prompt, to enter
 queries directly and the query is evaluated in the same process.  So
-debugging or with Microsoft Visual C++ even \emph{edit \&
+debugging or, with Microsoft Visual C++, even \emph{edit \&
 continue}\index{edit \& continue}\footnote{Edit \& continue is the
-ability of modifying the source code while debugging, apply the changes
-and continue to debug.  Kind of deluxe for a C compiler.} was possible.  For further
-details see PostgreSQL documentation on
+ability of modifying the source code while debugging, applying the changes
+and continuing to debug.  Kind of deluxe for a C compiler.} was possible.  For further
+details see the PostgreSQL documentation on
 \postgresdocu{app-postgres.html}{postgres}
 
 \subsection{Regression Testing}
-To facilitate regression testing we also integrated a test case in
+To facilitate regression testing we also integrated a test case in the
 PostgreSQL regression test suite.  This test case tests just a few
 very basic scenarios, as a thorough test would take quite some time,
 and this would not be appreciated as part of a checked build.  For the
 basic regression test see
 \srcref{src/test/regress/sql/skyline\_base.sql} and
 \srcref{src/test/regress/expected/skyline\_base.out}.
+%FIXME: linebreak
 
 For a more extensive test see the Perl script \texttt{slregress.pl},
 here a larger set of test cases is produced and the result is always
@@ -4119,10 +4123,10 @@ table the random dataset returning function as described in
 \autoref{sec:set-returning-function} is used.
 
 We ran both, the PostgreSQL regression test suite and our Perl script
-\texttt{slregress.pl}, regularly during development, to ensure that
+\texttt{slregress.pl}, regularly during development to ensure that
 we did not break other parts of PostgreSQL and an already implemented
 feature of the skyline operator, while we were integrating new parts
-or optimizing and/or refactor other parts.
+or optimizing and/or refactoring other parts.
 
 
 
@@ -4158,7 +4162,7 @@ the PostgreSQL \texttt{work\_mem}\index{work mem@work\_mem} setting), and an EF 
 size of 8~KB (equal to the PostgreSQL block size) were used.
 
 The tables for the test runs have been generated using the extended
-version \citep{Eder2007a} of the dataset generated presented in
+version \citep{Eder2007a} of the dataset generator presented in
 \citep{Borzsonyi2001}, which allows to generate tables with
 different initial seeds for the random generator. All experiments
 were carried out on three different sets with varying initial seed, for each
@@ -4186,7 +4190,7 @@ The memory chunk used by the PostgreSQL memory allocation function
 
 For the experiments using an index, a duplicate of the same set of
 tables was used, including six indexes, where index $k$ is an index on
-$d_1, \ldots, d_k$.  This all sums up to 126 tables and an database of
+$d_1, \ldots, d_k$.  This all sums up to 126 tables and a database of
 approximately 1 GB.  For most of our experiments we did not consider
 tables with more than 100k tuples, as the runtime for a 15 dimensional
 skyline query on 100k tuples went up to 30 minutes. Consult
@@ -4218,8 +4222,8 @@ the popular dataset generator from \citep{Borzsonyi2001}.  Our
 modified version can be used as command line utility or as a
 PostgreSQL module. The PostgreSQL module provides a set returning
 function and creates datasets on the fly.  The details are described
-in the following sections.  But first of all we describe which type of
-dataset are generated by the dataset generator.
+in the following sections.  But first of all we describe which types of
+datasets are generated by the dataset generator.
 
 \subsubsection{Independent, Correlated, and Anti-Correlated Datasets}
 \label{sec:corr-anti-indep}
@@ -4237,8 +4241,8 @@ the \emph{distribution type} and types are as of \citep{Borzsonyi2001}:
 %source, as we believe this is the precisest way to describe it. Here
 %are the some basic building blocks:
 
-Before we give a detailed description of this distribution types, we
-show some of the basic build blocks used for generating them, as we
+Before we give a detailed description of these distribution types, we
+show some of the basic building blocks used for generating them, as we
 believe the source code of the implementation is the precisest way to
 describe it:
 
@@ -4312,7 +4316,7 @@ generated and we show some of their properties:
 \item \emph{indep}: 
 for this type of dataset, all attribute values are generated
 independently using a uniform distribution. 
-\autoref{fig:density-2d-i2d1e5} shows an density plot
+\autoref{fig:density-2d-i2d1e5} shows a density plot
 and statistics of such an independent dataset with 100k tuples and $d
 = 2$. The skyline tuples of this dataset are the lower left corners of
 the red line, where the red line is the ``skyline''. The density of
@@ -4555,13 +4559,13 @@ COPY "i3d10" (id, d1, d2, d3) FROM STDIN DELIMITERS ',' CSV QUOTE '''';
 \label{sec:set-returning-function}
 
 To be able to generate test datasets on the fly, i.e. without
-explicitly creating tables and filling them up, we create a PostgreSQL
+explicitly creating tables and filling them up, we created a PostgreSQL
 module which implements the functionality of \texttt{randdataset} as a
 set returning function. To create, backup and restore a test database
 with an appropriate set of test tables can be very time
 consuming. Having such a function at hand is useful in many situations,
-all it takes is run PostgreSQL's \texttt{initdb} and install the set
-returning function. We did so many times when merging PostgreSQL
+all it takes is to run PostgreSQL's \texttt{initdb} and to install the set
+returning function. We did so many times when merging the PostgreSQL
 8.3-devel branch into our branch, which often made it necessary to
 re-\texttt{initdb}. Especially for regression tests and during
 debugging this function was very handy. PostgreSQL's concept of
@@ -4625,7 +4629,7 @@ RETURNS setof record
 \end{interactive}
 
 \noindent
-Where the arguments have following meaning:
+Where the arguments have the following meaning:
 \begin{itemize}
 \item \texttt{disttype} 
 specifies the distribution type (see \autoref{sec:corr-anti-indep}),
@@ -4642,7 +4646,7 @@ allowed values are \texttt{'indep'}, \texttt{'corr'}, and
 We ensured that calling \inlinesql{pg\_rand\_dataset} with the same
 arguments will always return the same result set. In the PostgreSQL
 terminology this property of a function is called \texttt{IMMUTABLE}
-(see PostgreSQL documentation on
+(see the PostgreSQL documentation on
 \postgresdocu{xfunc-volatility.html}{Function Volatility Categories}).
 
 To make the usage more comfortable we defined a set of wrapper
@@ -4669,7 +4673,7 @@ for retrieving tuples from a set returning function. The current
 implementation reads all the tuples from the set returning function
 and stores them in a \texttt{tuplestore}\index{tuple store} before returning the first
 tuple to the caller. A \texttt{tuplestore} maintains an in memory
-buffer once it runs out of memory the remaining tuples are written to
+buffer; once it runs out of memory the remaining tuples are written to
 a tempfile. The size of the in memory buffer is controlled through the
 configuration variable \texttt{work\_mem}\index{work mem@work\_mem}. The default value is
 1024~KB. This configuration variable is also used to determine the amount
@@ -4698,7 +4702,7 @@ of our experiments we were not willing to pay I/O penalty as we were
 studying just the CPU bounded behavior of the skyline algorithms.
 
 On the other hand we do not want to increase \texttt{work\_mem}\index{work mem@work\_mem}, as
-this would as mentioned above influence the sort operation and the size
+this would, as mentioned above, influence the sort operation and the size
 of the tuple window for the skyline algorithms. Therefore we decided
 to introduce a new configuration variable
 \texttt{function\_scan\_work\_mem}, solely for the \texttt{tuplestore}
@@ -4752,12 +4756,12 @@ in a later stage just commented out.
 \item 
 \texttt{--<query runid=}\textit{runid}\texttt{>} and
 \texttt{--</query>}; A Run cf. definition below.  Please note that the
-corresponding Setup Queries are not nested within the Run they just
+corresponding Setup Queries are not nested within the Run, they just
 precede the Run.
 
 \item 
 \texttt{--<queryplan>} and \texttt{--</queryplan>}; is used in a
-later stage to preserve the query plan in the comment, but its not
+later stage to preserve the query plan in the comment, but it is not
 used otherwise.
 \end{itemize}
 
@@ -4769,7 +4773,7 @@ ensure our implementation is correct. To accomplish this we prefixed
 our queries with \inlinesql{EXPLAIN ANALYZE}. \inlinesql{EXPLAIN}
 alone just shows the execution plan of a statement without actually
 executing it.  Whereas \inlinesql{EXPLAIN ANALYZE} carries out the command
-and shows the actual runtime. See PostgreSQL documentation on
+and shows the actual runtime. See the PostgreSQL documentation on
 \postgresdocu{sql-explain.html}{EXPLAIN} for more details.
 
 \begin{definition}[Setup Query]
@@ -4804,9 +4808,9 @@ going to be profiled.
 \end{definition}
 
 \noindent
-Each Run is identified by unique \texttt{runid} and besides this
+Each Run is identified by its unique \texttt{runid} and besides this
 general definition in our case a Run had zero or one Setup Query and
-we often grouped runs in such a way, that two runs share a single
+we often grouped Runs in such a way, that two Runs shared a single
 Setup Query (cf. \autoref{fig:jobfile}).
 
 \begin{definition}[Job]
@@ -4943,7 +4947,7 @@ explain analyze select * from a15d1e5s0 \prebreak
 In our experimental environment we had one machine (SKY00) to control
 and monitor the experiments and seven machines (SKY01, $\ldots$,
 SKY07) to perform the experiments.
-This ``seven'' is just because of we did not have more.
+This ``seven'' is just because we did not have more.
 %
 To have exactly the same configuration, we cloned SKY02, $\ldots$, SKY07 from
 SKY01 using a fine piece of free software namely PING (Partimage Is
@@ -4981,7 +4985,7 @@ described in \autoref{tab:dirlayoutexpiriments}.
                     jobs up into logical and smaller units of lets say
                     a few hundred files.  The jobs from this
                     directories where moved to \texttt{jobs/} once
-                    there no jobs left here.  This is done by
+                    there were no jobs left here.  This is done by
                     \texttt{feed.pl}.  The same is true for the
                     sibling directories \texttt{s1/} and
                     \texttt{s2/}. \\
@@ -5004,13 +5008,13 @@ described in \autoref{tab:dirlayoutexpiriments}.
 
 
 \subsection{Life Cycle of a Run}
-A Job is born by a script called \texttt{gj.pl} (see
+A new Job was born by a script called \texttt{gj.pl} (see
 \autoref{sec:generatejobs}) in the \texttt{prep/} directory. We
 distributed the Jobs to several directories below
-\texttt{prep/}, namely to \texttt{s0}, \texttt{s1} and \texttt{s2} and
-there sub-directories. Using \texttt{xcopy /m} makes this task easy, as
-only files with set archive bit are copied. On SKY00 a script called
-\texttt{feed.pl} was running, which move the Jobs of these directories
+\texttt{prep/}, namely to \texttt{s0}, \texttt{s1}, and \texttt{s2} and
+their sub-directories. Using \texttt{xcopy /m} made this task easy, as
+only files with set archive bit were copied. On SKY00 a script called
+\texttt{feed.pl} was running, which moved the Jobs of these directories
 to the \texttt{jobs/} directory once this had no more Jobs. The Jobs in 
 \texttt{jobs/} where picked up by a script called \texttt{js.pl} which
 moved the next Job into a directory with the same name as the machine
@@ -5018,15 +5022,16 @@ which is running \texttt{js.pl}, SKY01 to SKY07 in our case. The job
 was then executed and finally moved to the directory
 \texttt{done/}. See sub-subsection \emph{Job Scheduling} below for more details.
 As a result of the Job being executed a raw log file
-(cf. \autoref{fig:logfile}) is generated in the \texttt(log/)
-directory. We parse this raw log files to CSV format with comment
+(cf. \autoref{fig:logfile}) was generated in the \texttt(log/)
+directory. We parsed this raw log files to CSV format with comment
 lines (cf. \autoref{fig:parsedlogfile}) with a script called
 \texttt{qp2log}, see sub-subsection \emph{To CSV Format} below. The last step
 before aggregating and analyzing the data (see
-\autoref{sec:aggregatingandanalyzing}) is to pivot and project the
+\autoref{sec:aggregatingandanalyzing}) was to pivot and project the
 CSV files to a more compact representation
 (cf. \autoref{fig:pivot_log}) by script called \texttt{pivot\_log},
 see sub-subsection \emph{Pivoting the CSF File} below.
+
 
 
 \subsubsection{Generating the Jobs}
@@ -5035,7 +5040,7 @@ The creation of the Jobs is done by an ordinary Perl script called
 \texttt{gj.pl}.  The only argument to this script is the seed
 (\texttt{s0}, \texttt{s1}, $\ldots$) for which the Jobs should be
 generated. The only but noteworthy trick used in this script is to
-skip the generation of a Job if the file already exists, which gives a
+skip the generation of a Job if the file already exists, which gives an
 enormous speed up and the archive bit of existing files was not
 touched which made it easier to operate with \texttt{xcopy /m} on that
 files. 
@@ -5044,20 +5049,20 @@ files.
 \label{sec:jobscheduling}
 %We will speak of it as \emph{job scheduling}.  
 The concept behind this
-is simply but very effective.  We run a process called \emph{job
+is simple but very effective.  We run a process called \emph{job
 scheduler}, realized in the Perl script \texttt{js.pl}, on each
 machine which is available to run some Jobs. The script \texttt{js.pl}
 waits to get an exclusive file lock on \texttt{js.lock}, checks for
 \texttt{*.sql} files, i.e. Jobs in the \texttt{jobs/} directory, moves
 the first of these files, given one was found, to a directory with the
-same name as the machine \texttt{js.pl} is running one, next release
+same name as the machine \texttt{js.pl} is running one, next releases
 the exclusive lock on \texttt{js.lock} and finally starts to work in
-the dequeued job by piping it through PostgreSQL interactive SQL
+the dequeued job by piping it through PostgreSQL's interactive SQL
 processor \texttt{psql}. The output is redirected to a log file in the
-\texttt{log/} directory.  These steps are performed in a endless loop.
+\texttt{log/} directory.  These steps are performed in an endless loop.
 
 A simple lesson learned here is not to use Perl's \texttt{glob}
-function to read the content of a directory with thousands of
+function to read the contents of a directory with thousands of
 \texttt{*.sql} files, when you actually just want to pick one of
 them. Globbing a directory with thousands of files could take longer
 than running one of these jobs and instead of running them in
@@ -5079,13 +5084,13 @@ file locking \texttt{js.lock}.  A typical invocation of
 
 Once the \texttt{jobs} directory did not contain any Jobs
 (\texttt{*.sql}-files), the Jobs from \texttt{prep/s0/ws},
-\texttt{prep/s1/ws} and \texttt{prep/s2/ws} are moved in turn to the
+\texttt{prep/s1/ws} and \texttt{prep/s2/ws} were moved in turn to the
 \texttt{jobs} directory.
 
 There is one more little thing to tell, \texttt{js.pl} and
 \texttt{feed.pl} pause their operation if a file named \texttt{js.pause} exists
-in the \texttt{jobs/} directory.  This is very handy, do reconfigure
-the system like temporary remove some Jobs from the queue to schedule
+in the \texttt{jobs/} directory.  This is very handy to reconfigure
+the system, like temporarily remove some Jobs from the queue to schedule
 others first.
 
 By means of this simple arrangement of files, directory and scripts we
@@ -5105,7 +5110,7 @@ working correctly, which was helpful during the development of
 
 The script \texttt{qp2log} makes extensive use of Perl's regular
 expressions to do its task.  All the fields that are extracted from
-the queries execution plan are listed in
+the queries' execution plans are listed in
 \autoref{tab:queryplanfields}.  We would like to point out a feature
 of Perl's regular expression (regex) support which was very handy for
 us, it is the combination of ``\texttt{m//g}'' and

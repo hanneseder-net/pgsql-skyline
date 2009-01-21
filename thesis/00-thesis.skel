@@ -9,11 +9,24 @@
 #define OPTIONS a4paper,10pt,final
 #endif
 
+#ifndef AUTHOR_HEDER
+#define AUTHOR_HEDER 1
+#endif
+
 \documentclass[OPTIONS]{book}
-\title{On Extending PostgreSQL with the Skyline Operator}
-\author{Ing. Bakk.techn. Hannes Eder}
+
+\newcommand\thetitle{On Extending PostgreSQL with the Skyline Operator}
+#if AUTHOR_HEDER
+\newcommand\theauthor{Ing. Bakk.techn. Hannes Eder}
+#else
+\newcommand\theauthor{Ing. Bakk.techn. Johann Eder}
+#endif
 \newcommand\thedate{28.01.2009}
+
+\title{\thetitle}
+\author{\theauthor}
 \date{\thedate}
+
 \usepackage{heder}
 
 %\usepackage[T1]{fontenc}

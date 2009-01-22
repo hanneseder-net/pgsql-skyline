@@ -377,7 +377,7 @@ Building the skyline query operation in an RDBMS has
 several advantages.  First, skyline can be integrated with other
 relational operators, thus more sophisticated queries can be
 constructed.  Moreover, no work on concurrency control and transaction
-management has to be addressed.  Second, the existing index structures
+management has to be addressed.  Secondly, the existing index structures
 such as R-trees in an RDBMS can be adapted to implement index-based
 skyline algorithms.  Third, if several skyline algorithms are
 available in an RDBMS, the system is able to select the most efficient
@@ -401,7 +401,7 @@ relatively small.
 
 %\subsection{Our Contribution}
 %\label{sec:contribution}
-We have so far implemented the non-index based algorithms
+So far we have implemented the non-index based algorithms
 BNL, SFS, and a variant of LESS in PostgreSQL.
 %To the best of our knowledge, this is the first work of building
 %skyline operators in an open source RDBMS. 
@@ -433,6 +433,31 @@ For the purpose of repeatability we have set up a website to present
 our experimental results. The source code, and the log-files from our
 experiments are online accessible at:
 \url{http://skyline.dbai.tuwien.ac.at/}.
+
+
+\section{Further Organization}
+The thesis is organized as follows: In \autoref{chap:preliminaries} we
+introduce the notation and show mathematical properties of the skyline
+operator.  In \autoref{chap:relatedworks} we briefly introduce the
+implemented skyline algorithms and speak about the closest related
+works. Chapter \ref{chap:implementation} gives the very details of our
+implementation. Chapter \ref{chap:results} describes the experimental setup
+and presents the extensive experiments over various data settings,
+followed by the analysis of the results. Directions of future work are
+discussed in \autoref{chap:future-work}. Chapter \ref{chap:summary}
+concludes the thesis.
+
+
+
+%%
+%% CHAPTER: Preliminaries
+%%
+
+
+
+\chapter{Preliminaries}
+\label{chap:preliminaries}
+
 
 
 \section{Typographical Conventions}
@@ -475,7 +500,7 @@ readability, to emphasize a certain point, or just to work around the
 Furthermore at certain points we even allowed ourselves to strip some
 output, we indicated such omissions by an ellipsis (``$[\ldots]$'').
 
-\section{Pseudo-code}
+\subsection{Pseudo-code}
 In the real code for our implementation we do concern about issues of
 software engineering, like error handling, which we ignore in the
 pseudo-code to convey the essence of the algorithms more concisely.
@@ -504,28 +529,6 @@ remove some nasty details which are not essential to grasp the
 algorithms.
 
 
-\section{Further Organization}
-The thesis is organized as follows: In \autoref{chap:preliminaries} we
-introduce the notation and show mathematical properties of the skyline
-operator.  In \autoref{chap:relatedworks} we briefly introduce the
-implemented skyline algorithms and speak about the closest related
-works. Chapter \ref{chap:implementation} gives the very details of our
-implementation. Chapter \ref{chap:results} describes the experimental setup
-and presents the extensive experiments over various data settings,
-followed by the analysis of the results. Directions of future work are
-discussed in \autoref{chap:future-work}. Chapter \ref{chap:summary}
-concludes the thesis.
-
-
-
-%%
-%% CHAPTER: Preliminaries
-%%
-
-
-
-\chapter{Preliminaries}
-\label{chap:preliminaries}
 
 \section{Basic definitions}
 
@@ -599,6 +602,7 @@ $\forall x, y: x \weakdominates y \land y \weakdominates x \imp x \nondistinct y
 $\forall x, y, z: (x \weakdominates y \land y \weakdominates z) \imp x \weakdominates z$
 \end{itemize}
 
+\pagebreak[3]
 \noindent
 If a strict partial order also has the property of
 
@@ -735,6 +739,7 @@ condition to a just ``at least as good'' condition we define:
 \end{cases}
 \end{equation}
 
+\pagebreak[3]
 \noindent
 Same for the ``better than'' condition:
 
@@ -836,6 +841,7 @@ s \dominatedby r :\Leftrightarrow r \dominates s.
 s \weakdominatedby r :\Leftrightarrow r \weakdominates s.
 \]
 
+\pagebreak[3]
 \noindent
 Without proof we give the following equivalences:
 
@@ -5810,12 +5816,12 @@ before string data.
 
 
 %%%
-%%% CHAPTER: Summary
+%%% CHAPTER: Conclusion
 %%%
 
 
 
-\chapter{Summary}
+\chapter{Conclusion}
 \label{chap:summary}
 
 In this thesis we presented our achievements in extending the open source
@@ -5872,6 +5878,8 @@ Our findings are beneficial for developing heuristics for the skyline
 query optimization, and in the meantime provide some insight for a
 deeper understanding of the skyline query characteristics.
 
+We have identified several directions of future work, see
+\autoref{chap:future-work}.
 
 
 %%%

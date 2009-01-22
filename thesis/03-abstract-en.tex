@@ -22,17 +22,16 @@ No matter how we weight our preferences along the attributes, only
 those tuples which score best under a \emph{monotone scoring function} are
 part of the skyline.
 %
-%FIXME: nadine: do not start a sentence with "To"
-To state it in other words, the skyline does not contain tuples which
+In other words, the skyline does not contain tuples which
 are nobody's favorite.
 % The skyline exclues exactly the tuples which are nobody's favorite
 %
-The notion of skyline is also called \emph{Pareto optimal set} and the
-computation of it \emph{maximum vector problem}.
+The notion of skyline is also called \emph{Pareto optimal set} and its
+computation \emph{maximum vector problem}.
 
 
 In this thesis we present our work on extending PostgreSQL, an open
-source relational database system, with the skyline operator.
+source relational database management system (RDBMS), with the skyline operator.
 %
 Our implementation provides several physical operators for computing
 the skyline, namely: BNL, SFS, and a variant of LESS.
@@ -41,7 +40,7 @@ With this effort we hope to lay the ground for future work in this
 area and move the skyline operator from standalone implementations to
 the habitat it belongs to: an RDBMS.
 %
-Moreover we discovered a flaw in the original version of BNL and give
+As a byproduct of our work, we discovered a flaw in the original version of BNL and give
 a corrected version.
 
 It is well known that the performance of skyline queries is sensitive

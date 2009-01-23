@@ -9,18 +9,14 @@
 #define OPTIONS a4paper,10pt,final
 #endif
 
-#ifndef AUTHOR_HEDER
-#define AUTHOR_HEDER 1
+#ifndef AUTHOR
+#define AUTHOR Ing. Bakk.techn. Hannes Eder
 #endif
 
 \documentclass[OPTIONS]{book}
 
 \newcommand\thetitle{On Extending PostgreSQL with the Skyline Operator}
-#if AUTHOR_HEDER
-\newcommand\theauthor{Ing. Bakk.techn. Hannes Eder}
-#else
-\newcommand\theauthor{Ing. Bakk.techn. Johann Eder}
-#endif
+\newcommand\theauthor{AUTHOR}
 \newcommand\thedate{28.01.2009}
 
 \title{\thetitle}

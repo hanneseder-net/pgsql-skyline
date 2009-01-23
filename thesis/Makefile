@@ -17,7 +17,8 @@ TMPFILES=*.aux *.log *.toc *.lot *.lof *.lol *.bbl *.blg *.ind *.ilg *.idx *.out
 TRASHFILES=*~ *.*~
 
 # use in `make distclean` to remove all files
-TARGETFILES=00-thesis-heder.pdf 00-thesis-jeder.pdf
+TARGETFILES=00-thesis-heder.pdf 00-thesis-jeder.pdf 00-thesis-heder-twoside.pdf 00-thesis-jeder-twoside.pdf
+
 
 # retrieve subversion revision number of working directory
 REVISION := $(shell svn info | perl -n -e 'if ($$_ =~ m/^Revision:\s*(\d+)/) { print "$$1"; }')
@@ -58,10 +59,17 @@ skyline.bib: ../bibtex/bib/skyline/skyline.bib
 #			just <macro> is given, <val> is taken to be 1
 
 00-thesis-heder.tex: 00-thesis.skel Makefile
-	cpp -C -P -D"OPTIONS=a4paper,10pt,final" $< >$@
+	cpp -C -P -D"OPTIONS=a4paper,10pt,final,oneside" -D"AUTHOR=Ing. Bakk.techn. Hannes Eder" $< >$@
 
 00-thesis-jeder.tex: 00-thesis.skel Makefile
-	cpp -C -P -D"OPTIONS=a4paper,10pt,final" -D"AUTHOR_HEDER=0" $< >$@
+	cpp -C -P -D"OPTIONS=a4paper,10pt,final,oneside" -D"AUTHOR=Ing. Bakk.techn. Johann Eder" $< >$@
+
+
+00-thesis-heder-twoside.tex: 00-thesis.skel Makefile
+	cpp -C -P -D"OPTIONS=a4paper,10pt,final,twoside" -D"AUTHOR=Ing. Bakk.techn. Hannes Eder" $< >$@
+
+00-thesis-jeder-twoside.tex: 00-thesis.skel Makefile
+	cpp -C -P -D"OPTIONS=a4paper,10pt,final,twoside" -D"AUTHOR=Ing. Bakk.techn. Johann Eder" $< >$@
 
 
 #
@@ -74,22 +82,23 @@ close-heder:
 close-jeder:
 	-pdfclose --file=00-thesis-jeder.pdf
 
+close-heder-twoside:
+	-pdfclose --file=00-thesis-heder-twoside.pdf
+
+close-jeder-twoside:
+	-pdfclose --file=00-thesis-jeder-twoside.pdf
+
 
 #
 # railroad diagrams
 #
 
-00-thesis-heder.rai: prereq 00-thesis-heder.tex $(FILES)
-	pdflatex 00-thesis-heder
 
-00-thesis-heder.rao: 00-thesis-heder.rai
-	rail 00-thesis-heder
+%.rai: %.tex $(FILES)
+	pdflatex $(patsubst %.tex,%,$<)
 
-00-thesis-jeder.rai: prereq 00-thesis-jeder.tex $(FILES)
-	pdflatex 00-thesis-jeder
-
-00-thesis-jeder.rao: 00-thesis-jeder.rai
-	rail 00-thesis-jeder
+%.rao: %.rai
+	rail $(patsubst %.rai,%,$<)
 
 
 #
@@ -103,6 +112,15 @@ close-jeder:
 
 00-thesis-jeder.pdf: prereq close-jeder 00-thesis-jeder.rao 00-thesis-jeder.tex $(FILES)
 	texify --pdf $(TEXIFYFLAGS) 00-thesis-jeder.tex
+	pdfopen --file=$@ --page=$(CURRENTWORKPAGE)
+
+00-thesis-heder-twoside.pdf: prereq close-heder 00-thesis-heder-twoside.rao 00-thesis-heder-twoside.tex $(FILES)
+	texify --pdf $(TEXIFYFLAGS) 00-thesis-heder-twoside.tex
+	pdfopen --file=$@ --page=$(CURRENTWORKPAGE)
+
+
+00-thesis-jeder-twoside.pdf: prereq close-jeder 00-thesis-jeder-twoside.rao 00-thesis-jeder-twoside.tex $(FILES)
+	texify --pdf $(TEXIFYFLAGS) 00-thesis-jeder-twoside.tex
 	pdfopen --file=$@ --page=$(CURRENTWORKPAGE)
 
 

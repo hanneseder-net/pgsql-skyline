@@ -381,10 +381,10 @@ management has to be addressed.  Secondly, the existing index structures
 such as R-trees in an RDBMS can be adapted to implement index-based
 skyline algorithms.  Third, if several skyline algorithms are
 available in an RDBMS, the system is able to select the most efficient
-one for the given data sets.  Indeed, the comparisons of the skyline
+one for the given datasets.  Indeed, the comparisons of the skyline
 algorithms we have so far implemented reveal that there does not exist
 a clear winner in all aspects.  The efficiency of the algorithms
-depends on the properties of the data sets such as dimension,
+depends on the properties of the datasets such as dimension,
 distribution, cardinality and so on.
 
 We discovered several \emph{hidden rules}, which are remarkably simple
@@ -1804,7 +1804,7 @@ coincide.
 
 Our finding is that under certain conditions the code from
 \autoref{code:bnl} does not terminate.  To show this property, we
-construct a data set as follows:
+construct a dataset as follows:
 
 \begin{eqnarray}
 \mathcal{I} = \{a_1, \ldots, a_n, b_1, \ldots, b_m, c_1, \ldots, c_n\}
@@ -2744,8 +2744,8 @@ default is to sort null values after all the non-null values for
 \inlinesql{SKYLINE OF MIN} and for \inlinesql{SKYLINE OF MAX} to have
 the null values before the non-null values.  Specifying
 \inlinesql{NULLS FIRST/LAST} overrides this default.  
-%done:fang: "Question my arise ..."
-%hannes: I think "The question my arise ..." is correct
+%done:fang: "Question may arise ..."
+%hannes: I think "The question may arise ..." is correct
 The question
 may arise if \inlinesql{NULLS LAST} should be the default for
 \inlinesql{SKYLINE OF MAX}, but as this is not the case for the
@@ -5861,7 +5861,7 @@ standard.
 
 We have conducted extensive experiments with a total workload of 
 more than 200~days of CPU time on various datasets.
-The experimental environment we have designed and setup up for this
+The experimental environment we have designed and setup for this
 task is noteworthy on its own.
 %
 It is well known that the performance of skyline queries is sensitive

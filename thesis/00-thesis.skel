@@ -101,7 +101,7 @@
 	moredelim=[is][\bf]{|}{|}
 }
 
-\renewcommand\lstlistingname{listing}
+\renewcommand\lstlistingname{Listing}
 
 \makeatletter
 \renewcommand\tableofcontents{%
@@ -191,6 +191,7 @@
 
 \makeatother
 
+\renewcommand\subsectionautorefname{section}
 
 \begin{document}
 

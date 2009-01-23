@@ -3719,7 +3719,7 @@ functions\footnote{see \srcref{src/include/utils/tuplewindow.h}}:
 creates a tuple window with the maximum size of \lstinline|maxKBytes|
 KB or with a maximum of \lstinline|maxSlots| slots. The number of
 slots is the stronger limit. For policy see the
-next sub-subsection.  The returned value must be
+next subsubsection.  The returned value must be
 used in all subsequent calls to the tuple window interface functions.
 
 \item \lstinline|void tuplewindow_end(TupleWindowState *state)| 
@@ -5027,17 +5027,17 @@ to the \texttt{jobs/} directory once this had no more Jobs. The Jobs in
 moved the next Job into a directory with the same name as the machine
 which is running \texttt{js.pl}, SKY01 to SKY07 in our case. The job
 was then executed and finally moved to the directory
-\texttt{done/}. See sub-subsection \emph{Job Scheduling} below for more details.
+\texttt{done/}. See subsubsection \emph{Job Scheduling} below for more details.
 As a result of the Job being executed a raw log file
 (cf. \autoref{fig:logfile}) was generated in the \texttt(log/)
 directory. We parsed this raw log files to CSV format with comment
 lines (cf. \autoref{fig:parsedlogfile}) with a script called
-\texttt{qp2log}, see sub-subsection \emph{To CSV Format} below. The last step
+\texttt{qp2log}, see subsubsection \emph{To CSV Format} below. The last step
 before aggregating and analyzing the data (see
 \autoref{sec:aggregatingandanalyzing}) was to pivot and project the
 CSV files to a more compact representation
 (cf. \autoref{fig:pivot_log}) by script called \texttt{pivot\_log},
-see sub-subsection \emph{Pivoting the CSF File} below.
+see subsubsection \emph{Pivoting the CSF File} below.
 
 
 

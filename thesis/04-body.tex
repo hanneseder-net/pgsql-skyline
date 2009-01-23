@@ -155,7 +155,6 @@ quality and a cheap product with lower quality.  Surely we are not
 interested in a product with a high price and poor quality, we will
 later refer this situation as \emph{this product is dominated by
 another one}, as there are others which fulfill our criteria better.  The
-%FIXME: nadine: "dominated" requires "by"
 products which are not dominated are more or less equally good based on
 our given criteria, and we need to apply more criteria to come to a
 decision.  These products are called to be \emph{Pareto optimal}\index{Pareto optimal}
@@ -1348,7 +1347,7 @@ without those tuples that have a \emph{witness}\index{witness} that
 they are dominated. This can be formally expressed as:
 
 \begin{equation}
-\skyline(R) = R \backslash \{r \in R|\exists s \in R\colon s \dominates r\}
+\skyline_\dominates(\relation{R}) = \relation{R} \backslash \{r \in \relation{R}|\exists s \in \relation{R}\colon s \dominates r\}
 \end{equation}
 
 Computing the skyline this way is expensive, as the intermediate
@@ -1730,10 +1729,9 @@ $p \dominates q$ & point $p$ dominates point $q$
 \end{table}
 
 
-%FIXME: move both versions of BNL to their own page
-%\begin{figure}[htbp]
+\begin{figure}[htbp]
 \begin{lstlisting}[language=pseudo, 
-caption={Pseudo-code for Original Block-Nested-Loops (BNL) Algorithm, which does not terminate in all cases.},
+caption={Original Block-Nested-Loops (BNL) Algorithm, which does not terminate in all cases.},
 label={code:bnl}]
 function SkylineBNL($\mathcal{I}$)
 	// initialization
@@ -1784,9 +1782,74 @@ function SkylineBNL($\mathcal{I}$)
 
 	return ($\mathcal{O}$);
 \end{lstlisting}
-%\caption{Pseudo-code for Original Block-Nested-Loops (BNL) Algorithm, which does not terminate in all cases.}
+%\caption{Original Block-Nested-Loops (BNL) Algorithm, which does not terminate in all cases.}
 %\label{code:bnl}
-%\end{figure}
+\end{figure}
+
+
+\begin{figure}[htbp]
+\begin{lstlisting}[language=pseudo,
+caption={Fixed Block-Nested-Loops (BNL) Algorithm},
+label={code:fixedbnl}
+]
+function SkylineBNL($\mathcal{I}$) 
+	// initialization
+	$\mathcal{O} \gets \emptyset$; $\mathcal{T} \gets \emptyset$;
+	$\mathbb{W} \gets \emptyset$; $timestampIn \gets 0$; $timestampOut
+\gets 0$;
+
+	forever
+		// propagate points that have been compared to all
+		foreach $q \in \mathbb{W}$
+			if $q_{timestamp}$=$timestampIn$
+				append($\mathcal{O}$, $q$);
+				release($\mathbb{W}$, $q$);
+
+		// continue with next pass if necessary
+		if EOF($\mathcal{I}$)
+			if EOF($\mathcal{T}$)
+				break; // we are done
+
+			// switch to tempfile $\mathcal{T}$
+			$\mathcal{I} \gets \mathcal{T}$; $\mathcal{T} \gets \emptyset$;
+			$timestampIn \gets 0$; $timestampOut \gets 0$;
+			continue;
+
+		// fetch the next point
+		$p \gets$ next($\mathcal{I}$);
+		$p_{timestamp} \gets timestampOut$;
+		$timestampIn \gets timestampIn + 1$;
+		$isCandidate \gets true$;
+
+		// compare $p$ to all points in the tuple window $\mathbb{W}$
+		foreach $q \in \mathbb{W}$
+			if $q \dominates p$
+				free($p$);
+				$isCandidate \gets false$;
+				break;
+			else if $p \dominates q$
+				release($\mathbb{W}$, $q$);
+
+		if $isCandidate$
+			if hasfreespace($\mathbb{W}$)
+				// add $p$ to the tuple window $\mathbb{W}$
+				add($\mathbb{W}$, $p$);
+			else
+				// write $p$ to the tempfile $\mathcal{T}$
+				append($\mathcal{T}$, $p$);
+				free($p$);
+				$timestampOut \gets timestampOut + 1$;
+
+	// flushing the tuple window
+	foreach $q \in \mathbb{W}$
+		append($\mathcal{O}$, $q$);
+		release($\mathbb{W}$, $q$);
+
+	return ($\mathcal{O}$);
+\end{lstlisting}
+%\caption{Fixed Block-Nested-Loops (BNL) Algorithm}
+%\label{code:fixedbnl}
+\end{figure}
 
 
 \subsection{Non-termination of Block-Nested-Loops (BNL) Algorithm}
@@ -1888,69 +1951,6 @@ is reached.  Nevertheless we fixed it with a slight modification in
 the control flow, see \autoref{code:fixedbnl}.  And of course, our
 implementation in PostgreSQL is based on our fixed version.
 
-%\begin{figure}[htbp]
-\begin{lstlisting}[language=pseudo,
-caption={Pseudo-code for Fixed Block-Nested-Loops (BNL) Algorithm},
-label={code:fixedbnl}
-]
-function SkylineBNL($\mathcal{I}$) 
-	// initialization
-	$\mathcal{O} \gets \emptyset$; $\mathcal{T} \gets \emptyset$;
-	$\mathbb{W} \gets \emptyset$; $timestampIn \gets 0$; $timestampOut
-\gets 0$;
-
-	forever
-		// propagate points that have been compared to all
-		foreach $q \in \mathbb{W}$
-			if $q_{timestamp}$=$timestampIn$
-				append($\mathcal{O}$, $q$);
-				release($\mathbb{W}$, $q$);
-
-		// continue with next pass if necessary
-		if EOF($\mathcal{I}$)
-			if EOF($\mathcal{T}$)
-				break; // we are done
-
-			// switch to tempfile $\mathcal{T}$
-			$\mathcal{I} \gets \mathcal{T}$; $\mathcal{T} \gets \emptyset$;
-			$timestampIn \gets 0$; $timestampOut \gets 0$;
-			continue;
-
-		// fetch the next point
-		$p \gets$ next($\mathcal{I}$);
-		$p_{timestamp} \gets timestampOut$;
-		$timestampIn \gets timestampIn + 1$;
-		$isCandidate \gets true$;
-
-		// compare $p$ to all points in the tuple window $\mathbb{W}$
-		foreach $q \in \mathbb{W}$
-			if $q \dominates p$
-				free($p$);
-				$isCandidate \gets false$;
-				break;
-			else if $p \dominates q$
-				release($\mathbb{W}$, $q$);
-
-		if $isCandidate$
-			if hasfreespace($\mathbb{W}$)
-				// add $p$ to the tuple window $\mathbb{W}$
-				add($\mathbb{W}$, $p$);
-			else
-				// write $p$ to the tempfile $\mathcal{T}$
-				append($\mathcal{T}$, $p$);
-				free($p$);
-				$timestampOut \gets timestampOut + 1$;
-
-	// flushing the tuple window
-	foreach $q \in \mathbb{W}$
-		append($\mathcal{O}$, $q$);
-		release($\mathbb{W}$, $q$);
-
-	return ($\mathcal{O}$);
-\end{lstlisting}
-%\caption{Pseudo-code for Fixed Block-Nested-Loops (BNL) Algorithm}
-%\label{code:fixedbnl}
-%\end{figure}
 
 \subsection{Non-preservation of relative Tuple Order}
 \label{sec:bnl-tuple-order}
@@ -1991,9 +1991,9 @@ the end of each pass the tuple window can be completely purged.
 The pseudo-code is given in \autoref{code:sfs}.
 
 
-%\begin{figure}[htbp]
+\begin{figure}[htbp]
 \begin{lstlisting}[language=pseudo,
-caption={Pseudo-code for Sort-First-Skyline (SFS) Algorithm},
+caption={Sort-First-Skyline (SFS) Algorithm},
 label={code:sfs}
 ]
 function SkylineSFS($\mathcal{I}$) begin 
@@ -2041,9 +2041,9 @@ function SkylineSFS($\mathcal{I}$) begin
 
 	return ($\mathcal{O}$);
 \end{lstlisting}
-%\caption{Pseudo-code for Sort-First-Skyline (SFS) Algorithm}
+%\caption{Sort-First-Skyline (SFS) Algorithm}
 %\label{code:sfs}
-%\end{figure}
+\end{figure}
 
 \subsection{Preservation of relative Tuple Order}
 \label{sec:sfs-tuple-order}
@@ -2118,7 +2118,7 @@ order as in the input.
 
 %\begin{figure}[htbp]
 \begin{lstlisting}[language=pseudo,
-caption={Pseudo-code for Elimination Filter (EF)},
+caption={Elimination Filter (EF)},
 label={code:ef}
 ]
 function EliminationFilter($\mathcal{I}$, var $state$) begin 
@@ -2158,7 +2158,7 @@ function EliminationFilter($\mathcal{I}$, var $state$) begin
 		case DONE:
 			return NULL;
 \end{lstlisting}
-%\caption{Pseudo-code for Elimination Filter (EF)}
+%\caption{Elimination Filter (EF)}
 %\label{code:ef}
 %\end{figure}
 
@@ -3401,7 +3401,7 @@ modifying read and write pointers.
 
 %\begin{figure}[htbp]
 \begin{lstlisting}[language=pseudo,
-caption={Pseudo-code for Special case: 1 dimensional},
+caption={Special case: 1 dimensional},
 label={code:1dim}
 ]
 function ExecSkyline_1Dim(var $state$)
@@ -3443,7 +3443,7 @@ function ExecSkyline_1Dim(var $state$)
 	case DONE:
 		return NULL;
 \end{lstlisting}
-%\caption{Pseudo-code for Special case: 1 dimensional}
+%\caption{Special case: 1 dimensional}
 %\label{code:1dim}
 %\end{figure}
 
@@ -3519,7 +3519,7 @@ select the first one of the minimal tuples, according to the order induced by \t
 
 %\begin{figure}[htbp]
 \begin{lstlisting}[language=pseudo,
-caption={Pseudo-code for Special case: 1 dimensional distinct},
+caption={Special case: 1 dimensional distinct},
 label={code:1dimdistinct}
 ]
 function ExecSkyline_1DimDistinct(var $state$)
@@ -3543,7 +3543,7 @@ function ExecSkyline_1DimDistinct(var $state$)
 	case DONE:
 		return NULL;
 \end{lstlisting}
-%\caption{Pseudo-code for Special case: 1 dimensional distinct}
+%\caption{Special case: 1 dimensional distinct}
 %\label{code:1dimdistinct}
 %\end{figure}
 
@@ -3597,7 +3597,7 @@ q \dominates p \lor (q \nondistinct p \land \bot) = q \dominates p
 \pagebreak[4]
 %\begin{figure}[htbp]
 \begin{lstlisting}[language=pseudo,
-caption={Pseudo-code for Special case: 2 dimensional with presort},
+caption={Special case: 2 dimensional with presort},
 label={code:2dimpresort}
 ]
 function ExecSkyline_2DimPresort(var $state$)
@@ -3631,7 +3631,7 @@ function ExecSkyline_2DimPresort(var $state$)
 	case DONE:
 		return NULL;
 \end{lstlisting}
-%\caption{Pseudo-code for Special case: 2 dimensional with presort}
+%\caption{Special case: 2 dimensional with presort}
 %\label{code:2dimpresort}
 %\end{figure}
 
@@ -3651,7 +3651,7 @@ the counters $state.pos$ and $innerPos$ and favor the first tuple.
 
 %\begin{figure}[htbp]
 \begin{lstlisting}[language=pseudo,
-caption={Pseudo-code for MNL},
+caption={MNL},
 label={code:mnl}
 ]
 function ExecSkyline_MaterializedNestedLoop(var $state$)
@@ -3700,7 +3700,7 @@ function ExecSkyline_MaterializedNestedLoop(var $state$)
 	case DONE:
 		return NULL;
 \end{lstlisting}
-%\caption{Pseudo-code for MNL}
+%\caption{MNL}
 %\label{code:mnl}
 %\end{figure}
 
@@ -3834,7 +3834,7 @@ can be specified effect the tuple window.
 
 %\begin{figure}[htbp]
 \begin{lstlisting}[language=pseudo,
-caption={Pseudo-code for BNL},
+caption={BNL},
 label={code:fixedbnl-statemachine}
 ]
 function ExecSkyline_BlockNestedLoop(var $state$)
@@ -3925,7 +3925,7 @@ function ExecSkyline_BlockNestedLoop(var $state$)
 		case DONE:
 			return NULL;
 \end{lstlisting}
-%\caption{Pseudo-code for BNL}
+%\caption{BNL}
 %\label{code:fixedbnl-statemachine}
 %\end{figure}
 
@@ -3943,7 +3943,7 @@ the way it fits into the query execution engine, see
 \autoref{code:sfs-statemachine}.
 
 \begin{lstlisting}[language=pseudo,
-caption={Pseudo-code for SFS},
+caption={SFS},
 label={code:sfs-statemachine}
 ]
 function ExecSkyline_SortFilterSkyline(var $state$)
@@ -4121,7 +4121,6 @@ and this would not be appreciated as part of a checked build.  For the
 basic regression test see
 \srcref{src/test/regress/sql/skyline\_base.sql} and
 \srcref{src/test/regress/expected/skyline\_base.out}.
-%FIXME: linebreak
 
 For a more extensive test see the Perl script \texttt{slregress.pl},
 here a larger set of test cases is produced and the result is always

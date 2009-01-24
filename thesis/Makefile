@@ -1,4 +1,5 @@
 # -*- Makefile -*-
+.PHONY: all clean distclean
 CURRENTWORKPAGE=1
 # set CURRENTWORKPAGE to the page in the .pdf where you are currently
 # working on, this is used for pdfopen --page=..
@@ -17,7 +18,9 @@ TMPFILES=*.aux *.log *.toc *.lot *.lof *.lol *.bbl *.blg *.ind *.ilg *.idx *.out
 TRASHFILES=*~ *.*~
 
 # use in `make distclean` to remove all files
-TARGETFILES=00-thesis-heder.pdf 00-thesis-jeder.pdf 00-thesis-heder-twoside.pdf 00-thesis-jeder-twoside.pdf
+TARGETFILES=00-thesis-heder.pdf 00-thesis-jeder.pdf 00-thesis-heder-twoside.pdf
+
+# we do not need this one: 00-thesis-jeder-twoside.pdf
 
 
 # retrieve subversion revision number of working directory

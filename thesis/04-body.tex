@@ -148,18 +148,19 @@
 \section{General Introduction}
 \label{sec:generalintroduction}
 
-In everyday-life we are used to make decisions based on multiple
-criteria, e.g. price and quality for products.  Frequently there is no
+In everyday-life we are used to making decisions based on multiple
+criteria, e.g. price, quality, and delivery time for products.  Frequently there is no
 clear winner over all criteria, i.e. a high-priced product with high
 quality and a cheap product with lower quality.  Surely we are not
 interested in a product with a high price and poor quality, we will
-later refer this situation as \emph{this product is dominated by
+later refer to this situation as \emph{this product is dominated by
 another one}, as there are others which fulfill our criteria better.  The
 products which are not dominated are more or less equally good based on
-our given criteria, and we need to apply more criteria to come to a
-decision.  These products are called to be \emph{Pareto optimal}\index{Pareto optimal}
+our given criteria, and we need to apply additional criteria to come to a
+decision.  These products are called \emph{Pareto optimal}\index{Pareto optimal}
 based on the given criteria. \citet{Borzsonyi2001} coined in their
 paper the term \emph{skyline operator} for this type of queries.
+%FIXME: reinhard: what queries.
 
 \begin{figure}[htbp]
 % this is from: 
@@ -193,7 +194,7 @@ a popular website with a collection of member-generated royalty-free images,
 has $\approx 25{,}000$ photos in stock for the search term
 \emph{skyline}, as of May 23 2008. 
 % http://www.merriam-webster.com/cgi-bin/dictionary?book=Dictionary&va=skyline
-The Merriam-Webster's online dictionary gives following definition for \emph{skyline}:
+The Merriam-Webster's online dictionary gives the following definition for \emph{skyline}:
 \begin{enumerate}
 \item the apparent juncture of earth and sky: \emph{horizon}
 \item an outline (as of buildings or a mountain range) against the
@@ -256,29 +257,6 @@ influenced by the keyword \inlinesql{DISTINCT}. So overall, possible
 answers are $\{a, c, f\}$, $\{b, c, f\}$, or $\{a, b, c, f\}$.
 \end{example}
 
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=100mm]{plots-misc/PlotSkyline3D}%
-\caption{Skyline of buildings}%
-\label{fig:threeDskyline}%
-\end{figure}
-
-\begin{table}[htbp]
-\centering
-\begin{tabular}{l|rrrll}
-id & x & y & z & color & row\\
-\hline
-$a$ & 0 & 1 & 1.5 & red & back \\
-$b$ & 0 & 0 & 1.5 & red & front \\
-$c$ & 1 & 1 & 1.25 & green & back \\
-$d$ & 1 & 0 & 1.0 & green & front \\
-$e$ & 2 & 1 & 0.5 & blue & back \\
-$f$ & 2 & 0 & 0.75 & blue & front
-\end{tabular}
-\caption{Data for \autoref{fig:threeDskyline}}
-\label{tab:threeDskyline}
-\end{table}
-
 \begin{example}[Which buildings are visible?]\label{ex:visibility}
 To answer this question we also have to take into account how close a
 building is, i.e. the $y$ coordinate.  Building $a$ is covered by $b$
@@ -310,6 +288,29 @@ On the other hand the query for \autoref{ex:visibility} looks like:
 \begin{interactive}
 SELECT * FROM building SKYLINE OF x DIFF, y MIN, z MAX;
 \end{interactive}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=100mm]{plots-misc/PlotSkyline3D}%
+\caption{Skyline of buildings}%
+\label{fig:threeDskyline}%
+\end{figure}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{l|rrrll}
+id & x & y & z & color & row\\
+\hline
+$a$ & 0 & 1 & 1.5 & red & back \\
+$b$ & 0 & 0 & 1.5 & red & front \\
+$c$ & 1 & 1 & 1.25 & green & back \\
+$d$ & 1 & 0 & 1.0 & green & front \\
+$e$ & 2 & 1 & 0.5 & blue & back \\
+$f$ & 2 & 0 & 0.75 & blue & front
+\end{tabular}
+\caption{Data for \autoref{fig:threeDskyline}}
+\label{tab:threeDskyline}
+\end{table}
 
 \section{Why extending SQL?}
 The skyline operator is within the expressive power of SQL and in
@@ -1655,7 +1656,7 @@ expression, whereas the non-indexed based skyline algorithms are first
 order citizens and can be placed anywhere in the relational algebra 
 expression.
 
-There is a whole class of other skyline algorithms, referred as
+There is a whole class of other skyline algorithms, referred to as
 \emph{continuous skyline computation}.  
 The task here is to initially compute the skyline and then update the
 skyline when tuples are added or removed from the dataset, e.g. in a
@@ -2214,7 +2215,7 @@ function EliminationFilter($\mathcal{I}$, var $state$) begin
 
 \section{Related Works}
 The closest related works to this thesis are \citep{Chaudhuri2006}
-and \citep{Goncalves2005, Goncalves2005a}.  Authors of both papers did an
+and \citep{Goncalves2005, Goncalves2005a}.  The authors of both papers did an
 implementation of the skyline operator into an RDBMS\index{RDBMS} as a full-blown
 relational operator.
 
@@ -2226,7 +2227,7 @@ cost-based optimizer.  The syntax they are using is Preference~SQL
 \citep{Kiessling2002a}.
 
 
-\citep{Goncalves2005} extended PostgreSQL with an hybrid approach 
+\citep{Goncalves2005} extended PostgreSQL with a hybrid approach 
 between \emph{top-k} and \emph{skyline operator} called top-k skyline\index{top-k-skyline}.
 Skyline strata\index{stratum} (see \autoref{sec:skyline-stratum}) are computed until
 at least $k$ records are returned.  With this approach all the second
@@ -4148,8 +4149,8 @@ or optimizing and/or refactoring other parts.
 
 
 \section{Experimental Setup}
-We ran our experiments on seven Dell OptiPlex 755, Intel Pentium
-Dual-Core CPU E2160 (1.80GHz, 1MB L2 cache), with 1~GB RAM and Seagate
+We ran our experiments on Dell OptiPlex 755 computers, with an Intel Pentium
+Dual-Core CPU E2160 (1.80GHz, 1MB L2 cache), with 1~GB RAM, and with a Seagate
 Barracuda 160~GB HDD (7200~rpm, SATA 3.0Gb/s, 8~MB cache) with a
 single NTFS partition,
 % average latency 4.16msec
@@ -5713,7 +5714,7 @@ derive some results on this topic.
 
 \section{Physical Operators}
 \subsection{Index-based Algorithms}
-In the future we plan to implement and evaluate index-based algorithms 
+In the future it would interesting to implement and evaluate index-based algorithms 
 such as 
 {\em Index} \citep{Tan2001}, 
 {\em Nearest Neighbor} (NN) \citep{Kossmann2002}, and
@@ -5780,8 +5781,8 @@ the query optimizer could select such specialized algorithms.
 
 \subsection{Speedup Tuple Comparison}
 We believe the concept of EF (Elimination Filter) is very promising
-and plan to further improve its efficiency and effectiveness, e.g. to
-integrate it as a filter in the index scan code, to use other data
+and we believe that it is possible to further improve its efficiency and effectiveness, e.g. to
+integrate it as a filter in the index scan code, or to use other data
 structures and policies for the EF window.
 
 
@@ -5823,14 +5824,14 @@ before string data.
 \chapter{Conclusion}
 \label{chap:summary}
 
-In this thesis we presented our achievements in extending the open source
+In this thesis we presented the extension of the open source
 RDBMS\index{RDBMS} PostgreSQL with the skyline operator.  It is our strong belief that with
 this effort the skyline operator is in the habitat it belongs to.
 
 The algorithms we have implemented so far are BNL, SFS, and a variant
 of LESS.  
 We have extended the basic syntax of the \inlinesql{SKYLINE~OF}-clause
-\citep{Borzsonyi2001} in order to specify:
+\citep{Borzsonyi2001} in order to specify the following aspects:
 
 \begin{itemize}
 \item The treatment of NULL values (\texttt{NULLS FIRST}\index{NULLS FIRST (SQL)@\texttt{NULLS FIRST} (SQL)} and \texttt{NULLS LAST}\index{NULLS LAST (SQL)@\texttt{NULLS LAST} (SQL)})
@@ -5860,7 +5861,7 @@ standard.
 
 We have conducted extensive experiments with a total workload of 
 more than 200~days of CPU time on various datasets.
-The experimental environment we have designed and setup for this
+The experimental environment we have designed and set up for this
 task is noteworthy on its own.
 %
 It is well known that the performance of skyline queries is sensitive

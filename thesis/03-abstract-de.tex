@@ -9,33 +9,35 @@
 \addtocontents{toc}{\protect \contentsline {chapter}{Zusammenfassung\revision}{\thepage }{}}
 
 
-Im Bereich der multi-objective Optimierung ist es aus Anwendersicht
-manchmal schwierig geeignete Zielfunktion zu finden.
+% multi-objective <=> multikriteriell
+% http://dict.leo.org/forum/viewUnsolvedquery.php?idThread=532247
+Im Bereich der multikriteriellen Optimierung ist es aus Anwendersicht
+manchmal schwierig, eine geeignete Zielfunktion zu finden.
 %
 Der \emph{Skyline Operator} filtert aus einer potentiell gro\ss{}en
-Datenmenge \emph{interessante} Tuple heraus.
+Datenmenge \emph{interessante} Tupel heraus.
 %
-Ein Tuple geh\"ort genau dann zur \emph{Skyline}, wenn es nicht durch
-anderes \emph{dominiert} wird, d.h. es gibt kein Tuple das in allen
+Ein Tupel geh\"ort genau dann zur \emph{Skyline}, wenn es nicht durch
+ein anderes \emph{dominiert} wird, d.h. es gibt kein Tupel das in allen
 Kriterien zumindest gleich gut ist und in zumindest einem besser ist.
 %
 Unabh\"angig wie die Pr\"aferenzen innerhalb der Attribute gew\"ahlt
-werden, sind nur jene Tuple, die unter einer \emph{monotonen
+werden, sind nur jene Tupel, die unter einer \emph{monotonen
 Scoring-Funktion} am besten bewertet werden, Teil der Skyline.
 %
-Mit anderen Worten, die Skyline schlie\ss{}t alle Tuple aus die
+Mit anderen Worten, die Skyline schlie\ss{}t alle Tupel aus, die
 niemand als Favorit hat.
 %
 Das Konzept der Skyline ist auch unter dem Namen \emph{Pareto
-Optimalit\"at} und ihre Berechnung als \emph{Maximum Vector
+Optimalit\"at} und ihre Berechnung als \emph{Maximum Vektor
 Problem} bekannt.
 
 
-Diese Diplomarbeit pr\"asentiert unsere Arbeit PostgreSQL, ein Open
+Diese Diplomarbeit pr\"asentiert unsere Arbeit, PostgreSQL, ein Open
 Source relationales Datenbankmanagementsystem (RDBMS), um den Skyline Operator zu
 erweitern.
 %
-Unsere Implementierung bietet verschiedene \emph{physische Operatoren}
+Unsere Implementierung bietet verschiedene \emph{physische Operatoren},
 um die Skyline zu berechnen und zwar: BNL, SFS und eine Variante von
 LESS.
 %

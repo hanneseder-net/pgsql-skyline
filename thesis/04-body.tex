@@ -158,8 +158,12 @@ another one}, as there are others which fulfill our criteria better.  The
 products which are not dominated are more or less equally good based on
 our given criteria, and we need to apply additional criteria to come to a
 decision.  These products are called \emph{Pareto optimal}\index{Pareto optimal}
-based on the given criteria. \citet{Borzsonyi2001} coined in their
-paper the term \emph{skyline operator} for this type of queries.
+based on the given criteria.
+%
+For this notion \citet{Borzsonyi2001} coined the term \emph{skyline}.
+%
+The associated relational operator is called \emph{skyline operator}.
+
 %FIXME: reinhard: what queries.
 
 \begin{figure}[htbp]
@@ -313,101 +317,84 @@ $f$ & 2 & 0 & 0.75 & blue & front
 \end{table}
 
 \section{Why extending SQL?}
-The skyline operator is within the expressive power of SQL and in
-\autoref{sec:rewrite-to-sql} we show how to rewrite an SQL query with
-a \inlinesql{SKYLINE~OF}-clause into standard SQL. 
+The \emph{skyline operator} \citep{Borzsonyi2001} is within the expressive
+power of SQL and in \autoref{sec:rewrite-to-sql} we show how to
+rewrite an SQL query with a \inlinesql{SKYLINE~OF}-clause into
+standard SQL.
+%
 However there are good reasons for including a \emph{skyline} or 
-\emph{preference operator} into SQL:
+\emph{preference operator} into SQL and building it into an RDBMS:
 
 \begin{itemize}
 \item 
 From a user's perspective, it is easier to specify and easier to grasp
 what's going on, than a query with a correlated subquery or using
-SQL's \inlinesql{EXCEPT}\index{EXCEPT (SQL)@\texttt{EXCEPT} (SQL)} (see \autoref{sql:rewrite-with-except}).
+SQL's \inlinesql{EXCEPT}\index{EXCEPT (SQL)@\texttt{EXCEPT} (SQL)}
+(see \autoref{sql:rewrite-with-except}).
 
 \item
 It is faster to evaluate, as there are numerous algorithms for skyline
-queries. Furthermore when this preference query is expressed with a correlated
-subselect it boils down to a \naive ``nested-loop''.
+queries. Furthermore when this preference query is expressed with a
+correlated subselect it boils down to a \naive ``nested-loop''.
 \citet{Grust1997, Braumandl1998} show that such a query cannot be
 unnested.
 
 \item
 The study of preference queries on their own gave birth to a new set
 of optimization opportunities \citep{Chomicki2003a, Kiessling2003}.
+
+\item
+The skyline operator can be integrated with other relational
+operators, thus more sophisticated queries can be constructed.
+Moreover, no work on concurrency control and transaction management
+has to be addressed.
+
+\item
+The existing index structures such as R-trees in an RDBMS can be
+adapted to implement index-based skyline algorithms.
+
+\item
+If several skyline algorithms are available in an RDBMS, the system is
+able to select the most efficient one for the given datasets.
 \end{itemize}
 
-% \subsection{Fields of Application}
-% motivation: green computing: less CPU time,
-% less computers, less energy --> safe the planet
-% 
-% stocks: risk vs. costs (--> streaming skyline see [Tao2006])
-% 
-% example of skyline
-% 
-% when traveling by airplane: time vs. costs
-% 
-% TODO: more dim: \#stops, total dist travel by bus: \#of visited cities
-% 
-% it is shown on some website. which?
-% 
-% Credit To: Ali (room mate)
-% 
-% employee (salary, revenue, years in the company)
+It is well known that the cost estimation of the skyline queries is a
+non-trivial task \citep{Chaudhuri2006} since the performance of a
+skyline query is sensitive to a number of parameters
+\citep{Godfrey2007}.
 %
+Therefore building a skyline query optimizer is a  challenging task.
 
 
-\section{Main Results} 
-The skyline operator \citep{Borzsonyi2001} filters out the
-\emph{interesting} points from a potentially large set of data
-points. The skyline operator returns the Pareto optimal\index{Pareto
-optimal} elements of a set. This is also known as the maximum vector
-problem\index{maximum vector problem}.
+\section{Goal and Main Results} 
 
-Dedicated algorithms have been proposed for the case where the whole relation
-fits into main memory \citep{Preparata1985}, nevertheless we do not
-take them into account as memory is always a rare resource in a
+In this thesis we aim at extending PostgreSQL with the skyline
+operator and the evaluation of skyline algorithms in the
+RDBMS\index{RDBMS} context, with the ultimate goal of building a
+skyline query optimizer to automatically generate a good query plan
+w.r.t. I/O, time, and memory consumption.
+
+We wish to acquaint the skyline operator to a broader audience and lay
+the ground for future work in this area by providing an open source
+implemenation in an RDBMS, which is the natural habitat for the
+skyline operator.
+
+The scope of this thesis is restricted to non-index-based skyline
+algorithms.
+%
+Dedicated algorithms have been proposed for the case where the whole
+relation fits into main memory \citep{Preparata1985}, nevertheless we
+do not take them into account as memory is always a rare resource in a
 database scenario, either due to the number of concurrent users or
 limited total main memory, e.g. on a handheld device.
 
-%All of the algorithms are implemented as stand-alone algorithms,
-In this thesis we focus on extending PostgreSQL with the skyline
-operator and the evaluation of skyline algorithms in the RDBMS\index{RDBMS} context.
-Building the skyline query operation in an RDBMS has
-several advantages.  First, skyline can be integrated with other
-relational operators, thus more sophisticated queries can be
-constructed.  Moreover, no work on concurrency control and transaction
-management has to be addressed.  Secondly, the existing index structures
-such as R-trees in an RDBMS can be adapted to implement index-based
-skyline algorithms.  Third, if several skyline algorithms are
-available in an RDBMS, the system is able to select the most efficient
-one for the given datasets.  Indeed, the comparisons of the skyline
-algorithms we have so far implemented reveal that there does not exist
-a clear winner in all aspects.  The efficiency of the algorithms
-depends on the properties of the datasets such as dimension,
-distribution, cardinality and so on.
-
-We discovered several \emph{hidden rules}, which are remarkably simple
-and useful, but hard to obtain from the theoretical investigation.  We
-expect that our exposition of experimental results on skyline
-algorithms could serve as a guideline for developing heuristics of a
-skyline query optimizer, and in the meantime, provide some insight for
-a deeper understanding of the skyline query characteristics.
-
-%(more details are given in \autoref{sec:contribution}).
-For instance, BNL is more efficient than SFS and even LESS, if the
-dimension of the data is less than 5 and the number of tuples is
-relatively small.
-
-%\subsection{Our Contribution}
-%\label{sec:contribution}
-So far we have implemented the non-index based algorithms
+\bigskip
+\noindent
+So far we have implemented the non-index-based algorithms
 BNL, SFS, and a variant of LESS in PostgreSQL.
-%To the best of our knowledge, this is the first work of building
-%skyline operators in an open source RDBMS. 
-%\todo{there are implementations: see \citep{Chaudhuri2006, Goncalves2005, Brando2007}}
-In addition, 
-we extended the standard syntax to specify
+%
+In addition, we extended the standard syntax to specify the following
+aspects:
 \begin{itemize}
 \item The treatment of NULL values (\texttt{NULLS FIRST}\index{NULLS FIRST (SQL)@\texttt{NULLS FIRST} (SQL)} and \texttt{NULLS LAST}\index{NULLS LAST (SQL)@\texttt{NULLS LAST} (SQL)})
 \item The usage of order relations other than $<$ and $>$ (\texttt{USING \emph{Op}})
@@ -421,17 +408,51 @@ we extended the standard syntax to specify
 \end{itemize}
 \end{itemize}
 
-The ultimate goal of our work is building a skyline query optimizer to
-automatically generate a good query plan w.r.t. I/O, time, and memory
-consumption.  It is well known that the cost estimation of the skyline
-queries is a non-trivial task \citep{Chaudhuri2006} since the
-performance of a skyline query is sensitive to a number of parameters
-\citep{Godfrey2007}.  To achieve this goal, we conducted extensive
-experiments on the skyline implementations.
+We prove that the original version of BNL does not terminate in all
+cases and give a corrected version.
+
+We propose a new use case for the elimination filter and
+show its usefulness through experiments, namely: BNL+EF.
+
+To achieve the goal of building a skyline query optimizer, we
+conducted extensive experiments on the skyline operator
+implementations.
+%
+The experimental environment we have designed and se up is noteworthy
+on its own.
+%
+Our experiments confirm the result from \citet{Borzsonyi2001}, that
+specialized algorithms are faster than the same queries in standard
+SQL by orders of magnitude.
+
+The comparisons of the skyline algorithms we have so far implemented
+reveal that there does not exist a clear winner in all aspects.  The
+efficiency of the algorithms depends on the properties of the datasets
+such as dimension, distribution, cardinality and so on.
+
+However we discovered several \emph{hidden rules}, which are
+remarkably simple and useful, but hard to obtain from the theoretical
+investigation.  We expect that our exposition of experimental results
+on skyline algorithms could serve as a guideline for developing
+heuristics of a skyline query optimizer, and in the meantime, provide
+some insight for a deeper understanding of the skyline query
+characteristics.
+
+\begin{itemize}
+\item
+For instance, the elimination filter is effective only if the
+selectivity factor for the skyline query is not more than 0.1, and
+
+\item
+BNL is more efficient than SFS and even LESS, if the dimension of the
+data is less than 5 and the number of tuples is relatively small.
+\end{itemize}
 
 For the purpose of repeatability we have set up a website to present
-our experimental results. The source code, and the log-files from our
-experiments are online accessible at:
+our experimental results. The source code and the log-files from our
+experiments are online accessible at this website. Furthermore it is
+possible to test-drive our implementation through a web-interface.
+All this is available at:
 \url{http://skyline.dbai.tuwien.ac.at/}.
 
 
@@ -1652,7 +1673,7 @@ of these methods are presented in several works
 
 Furthermore from a relational algebraic point of view, index-based
 skyline algorithms can only be placed at the leaves of an algebraic
-expression, whereas the non-indexed based skyline algorithms are first
+expression, whereas the non-index-based skyline algorithms are first
 order citizens and can be placed anywhere in the relational algebra 
 expression.
 
@@ -1680,7 +1701,7 @@ we will not consider this scenario further.
 % \citep{Bentley1990, Bentley1993}
 
 
-% \section{Non-indexed based Skyline Algorithms}
+% \section{Non-indexed-based Skyline Algorithms}
 The skyline algorithms we have implemented are: BNL, SFS, BNL+EF and
 SFS+EF. EF stands for {\em Elimination Filter}, which was introduced
 in \citep{Godfrey2005} as an essential routine for the LESS algorithm.
@@ -2060,7 +2081,7 @@ to the output.
 \section{Linear Elimination Sort for Skyline (LESS)}
 \citet{Godfrey2005} proposed the LESS algorithm, an improvement
 over SFS \citep{Chomicki2003}. LESS is generally considered as the fastest
-known non-index based skyline algorithm in literature. The essential
+known non-index-based skyline algorithm in literature. The essential
 differences between SFS and LESS are:
 
 \begin{enumerate}
@@ -5875,7 +5896,7 @@ to a number of parameters.
 From our experimental results we were able to expose several findings
 which are difficult to be verified theoretically.  They are: (1) the
 elimination filter is effective only if the selectivity factor of the
-dataset is not more than $0.1$; (2) for datasets up to $500$ tuples
+skyline query is not more than $0.1$; (2) for datasets up to $500$ tuples
 and of relatively small dimensions (e.g. up to five) BNL performs the
 best in all aspects.
 %

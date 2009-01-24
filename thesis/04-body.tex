@@ -1732,7 +1732,7 @@ $p \dominates q$ & point $p$ dominates point $q$
 
 \begin{figure}[htbp]
 \begin{lstlisting}[language=pseudo, 
-caption={Original Block-Nested-Loops (BNL) Algorithm, which does not terminate in all cases.},
+caption={Original Block-Nested-Loops (BNL) Algorithm, which does not terminate in all cases},
 label={code:bnl}]
 function SkylineBNL($\mathcal{I}$)
 	// initialization
@@ -1785,6 +1785,7 @@ function SkylineBNL($\mathcal{I}$)
 \end{lstlisting}
 %\caption{Original Block-Nested-Loops (BNL) Algorithm, which does not terminate in all cases.}
 %\label{code:bnl}
+\vfill
 \end{figure}
 
 
@@ -1795,8 +1796,7 @@ label={code:fixedbnl}
 ]
 function SkylineBNL($\mathcal{I}$) 
 	// initialization
-	$\mathcal{O} \gets \emptyset$; $\mathcal{T} \gets \emptyset$;
-	$\mathbb{W} \gets \emptyset$; $timestampIn \gets 0$; $timestampOut
+	$\mathcal{O} \gets \emptyset$; $\mathcal{T} \gets \emptyset$; $\mathbb{W} \gets \emptyset$; $timestampIn \gets 0$; $timestampOut
 \gets 0$;
 
 	forever
@@ -1850,6 +1850,7 @@ function SkylineBNL($\mathcal{I}$)
 \end{lstlisting}
 %\caption{Fixed Block-Nested-Loops (BNL) Algorithm}
 %\label{code:fixedbnl}
+\vfill
 \end{figure}
 
 
@@ -2906,7 +2907,7 @@ The C structure \texttt{Node} is the root of the class hierarchy.
 \pagebreak[2]
 
 \begin{lstlisting}[language=pseudo,
-caption={PostgreSQL simple object system},
+caption={PostgreSQL's simple object system},
 label={code:simple-object-system}
 ]
 typedef struct
@@ -3650,6 +3651,7 @@ any non-leaf node in the query plan and not only on top of a table or
 index scan.  To handle the \inlinesql{DISTINCT} case, we just use
 the counters $state.pos$ and $innerPos$ and favor the first tuple.
 
+\enlargethispage{-\baselineskip}
 %\begin{figure}[htbp]
 \begin{lstlisting}[language=pseudo,
 caption={MNL},
@@ -3943,6 +3945,8 @@ Listing \ref{code:sfs} translates straightforward into a state machine,
 the way it fits into the query execution engine, see
 \autoref{code:sfs-statemachine}.
 
+\enlargethispage{\baselineskip}
+
 \begin{lstlisting}[language=pseudo,
 caption={SFS},
 label={code:sfs-statemachine}
@@ -4003,6 +4007,7 @@ function ExecSkyline_SortFilterSkyline(var $state$)
 					break;
 
 				tuplewindow_movenext($state.window$);
+
 			break;
 
 		case DONE:
@@ -5250,7 +5255,7 @@ column is always RUNID.
 "sql.a15d1e2s0.10","sql","a15d1e2s0","100","10","100","sql","","","", \ellipsis
 \ellipsis
 \end{interactive}
-\caption{Typical tool chain for \texttt{pivot\_log}. Note that all the log files SQL-only runs are kept inside \texttt{sql.zip}.}
+\caption{Typical tool chain for \texttt{pivot\_log}. Note that all the log files for ``SQL-only'' Runs are kept inside \texttt{sql.zip}.}
 \label{fig:pivot_log}
 \end{figure}
 
@@ -5696,7 +5701,7 @@ work.  Nevertheless the query optimizer of PostgreSQL is not fully
 generic nor only cost-based, so it would take quite some effort to
 build an optimizer that is only controlled by rules when a specific
 transformation is applicable and the associated costs. See
-also \autoref{sec:operatorselection} and \autoref{sec:cardinality-and-cost-estimation}.
+also \autoref{sec:operatorselection} and \ref{sec:cardinality-and-cost-estimation}.
 
 \subsection{Algebraic Optimizations}
 \citet{Chomicki2003a} and \citet{Kiessling2003} show in their

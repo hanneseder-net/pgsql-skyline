@@ -363,7 +363,7 @@ non-trivial task \citep{Chaudhuri2006} since the performance of a
 skyline query is sensitive to a number of parameters
 \citep{Godfrey2007}.
 %
-Therefore building a skyline query optimizer is a  challenging task.
+Hence building a skyline query optimizer is a  challenging task.
 
 
 \section{Goal and Main Results} 
@@ -390,8 +390,12 @@ limited total main memory, e.g. on a handheld device.
 
 \bigskip
 \noindent
-So far we have implemented the non-index-based algorithms
-BNL, SFS, and a variant of LESS in PostgreSQL.
+So far we have implemented the non-index-based algorithms \emph{Block
+Nested Loop} (BNL), \emph{Sort First Skyline} (SFS), and a variant
+of \emph{Linear Elimination Sort for Skyline} (LESS) in PostgreSQL.
+%
+We propose a new use case for the elimination filter (EF) and
+show its usefulness through experiments, namely: BNL+EF.
 %
 In addition, we extended the standard syntax to specify the following
 aspects:
@@ -411,14 +415,11 @@ aspects:
 We prove that the original version of BNL does not terminate in all
 cases and give a corrected version.
 
-We propose a new use case for the elimination filter and
-show its usefulness through experiments, namely: BNL+EF.
-
 To achieve the goal of building a skyline query optimizer, we
 conducted extensive experiments on the skyline operator
 implementations.
 %
-The experimental environment we have designed and se up is noteworthy
+The experimental environment we have designed and set up is noteworthy
 on its own.
 %
 Our experiments confirm the result from \citet{Borzsonyi2001}, that

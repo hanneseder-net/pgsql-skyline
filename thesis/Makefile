@@ -18,7 +18,7 @@ TMPFILES=*.aux *.log *.toc *.lot *.lof *.lol *.bbl *.blg *.ind *.ilg *.idx *.out
 TRASHFILES=*~ *.*~
 
 # use in `make distclean` to remove all files
-TARGETFILES=00-thesis-heder.pdf 00-thesis-heder-twoside.pdf
+TARGETFILES=00-thesis-heder.pdf 00-thesis-jeder.pdf 00-thesis-heder-twoside.pdf
 
 # we do not need this one: 00-thesis-jeder-twoside.pdf
 
@@ -117,12 +117,12 @@ close-jeder-twoside:
 	texify --pdf $(TEXIFYFLAGS) 00-thesis-jeder.tex
 	pdfopen --file=$@ --page=$(CURRENTWORKPAGE)
 
-00-thesis-heder-twoside.pdf: prereq close-heder 00-thesis-heder-twoside.rao 00-thesis-heder-twoside.tex $(FILES)
+00-thesis-heder-twoside.pdf: prereq close-heder-twoside 00-thesis-heder-twoside.rao 00-thesis-heder-twoside.tex $(FILES)
 	texify --pdf $(TEXIFYFLAGS) 00-thesis-heder-twoside.tex
 	pdfopen --file=$@ --page=$(CURRENTWORKPAGE)
 
 
-00-thesis-jeder-twoside.pdf: prereq close-jeder 00-thesis-jeder-twoside.rao 00-thesis-jeder-twoside.tex $(FILES)
+00-thesis-jeder-twoside.pdf: prereq close-jeder-twoside 00-thesis-jeder-twoside.rao 00-thesis-jeder-twoside.tex $(FILES)
 	texify --pdf $(TEXIFYFLAGS) 00-thesis-jeder-twoside.tex
 	pdfopen --file=$@ --page=$(CURRENTWORKPAGE)
 

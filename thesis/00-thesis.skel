@@ -198,16 +198,18 @@
 \svnInfo $Id$ 
 
 %%% Title page: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\include{01-titlepage-new-de}
 \pagestyle{empty}
+\include{01-titlepage-new-de}
 #if TWOSIDE
 \pagenumbering{roman}
+\setcounter{page}{3}
 #else
 \addtolength\footskip{\baselineskip}
 \pagenumbering{arabic}
 \pagestyle{plain}
 \setcounter{page}{2}
 #endif
+
 
 %%% Preface: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \include{01-ididit}
@@ -217,9 +219,6 @@
 
 %%% Table of contents: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %\renewcommand{\contentsname}{Table of Contents}
-#if TWOSIDE
-\pagestyle{fancy}
-#endif
 \setcounter{tocdepth}{3} 
 \tableofcontents
 
@@ -234,6 +233,7 @@
 
 %%% Chapter 1: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 #if TWOSIDE
+\pagestyle{fancy}
 \pagenumbering{arabic}
 #endif
 \include{04-body}

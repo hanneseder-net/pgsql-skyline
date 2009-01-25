@@ -203,6 +203,7 @@
 #if TWOSIDE
 \pagenumbering{roman}
 #else
+\addtolength\footskip{\baselineskip}
 \pagenumbering{arabic}
 \pagestyle{plain}
 \setcounter{page}{2}

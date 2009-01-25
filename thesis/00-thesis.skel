@@ -191,7 +191,10 @@
 
 \makeatother
 
-\renewcommand\subsectionautorefname{section}
+\renewcommand\subsectionautorefname{section}%
+\newcommand\idx[1]{#1\index{#1}}%
+\newcommand\idxonlysql[1]{\index{#1 (SQL)@\texttt{#1} (SQL)}}%
+\newcommand\idxsql[1]{\texttt{#1}\idxonlysql{#1}}%
 
 \begin{document}
 

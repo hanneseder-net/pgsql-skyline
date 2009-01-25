@@ -6,6 +6,7 @@
 %%%
 \documentclass[a4paper,10pt,final,oneside]{book}
 
+
 \newcommand\thetitle{On Extending PostgreSQL with the Skyline Operator}
 \newcommand\theauthor{Ing. Bakk.techn. Hannes Eder}
 \newcommand\thedate{28.01.2009}
@@ -15,11 +16,6 @@
 \date{\thedate}
 
 \usepackage{heder}
-
-%\usepackage[T1]{fontenc}
-%\usepackage{textcomp}
-%\usepackage[scaled]{luximono}
-
 \usepackage{rail}
 \usepackage{subfig}
 \usepackage{listings}
@@ -29,36 +25,6 @@
 \usepackage[cmbtt]{bold-extra}
 \usepackage{helvet}
 \usepackage{chngpage}
-
-
-%%%%% SETUP FANCYHEADERS
-\usepackage{fancyhdr}
-% with this we ensure that the chapter and section
-% headings are in lowercase.
-%\renewcommand{\chaptermark}[1]{\markboth{#1}{}}
-%\renewcommand{\sectionmark}[1]{\markright{\thesection\ #1}}
-%\renewcommand{\sectionmark}[1]{\markboth{\thesection} {#1}{}}
-%\renewcommand{\subsectionmark}[1]{\markright {#1}}
-\fancyhf{} % delete current setting for header and footer
-\fancyhead[RO,LE]{\thepage}
-\fancyhead[RE]{\leftmark}
-\fancyhead[LO]{\rightmark}
-\renewcommand{\headrulewidth}{0pt}
-\renewcommand{\footrulewidth}{0pt}
-%\addtolength{\headheight}{0.5pt} % make space for the rule
-\fancypagestyle{plain}{%
-   \fancyhead{} % get rid of headers on plain pages
-% \renewcommand{\headrulewidth}{0pt} % and the line
-}
-%Clear headers in empty pages.
-\let\origdoublepage\cleardoublepage
-\newcommand{\clearemptydoublepage}{%
-  \clearpage
-  {\pagestyle{empty}\origdoublepage}%
-}
-\let\cleardoublepage\clearemptydoublepage
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 %%%%% Listings parameters %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \lstloadlanguages{[ANSI]C}
 \lstset{% general command to set parameter(s)
@@ -178,7 +144,10 @@
 
 \makeatother
 
-\renewcommand\subsectionautorefname{section}
+\renewcommand\subsectionautorefname{section}%
+\newcommand\idx[1]{#1\index{#1}}%
+\newcommand\idxonlysql[1]{\index{#1 (SQL)@\texttt{#1} (SQL)}}%
+\newcommand\idxsql[1]{\texttt{#1}\idxonlysql{#1}}%
 
 \begin{document}
 
@@ -187,9 +156,16 @@
 %%% Title page: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \pagestyle{empty}
 \include{01-titlepage-new-de}
-%\include{01-titlepage-de}
-%\include{01-titlepage-en}
-\pagenumbering{roman}
+
+
+
+
+\addtolength\footskip{\baselineskip}
+\pagenumbering{arabic}
+\pagestyle{plain}
+\setcounter{page}{2}
+
+
 
 %%% Preface: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \include{01-ididit}
@@ -199,7 +175,6 @@
 
 %%% Table of contents: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %\renewcommand{\contentsname}{Table of Contents}
-\pagestyle{fancy}
 \setcounter{tocdepth}{3}
 \tableofcontents
 
@@ -213,7 +188,10 @@
 \newpagechapter
 
 %%% Chapter 1: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\pagenumbering{arabic}
+
+
+
+
 \include{04-body}
 
 %%% Appendix: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

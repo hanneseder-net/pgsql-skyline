@@ -147,6 +147,7 @@
 
 \section{General Introduction}
 \label{sec:generalintroduction}
+\index{multi-criteria optimization}
 
 In everyday-life we are used to making decisions based on multiple
 criteria, e.g. price, quality, and delivery time for products.  Frequently there is no
@@ -157,7 +158,7 @@ later refer to this situation as \emph{this product is dominated by
 another one}, as there are others which fulfill our criteria better.  The
 products which are not dominated are more or less equally good based on
 our given criteria, and we need to apply additional criteria to come to a
-decision.  These products are called \emph{Pareto optimal}\index{Pareto optimal}
+decision.  These products are called \emph{\idx{Pareto optimal}}
 based on the given criteria.
 %
 For this notion \citet{Borzsonyi2001} coined the term \emph{skyline}.
@@ -225,9 +226,10 @@ consists of those points, called \emph{skyline points}, which are not
 \emph{dominated} by any other data points. One data point $r$ dominates
 another data point $s$ if it is at least as good as $s$ in all
 dimensions and better in at least one.
-\citet{Borzsonyi2001} proposed a {\em skyline} extension of the SQL
+\citet{Borzsonyi2001} proposed a \emph{skyline} extension of the SQL
 syntax with this form:
 
+\idxonlysql{SKYLINE OF}
 \begin{sql}
 SELECT ... FROM ... WHERE ... \\
 GROUP BY ... HAVING ...       \\
@@ -235,13 +237,13 @@ SKYLINE OF \textnormal{[}DISTINCT\textnormal{]} $a_1$ \textnormal{[}MIN$|$MAX$|$
 ORDER BY ...
 \end{sql}
 
-Computing the skyline is also known as the \emph{maximum vector
-problem}\index{maximum vector problem} \citep{Kung1975, Preparata1985}. The terms \emph{skyline} and
+Computing the skyline is also known as the \emph{\idx{maximum vector
+problem}} \citep{Kung1975, Preparata1985}. The terms \emph{skyline} and
 \emph{skyline operator} in the realm of databases were coined by
 \citet{Borzsonyi2001}. The following examples give a motivation why 
 \emph{skyline operator} is a good name for this type of
 \emph{preference queries}, they also illustrate the usage of the
-\inlinesql{DIFF} and \inlinesql{DISTINCT} keyword.
+\idxsql{DIFF} and \inlinesql{DISTINCT} keyword. \idxonlysql{SKYLINE OF DISTINCT}
 
 In \autoref{fig:threeDskyline} the yellow arrow indicates the
 direction of view and the colored cuboids illustrate
@@ -273,6 +275,7 @@ answer is $\{b, c, d, f\}$.
 The question from \autoref{ex:touchsky} could be formalized in the
 following way:
 
+\idxonlysql{DIFF}
 \begin{interactive}
 SELECT * FROM building SKYLINE OF x DIFF, z MAX;
 \end{interactive}
@@ -282,6 +285,7 @@ in the above query $a$ and $b$ will be part of the answer, whereas in the follow
 it is up to the database system to make a choice between $a$ or $b$, as they 
 are equally good:
 
+\idxonlysql{SKYLINE OF DISTINCT}
 \begin{interactive}
 SELECT * FROM building SKYLINE OF DISTINCT x DIFF, z MAX;
 \end{interactive}
@@ -329,8 +333,7 @@ However there are good reasons for including a \emph{skyline} or
 \item 
 From a user's perspective, it is easier to specify and easier to grasp
 what's going on, than a query with a correlated subquery or using
-SQL's \inlinesql{EXCEPT}\index{EXCEPT (SQL)@\texttt{EXCEPT} (SQL)}
-(see \autoref{sql:rewrite-with-except}).
+SQL's \idxsql{EXCEPT} (see \autoref{sql:rewrite-with-except}).
 
 \item
 It is faster to evaluate, as there are numerous algorithms for skyline
@@ -370,7 +373,7 @@ Hence building a skyline query optimizer is a  challenging task.
 
 In this thesis we aim at extending PostgreSQL with the skyline
 operator and the evaluation of skyline algorithms in the
-RDBMS\index{RDBMS} context, with the ultimate goal of building a
+\idx{RDBMS} context, with the ultimate goal of building a
 skyline query optimizer to automatically generate a good query plan
 w.r.t. I/O, time, and memory consumption.
 
@@ -394,20 +397,21 @@ So far we have implemented the non-index-based algorithms \emph{Block
 Nested Loop} (BNL), \emph{Sort First Skyline} (SFS), and a variant
 of \emph{Linear Elimination Sort for Skyline} (LESS) in PostgreSQL.
 %
-We propose a new use case for the elimination filter (EF) and
-show its usefulness through experiments, namely: BNL+EF.
+We propose a new use case for the elimination filter (EF), namely:
+BNL+EF.  It turns out that BNL+EF is a substantial improvement to BNL.
 %
 In addition, we extended the standard syntax to specify the following
 aspects:
+\idxonlysql{USING}
 \begin{itemize}
-\item The treatment of NULL values (\texttt{NULLS FIRST}\index{NULLS FIRST (SQL)@\texttt{NULLS FIRST} (SQL)} and \texttt{NULLS LAST}\index{NULLS LAST (SQL)@\texttt{NULLS LAST} (SQL)})
+\item The treatment of NULL values (\idxsql{NULLS FIRST} and \idxsql{NULLS LAST})
 \item The usage of order relations other than $<$ and $>$ (\texttt{USING \emph{Op}})
 \item Operational aspects of skyline computation, such as 
 \begin{itemize}
 \item \emph{method} (BNL, SFS)
 \item \emph{tuple window size} in terms of memory and/or number of slots
 \item \emph{tuple window policy} (append, prepend, entropy, random)
-\item \emph{usage of indexes} (\texttt{NOINDEX})
+\item \emph{usage of indexes} (\idxsql{NOINDEX})
 \item \emph{usage of elimination filter (EF)}
 \end{itemize}
 \end{itemize}
@@ -508,6 +512,8 @@ For interactive input and output we will show our typed input in a \texttt{\bfse
 \shprompt{}\rcomment{back at the shell prompt}
 \end{interactive}
 
+\index{dollar sign@\texttt{\$} (shell prompt)}
+\index{db=\#@\texttt{db=\#} (\texttt{psql} prompt)}
 The example above also illustrates two other concepts: ``\texttt{\$}''
 indicates a shell prompt and ``\texttt{db=\#}'' indicates the prompt
 for PostgreSQL interactive terminal \texttt{psql}. Furthermore
@@ -557,10 +563,10 @@ algorithms.
 % see \citep[section 1.1.1]{Simkovics1998}
 % see http://en.wikipedia.org/wiki/Relational\_model
 
-We are in the realm of the relational model\index{relational model} of
+We are in the realm of the \idx{relational model} of
 data.  As we aim at an implementation of the skyline operator into a
-relational database management system (RDBMS)\index{RDBMS} we restrict ourselves
-to finite database\index{finite database} instances.
+relational database management system (\idx{RDBMS}) we restrict ourselves
+to \idx{finite database} instances.
 
 We assume two infinite\footnote{Although in a real computer 
 everything is finite.} domains: $N$ (numbers) and $D$ (uninterpreted
@@ -570,15 +576,17 @@ will not use the name of the hotel as a skyline criterion, therefore
 $D$ will be used as domain for this attribute.  For attributes or
 expressions which are subject to skyline computation we use the domain
 $N$. No distinction is made between different numeric domains, since
-it is not necessary for this thesis. For $N$ we require that equality
-($=$), inequality ($\not=$), and the binary relations $<$ (strictly
-less than), $\le$ (less than or equal), $\ge$ (greater than or equal),
-and $>$ (strictly greater than) are defined with the usual properties.
+it is not necessary for this thesis. For $N$ we require that \idx{equality}
+($=$), \idx{inequality} ($\not=$), and the binary relations $<$ (\idx{strictly less than}), 
+$\le$ (\idx{less than or equal}), $\ge$ (\idx{greater than or equal}),
+and $>$ (\idx{strictly greater than}) are defined with the usual properties.
 
-As the skyline operator is a special case of the \emph{winnow
-operator} \citep{Chomicki2003a}, we define it in a very similar way.
+As the skyline operator is a special case of the \emph{\idx{winnow operator}}
+\citep{Chomicki2003a}, we define it in a very similar way.
 
 \begin{definition}[Preference Relation \citep{Chomicki2003a}]
+\index{preference relation}
+\index{dominates@$\dominates$|see{preference relation}}
 Given the domains $U_i, 1 \le i \le n$, such that $U_i$ is either
 equal to $D$ or $N$ and the $n$-ary schema $\schema{R}(a_1, a_2, \ldots,
 a_n)$, such that the domain of the attribute $a_i$ is $U_i$, 
@@ -594,30 +602,32 @@ tuples from the same database relation \relation{R} with schema
 term database relation in the usual sense, a (database) relation
 \relation{R} is a finite instance of a schema \schema{R}.
 
-We require the relation \dominates to be a \emph{strict partial
-order}\index{strict partial order}, i.e. \dominates is irreflexive,
+We require the relation \dominates to be a \emph{\idx{strict partial order}}, 
+i.e. \dominates is irreflexive,
 asymmetric and transitive. These properties are formalized as usual:
 
 \begin{itemize}
-\item \emph{irreflexivity:} 
+\item \emph{\idx{irreflexivity}:} 
 $\forall x: \neg (x \dominates x)$
 
-\item \emph{asymmetry:} 
+\item \emph{\idx{asymmetry}:} 
 $\forall x, y: x \dominates y \imp \neg (y \dominates x)$
 
-\item \emph{transitivity:} 
+\item \emph{\idx{transitivity}:} 
 $\forall x, y, z: (x \dominates y \land y \dominates z) \imp x \dominates z$
 
 \end{itemize}
 
 \noindent
-The properties for the corresponding \emph{partial order}\index{partial order}
+The properties for the corresponding \emph{\idx{partial order}}
 $\weakdominates$ are formalized as:
+\index{weak preference}
+\index{weak dominates@$\weakdominates$|see{weak preference}}
 \begin{itemize}
-\item \emph{reflexivity:} 
+\item \emph{\idx{reflexivity}:} 
 $\forall x: x \weakdominates x$
 
-\item \emph{anti-symmetry:} 
+\item \emph{\idx{anti-symmetry}:} 
 $\forall x, y: x \weakdominates y \land y \weakdominates x \imp x \nondistinct y$
 
 \item \emph{transitivity:} 
@@ -629,11 +639,11 @@ $\forall x, y, z: (x \weakdominates y \land y \weakdominates z) \imp x \weakdomi
 If a strict partial order also has the property of
 
 \begin{itemize}
-\item \emph{totality:} $\forall x, y: x \dominates y \lor y \dominates x \lor x = y$,
+\item \emph{\idx{totality}:} $\forall x, y: x \dominates y \lor y \dominates x \lor x = y$,
 \end{itemize}
 
 \noindent
-then it is a \emph{total order}\index{total order}.
+then it is a \emph{\idx{total order}}.
 
 
 % some more properties, which hold
@@ -659,11 +669,12 @@ then it is a \emph{total order}\index{total order}.
 % E10 & (weakly) directed:     & $\forall s\forall t\forall u\ (sRt \wedge sRu) \rightarrow \exists v\ (tRv \wedge uRv)$\\
 % \end{tabular}
 
-% Non-transitive\index{non-transitive} preferences can be compute with
+% Non-transitive preferences can be compute with
 % the BEST algorithm \citep{Torlone2002, Ciaccia2004}, we will not
 % study this approach in this thesis.
 
 \begin{definition}[preference formula (pf) \citep{Chomicki2003a}]
+\index{preference formula}
 A \emph{preference formula (pf)} $C(r,s)$ is a first-order formula
 defining a preference relation $\dominates$ in the standard sense, namely
 \[
@@ -675,6 +686,8 @@ Because of this close relationship between the first-order formula $C$ and
 the binary relation $\dominates$ we will later use
 $\skyline_\dominates$ and $\skyline_C$ interchangeably.
 
+\index{intrinsic|see{preference formula}}
+\index{extrinsic|see{preference formula}}
 In our case we only focus on \emph{intrinsic} preference formulas, i.e.
 the value of $C(r,s)$ only depends on the attributes of $r$ and $s$ and
 not on other tuples in the same or other relations.  If the preference
@@ -700,6 +713,7 @@ We now define a special form of preference formula.
 
 
 \begin{definition}[Skyline Preference Formula]
+\index{skyline preference formula}
 \label{def:skyline-pf}
 Given the two tuples 
 % $r, s \in \relation R$, with $\relation R$ being a $n$-ary 
@@ -787,7 +801,7 @@ r \dominates s :=
 
 
 We now define the \emph{skyline operator} which is a special
-case of the \emph{winnow operator} \citep{Chomicki2003a}, where the
+case of the \emph{\idx{winnow operator}} \citep{Chomicki2003a}, where the
 preference formula has exactly the form of formula
 \eqref{equ:skylinepf}.
 
@@ -802,6 +816,7 @@ preference formula has exactly the form of formula
 % \end{definition}
 
 \begin{definition}[Skyline Operator]
+\index{skyline operator}
 \label{def:skyline}
 Let $\schema R$ be a relation schema and $C$ a skyline preference
 formula defining a preference relation $\dominates$ over $\schema R$,
@@ -816,13 +831,14 @@ s \in \relation{R}\colon s \dominates r \}
 
 To give the intuition, the skyline operator returns all tuples which
 are \emph{not dominated}, in other words all tuples that do \emph{not}
-have a \emph{witness}\index{witness}.
+have a \emph{\idx{witness}}.
 
 \bigskip
 \noindent
 We now like to introduce some further concepts:
 
 \begin{definition}[Weak Preference]
+\index{weak preference}
 There is a weak preference between $r$ and $s$ if $r$ is equal in all
 \inlinesql{DIFF} dimensions and at least as good in all other skyline
 dimensions compared to $s$, formally:
@@ -836,6 +852,8 @@ r \weakdominates s :=
 \end{definition}
 
 \begin{definition}[Non Distinct]
+\index{non distinct}
+\index{non distinct@$\nondistinct$|see{non distinct}}
 If two tuples $r$ and $s$ are equal on all skyline dimensions, we say $r$ and $s$
 are \emph{non distinct}, denoted by:
 \begin{equation}\label{eqn:nondistinct}
@@ -844,7 +862,7 @@ r \nondistinct s := \left( \bigland_{1 \le i \le m} r_i = s_i \right)
 \end{definition}
 
 \noindent
-If $r \nondistinct s$ and in case of \inlinesql{SKYLINE OF DISTINCT}, then it
+If $r \nondistinct s$ and in case of \idxsql{SKYLINE OF DISTINCT}, then it
 is left up to the implementation to include either $r$ or $s$ in the
 skyline, otherwise $r$ \emph{and} $s$ are included.
 %
@@ -854,7 +872,9 @@ only when $m = n$, i.e. all attributes are subject to skyline computation.
 \bigskip
 %We say $s$ is dominated by $r$ iff $r$ dominates $s$, formally:
 \noindent
-For convenience we define the following two \emph{commutator} relations:
+\index{dominated by@$\dominatedby$|see{preference relation}}
+\index{weak dominated by@$\weakdominatedby$|see{weak preference}}
+For convenience we define the following two \emph{commutator} relations\index{commutator relation}:
 \[
 s \dominatedby r :\Leftrightarrow r \dominates s.
 \]
@@ -885,7 +905,11 @@ r \nondistinct s \Leftrightarrow r \weakdominates s \land r \weakdominatedby s
 % \weakdominates s \land s \weakdominates r = \forall i \in \{1, \ldots,
 % m\}\colon r_i = s_i$, i.e. equal on all skyline dimensions
 
-\begin{definition}[Incomparable] If neither $r$ dominates $s$ nor $s$ dominates $r$ then $r$ and $s$ are \emph{incomparable}:
+\begin{definition}[Incomparable]
+\index{incomparable}
+\index{incomparable@$\incomparable$|see{incomperable}}
+If neither $r$ dominates $s$ nor $s$ dominates $r$ then $r$ and $s$
+are \emph{incomparable}:
 \[
 r \incomparable s := \neg (r \dominates s) \land \neg (s \dominates r)
 \]
@@ -902,7 +926,11 @@ r \incomparable s = s \incomparable r.
 \]
 
 
-\begin{definition}[Comparable]The tuples $r$ and $s$ are \emph{comparable} iff $r$ dominates $s$ or $s$ dominates $r$:
+\begin{definition}[Comparable]
+\index{comparable}
+\index{comparable@$\comparable$|see{comparable}}
+The tuples $r$ and $s$ are \emph{comparable} iff $r$ dominates $s$ or
+$s$ dominates $r$:
 \[
 r \comparable s := r \dominates s \lor s \dominates r
 \]
@@ -927,6 +955,8 @@ r \comparable s = s \comparable r.
 % \]
 
 \subsection{\inlinesql{DIFF}-Induced Equivalence Relation}
+\index{equivalence relation}
+\index{SKYLINE OF DIFF@\texttt{SKYLINE OF DIFF} (SQL)|see{\texttt{DIFF} (SQL)}}
 Please note that the following subformula \eqref{equ:skylinepfdiff} of
 formula \eqref{equ:skylinepf} induces an equivalence relation on
 \schema{R}, i.e. \schema{R} is partitioned into groups where the
@@ -935,8 +965,8 @@ attributes $a_{l+1}, \ldots, a_m$ are equal:
 \bigland_{l+1 \le i \le m} r_i = s_i.
 \end{equation}
 
-As noted in \citep{Chomicki2003}, the \inlinesql{DIFF} directive works
-like a \inlinesql{GROUP~BY} within the skyline, and the skyline for
+As noted in \citep{Chomicki2003}, the \idxsql{DIFF} directive works
+like a \idxsql{GROUP BY} within the skyline, and the skyline for
 each group of \inlinesql{DIFF} attributes' values is found.
 %
 This property can be exploited, if an ordered index on any subset of
@@ -946,7 +976,7 @@ can be flushed each time the group is changed, see
 
 % \subsection{Skyline as special case of winnow}
 % The skyline operator is a special case of the \emph{winnow
-% operator}\index{winnow operator} \citep{Chomicki2003a}, where the
+% operator} \citep{Chomicki2003a}, where the
 % preference formula has exactly the form of formula
 % \eqref{equ:skylinepf}.
 %
@@ -980,6 +1010,7 @@ Before going into detail let us define the class of linear
 scoring functions:
 
 \begin{definition}[Linear Scoring Function]
+\index{linear scoring function}
 Let the $w_i$'s be positive real constants, then we define a 
 \emph{positive linear scoring function} $W$ over all the tuples 
 $r \in \relation R$ as:
@@ -1014,6 +1045,7 @@ perspective.
 On the other hand the class of monotone scoring functions is defined as follows:
 
 \begin{definition}[Monotone Scoring Function]
+\index{monotone scoring function}
 Let the $f_i$'s be monotone increasing functions with $f_i\colon N
 \rightarrow \mathbb{R}$, where $N$ is the domain of the attributes of
 schema $\schema R$, then a \emph{monotone scoring function} $S$ which
@@ -1094,6 +1126,7 @@ $S(\,(2,2)\,) = f_1(2) + f_2(2) = 1 + 1 = 2 > 1 = 0 + 1 = f_1(1) + f_2(4) = S(\,
 
 
 \subsection{Independence of Attribute Order}
+\index{independence of attribute order}
 \label{sec:attributeorder}
 
 The following property is a well known fact about the skyline operator:
@@ -1223,12 +1256,14 @@ query, or even facilitating an index.
 
 \subsection{Skyline Stratum and $K$-Skyband}
 \label{sec:skyline-stratum}
+\index{stratum}
 \index{strata|see{stratum}}
+\index{skyline stratum|see{stratum}}
 \index{K-skyband@$K$-skyband}
-In \citep{Chomicki2003a} the concept of skyline stratum\index{stratum} is called
-\emph{iterated preference}, and they speak of 
-\emph{ranking}\index{ranking}, we prefer to use the term
-\emph{stratum}\index{stratum}, and we reserve the term ranking for
+In \citep{Chomicki2003a} the concept of skyline stratum is called
+\emph{\idx{iterated preference}}, and they speak of 
+\emph{\idx{ranking}}, we prefer to use the term
+\emph{stratum}, and we reserve the term ranking for
 scoring functions (see \autoref{sec:scoring}).
 To the best of our knowledge the term \emph{skyline stratum} first 
 appeared in \citep{Chan2005}.
@@ -1240,7 +1275,7 @@ The \nospellcheck{$n$-th} skyline stratum $\skyline_C^n$ is recursively defined 
 \end{eqnarray}
 
 To give an example, the query $\skyline_C^2(\relation{R})$ returns
-the set of ``second-best'' tuples.
+the set of ``\idx{second-best}'' tuples.
 %
 The strata\index{stratum} are of interest especially if there is a single
 \emph{killer tuple} or very few tuples which are dominating the entire
@@ -1310,6 +1345,7 @@ empty target list $\emptyset \not= target\_list \subseteq \{a_1,
 \ldots, a_n\}$, then a skyline query with at least one criterion ($0
 \le k \le l \le m \le n$ and $1 \le m \le n$) and the following form:
 
+\idxonlysql{SKYLINE OF}
 \begin{sql}
 SELECT $target\_list$ FROM $rel$ AS $r$ WHERE $condition$ \\
 SKYLINE OF $a_1$ MIN$, \ldots, a_k$ MIN$, a_{k+1}$ MAX$, \ldots, a_l$ MAX$, a_{l+1}$ DIFF$, \ldots, a_m$ DIFF
@@ -1345,8 +1381,8 @@ A little notion we use here is $condition\{r \gets o\}$ to express
 that any reference to the relation alias $r$ must be replaced with
 the alias $o$.
 %
-Another way\index{EXCEPT (SQL)@\texttt{EXCEPT} (SQL)} to rewrite the query is given in
-\citep[Page~3]{Godfrey2004}:
+\idxonlysql{EXCEPT}
+Another way to rewrite the query is given in \citep[Page~3]{Godfrey2004}:
 
 \begin{sql}\label{sql:rewrite-with-except}
 \newcommand\abox[1]{\hbox to 2.5em{#1\hfil}}%
@@ -1366,7 +1402,7 @@ WHERE ($condition\{r \gets i\}$) AND ($condition\{r \gets o\}$)\\
 
 \noindent
 The principle used here is different, the skyline of a set is the set
-without those tuples that have a \emph{witness}\index{witness} that
+without those tuples that have a \emph{\idx{witness}} that
 they are dominated. This can be formally expressed as:
 
 \begin{equation}
@@ -1382,6 +1418,7 @@ In the presence of the optional \inlinesql{DISTINCT} modifier in the
 \inlinesql{SKYLINE~OF}-clause the situation is changed, such a query has the
 following form:
 %
+\idxonlysql{SKYLINE OF DISTINCT}
 \begin{sql}\label{sql:rewrite-distinct}
 SELECT $target\_list$ FROM $rel$ AS $r$ WHERE $condition$ \\
 SKYLINE OF \textbf{DISTINCT} $a_1$ MIN$, \ldots, a_k$ MIN$, a_{k+1}$ MAX$, \ldots, a_l$ MAX$,$  \\
@@ -1448,10 +1485,10 @@ order on the tuples, then we are able to pick the first or the
 last\footnote{Of course we can also express to pick the second, the
 third and so forth, but all we know is that within a group we have at
 least one tuple.}.  In the presence of a unique and ordered
-key\footnote{On some RDBMS\index{RDBMS} special pseudo-columns for such purposes do
+key\footnote{On some \idx{RDBMS} special pseudo-columns\index{pseudo-column} for such purposes do
 exist.} this is obvious, in the other case as long as on each
-attribute a total order exists, we can construct a lexicographic
-order\index{lexicographic order}.  Duplicate elimination with
+attribute a total order exists, we can construct a \idx{lexicographic
+order}.  Duplicate elimination with
 \inlinesql{SELECT DISTINCT} might still be necessary.
 
 To exemplify this, let the target list be $\{a_{j_1}, \ldots,
@@ -1510,7 +1547,7 @@ FROM (\\
 
 In PostgreSQL subselects which return at most one value can be used as
 expressions, by means of that duplicates can be eliminated in a way we
-just like to sketch\footnote{We thank Chris Roschger.
+just like to sketch\footnote{We thank Chris Roschger\index{Roschger, Chris}.
 He came up with this idea.}:
 
 \begin{sql}
@@ -1527,8 +1564,8 @@ FROM\\
 This returns the correct result only if all the subselects will return
 their attributes from the same tuple, which can be expected as the same
 filter condition on the same relation is used, then almost for sure
-the same access path will be used.  The \inlinesql{LIMIT}-clause is
-used, which is not part of the SQL 2003 standard\index{SQL!standard 2003} \citep{SQL2003}. We conjecture that
+the same access path will be used.  The \idxsql{LIMIT}-clause is
+used, which is not part of the \idx{SQL 2003 standard} \citep{SQL2003}. We conjecture that
 such a query cannot be expressed with standard SQL.
 
 For the corner case of one dimensional skyline queries, i.e. $m = 1$,
@@ -1580,17 +1617,34 @@ other methods do exist, we show them in
 \citet{Kossmann2002} suggested a set of criteria for evaluating skyline algorithms that we like to cite here:
 
 \begin{enumerate}
-\item \emph{Progressiveness}: the first results should be reported to the user almost instantly and the output size should gradually increase.
+\item
+\emph{Progressiveness}: \index{progressiveness}
+the first results should be reported to the user almost instantly and
+the output size should gradually increase.
 
-\item \emph{Absence of false misses}: given enough time, the algorithm should generate the entire skyline.
+\item
+\emph{Absence of false misses}: \index{absence of false misses}
+given enough time, the algorithm should generate the entire skyline.
 
-\item \emph{Absence of false hits}: the algorithm should not discover temporary skyline points that will be later replaced.
+\item
+\emph{Absence of false hits}: \index{absence of false hits}
+the algorithm should not discover temporary skyline points that will
+be later replaced.
 
-\item \emph{Fairness}: the algorithm should not favor points that are particularly good in one dimension.
+\item
+\emph{Fairness}: \index{fairness}
+the algorithm should not favor points that are particularly good in
+one dimension.
 
-\item \emph{Incorporation of preferences}: the users should be able to determine the order according to which skyline points are reported.
+\item
+\emph{Incorporation of preferences}: \index{incorporation of preferences}
+the users should be able to determine the order according to which
+skyline points are reported.
 
-\item \emph{Universality}: the algorithm should be applicable to any dataset distribution and dimensionality, using some standard index structure.
+\item
+\emph{Universality}: \index{universality}
+the algorithm should be applicable to any dataset distribution and
+dimensionality, using some standard index structure.
 \end{enumerate}
 
 
@@ -1599,7 +1653,7 @@ Our implementation of the \inlinesql{SKYLINE~OF} clause is actually a
 bit more flexible than the mathematical definition given above. With
 our implementation the skyline operator is not restricted to
 attributes with a numerical domain, it can be applied to any
-attribute, as long as a \emph{sort function} is defined for the domain
+attribute, as long as a \emph{\idx{sort function}} is defined for the domain
 in question, i.e.\/ any expression valid in a SQL \inlinesql{ORDER~BY}
 clause is valid as an expression in a \inlinesql{SKYLINE~OF} clause.
 
@@ -1607,17 +1661,21 @@ This gives the opportunity to include expressions of almost any data
 type in a skyline query, even user-defined ones, since it is possible
 for the user to define full-fledged data types in PostgreSQL. For more
 information on user-defined data types see PostgreSQL documentation on
+\index{user-defined types}
+\index{operator classes}
 \postgresdocu{xtypes.html}{User-Defined Types} and
 \postgresdocu{xindex.html\#XINDEX-OPFAMILY}{Operator Classes and
 Operator Families}
 
 Although viable, it is questionable whether it is of practical use to include a
-e.g. \inlinesql{VARCHAR} column in a skyline query.
-Nevertheless this might be a good use case for a user-defined ordering operator.
+e.g. \idxsql{VARCHAR} column in a skyline query.
+Nevertheless this might be a good use case for a \idx{user-defined ordering operator}.
 
 Furthermore our implementation allows arbitrary expressions instead of
 a single attribute, e.g.
 
+\idxonlysql{SKYLINE OF}
+\idxonlysql{NULLS LAST}
 \begin{sql}
 SELECT * FROM nba.players \\
 SKYLINE OF (h\_feet * 12 + h\_inches) MAX NULLS LAST, \\
@@ -1627,10 +1685,12 @@ SKYLINE OF (h\_feet * 12 + h\_inches) MAX NULLS LAST, \\
 
 \section{Related Problems}
 Related to computing the skyline of a dataset are the following problems:
-convex hull, \emph{top-K} queries, and nearest-neighbor search
+\idx{convex hull}, \emph{top-K} queries\index{top-k queries}, and \index{nearest-neighbor search}
 (especially in the context of spacial skylines like e.g. ``give me the
 next good restaurant'').
 
+\index{linear scoring function}
+\index{monotone scoring function}
 In particular, as noted in \citep{Papadias2005}, the convex hull
 contains the subset of skyline points that may be optimal only for
 linear preference functions (as opposed to any monotone function).
@@ -1647,22 +1707,22 @@ linear preference functions (as opposed to any monotone function).
 \label{chap:relatedworks}
 
 Since the introduction of the skyline operator \citep{Borzsonyi2001}, a
-number of secondary-memory algorithms have been developed for
+number of \idx{secondary-memory algorithms} have been developed for
 efficient skyline computation. These algorithms can be classified into
 two categories. The first one involves solutions that do not require
 any preprocessing on the underlying dataset. Algorithms such as
-{\em Block Nested Loops} (BNL) \citep{Borzsonyi2001}, 
-{\em Divide and Conquer} (D\&C) \citep{Borzsonyi2001}, 
-{\em Sort First Skyline} (SFS) \citep{Chomicki2003}, and
-{\em Linear Elimination Sort for Skyline} (LESS) \citep{Godfrey2005}
+\emph{Block Nested Loops} (BNL) \citep{Borzsonyi2001}, 
+\emph{Divide and Conquer} (D\&C) \citep{Borzsonyi2001}, \index{Divide and Conquer (D\&C) (algorithm)}
+\emph{Sort First Skyline} (SFS) \citep{Chomicki2003}, and
+\emph{Linear Elimination Sort for Skyline} (LESS) \citep{Godfrey2005}
 belong to this category.
 The algorithms in the second category utilize different index structures
 such as sorted lists and R-trees to reduce the query costs.
 Well-known algorithms in this category include 
-{\em Bitmap} \citep{Tan2001}, 
-{\em Index} \citep{Tan2001},
-{\em Nearest Neighbor} (NN) \citep{Kossmann2002}, and
-{\em Branch and Bound} (BBS) \citep{Papadias2003, Papadias2005}.
+\emph{Bitmap} \citep{Tan2001}, \index{Bitmap (algorithm)}
+\emph{Index} \citep{Tan2001}, \index{Index (algorithm)}
+\emph{Nearest Neighbor} (NN) \citep{Kossmann2002}, and \index{Nearest Neighbor (NN) (algorithm)}
+\emph{Branch and Bound} (BBS) \citep{Papadias2003, Papadias2005}. \index{Branch and Bound (BBS) (algorithm)}
 
 The advantage of index-based algorithms is that they need to access
 only a portion of the dataset to compute the skyline, while
@@ -1679,7 +1739,7 @@ order citizens and can be placed anywhere in the relational algebra
 expression.
 
 There is a whole class of other skyline algorithms, referred to as
-\emph{continuous skyline computation}.  
+\emph{\idx{continuous skyline computation}}.  
 The task here is to initially compute the skyline and then update the
 skyline when tuples are added or removed from the dataset, e.g. in a
 streaming scenario. 
@@ -1704,7 +1764,7 @@ we will not consider this scenario further.
 
 % \section{Non-indexed-based Skyline Algorithms}
 The skyline algorithms we have implemented are: BNL, SFS, BNL+EF and
-SFS+EF. EF stands for {\em Elimination Filter}, which was introduced
+SFS+EF. EF stands for \emph{Elimination Filter}, which was introduced
 in \citep{Godfrey2005} as an essential routine for the LESS algorithm.
 We give a brief description of them in the following sections.
 Furthermore we derive properties of BNL and SFS concerning the
@@ -1716,7 +1776,7 @@ conditions and we show how to fix this.
 \pagebreak[4]
 
 \section{Block Nested Loops (BNL)}
-BNL \citep{Borzsonyi2001} works as follows.  A {\em tuple window} is
+BNL \citep{Borzsonyi2001} works as follows.  A \emph{\idx{tuple window}} is
 maintained in the main memory for storing the potential skyline
 tuples.  Once the window becomes full, an overflow file (temp file)
 has to be generated.  At the end of the original input BNL switches to
@@ -1737,6 +1797,10 @@ in the pseudo-code.
 
 
 \begin{table}[htbp]
+\index{I@$\mathcal{I}$}
+\index{O@$\mathcal{O}$}
+\index{T@$\mathcal{T}$}
+\index{W@$\mathbb{W}$}
 \centering
 \begin{tabular}{cp{100mm}}
 Symbol & Description \\
@@ -1877,6 +1941,7 @@ function SkylineBNL($\mathcal{I}$)
 
 
 \subsection{Non-termination of Block-Nested-Loops (BNL) Algorithm}
+\index{non-termination}
 During the implementation of BNL into PostgreSQL we discovered a flaw in
 the algorithm from the original paper \citep{Borzsonyi2001}.  
 We are using a little bit different notation to present to algorithm.
@@ -1917,7 +1982,7 @@ In terms of a binary relation the dominance can be expressed as:
 \noindent
 In essence this means every $a_i$ is dominated by $c_i$ and all other
 tuples are incomparable.  To construct such a dataset, generate $a_1,
-\ldots, a_n, b_1, \ldots b_m$ anti-correlated\index{anti-correlated} and let the $c_i$'s just be
+\ldots, a_n, b_1, \ldots b_m$ \idx{anti-correlated} and let the $c_i$'s just be
 a little better in each dimension than the $a_i$'s.  It is easy to see
 that following identities hold:
 
@@ -1977,6 +2042,7 @@ implementation in PostgreSQL is based on our fixed version.
 
 
 \subsection{Non-preservation of relative Tuple Order}
+\index{relative tuple order}
 \label{sec:bnl-tuple-order}
 It is not completely obvious that BNL does not preserve the relative
 order of tuples from the input in the output, even when the tuple
@@ -2006,7 +2072,7 @@ physical operators such as aggregation or natural join.
 
 \section{Sort First Skyline (SFS)}
 SFS \citep{Chomicki2003} differs from BNL in that the data is
-topologically sorted at start-up time.  It is shown in the original
+\idx{topologically sorted} at start-up time.  It is shown in the original
 paper that this condition is sufficient for the following property.  In
 SFS once a tuple is incomparable to all tuples in the tuple window it
 is known to be a skyline tuple as well, and it can be written to the
@@ -2017,7 +2083,7 @@ The pseudo-code is given in \autoref{code:sfs}.
 
 \begin{figure}[htbp]
 \begin{lstlisting}[language=pseudo,
-caption={Sort-First-Skyline (SFS) Algorithm},
+caption={Sort First Skyline (SFS) Algorithm},
 label={code:sfs}
 ]
 function SkylineSFS($\mathcal{I}$) begin 
@@ -2070,6 +2136,7 @@ function SkylineSFS($\mathcal{I}$) begin
 \end{figure}
 
 \subsection{Preservation of relative Tuple Order}
+\index{relative tuple order}
 \label{sec:sfs-tuple-order}
 Please note that in the output of SFS the relative order of tuples
 from $\mathcal{I}_{presorted}$ is preserved.  SFS has this physical
@@ -2135,6 +2202,7 @@ conjunction with an SFS style algorithm, in our implementation we demonstrate
 that this concept is also very effective when used with a BNL style
 algorithm, we call it BNL+EF, cf. \autoref{sec:analysis}
 
+\index{relative tuple order}
 Furthermore it should be noted that the elimination filter preserves
 the relative order of tuples from the input in the output, i.e. those
 tuples that do survive the elimination filter are in the same relative
@@ -2142,7 +2210,7 @@ order as in the input.
 
 %\begin{figure}[htbp]
 \begin{lstlisting}[language=pseudo,
-caption={Elimination Filter (EF)},
+caption={Elimination Filter (EF) (in iterator style)},
 label={code:ef}
 ]
 function EliminationFilter($\mathcal{I}$, var $state$) begin 
@@ -2239,23 +2307,23 @@ function EliminationFilter($\mathcal{I}$, var $state$) begin
 \section{Related Works}
 The closest related works to this thesis are \citep{Chaudhuri2006}
 and \citep{Goncalves2005, Goncalves2005a}.  The authors of both papers did an
-implementation of the skyline operator into an RDBMS\index{RDBMS} as a full-blown
+implementation of the skyline operator into an \idx{RDBMS} as a full-blown
 relational operator.
 
 \citet{Chaudhuri2006} at Microsoft Research extended a Beta
 Version of Microsoft SQL Server 2005.  To the best of our knowledge
 neither source nor binary versions of this implementation are
 available.  The skyline operator is fully integrated into the
-cost-based optimizer.  The syntax they are using is Preference~SQL 
+cost-based optimizer.  The syntax they are using is \idx{Preference~SQL} 
 \citep{Kiessling2002a}.
 
 
 \citep{Goncalves2005} extended PostgreSQL with a hybrid approach 
-between \emph{top-k} and \emph{skyline operator} called top-k skyline\index{top-k-skyline}.
+between \emph{top-k} and \emph{skyline operator} called \idx{top-k-skyline}.
 Skyline strata\index{stratum} (see \autoref{sec:skyline-stratum}) are computed until
 at least $k$ records are returned.  With this approach all the second
 and higher order best records do get a chance to end up in the result,
-nevertheless the selectivity\index{selectivity} of this approach is even lower than
+nevertheless the \idx{selectivity} of this approach is even lower than
 skyline operator alone.
 
 
@@ -2275,6 +2343,11 @@ skyline operator alone.
 
 \citet{Borzsonyi2001} proposed the following extension to the SQL's
 \inlinesql{SELECT} statement with an optional \inlinesql{SKYLINE~OF}-clause:
+\idxonlysql{SKYLINE OF}
+\idxonlysql{SKYLINE OF DISTINCT}
+\idxonlysql{MIN}
+\idxonlysql{MAX}
+\idxonlysql{DIFF}
 \begin{sql}
 SELECT ... FROM ... WHERE ... \\
 GROUP BY ... HAVING ...       \\
@@ -2283,16 +2356,17 @@ ORDER BY ...
 \end{sql}
 \noindent
 In addition, we extended the standard syntax to specify:
+\idxonlysql{USING}
 \begin{itemize}
-\item The treatment of NULL values (\texttt{NULLS FIRST}\index{NULLS FIRST (SQL)@\texttt{NULLS FIRST} (SQL)} and \texttt{NULLS LAST}\index{NULLS LAST (SQL)@\texttt{NULLS LAST} (SQL)})
+\item The treatment of NULL values (\idxsql{NULLS FIRST} and \idxsql{NULLS LAST})
 \item The usage of order relations other than $<$ and $>$ (\texttt{USING \emph{Op}})
 \item Operational aspects of skyline computation, such as 
 \begin{itemize}
-\item \emph{method} (BNL, SFS, MNL, PRESORT (2 dim only))
+\item \emph{method} (\idxsql{BNL}, \idxsql{SFS}, \idxsql{MNL}, \idxsql{PRESORT} (2 dim only))
 \item \emph{tuple window size} in terms of memory and/or number of slots
 \item \emph{tuple window policy} (append, prepend, ranked by entropy, ranked by a random value)
-\item \emph{usage of indexes} (\texttt{NOINDEX})
-\item \emph{usage of elimination filter (EF), 
+\item \emph{usage of indexes} (\idxsql{NOINDEX})
+\item \emph{usage of elimination filter (\idxsql{EF}), 
   	with the possibility to influence the EF window in the same way
   	as for the BNL or SFS node}
 \end{itemize}
@@ -2302,14 +2376,16 @@ In the following sections we describe in detail the extension to the SQL~syntax
 we have implemented.
 
 \subsection{Syntax (Railroad Diagrams)}
+\index{railroad diagrams}
+\index{syntax diagrams|see{railroad diagrams}}
 \label{sec:syntax}
 To describe the formal grammar of the \inlinesql{SKYLINE OF}-clause
 extension to the SQL query syntax we use syntax diagrams (or \emph{railroad
 diagrams}).  Railroad diagrams are a graphical alternative to
-Backus-Naur form or EBNF and they have been made popular by books such
+\idx{Backus-Naur form} or \idx{EBNF} and they have been made popular by books such
 %done:fang: Railroad _diagram is_ ....  _it has_
 %hannes: I think the plural is correct here.
-as the ``Pascal User Manual'' written by Niklaus Wirth.  Nowadays
+as the ``Pascal User Manual'' written by Niklaus Wirth\index{Wirth, Niklaus}.  Nowadays
 railroad diagrams are used in user manuals such as the ``Oracle
 Database SQL Reference'' (see \citep{Oracle2005}).  We believe the
 general concept of railroad diagrams is easy to grasp and does not
@@ -2346,15 +2422,16 @@ select query.  It is right between the optional \inlinesql{GROUP
 BY}/\inlinesql{HAVING}-clause and the optional \inlinesql{ORDER
 BY}-clause, denoted by \nt{group\_clause} / \nt{having\_clause} and
 \nt{sort\_clause}. We omit some details here but it should be clear
-from the context that \nt{target\_list}, \nt{into\_clause},
-\nt{from\_clause}, \nt{where\_clause}, \nt{group\_clause},
-\nt{having\_clause}, \nt{sort\_clause}, and \nt{select\_limit} have
+from the context that \nt{\idx{target\_list}}, \nt{\idx{into\_clause}},
+\nt{\idx{from\_clause}}, \nt{\idx{where\_clause}}, \nt{\idx{group\_clause}},
+\nt{\idx{having\_clause}}, \nt{\idx{sort\_clause}}, and \nt{\idx{select\_limit}} have
 their usual meaning. We refer the readers to the corresponding SQL standard and
 especially to the PostgreSQL documentation on SQL
 \postgresdocu{sql-select.html}{SELECT}. For the non-terminals that we omitted
 here we selected the same name as in the implementation (see
 \srcref{src/backend/parser/gram.y}), in order to easily find the exact definition.
 
+\index{select\_clause}
 %
 \begin{rail}
 selectclause :
@@ -2373,6 +2450,9 @@ see \autoref{sec:rewrite-to-sql}. For the entire skyline clause we
 introduced just a single new reserved keyword (\inlinesql{SKYLINE}),
 see \autoref{sec:reservedkeywords}.
 
+\index{skyline\_clause}
+\idxonlysql{SKYLINE OF}
+\idxonlysql{SKYLINE OF DISTINCT}
 \begin{rail}
 skylineclause : 
     'SKYLINE OF' 'DISTINCT' ? ( skylineofexpr + ',' ) skylineoptions ?;
@@ -2384,11 +2464,11 @@ or even an expression (\nt{c\_expr}) and the specification of
 \inlinesql{MIN}, \inlinesql{MAX}, \inlinesql{DIFF}, and 
 \inlinesql{USING}~\emph{qualOp}. We call the last specification 
 \emph{skyline direction} or just \emph{direction} for short, this
-is because a similar concept (\inlinesql{ASC}/\inlinesql{DESC}) in the
+is because a similar concept (\idxsql{ASC}/\idxsql{DESC}) in the
 \inlinesql{ORDER~BY}-clause is also called direction.  Furthermore the
-treatment of null values can be specified using \inlinesql{NULLS
-FIRST}\index{NULLS FIRST (SQL)@\texttt{NULLS FIRST} (SQL)} and \inlinesql{NULLS LAST}\index{NULLS LAST (SQL)@\texttt{NULLS LAST} (SQL)}.  We have the same concept for the
-\inlinesql{ORDER BY}-clause. This special treatment of null values 
+treatment of null values can be specified using \idxsql{NULLS FIRST}
+and \idxsql{NULLS LAST}.  We have the same concept for the
+\idxsql{ORDER BY}-clause. This special treatment of null values 
 was introduced in PostgreSQL 8.3.0 (see
 \postgresdocu{sql-select.html\#SQL-ORDERBY}{SQL SELECT/ORDER BY}). For
 the semantics of this see \autoref{sec:nullvalues}.
@@ -2412,6 +2492,13 @@ parenthesis. Furthermore \nt{c\_expr} contains the most common case, a column
 reference (\nt{columnref}), anyway and also function calls can be used
 without an extra pair of parenthesis.
 
+\index{skyline\_of\_expr}
+\idxonlysql{MIN}
+\idxonlysql{MAX}
+\idxonlysql{DIFF}
+\idxonlysql{USING}
+\idxonlysql{NULLS FIRST}
+\idxonlysql{NULLS LAST}
 \begin{rail}
 skylineofexpr:
     cexpr ( 'MIN' | 'MAX' | 'DIFF' | 'USING' qualOp )
@@ -2501,8 +2588,8 @@ Nevertheless it is fully generic, i.e. skylines of any dimensionality,
 distinct and non-distinct with the same type of expressions and
 directions (\inlinesql{MIN}, \inlinesql{MAX}, $\ldots$) can be
 computed. The approach is very simple: materialize all tuples from the
-outer query plan node in a tuple store\index{tuple
-store}\footnote{Tuple store is PostgreSQL concept for temporary files
+outer query plan node in a \idx{tuple store}%
+\footnote{Tuple store is PostgreSQL concept for temporary files
 to store tuples.} and compare one tuple after the other against all
 other tuples in the tuple store. It is obvious that this algorithm has
 $O(n^2)$ runtime complexity and very poor I/O behavior. Nevertheless
@@ -2521,6 +2608,7 @@ default \texttt{work\_mem}\index{work mem@work\_mem} setting. See
 \autoref{sec:onedim-nondistinct} and
 \autoref{sec:onedim-distinct}.
 
+\index{index scan}
 We modified the query planner/optimizer to decide in a cost based way to use
 an \texttt{IndexScan} instead of a \texttt{SeqScan}, in case a suitable
 index is present.  With the \inlinesql{NOINDEX} option we force the
@@ -2528,6 +2616,14 @@ query planner not to use an \texttt{IndexScan}, this is of
 interest especially when profiling SFS, as SFS does a sort prior to skyline
 computation.
 
+\index{skyline\_options}
+\idxonlysql{WITH}
+\idxonlysql{EF}
+\idxonlysql{BNL}
+\idxonlysql{SFS}
+\idxonlysql{MNL}
+\idxonlysql{PRESORT}
+\idxonlysql{NOINDEX}
 \begin{rail}
 skylineoptions : 
     'WITH' 
@@ -2540,6 +2636,11 @@ The options for the elimination filter (EF) tuple window
 \nt{efwindowoptions} are modulo renaming the same as for the tuple window
 use by BNL and SFS cf. \nt{windowoptions} below.
 
+\index{ef\_window\_options}
+\idxonlysql{EFSLOTS}
+\idxonlysql{EFWINDOW}
+\idxonlysql{EFWINDOWSIZE}
+\idxonlysql{EFWINDOWPOLICY}
 \begin{rail}
 efwindowoptions : 
     ( 'EFSLOTS' '=' slots) ? \\
@@ -2563,6 +2664,11 @@ configuration variable \texttt{work\_mem}\index{work mem@work\_mem} is used, whi
 default. The other property which can be influenced is the order in which
 tuples are placed in the tuple window, where the default is \inlinesql{APPEND}.
 
+\index{window\_options}
+\idxonlysql{SLOTS}
+\idxonlysql{WINDOW}
+\idxonlysql{WINDOWSIZE}
+\idxonlysql{WINDOWPOLICY}
 \begin{rail}
 windowoptions : 
     ( 'SLOTS' '=' slots ) ? \\
@@ -2576,6 +2682,11 @@ which tuples are placed into the window is set by this option, where
 the default is \inlinesql{APPEND}. See
 \autoref{sec:tuplewindowpolicies} for details.
 
+\index{window\_policy}
+\idxonlysql{APPEND}
+\idxonlysql{PREPEND}
+\idxonlysql{ENTROPY}
+\idxonlysql{RANDOM}
 \begin{rail}
 windowpolicy : 'APPEND' | 'PREPEND' | 'ENTROPY' | 'RANDOM' ;
 \end{rail}
@@ -2629,6 +2740,8 @@ grammar would be easy to implement without any shift/reduce conflicts
 using yacc/bison. In fact we defined the grammar for
 \nt{skyline\_options}, just as simple as that:
 
+\index{skyline\_options}
+\idxonlysql{WITH}
 \begin{rail}
 skylineoptions:
     'WITH' ( () | ( name ( '=' value ) ? ) + )
@@ -2650,23 +2763,28 @@ for details} but only in the aspect of the associativity of the entire
 \inlinesql{SKYLINE OF} clause, this is because the SQL:1992 Standard
 \citep{SQL92} requires the following statement:
 
+\idxonlysql{UNION}
 \begin{sql}SELECT foo UNION SELECT bar ORDER BY baz\end{sql}
 to be parsed as
 \begin{sql}(SELECT foo UNION SELECT bar) ORDER BY baz\end{sql}
 and not as
 \begin{sql}SELECT foo UNION (SELECT bar ORDER BY baz)\end{sql}
 
-\noindent{}For the \inlinesql{SKYLINE OF} clause we decided that the it should be left
-associative, i.e. 
+\noindent
+For the \inlinesql{SKYLINE OF} clause we decided that the it should be
+\idx{left associative}, i.e.
+%
 \begin{sql}SELECT * FROM foo UNION SELECT * FROM bar SKYLINE OF baz\end{sql}
 will be parsed as 
 \begin{sql}SELECT * FROM foo UNION (SELECT * FROM bar SKYLINE OF baz)\end{sql}
 
-\noindent{}We did so, because we believe the \inlinesql{SKYLINE OF} clause is closer
-related to the \inlinesql{GROUP BY} clause than to the \inlinesql{ORDER BY}
+\noindent{}We did so, because we believe the \idxsql{SKYLINE OF} clause is closer
+related to the \idxsql{GROUP BY} clause than to the \idxsql{ORDER BY}
 clause, therefore we parse it in the same way.
 
 \subsection{Reserved Keywords}
+\index{keywords}
+\index{reserved keywords|see{keywords}}
 \label{sec:reservedkeywords}
 On the lexical level we introduced one new \emph{reserved
 keyword}: ``\inlinesql{SKYLINE}''\footnote{see
@@ -2687,8 +2805,8 @@ word, just quote it:
 \sqlprompt{CREATE DATABASE "SKYLINE";}
 \end{interactive}
 
-We did not define \inlinesql{MIN}, \inlinesql{MAX}, and
-\inlinesql{DIFF} as reserved keywords, because the SQL aggregate
+We did not define \idxsql{MIN}, \idxsql{MAX}, and
+\idxsql{DIFF} as reserved keywords, because the SQL aggregate
 functions \inlinesql{MIN} and \inlinesql{MAX} are implemented as
 functions and are looked up at runtime and not directly hardcoded into
 the grammar. Defining these keywords as reserved keywords would mess
@@ -2727,10 +2845,12 @@ vs. non-\inlinesql{SKYLINE OF DISTINCT} is described in
 %}
 
 \subsection{\inlinesql{USING}~\emph{qualOp}}
+\idxonlysql{USING}
+\idxonlysql{ORDER BY}
 \label{sec:using-qualop}
 PostgreSQL has the feature of applying user-defined ordering operators for
-the \inlinesql{ORDER~BY}-clause, where \inlinesql{ASC} is equivalent to
-\inlinesql{USING <} and \inlinesql{DESC} is equivalent to \inlinesql{USING >}, 
+the \inlinesql{ORDER~BY}-clause, where \idxsql{ASC} is equivalent to
+\inlinesql{USING <} and \idxsql{DESC} is equivalent to \inlinesql{USING >}, 
 but the creator of a user-defined ordering operator can give it
 any name, see PostgreSQL documentation on
 \postgresdocu{sql-select.html\#SQL-ORDERBY}{ORDER BY-clause}.  We
@@ -2746,19 +2866,20 @@ SELECT * FROM a15d1e5s0 SKYLINE OF d1 \textbf{USING <}, d2 \textbf{USING >};
 %\citep{Chomicki2003a} for red/white wine, meat/fish
 
 \subsection{Skyline in the presence of NULL values}
+\idxonlysql{NULL}
 \label{sec:nullvalues}
 The issue of dealing with null values is usually not treated in the
 literature, but a real implementation in a database system of course
 must be able to cope with null values.  Furthermore we have a syntax
 to specify how to treat null values when ordering values.  Once again this is a feature
 inspired by a feature of PostgreSQL's \inlinesql{ORDER~BY}-clause, where
-the keywords \inlinesql{NULLS FIRST}\index{NULLS FIRST (SQL)@\texttt{NULLS FIRST} (SQL)} and \inlinesql{NULLS LAST}\index{NULLS LAST (SQL)@\texttt{NULLS LAST} (SQL)} allows
+the keywords \idxsql{NULLS FIRST} and \idxsql{NULLS LAST} allows
 the user the specify how to treat null values.  
-If sorting ascending (\inlinesql{ORDER BY} \emph{expr}
-\inlinesql{ASC}), then the default is to sort null values \emph{after}
+If sorting ascending (\idxsql{ORDER BY} \emph{expr}
+\idxsql{ASC}), then the default is to sort null values \emph{after}
 non-null values.
 %
-The default for \inlinesql{ORDER BY} \emph{expr} \inlinesql{DESC}, i.e. sort
+The default for \inlinesql{ORDER BY} \emph{expr} \idxsql{DESC}, i.e. sort
 descending, is to sort null values \emph{before} non-null values.
 %
 For more details see the PostgreSQL documentation on ORDER BY-clause.
@@ -2777,7 +2898,7 @@ may arise if \inlinesql{NULLS LAST} should be the default for
 be consistent.
 
 
-\subsection{\inlinesql{SKYLINE OF} and \inlinesql{GROUP BY}}
+\subsection{\idxsql{SKYLINE OF} and \idxsql{GROUP BY}}
 It is well known that there are some dependencies between what one can
 specify in the \nt{target\_list} of a \inlinesql{SELECT}-clause and
 the relvars\footnote{The term \emph{relvar} was coined by C. J. Date
@@ -2853,7 +2974,7 @@ which are essential to understand our implementation.
 \subsection{Pathkeys\index{pathkeys}}
 \label{sec:pathkeys}
 In a sole set oriented algebra there is no concept of \emph{nextness}
-or \emph{order of tuples}, but in an RDBMS\index{RDBMS} the relative order of
+or \emph{order of tuples}, but in an \idx{RDBMS} the relative order of
 tuples is an important \emph{physical property} of a tuple stream.
 The knowledge about this is encoded in PostgreSQL by means of so
 called \emph{pathkeys}, they arise naturally in conjunction with an
@@ -2863,9 +2984,9 @@ using an index scan.
 which encodes the sort order on a single column. Actually this can
 be an arbitrary expression and a pathkey contains a reference to the
 according target list entry, the sort operator, and a flag
-on how to treat NULL values (cf. \texttt{NULLS FIRST}/\texttt{NULLS
-LAST}\index{NULLS FIRST (SQL)@\texttt{NULLS FIRST} (SQL)}\index{NULLS LAST (SQL)@\texttt{NULLS LAST} (SQL)}). The information if the sort order is ascending (\texttt{ASC})
-or descending (\texttt{DESC}) is encoded in the sort operator used, as
+on how to treat NULL values (cf. \idxsql{NULLS FIRST}/\idxsql{NULLS LAST}).
+The information if the sort order is ascending (\idxsql{ASC})
+or descending (\idxsql{DESC}) is encoded in the sort operator used, as
 sort operators always appear in pairs, an operator and its commutator,
 i.e. the same order just reversed.  This information provided by pathkeys plays an
 important role throughout the query plan.  A node within the query plan
@@ -2882,15 +3003,15 @@ a certain relative order.
 
 
 \subsection{Pipelined execution}
-PostgreSQL's query execution engine has a top down driven pipelined
-architecture, i.e. each node consumes the tuples from its children and
+PostgreSQL's query execution engine has a top down driven \idx{pipelined
+architecture}, i.e. each node consumes the tuples from its children and
 produces tuples and in general no intermediate results are
 materialized, see \srcref{src/backend/executor/README}.  A simple
-suitable interface for this iterator would just expose these methods:
+suitable interface for this \idx{iterator} would just expose these methods:
 \texttt{open()}, \texttt{tuple next()} and \texttt{close()}.  Nevertheless
 PostgreSQL's iterator interface is a bit richer, the dispatch functions
 are in \srcref{src/backend/executor/execProcnode.c}. In order to specialize
-just add an appropriate case in the these dispatch functions and call
+just add an appropriate case in the these \idx{dispatch functions} and call
 your own code:
 
 \begin{lstlisting}[language=pseudo,numbers=none]
@@ -2915,16 +3036,16 @@ ExecSupportsBackwardScan -- does a plan type support backwards
 \end{lstlisting}
 
 \noindent
-Each execution node is coded in the fashion of a state machine.  Do
+Each execution node is coded in the fashion of a \idx{state machine}.  Do
 something in each state and then if necessary proceed to another
-state.  The whole state is stored in the node's execution state
+state.  The whole state is stored in the node's \idx{execution state}
 information and is preserved across calls.
 
 \subsection{Simple Object System: Nodes}
 \label{sec:simple-object-system}
 As described in \citep[Page 12-14]{Conway2006a} PostgreSQL has a very
-simple object system with support for single inheritance.
-The C structure \texttt{Node} is the root of the class hierarchy.
+\idx{simple object system} with support for \idx{single inheritance}.
+The C structure \texttt{Node} is the root of the \idx{class hierarchy}.
 
 \pagebreak[2]
 
@@ -2976,25 +3097,25 @@ system, as described in the previous section.  We extended this stage
 to handle the \inlinesql{SKYLINE OF}-clause as defined in
 \autoref{sec:sql-extension}, see \srcref{src/backend/parser/gram.y} for
 the definition of \texttt{skyline\_clause}.  The result of this
-stage is called \emph{parse tree}.
+stage is called \emph{\idx{parse tree}}.
 
 \section{Query Analyzing}
 In this phase, which is also described in the PostgreSQL documentation on the
 \postgresdocu{parser-stage.html}{parser stage}, the \emph{parse tree}
-from the previous stage is semantically analyzed, the outcome is
-called \emph{query tree}.  Look-ups into the system catalog are done in
+from the previous stage is \idx{semantically analyzed}, the outcome is
+called \emph{\idx{query tree}}.  Look-ups into the system catalog are done in
 this stage to resolve references to tables, columns, functions, and
 operators, see \texttt{transformSkylineClause}\footnote{in
 \srcref{src/backend/parser/parse\_clause.c}}.
 
 \section{Query Rewriting}
-For our implementation it was not necessary to modify the \emph{query
-rewriting} stage.  For details see documentation on the
-\postgresdocu{rule-system.html}{PostgreSQL Rule System}.
+For our implementation it was not necessary to modify the \emph{\idx{query
+rewriting}} stage.  For details see documentation on the
+\postgresdocu{rule-system.html}{PostgreSQL Rule System}. \index{rule system}
 
 \section{Query Planning/Optimizing}
 The \emph{query tree} from the previous stage is transformed into a
-\emph{plan tree} during this stage.  Usually there are different
+\emph{\idx{plan tree}} during this stage.  Usually there are different
 possible plans for a given query.  The goal is to create an optimal
 plan.  Although it is computational feasible to examine each possible
 plan and selecting the best, often this exhaustive enumeration is
@@ -3011,6 +3132,7 @@ planner/optimizer:
 It is a well known fact that the skyline operator is insensitive to the
 order of attributes, i.e. the queries
 
+\idxonlysql{SKYLINE OF}
 \begin{interactive}
 SELECT * FROM a15d1e4s0 SKYLINE OF d1 MIN, d2 MIN;
 \end{interactive}
@@ -3025,6 +3147,7 @@ SELECT * FROM a15d1e4s0 SKYLINE OF d2 MIN, d1 MIN;
 \noindent
 produce the same result.  Clearly the same is not true in general for
 
+\idxonlysql{ORDER BY}
 \begin{interactive}
 SELECT * FROM a15d1e4s0 ORDER BY d1, d2;
 \end{interactive}
@@ -3040,7 +3163,7 @@ SELECT * FROM a15d1e4s0 ORDER BY d2, d1;
 Yet from this example alone one gets the intuition that the
 \inlinesql{SKYLINE~OF}-clause can benefit from a richer set of indexes
 (access paths) than the \inlinesql{ORDER~BY}-clause.  To be
-precise we must speak of \emph{pathkeys}\index{pathkeys}, i.e. both of
+precise we must speak of \emph{\idx{pathkeys}}, i.e. both of
 the above skyline queries can make use of the following index, but
 only the first query with a \inlinesql{ORDER~BY}-clause:
 
@@ -3061,16 +3184,17 @@ which access paths are considered.
 
 \subsubsection{Pull up subqueries}
 If a subquery contains a \inlinesql{SKYLINE~OF}-clause the query
-must not be flattened out, i.e. do not pull up the subquery.  The function
+must not be flattened out\index{flatten out queries}, i.e. do not pull up the subquery.  The function
 \texttt{is\_simple\_subquery}\footnote{in
 \srcref{src/backend/optimizer/prep/prepjointree.c}} is modified
 accordingly.
 
 \subsection{Preserving relative tuple order}
+\index{relative tuple order}
 \label{sec:relative-tuple-order}
 The relative order of tuples is an important physical property of a
 tuple stream, knowledge about this is encoded by means of
-\emph{pathkeys}\index{pathkeys} as described in \autoref{sec:pathkeys}. As the
+\emph{\idx{pathkeys}} as described in \autoref{sec:pathkeys}. As the
 skyline operator is a
 full-blown operator we have to provide this information for it
 as well.  In \autoref{sec:bnl-tuple-order},
@@ -3110,6 +3234,7 @@ EF              & yes & no  \\
 
 
 \subsection{Physical operator selection}
+\index{operator selection}
 \label{sec:operatorselection}
 The physical operator selection is rather straightforward.  We call
 the \emph{physical operators} als \emph{methods}.  If a method is
@@ -3135,6 +3260,8 @@ and cost estimation, here space for improvements is left, see
 
 
 \subsection{Using relation statistics}
+\index{statistics}
+\index{sampling}
 \label{sec:using-relation-statistics}
 When using the tuple window placement policy \emph{entropy} a so
 called \emph{entropy value} for each tuple is computed, see
@@ -3244,7 +3371,7 @@ hold. To see this imagine the BNL algorithm running on a uniformly
 distributed dataset, which implies the expected result set size is
 $\Theta(\log(n)^{d-1} / (d-1)!)$ but the order of the tuple stream is
 such that before seeing the actual skyline tuples a lot of
-anti-correlated\index{anti-correlated} tuples show up in the tuple stream.  The tuple window
+\idx{anti-correlated} tuples show up in the tuple stream.  The tuple window
 will fill up with non skyline tuples.
 
 We would like also to point out, that larger window and and less
@@ -3255,6 +3382,8 @@ time is required, so there is a break even point.
 % NOTE: we did not analyse this data, so this section is missing
 
 \subsubsection{\inlinesql{LIMIT} / \inlinesql{TOP $k$}}
+\idxonlysql{LIMIT}
+\idxonlysql{TOP}
 The \inlinesql{LIMIT}/\inlinesql{TOP $k$}-clause is used to limit the
 number of tuples in the result.  In the implementation no special
 measures had to be taken, as the \inlinesql{LIMIT}/\inlinesql{TOP
@@ -3268,6 +3397,7 @@ see \texttt{skyline\_method\_can\_use\_limit}\footnote{in
 \section{Query Execution}
 \label{sec:queryexecution}
 
+\index{query plan interpretation}
 The original System R prototype compiled query plans into machine
 code, whereas other systems like INGRES, the grandfather of
 PostgreSQL, generated an interpretable query plan. In the 1980s query
@@ -3407,14 +3537,14 @@ accordingly:
 \end{interactive}
 
 We took a different approach, while scanning over the input we collect
-all minimal tuples in a tuple store\index{tuple store}.  For
+all minimal tuples in a \idx{tuple store}.  For
 comparison we need to keep just one tuple.  If a tuple is equal to
 this one, i.e. another potential minimal/maximal tuple we add it to the
 tuple store.  On the other hand, if this tuple is dominated we clean
 the tuple store, and keep the dominating tuple.  After the initial
 scan over the input we pipe out the tuple store,
 cf. \autoref{code:1dim}.  For the sake of a clearer pseudo-code we
-gave ourselves the freedom to present the tuple store\index{tuple store} interface
+gave ourselves the freedom to present the \idx{tuple store} interface
 (\texttt{tuplestore\_*}) a little differently to the actual
 implementation.  A functionality we added to the tuple store is to
 remove all tuples from the tuple store, which is cheaper than
@@ -3425,7 +3555,7 @@ modifying read and write pointers.
 
 %\begin{figure}[htbp]
 \begin{lstlisting}[language=pseudo,
-caption={Special case: 1 dimensional},
+caption={Special case: 1 dimensional (in iterator style)},
 label={code:1dim}
 ]
 function ExecSkyline_1Dim(var $state$)
@@ -3490,12 +3620,13 @@ like:
 and will return at most one tuple, if more than one minimal tuple
 exists our implementation returns the first.
 
-The SQL 2003 standard\index{SQL!standard 2003} \citep{SQL2003} does not provide a way
+The \idx{SQL 2003 standard} \citep{SQL2003} does not provide a way
 to limit the size of a result set. Nevertheless PostgreSQL and other
-RDBMS\index{RDBMS} do provide syntax for this and consider it during query
+\idx{RDBMS} do provide syntax for this and consider it during query
 planning. The query and the query plan for the above query without
 the skyline operator would look like:
 
+\idxonlysql{LIMIT}
 \begin{interactive}
 \textbf{SELECT * FROM a15d1e4s0 WHERE d1 = (SELECT MIN(d1) FROM a15d1e4s0) LIMIT 1;}
 \comment{output omitted}
@@ -3517,6 +3648,7 @@ Please note that again two scans over the input are done, although the
 second one might stop earlier. For Microsoft SQL Server the same query
 looks like this:
 
+\idxonlysql{TOP}
 \begin{interactive}
 \textbf{SELECT TOP 1 * FROM a15d1e4s0 WHERE d1 = (SELECT MIN(d1) FROM a15d1e4s0);}
 \end{interactive}
@@ -3525,7 +3657,8 @@ looks like this:
 An ad hoc experiment that we conducted showed that Microsoft SQL Server
 2005 produces a very similar execution plan.
 
-In Oracle the pseudo-column \inlinesql{ROWNUM}\index{ROWNUM (SQL)@\texttt{ROWNUM} (SQL)}
+\index{pseudo-column}
+In Oracle the pseudo-column \idxsql{ROWNUM}
 can be used to limit the number of tuples returned by a query.
 
 If the relation in question contains a unique identifier with a total
@@ -3543,7 +3676,7 @@ select the first one of the minimal tuples, according to the order induced by \t
 
 %\begin{figure}[htbp]
 \begin{lstlisting}[language=pseudo,
-caption={Special case: 1 dimensional distinct},
+caption={Special case: 1 dimensional distinct (in iterator style)},
 label={code:1dimdistinct}
 ]
 function ExecSkyline_1DimDistinct(var $state$)
@@ -3604,6 +3737,7 @@ q \dominates p \lor (q \nondistinct p \land \text{\texttt{DISTINCT}}).
 \end{equation}
 
 \noindent
+\idxonlysql{SKYLINE DISTINCT OF}
 If \texttt{DISTINCT} is \emph{true}, then \eqref{eqn:2dimpf} simplifies to:
 
 \begin{eqnarray}
@@ -3621,7 +3755,7 @@ q \dominates p \lor (q \nondistinct p \land \bot) = q \dominates p
 \pagebreak[4]
 %\begin{figure}[htbp]
 \begin{lstlisting}[language=pseudo,
-caption={Special case: 2 dimensional with presort},
+caption={Special case: 2 dimensional with presort (in iterator style)},
 label={code:2dimpresort}
 ]
 function ExecSkyline_2DimPresort(var $state$)
@@ -3664,7 +3798,7 @@ function ExecSkyline_2DimPresort(var $state$)
 This method is the first general method which can deal with any
 dimensionality and treat the \inlinesql{DISTINCT} modifier.  It
 directly corresponds to the \naive $O(n^2)$ nested loop approach,
-compare every tuple to all others as long as no witness\index{witness} is found, which
+compare every tuple to all others as long as no \idx{witness} is found, which
 dominates the current tuple.  Why is it called \emph{materialized}
 nested loop?  This \emph{materialized} stems from the fact that we
 materialize the tuples from the outer plan, to be able to read them
@@ -3676,7 +3810,7 @@ the counters $state.pos$ and $innerPos$ and favor the first tuple.
 \enlargethispage{-\baselineskip}
 %\begin{figure}[htbp]
 \begin{lstlisting}[language=pseudo,
-caption={MNL},
+caption={Materialized Nested Loop (MNL) (in iterator style)},
 label={code:mnl}
 ]
 function ExecSkyline_MaterializedNestedLoop(var $state$)
@@ -3730,7 +3864,7 @@ function ExecSkyline_MaterializedNestedLoop(var $state$)
 %\end{figure}
 
 \subsection{Tuple Window}
-A tuple window is a data structure used by BNL, SFS and EF to store
+A \idx{tuple window} is a data structure used by BNL, SFS and EF to store
 skyline (candidate) points. As internal representation we used a double
 linked list with a sentinel (cf. \citep[Page 204--209]{Cormen2001}).
 Using a sentinel simplifies the code to manipulate a double linked
@@ -3773,8 +3907,8 @@ tuple window with the given timestamp.  For a ranked window policy
 higher rank than the lowest ranked tuple in the window then this
 lowest ranked tuple is removed --- if the space for the higher ranked
 tuple is needed.  We use this especially for the implementation of the
-elimination filter. We speak of a \emph{forced insert}\index{forced
-insert}.  Currently the \lstinline|timestamp| argument is only used
+elimination filter. We speak of a \emph{\idx{forced insert}}.
+Currently the \lstinline|timestamp| argument is only used
 by BNL and in all other algorithms it is set to zero.
 
 \item \lstinline|void tuplewindow_rewind(TupleWindowState *state)|
@@ -3809,20 +3943,21 @@ used by BNL.
 
 
 \subsubsection{Placement Policies}
+\index{placement policies}
 \label{sec:tuplewindowpolicies}
 With tuple window placement policy we want to express how tuples are
 organized in the window and in which order they are compared against
 each other \citep{Godfrey2007}. The implementation supports four
 different placement policies:
 \begin{enumerate}
-\item \emph{append:} 
+\item \emph{append:} \index{append|see{placement policies}}
 a new tuple is always inserted at the \emph{end} of the list
 
-\item \emph{prepend:}
+\item \emph{prepend:} \index{prepend|see{placement policies}}
 instead of the end, new tuples are inserted at the \emph{beginning} of
 the list
 
-\item \emph{entropy:}
+\item \emph{entropy:} \index{entropy|see{placement policies}}
 tuples are kept in \emph{rank descending order}. The insertion position
 is found in $O(n)$, this is done by computing the rank before starting
 to scan over the window and the pointer is only incremented as long as
@@ -3841,7 +3976,7 @@ is computed on with $\forall i \in \{1, \ldots, m\}\colon r_i \in [0,
 E(t) = \sum_{i=1}^{m} \ln(r_m + 1)
 \end{equation}
 
-\item \emph{random: }
+\item \emph{random:} \index{random|see{placement policies}} 
 behaves like \emph{entropy} but instead of a computed entropy value
 for a tuple a random value is used.
 
@@ -3859,7 +3994,7 @@ can be specified effect the tuple window.
 
 %\begin{figure}[htbp]
 \begin{lstlisting}[language=pseudo,
-caption={BNL},
+caption={Block Nested Loop (BNL) (in iterator style)},
 label={code:fixedbnl-statemachine}
 ]
 function ExecSkyline_BlockNestedLoop(var $state$)
@@ -3970,7 +4105,7 @@ the way it fits into the query execution engine, see
 \enlargethispage{\baselineskip}
 
 \begin{lstlisting}[language=pseudo,
-caption={SFS},
+caption={Sort First Skyline (SFS) (in iterator style)},
 label={code:sfs-statemachine}
 ]
 function ExecSkyline_SortFilterSkyline(var $state$)
@@ -4044,13 +4179,13 @@ SFS and BNL, see the following sections.
 \subsection{SFS+EF (a LESS Variant)}
 In \citep{Godfrey2005} \nospellcheck{Godfrey et al.} proposed the LESS
 algorithm, which is an improvement of SFS due to the introduction of
-the concept of {\em elimination filter} (EF). With the original LESS
+the concept of \emph{elimination filter} (EF). With the original LESS
 algorithm the elimination filtering is carried out in the pass zero of
 the external sort routine to eliminate records quickly.
 
 In our case, in order to integrate the elimination filter into the SFS
 algorithm, while at the same time preserving the utilization of the
-physical sort operator, we implemented the elimination filter {\em
+physical sort operator, we implemented the elimination filter \emph{
 before} the sort routine.  Speaking in terms of the iterator tree, the
 EF node is a child of the sort node, which in turn is a child of the
 SFS node (see \autoref{fig:qp-sfs-ef}).  Furthermore, we do not
@@ -4083,6 +4218,8 @@ In this section we share some of the experiences we made
 during development.
 
 \subsection{Source Code and Version Control}
+\index{Concurrent Version System (CVS)}
+\index{SubVersion (SVN)}
 We started out our implementation effort of the skyline operator, when
 \texttt{CVS HEAD} of the PostgreSQL source repository was
 \texttt{8.3-devel}, i.e. the version 8.3 of PostgreSQL was currently
@@ -4131,11 +4268,11 @@ proved itself as very handy for this size and type of project.
 PostgreSQL creates one back-end process, which corresponds to an
 operating system process, per client connect.  This property makes
 debugging a bit unpleasant.  Nevertheless there is a good work around
-for this, just operate the PostgreSQL in \emph{single user
-mode}\index{single user mode}.  This gives one a prompt, to enter
+for this, just operate the PostgreSQL in \emph{\idx{single user
+mode}}.  This gives one a prompt, to enter
 queries directly and the query is evaluated in the same process.  So
-debugging or, with Microsoft Visual C++, even \emph{edit \&
-continue}\index{edit \& continue}\footnote{Edit \& continue is the
+debugging or, with Microsoft Visual C++, even \emph{\idx{edit \&
+continue}}\footnote{Edit \& continue is the
 ability of modifying the source code while debugging, applying the changes
 and continuing to debug.  Kind of deluxe for a C compiler.} was possible.  For further
 details see the PostgreSQL documentation on
@@ -4200,7 +4337,7 @@ version \citep{Eder2007a} of the dataset generator presented in
 \citep{Borzsonyi2001}, which allows to generate tables with
 different initial seeds for the random generator. All experiments
 were carried out on three different sets with varying initial seed, for each
-distribution type (independent\index{independent}, correlated\index{correlated}, and anti-correlated\index{anti-correlated}), and
+distribution type (\idx{independent}, \idx{correlated}, and \idx{anti-correlated}), and
 with 100, 500, 1k, 5k, 10k, 50k, 100k tuples.
 
 Each tuple consists of a unique 4 byte integer \emph{id} and 15
@@ -4261,14 +4398,11 @@ datasets are generated by the dataset generator.
 
 \subsubsection{Independent, Correlated, and Anti-Correlated Datasets}
 \label{sec:corr-anti-indep}
-\index{independent}
-\index{correlated}
-\index{anti-correlated}
 
 The main parameters one can vary for a generated dataset are
 \emph{cardinality}, i.e. number of tuples, \emph{dimensionality} and
 the \emph{distribution type} and types are as of \citep{Borzsonyi2001}: 
-\emph{independent}, \emph{correlated}, and \emph{anti-correlated}.
+\emph{\idx{independent}}, \emph{\idx{correlated}}, and \emph{\idx{anti-correlated}}.
 
 %Instead of giving a lenghty description of how the differnt
 %distributions are generated, we present the essential parts of the
@@ -4292,6 +4426,7 @@ random_equal(double min, double max)
 \medskip
 %
 \noindent
+\index{random\_equal@\lstinline{random_equal()}}
 As expected \lstinline{random_equal()} returns a random value $x
 \in [\textnormal{min}, \textnormal{max}]$.
 %
@@ -4312,6 +4447,7 @@ random_peak(double min, double max, int dim)
 \medskip
 
 \noindent
+\index{random\_peak@\lstinline{random_peak()}}
 The function \lstinline{random_peak()} returns a random value $x \in
 [\textnormal{min}, \textnormal{max}]$ as sum of \lstinline{dim}
 equally distributed random values.
@@ -4326,6 +4462,7 @@ random_normal(double med, double var)
 \end{lstlisting}
 \medskip
 
+\index{random\_normal@\lstinline{random_normal()}}
 The function \lstinline{random_normal()} is our way to generate a
 normally distributed value $x \in (\textnormal{med} -
 \textnormal{var}, \textnormal{med} + \textnormal{var})$ with expected
@@ -4347,7 +4484,7 @@ Now we focus on the different distribution types and how they are
 generated and we show some of their properties:
 
 \begin{itemize}
-\item \emph{indep}: 
+\item \emph{indep}: \index{independent}
 for this type of dataset, all attribute values are generated
 independently using a uniform distribution. 
 \autoref{fig:density-2d-i2d1e5} shows a density plot
@@ -4356,9 +4493,9 @@ and statistics of such an independent dataset with 100k tuples and $d
 the red line, where the red line is the ``skyline''. The density of
 points within a specific subregion is indicated by grayscale values,
 the darker the more points are in the subregion. Above and to the
-right of the grayscale density plot is the border distribution for
+right of the grayscale \idx{density plot} is the \idx{border distribution} for
 each dimension, in this plots the blue line indicates the density of a
-normal distribution with the same mean and standard deviation as the
+\idx{normal distribution} with the same mean and standard deviation as the
 border distribution.
 
 The implementation is as straightforward as expected:
@@ -4373,6 +4510,7 @@ for (d = 0; d < dim; d++)
 \medskip
 
 \begin{figure}[htbp]
+\index{density plot}%
 \centering
 \sbox{\tempbox}{\includegraphics[width=100mm]{plots-density/density-2d-i2d1e5}}%
 \subfloat[Density Plot]{\usebox{\tempbox}}%
@@ -4403,7 +4541,7 @@ d2	& 0.000 & 1.000 \\
 \pagebreak[4]
 
 \item \emph{corr}: 
-a correlated dataset represents an environment in which points which
+a \idx{correlated} dataset represents an environment in which points which
 are good in one dimension are also good in the other dimensions. 
 
 %For instance, students which have a good publication record typically also
@@ -4440,6 +4578,7 @@ within the interval $[0,1]$.
 100k tuples for $d = 2$.
 
 \begin{figure}[htbp]
+\index{density plot}%
 \centering
 \sbox{\tempbox}{\includegraphics[width=100mm]{plots-density/density-2d-c2d1e5}}%
 \subfloat[Density plot]{\usebox{\tempbox}}%
@@ -4472,8 +4611,7 @@ d2	& 0.717 & 1.000 \\
 \enlargethispage{\baselineskip}
 
 \item \emph{anti}:
-\index{anti-correlated}
-an anti-correlated dataset represents an environment in which points
+an \idx{anti-correlated} dataset represents an environment in which points
 which are good in one dimension are bad in one or all of the other
 dimensions. The standard example used in the skyline literature falls
 into this category: hotels are either cheap and far away from the
@@ -4505,6 +4643,7 @@ with 100k tuples for $d = 2$.
 \end{itemize}
 
 \begin{figure}[htbp]
+\index{density plot}%
 \centering
 \sbox{\tempbox}{\includegraphics[width=100mm]{plots-density/density-2d-a2d1e5}}%
 \subfloat[Density Plot]{\usebox{\tempbox}}%
@@ -4544,6 +4683,7 @@ random dataset generator is to pipe its output directly into the
 database. The usage message explains how to use the command line
 utility:
 
+\index{randdataset@\texttt{randdataset}}
 \begin{interactive}
 \shprompt{randdataset -?}
 Test Data Generator for Skyline Operator Evaluation
@@ -4598,12 +4738,12 @@ module which implements the functionality of \texttt{randdataset} as a
 set returning function. To create, backup and restore a test database
 with an appropriate set of test tables can be very time
 consuming. Having such a function at hand is useful in many situations,
-all it takes is to run PostgreSQL's \texttt{initdb} and installing the set
+all it takes is to run PostgreSQL's \texttt{\idx{initdb}} and installing the set
 returning function. We used it many times after merging the PostgreSQL
 8.3-devel branch into our branch, which often made it necessary to
 re-\texttt{initdb} the database. Especially for regression tests and during
 debugging this function was very handy. PostgreSQL's concept of
-\postgresdocu{functions-srf.html}{set returning functions} allows to
+\postgresdocu{functions-srf.html}{set returning functions}\index{set returning function} allows to
 issue queries as such:
 
 \begin{interactive}
@@ -4657,6 +4797,8 @@ function can be used as follows:
 
 \noindent
 The general signature for \inlinesql{pg\_rand\_dataset} is:
+\idxonlysql{FUNCTION}
+\idxonlysql{RETURNS}
 \begin{interactive}
 FUNCTION pg_rand_dataset(disttype text, dim int, rows int, seed int)
 RETURNS setof record
@@ -4679,9 +4821,10 @@ allowed values are \texttt{'indep'}, \texttt{'corr'}, and
 
 We ensured that calling \inlinesql{pg\_rand\_dataset} with the same
 arguments will always return the same result set. In the PostgreSQL
-terminology this property of a function is called \texttt{IMMUTABLE}
+terminology this property of a function is called \idxsql{IMMUTABLE}
 (see the PostgreSQL documentation on
 \postgresdocu{xfunc-volatility.html}{Function Volatility Categories}).
+\index{function volatility categories}
 
 To make the usage more comfortable we defined a set of wrapper
 functions \texttt{rds$k$d} for the dimensions $k \in \{1, \ldots,
@@ -4701,7 +4844,7 @@ following way (see \srcref{contrib/randdataset/randdataset.sql.in}):
 
 
 \subsubsection{Buffer for Set returning function}
-
+\index{set returning function}
 In the PostgreSQL execution engine a function scan node is responsible
 for retrieving tuples from a set returning function. The current
 implementation reads all the tuples from the set returning function
@@ -4738,7 +4881,7 @@ studying just the CPU bounded behavior of the skyline algorithms.
 On the other hand we do not want to increase \texttt{work\_mem}\index{work mem@work\_mem}, as
 this would, as mentioned above, influence the sort operation and the size
 of the tuple window for the skyline algorithms. Therefore we decided
-to introduce a new configuration variable
+to introduce a new configuration variable \\
 \texttt{function\_scan\_work\_mem}, solely for the \texttt{tuplestore}
 in the function scan node. The following utility query sets this
 configuration variable to 100~MB;
@@ -4764,6 +4907,7 @@ other. To distinguish these terms from the general terms with the same
 name we start them with an upper case letter, i.e. Job vs. job.
 
 \begin{definition}[Query]
+\index{Query}
 A Query corresponds to a single SQL query with meta data embedded in
 comments.
 \end{definition}
@@ -4811,6 +4955,7 @@ and shows the actual runtime. See the PostgreSQL documentation on
 \postgresdocu{sql-explain.html}{EXPLAIN} for more details.
 
 \begin{definition}[Setup Query]
+\index{Setup Query}
 A Setup Query is a query who's sole purpose is to setup things up for
 the query that is going to be profiled.
 \end{definition}
@@ -4837,6 +4982,7 @@ way larger than our biggest relation with the associated indexes this
 was always the case.
 
 \begin{definition}[Run]
+\index{Run}
 A Run comprises zero, one or more Setup Queries and the Query that is
 going to be profiled.
 \end{definition}
@@ -4848,6 +4994,7 @@ we often grouped Runs in such a way, that two Runs shared a single
 Setup Query (cf. \autoref{fig:jobfile}).
 
 \begin{definition}[Job]
+\index{Job}
 A Job comprises of one or more Runs batched together in a file.
 \end{definition}
 
@@ -5070,6 +5217,7 @@ see subsubsection \emph{Pivoting the CSF File} below.
 
 \subsubsection{Generating the Jobs}
 \label{sec:generatejobs}
+\index{gj.pl@\texttt{gj.pl} (job generator)}
 The creation of the Jobs is done by an ordinary Perl script called
 \texttt{gj.pl}.  The only argument to this script is the seed
 (\texttt{s0}, \texttt{s1}, $\ldots$) for which the Jobs should be
@@ -5081,6 +5229,8 @@ files.
 
 \subsubsection{Job Scheduling}
 \label{sec:jobscheduling}
+\index{js.pl@\texttt{js.pl} (job scheduler)}
+\index{feed.pl@\texttt{feed.pl} (batch feeder)}
 %We will speak of it as \emph{job scheduling}.  
 The concept behind this
 is simple but very effective.  We run a process called \emph{job
@@ -5132,6 +5282,9 @@ were able to add and remove machines as we liked.
 
 \subsubsection{To CSV Format}
 \label{sec:tocsvformat}
+\index{qp2log@\texttt{qp2log}}
+\index{m//g@\texttt{m//g} (regex)}
+\index{G@\texttt{\ttbackslash G} (regex)}
 We wrote a little Perl script \texttt{qp2log} which transforms the raw
 log files (cf. \autoref{fig:logfile} into CSV format with the
 columns \texttt{runid}, \texttt{name} and \texttt{value}, and the
@@ -5150,7 +5303,7 @@ of Perl's regular expression (regex) support which was very handy for
 us, it is the combination of ``\texttt{m//g}'' and
 ``\texttt{\ttbackslash G}''. ``\texttt{\ttbackslash G}'' matches only
 at the end-of-match position of the prior \texttt{m//g}.  By means of
-that one can build a very \texttt{lex}/\texttt{flex}-like scanner.
+that one can build a very \texttt{lex}/\texttt{flex}-like scanner. \index{lex/flex}
 
 
 \global\fixedcolumnwidth 5cm
@@ -5244,6 +5397,7 @@ once, e.g. as part of a subplan, then this number is reported by
 
 \subsubsection{Pivoting the CSV Files}
 \label{sec:pivotlog}
+\index{pivot\_log@\texttt{pivot\_log}}
 Our tool \texttt{pivot\_log} transforms a parse log file
 (cf. \autoref{fig:parsedlogfile}) into CSV format, where each Run
 is represented by a single line and values for the selected names are
@@ -5251,6 +5405,7 @@ the columns (cf. \autoref{fig:pivot_log}). For a list of fields
 with description see \autoref{tab:queryplanfields}.
 
 \begin{figure}[htbp]
+\index{pivot\_log@\texttt{pivot\_log}}%
 \begin{interactive}
 \shprompt{pivot_log --help}
 Usage: pivot_log [OPTIONS] [FILE] ...
@@ -5283,6 +5438,7 @@ column is always RUNID.
 
 \subsubsection{Aggregating and Analyzing in R}
 \label{sec:aggregatingandanalyzing}
+\index{R}
 For further aggregation and analysis we imported the CSV files
 generated in the last step into the statistics software R
 (\url{http://www.r-project.org/}). The results of this effort can be
@@ -5414,7 +5570,7 @@ tuples.
 We also note that SFS performs extremely poor as the dimension is less
 than six for independent and anti-correlated data, and even worse for
 correlated data.  This can be justified that if the dimension is low,
-the skyline selectivity\index{selectivity} factor\index{selectivity factor}\footnote{selectivity factor = skyline
+the skyline \idx{selectivity} factor\index{selectivity factor}\footnote{selectivity factor = skyline
 tuples / input tuples. A low selectivity factor means high
 selectivity.}  is low as well. Therefore, EF operation is effective,
 i.e., a number of tuples could be removed at this stage. However, this
@@ -5459,7 +5615,7 @@ interesting observation is that the performance of SFS is surprisingly
 better than others, except for the extremely low dimension values
 (three for independent, anti-correlated, and six for correlated
 distributions).  As illustrated by \autoref{fig:sf}, there exists a
-causal relation with the skyline selectivity\index{selectivity} factors.  It shows
+causal relation with the skyline \idx{selectivity} factors.  It shows
 clearly that as the data cardinality decreases, the skyline
 selectivity factor increases. Therefore, in general, the EF operator
 is less effective with lower data cardinalities. To be more accurate,
@@ -5681,7 +5837,7 @@ execution.
 The syntax for the skyline operator as proposed
 in \citep{Borzsonyi2001} is not part of any standard, hence our
 extended syntax is not part of a standard either.  Other extensions to
-SQL have been proposed, like Preference~SQL \citep{Kiessling2002a}.  A
+SQL have been proposed, like \idx{Preference~SQL} \citep{Kiessling2002a}.  A
 subset of Preference~SQL was used in \citep{Chaudhuri2006}.  Our
 current syntax is quite limited to a special purpose, a more general
 syntax for preference queries is desirable.
@@ -5699,11 +5855,12 @@ skylineclause :
 
 \noindent
 With the intended semantics to compute the skyline within the
-partitions as induced by the \inlinesql{PARTITION BY} subclause. This
+partitions as induced by the \idxsql{PARTITION BY} subclause. This
 syntax was inspired by Oracle's analytic functions \citep[Page~5-10]{Oracle2005}.
 
 
-\subsection{\inlinesql{USING} \emph{op} for \inlinesql{SKYLINE OF DIFF}}
+\subsection{\idxsql{USING} \emph{op} for \inlinesql{SKYLINE OF DIFF}}
+\idxonlysql{DIFF}
 While we do provide syntax to use user-defined ordering operators
 instead for \inlinesql{SKYLINE OF MIN/MAX}, we do not do so yet for
 \inlinesql{SKYLINE OF DIFF}, which is used to partition the input
@@ -5735,6 +5892,7 @@ work to integrate such optimizations into the query planner/optimizer.
 
 \subsection{Sampling}
 \label{sec:sampling}
+\index{sampling}
 In the absence of statistics (histograms) for the relation in
 questions, sampling could be engaged. \citet{Chaudhuri2006} did
 derive some results on this topic.
@@ -5743,9 +5901,9 @@ derive some results on this topic.
 \subsection{Index-based Algorithms}
 In the future it would interesting to implement and evaluate index-based algorithms 
 such as 
-{\em Index} \citep{Tan2001}, 
-{\em Nearest Neighbor} (NN) \citep{Kossmann2002}, and
-{\em Branch and Bound} (BBS) \citep{Papadias2003, Papadias2005}.
+\emph{Index} \citep{Tan2001}, 
+\emph{Nearest Neighbor} (NN) \citep{Kossmann2002}, and
+\emph{Branch and Bound} (BBS) \citep{Papadias2003, Papadias2005}.
 
 
 \subsection{Index Scan for one Dimensional Skylines}
@@ -5762,6 +5920,7 @@ not change.
 
 \subsection{SFS}
 \subsubsection{Index Scan and SFS}
+\index{index scan}
 As for SFS algorithms using indexes, what remains open is to
 investigate the behavior in case all skyline attributes and attributes
 in the select clause are part of the index, such that it suffices
@@ -5781,6 +5940,7 @@ could be developed to decide when to perform this projection.
 
 
 \subsection{Speedups for \inlinesql{SKYLINE OF DIFF}}
+\idxonlysql{DIFF}
 \label{sec:speedup-skyline-diff}
 %
 One can use a separate tuple window for each \inlinesql{SKYLINE OF DIFF}
@@ -5799,18 +5959,18 @@ a group change we can flush the tuple window.
 
 
 \subsection{Speedups for low Cardinality Domains}
-A couple of algorithms for low cardinality domains, e.g.
-the ``stars ranking of a hotel'', only five discrete values (one
-to five stars), have been proposed \citep{Preisinger2006,
-Preisinger2007, Morse2007}.  Based on histograms for the base relations
-the query optimizer could select such specialized algorithms.
+A couple of algorithms for low cardinality domains, e.g.  the ``stars
+ranking of a hotel'', only five discrete values (one to five stars),
+have been proposed \citep{Preisinger2006, Preisinger2007, Morse2007}.
+Based on histograms for the base relations the query optimizer could
+select such specialized algorithms.
 
 
 \subsection{Speedup Tuple Comparison}
-We believe the concept of EF (Elimination Filter) is very promising
-and we believe that it is possible to further improve its efficiency and effectiveness, e.g. to
-integrate it as a filter in the index scan code, or to use other data
-structures and policies for the EF window.
+We believe the concept of elimination filter (EF) is very promising
+and we believe that it is possible to further improve its efficiency
+and effectiveness, e.g. to integrate it as a filter in the index scan
+code, or to use other data structures and policies for the EF window.
 
 
 \subsubsection{Order in which Columns are compared}
@@ -5852,7 +6012,7 @@ before string data.
 \label{chap:summary}
 
 In this thesis we presented the extension of the open source
-RDBMS\index{RDBMS} PostgreSQL with the skyline operator.  It is our strong belief that with
+\idx{RDBMS} PostgreSQL with the skyline operator.  It is our strong belief that with
 this effort the skyline operator is in the habitat it belongs to.
 
 The algorithms we have implemented so far are BNL, SFS, and a variant
@@ -5861,15 +6021,15 @@ We have extended the basic syntax of the \inlinesql{SKYLINE~OF}-clause
 \citep{Borzsonyi2001} in order to specify the following aspects:
 
 \begin{itemize}
-\item The treatment of NULL values (\texttt{NULLS FIRST}\index{NULLS FIRST (SQL)@\texttt{NULLS FIRST} (SQL)} and \texttt{NULLS LAST}\index{NULLS LAST (SQL)@\texttt{NULLS LAST} (SQL)})
+\item The treatment of NULL values (\idxsql{NULLS FIRST} and \idxsql{NULLS LAST})
 \item The usage of order relations other than $<$ and $>$ (\texttt{USING \emph{Op}})
 \item Operational aspects of skyline computation, such as 
 \begin{itemize}
-\item \emph{method} (BNL, SFS, MNL, PRESORT (2 dim only))
+\item \emph{method} (\idxsql{BNL}, \idxsql{SFS}, \idxsql{MNL}, \idxsql{PRESORT} (2 dim only))
 \item \emph{tuple window size} in terms of memory and/or number of slots
 \item \emph{tuple window policy} (append, prepend, ranked by entropy, ranked by a random value)
-\item \emph{usage of indexes} (\texttt{NOINDEX})
-\item \emph{usage of elimination filter (EF), 
+\item \emph{usage of indexes} (\idxsql{NOINDEX})
+\item \emph{usage of elimination filter (\idxsql{EF}), 
   	with the possibility to influence the EF window in the same way
   	as for the BNL or SFS node}
 \end{itemize}

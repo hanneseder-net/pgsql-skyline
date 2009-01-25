@@ -18,7 +18,7 @@ TMPFILES=*.aux *.log *.toc *.lot *.lof *.lol *.bbl *.blg *.ind *.ilg *.idx *.out
 TRASHFILES=*~ *.*~
 
 # use in `make distclean` to remove all files
-TARGETFILES=00-thesis-heder.pdf 00-thesis-jeder.pdf 00-thesis-heder-twoside.pdf
+TARGETFILES=00-thesis-heder.pdf 00-thesis-heder-twoside.pdf
 
 # we do not need this one: 00-thesis-jeder-twoside.pdf
 
@@ -62,17 +62,17 @@ skyline.bib: ../bibtex/bib/skyline/skyline.bib
 #			just <macro> is given, <val> is taken to be 1
 
 00-thesis-heder.tex: 00-thesis.skel Makefile
-	cpp -C -P -D"OPTIONS=a4paper,10pt,final,oneside" -D"AUTHOR=Ing. Bakk.techn. Hannes Eder" $< >$@
+	cpp -C -P -D"OPTIONS=a4paper,10pt,final" -D"TWOSIDE=0" -D"AUTHOR=Ing. Bakk.techn. Hannes Eder" $< >$@
 
 00-thesis-jeder.tex: 00-thesis.skel Makefile
-	cpp -C -P -D"OPTIONS=a4paper,10pt,final,oneside" -D"AUTHOR=Ing. Bakk.techn. Johann Eder" $< >$@
+	cpp -C -P -D"OPTIONS=a4paper,10pt,final" -D"TWOSIDE=0" -D"AUTHOR=Ing. Bakk.techn. Johann Eder" $< >$@
 
 
 00-thesis-heder-twoside.tex: 00-thesis.skel Makefile
-	cpp -C -P -D"OPTIONS=a4paper,10pt,final,twoside" -D"AUTHOR=Ing. Bakk.techn. Hannes Eder" $< >$@
+	cpp -C -P -D"OPTIONS=a4paper,10pt,final" -D"TWOSIDE=1" -D"AUTHOR=Ing. Bakk.techn. Hannes Eder" $< >$@
 
 00-thesis-jeder-twoside.tex: 00-thesis.skel Makefile
-	cpp -C -P -D"OPTIONS=a4paper,10pt,final,twoside" -D"AUTHOR=Ing. Bakk.techn. Johann Eder" $< >$@
+	cpp -C -P -D"OPTIONS=a4paper,10pt,final" -D"TWOSIDE=1" -D"AUTHOR=Ing. Bakk.techn. Johann Eder" $< >$@
 
 
 #

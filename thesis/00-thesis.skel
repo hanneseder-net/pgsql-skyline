@@ -5,6 +5,10 @@
 %%% source id: $Id$
 %%%
 
+#ifndef TWOSIDE
+#define TWOSIDE 0
+#endif
+
 #ifndef OPTIONS
 #define OPTIONS a4paper,10pt,final
 #endif
@@ -13,7 +17,11 @@
 #define AUTHOR Ing. Bakk.techn. Hannes Eder
 #endif
 
-\documentclass[OPTIONS]{book}
+#if TWOSIDE
+\documentclass[OPTIONS,twoside]{book}
+#else
+\documentclass[OPTIONS,oneside]{book}
+#endif
 
 \newcommand\thetitle{On Extending PostgreSQL with the Skyline Operator}
 \newcommand\theauthor{AUTHOR}
@@ -24,11 +32,6 @@
 \date{\thedate}
 
 \usepackage{heder}
-
-%\usepackage[T1]{fontenc}
-%\usepackage{textcomp}
-%\usepackage[scaled]{luximono}
-
 \usepackage{rail}
 \usepackage{subfig}
 \usepackage{listings}
@@ -39,7 +42,7 @@
 \usepackage{helvet}
 \usepackage{chngpage}
 
-
+#if TWOSIDE
 %%%%%   SETUP FANCYHEADERS
 \usepackage{fancyhdr}
 % with this we ensure that the chapter and section
@@ -67,6 +70,7 @@
 }
 \let\cleardoublepage\clearemptydoublepage
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#endif
 
 %%%%% Listings parameters %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \lstloadlanguages{[ANSI]C}
@@ -194,11 +198,15 @@
 \svnInfo $Id$ 
 
 %%% Title page: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\pagestyle{empty}
 \include{01-titlepage-new-de}
-%\include{01-titlepage-de}
-%\include{01-titlepage-en}
+\pagestyle{empty}
+#if TWOSIDE
 \pagenumbering{roman}
+#else
+\pagenumbering{arabic}
+\pagestyle{plain}
+\setcounter{page}{2}
+#endif
 
 %%% Preface: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \include{01-ididit}
@@ -208,7 +216,9 @@
 
 %%% Table of contents: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %\renewcommand{\contentsname}{Table of Contents}
+#if TWOSIDE
 \pagestyle{fancy}
+#endif
 \setcounter{tocdepth}{3} 
 \tableofcontents
 
@@ -222,7 +232,9 @@
 \newpagechapter
 
 %%% Chapter 1: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#if TWOSIDE
 \pagenumbering{arabic}
+#endif
 \include{04-body}
 
 %%% Appendix: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

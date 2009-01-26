@@ -1,0 +1,2921 @@
+WIP: The Skyline Operator
+
+From: Hannes Eder <hannes@hanneseder.net>
+
+The skyline operator is a non-standard extension (even SQL:2008 does
+not include it).  Queries of that type can be expressed in standard
+SQL (although a bit clumsy and the execution is slow).  Others have
+also worked on extending PostgreSQL with the skyline operator, see:
+
+http://archives.postgresql.org/pgsql-hackers/2007-03/thrd9.php#00188
+
+Nevertheless we find it interesting and did our own implementation of
+BNL and SFS.  It must be considered as WIP (work in progress).  We
+highly welcome your feedback.
+
+Through a web frontend it is possible to test-drive the
+implementation.  Sample queries are given, see:
+
+http://skyline.dbai.tuwien.ac.at/
+
+This patch applies against 8.3.5.
+
+References:
+[Eder2009] Eder, Hannes: On Extending PostgreSQL with the Skyline
+Operator, Vienna University of Technology, Masterthesis, 2009
+
+Signed-off-by: Hannes Eder <hannes@hanneseder.net>
+---
+ src/backend/access/common/printtup.c      |   41 ++++++
+ src/backend/commands/explain.c            |  100 ++++++++++++++
+ src/backend/executor/Makefile             |    5 -
+ src/backend/executor/execAmi.c            |   17 ++
+ src/backend/executor/execProcnode.c       |   34 +++++
+ src/backend/nodes/copyfuncs.c             |  111 +++++++++++++++
+ src/backend/nodes/equalfuncs.c            |   69 ++++++++++
+ src/backend/nodes/outfuncs.c              |   94 +++++++++++++
+ src/backend/nodes/readfuncs.c             |   53 +++++++
+ src/backend/optimizer/path/allpaths.c     |    7 +
+ src/backend/optimizer/path/costsize.c     |  155 ++++++++++++++++++++++
+ src/backend/optimizer/path/pathkeys.c     |  113 ++++++++++++++++
+ src/backend/optimizer/plan/createplan.c   |  209 +++++++++++++++++++++++++++++
+ src/backend/optimizer/plan/planmain.c     |   48 +++++++
+ src/backend/optimizer/plan/planner.c      |  102 ++++++++++++++
+ src/backend/optimizer/plan/setrefs.c      |    2 
+ src/backend/optimizer/plan/subselect.c    |    2 
+ src/backend/optimizer/prep/prepjointree.c |    5 -
+ src/backend/optimizer/util/tlist.c        |   20 +++
+ src/backend/parser/analyze.c              |    6 +
+ src/backend/parser/gram.y                 |  110 +++++++++++++++
+ src/backend/parser/keywords.c             |    1 
+ src/backend/parser/parse_agg.c            |    4 +
+ src/backend/parser/parse_clause.c         |  184 +++++++++++++++++++++++++-
+ src/backend/utils/Makefile                |    2 
+ src/backend/utils/adt/selfuncs.c          |    4 -
+ src/backend/utils/sort/tuplestore.c       |   37 +++++
+ src/include/access/printtup.h             |    2 
+ src/include/nodes/execnodes.h             |   65 +++++++++
+ src/include/nodes/nodes.h                 |    9 +
+ src/include/nodes/parsenodes.h            |  101 ++++++++++++++
+ src/include/nodes/plannodes.h             |   45 ++++++
+ src/include/nodes/relation.h              |    1 
+ src/include/optimizer/cost.h              |    1 
+ src/include/optimizer/paths.h             |    8 +
+ src/include/optimizer/planmain.h          |    4 -
+ src/include/optimizer/tlist.h             |    2 
+ src/include/parser/parse_clause.h         |    7 +
+ src/include/utils/selfuncs.h              |    2 
+ src/include/utils/tuplestore.h            |    1 
+ src/test/regress/parallel_schedule        |    5 +
+ src/test/regress/serial_schedule          |    1 
+ 42 files changed, 1772 insertions(+), 17 deletions(-)
+
+diff --git a/src/backend/access/common/printtup.c b/src/backend/access/common/printtup.c
+index b3413e1..000e337 100644
+--- a/src/backend/access/common/printtup.c
++++ b/src/backend/access/common/printtup.c
+@@ -16,6 +16,7 @@
+ #include "postgres.h"
+ 
+ #include "access/printtup.h"
++#include "catalog/pg_type.h"
+ #include "libpq/libpq.h"
+ #include "libpq/pqformat.h"
+ #include "tcop/pquery.h"
+@@ -633,3 +634,43 @@ printtup_internal_20(TupleTableSlot *slot, DestReceiver *self)
+ 
+ 	pq_endmessage(&buf);
+ }
++
++/*
++ * datum_to_text
++ *
++ * converts Datum into text
++ * call pfree on returned pointer
++ */
++char *
++datum_to_text(Datum datum, bool isnull, Oid restype)
++{
++	char	   *res = NULL;
++	Oid			typoutput;
++	bool		typisvarlena;
++	Datum		out_datum;
++
++	if (isnull)
++		return NULL;
++
++	if (restype == UNKNOWNOID)
++		restype = TEXTOID;
++
++	getTypeOutputInfo(restype, &typoutput, &typisvarlena);
++
++	/*
++	 * If we have a toasted datum, forcibly detoast it here to avoid
++	 * memory leakage inside the type's output routine.
++	 */
++	if (typisvarlena)
++		out_datum = PointerGetDatum(PG_DETOAST_DATUM(datum));
++	else
++		out_datum = datum;
++
++	res = OidOutputFunctionCall(typoutput, out_datum);
++
++	/* Clean up detoasted copy, if any */
++	if (out_datum != datum)
++		pfree(DatumGetPointer(out_datum));
++
++	return res;
++}
+diff --git a/src/backend/commands/explain.c b/src/backend/commands/explain.c
+index cd1cb04..782ab22 100644
+--- a/src/backend/commands/explain.c
++++ b/src/backend/commands/explain.c
+@@ -31,6 +31,7 @@
+ #include "utils/guc.h"
+ #include "utils/lsyscache.h"
+ #include "utils/tuplesort.h"
++#include "utils/skyline.h"
+ 
+ 
+ /* Hook for plugins to get control in ExplainOneQuery() */
+@@ -68,6 +69,10 @@ static void show_upper_qual(List *qual, const char *qlabel, Plan *plan,
+ static void show_sort_keys(Plan *sortplan, int nkeys, AttrNumber *keycols,
+ 			   const char *qlabel,
+ 			   StringInfo str, int indent, ExplainState *es);
++static void show_skyline_details(Skyline *skyline, char *nodename,
++			   StringInfo str, int indent, ExplainState *es);
++static void show_skyline_info(SkylineState *skylinestate, char *nodename,
++			   StringInfo str, int indent, ExplainState *es);
+ static void show_sort_info(SortState *sortstate,
+ 			   StringInfo str, int indent, ExplainState *es);
+ static const char *explain_get_index_name(Oid indexId);
+@@ -564,6 +569,12 @@ explain_outNode(StringInfo str,
+ 		case T_Sort:
+ 			pname = "Sort";
+ 			break;
++		case T_Skyline:
++			pname = "Skyline";
++			break;
++		case T_ElimFilter:
++			pname = "Elimination Filter";
++			break;
+ 		case T_Group:
+ 			pname = "Group";
+ 			break;
+@@ -848,6 +859,28 @@ explain_outNode(StringInfo str,
+ 							"Filter", plan,
+ 							str, indent, es);
+ 			break;
++		case T_Skyline:
++			show_sort_keys(plan,
++						   ((Skyline *) plan)->numCols,
++						   ((Skyline *) plan)->skylineColIdx,
++						   "Skyline Attr",
++						   str, indent, es);
++			show_skyline_details((Skyline *) plan, "Skyline",
++								 str, indent, es);
++			show_skyline_info((SkylineState *) planstate, "Skyline",
++							  str, indent, es);
++			break;
++		case T_ElimFilter:
++			show_sort_keys(plan,
++						   ((Skyline *) plan)->numCols,
++						   ((Skyline *) plan)->skylineColIdx,
++						   "Elim Filter Attr",
++						   str, indent, es);
++			show_skyline_details((Skyline *) plan, "Elim Filter",
++								 str, indent, es);
++			show_skyline_info((SkylineState *) planstate, "Elim Filter",
++							  str, indent, es);
++			break;
+ 		case T_Sort:
+ 			show_sort_keys(plan,
+ 						   ((Sort *) plan)->numCols,
+@@ -1163,6 +1196,73 @@ show_sort_keys(Plan *sortplan, int nkeys, AttrNumber *keycols,
+ }
+ 
+ /*
++ * Show the method details for a Skyline node.
++ */
++static void
++show_skyline_details(Skyline *skyline, char *nodename,
++					 StringInfo str, int indent, ExplainState *es)
++{
++	int			i;
++
++	for (i = 0; i < indent; i++)
++		appendStringInfo(str, "  ");
++
++	appendStringInfo(str, "  %s Method: %s%s %d dim\n",
++		nodename,
++		skyline_method_name(skyline->skyline_method),
++		skyline->skyline_distinct ? " distinct" : "",
++		skyline->numCols);
++}
++
++/*
++ * If it's EXPLAIN ANALYZE, show skyline explain info for the skyline node
++ */
++static void
++show_skyline_info(SkylineState *skylinestate, char *nodename,
++				  StringInfo str, int indent, ExplainState *es)
++{
++	Assert(IsA(skylinestate, SkylineState) || IsA(skylinestate, ElimFilterState));
++	if (es->printAnalyze && skylinestate->status == SS_DONE)
++	{
++		int			i;
++
++		if (skylinestate->skyline_method == SM_BLOCKNESTEDLOOP
++			|| skylinestate->skyline_method == SM_SFS
++			|| skylinestate->skyline_method == SM_ELIMFILTER)
++		{
++			for (i = 0; i < indent; i++)
++				appendStringInfo(str, "  ");
++
++			appendStringInfo(str, "  %s Stats: passes=%lld",
++							 nodename,
++							 skylinestate->pass);
++			appendStringInfo(str, " rows=%s", skylinestate->pass_info->data);
++			appendStringInfo(str, "\n");
++
++			for (i = 0; i < indent; i++)
++				appendStringInfo(str, "  ");
++
++			appendStringInfo(str, "  %s Window:", nodename);
++			if (skylinestate->windowsize != -1)
++				appendStringInfo(str, " size=%dk", skylinestate->windowsize);
++			if (skylinestate->windowslots != -1)
++				appendStringInfo(str, " slots=%d", skylinestate->windowslots);
++			appendStringInfo(str, " policy=%s",
++							 skyline_window_policy_name(skylinestate->window_policy));
++			appendStringInfo(str, "\n");
++		}
++
++		for (i = 0; i < indent; i++)
++			appendStringInfo(str, "  ");
++
++		appendStringInfo(str, "  %s Cmps: tuples=%lld fields=%lld\n",
++						 nodename,
++						 skylinestate->cmps_tuples,
++						 skylinestate->cmps_fields);
++	}
++}
++
++/*
+  * If it's EXPLAIN ANALYZE, show tuplesort explain info for a sort node
+  */
+ static void
+diff --git a/src/backend/executor/Makefile b/src/backend/executor/Makefile
+index 95c0c93..b5a3184 100644
+--- a/src/backend/executor/Makefile
++++ b/src/backend/executor/Makefile
+@@ -20,8 +20,9 @@ OBJS = execAmi.o execCurrent.o execGrouping.o execJunk.o execMain.o \
+        nodeHashjoin.o nodeIndexscan.o nodeMaterial.o nodeMergejoin.o \
+        nodeNestloop.o nodeFunctionscan.o nodeResult.o nodeSeqscan.o \
+        nodeSetOp.o nodeSort.o nodeUnique.o \
+-       nodeValuesscan.o nodeLimit.o nodeGroup.o \
+-       nodeSubplan.o nodeSubqueryscan.o nodeTidscan.o tstoreReceiver.o spi.o
++       nodeValuesscan.o nodeLimit.o nodeGroup.o nodeSkyline.o \
++       nodeSubplan.o nodeSubqueryscan.o nodeTidscan.o tstoreReceiver.o spi.o \
++       nodeElimFilter.o
+ 
+ all: SUBSYS.o
+ 
+diff --git a/src/backend/executor/execAmi.c b/src/backend/executor/execAmi.c
+index dd8c192..1e8c5f0 100644
+--- a/src/backend/executor/execAmi.c
++++ b/src/backend/executor/execAmi.c
+@@ -20,6 +20,7 @@
+ #include "executor/nodeBitmapHeapscan.h"
+ #include "executor/nodeBitmapIndexscan.h"
+ #include "executor/nodeBitmapOr.h"
++#include "executor/nodeElimFilter.h"
+ #include "executor/nodeFunctionscan.h"
+ #include "executor/nodeGroup.h"
+ #include "executor/nodeGroup.h"
+@@ -33,6 +34,7 @@
+ #include "executor/nodeResult.h"
+ #include "executor/nodeSeqscan.h"
+ #include "executor/nodeSetOp.h"
++#include "executor/nodeSkyline.h"
+ #include "executor/nodeSort.h"
+ #include "executor/nodeSubplan.h"
+ #include "executor/nodeSubqueryscan.h"
+@@ -185,6 +187,14 @@ ExecReScan(PlanState *node, ExprContext *exprCtxt)
+ 			ExecReScanGroup((GroupState *) node, exprCtxt);
+ 			break;
+ 
++		case T_SkylineState:
++			ExecReScanSkyline((SkylineState *) node, exprCtxt);
++			break;
++
++		case T_ElimFilterState:
++			ExecReScanElimFilter((ElimFilterState *) node, exprCtxt);
++			break;
++
+ 		case T_AggState:
+ 			ExecReScanAgg((AggState *) node, exprCtxt);
+ 			break;
+@@ -469,6 +479,7 @@ ExecMayReturnRawTuples(PlanState *node)
+ 		case T_MaterialState:
+ 		case T_UniqueState:
+ 		case T_LimitState:
++		case T_ElimFilterState:
+ 			return ExecMayReturnRawTuples(node->lefttree);
+ 
+ 		case T_AppendState:
+@@ -485,6 +496,12 @@ ExecMayReturnRawTuples(PlanState *node)
+ 			}
+ 
+ 			/* All projecting node types come here */
++		/*
++		 * FIXME: skyline does not project yet
++		 */
++		case T_SkylineState:
++			return ExecMayReturnRawTuples(node->lefttree);
++
+ 		default:
+ 			break;
+ 	}
+diff --git a/src/backend/executor/execProcnode.c b/src/backend/executor/execProcnode.c
+index 6e83d16..785d029 100644
+--- a/src/backend/executor/execProcnode.c
++++ b/src/backend/executor/execProcnode.c
+@@ -85,6 +85,7 @@
+ #include "executor/nodeBitmapHeapscan.h"
+ #include "executor/nodeBitmapIndexscan.h"
+ #include "executor/nodeBitmapOr.h"
++#include "executor/nodeElimFilter.h"
+ #include "executor/nodeFunctionscan.h"
+ #include "executor/nodeGroup.h"
+ #include "executor/nodeHash.h"
+@@ -97,6 +98,7 @@
+ #include "executor/nodeResult.h"
+ #include "executor/nodeSeqscan.h"
+ #include "executor/nodeSetOp.h"
++#include "executor/nodeSkyline.h"
+ #include "executor/nodeSort.h"
+ #include "executor/nodeSubplan.h"
+ #include "executor/nodeSubqueryscan.h"
+@@ -236,6 +238,16 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
+ 												 estate, eflags);
+ 			break;
+ 
++		case T_Skyline:
++			result = (PlanState *) ExecInitSkyline((Skyline *) node,
++												   estate, eflags);
++			break;
++
++		case T_ElimFilter:
++			result = (PlanState *) ExecInitElimFilter((ElimFilter *) node,
++													  estate, eflags);
++			break;
++
+ 		case T_Agg:
+ 			result = (PlanState *) ExecInitAgg((Agg *) node,
+ 											   estate, eflags);
+@@ -386,6 +398,14 @@ ExecProcNode(PlanState *node)
+ 			result = ExecSort((SortState *) node);
+ 			break;
+ 
++		case T_SkylineState:
++			result = ExecSkyline((SkylineState *) node);
++			break;
++
++		case T_ElimFilterState:
++			result = ExecElimFilter((ElimFilterState *) node);
++			break;
++
+ 		case T_GroupState:
+ 			result = ExecGroup((GroupState *) node);
+ 			break;
+@@ -558,6 +578,12 @@ ExecCountSlotsNode(Plan *node)
+ 		case T_Group:
+ 			return ExecCountSlotsGroup((Group *) node);
+ 
++		case T_Skyline:
++			return ExecCountSlotsSkyline((Skyline *) node);
++
++		case T_ElimFilter:
++			return ExecCountSlotsElimFilter((ElimFilter *) node);
++
+ 		case T_Agg:
+ 			return ExecCountSlotsAgg((Agg *) node);
+ 
+@@ -689,6 +715,14 @@ ExecEndNode(PlanState *node)
+ 			ExecEndSort((SortState *) node);
+ 			break;
+ 
++		case T_SkylineState:
++			ExecEndSkyline((SkylineState *) node);
++			break;
++
++		case T_ElimFilterState:
++			ExecEndElimFilter((ElimFilterState *) node);
++			break;
++
+ 		case T_GroupState:
+ 			ExecEndGroup((GroupState *) node);
+ 			break;
+diff --git a/src/backend/nodes/copyfuncs.c b/src/backend/nodes/copyfuncs.c
+index f7c1fd0..48bee0f 100644
+--- a/src/backend/nodes/copyfuncs.c
++++ b/src/backend/nodes/copyfuncs.c
+@@ -556,6 +556,35 @@ _copySort(Sort *from)
+ 	return newnode;
+ }
+ 
++/*
++ * _copySkyline
++ */
++static Skyline *
++_copySkyline(Skyline *from)
++{
++	Skyline    *newnode = makeNode(Skyline);
++
++	/*
++	 * copy node superclass fields
++	 */
++	CopyPlanFields((Plan *) from, (Plan *) newnode);
++
++	COPY_SCALAR_FIELD(skyline_distinct);
++	COPY_SCALAR_FIELD(numCols);
++	COPY_SCALAR_FIELD(flags);
++	COPY_POINTER_FIELD(skylineColIdx, from->numCols * sizeof(AttrNumber));
++	COPY_POINTER_FIELD(skylineOfOperators, from->numCols * sizeof(Oid));
++	COPY_POINTER_FIELD(nullsFirst, from->numCols * sizeof(bool));
++	COPY_POINTER_FIELD(skylineOfDir, from->numCols * sizeof(int));
++	COPY_POINTER_FIELD(colFlags, from->numCols * sizeof(int));
++	COPY_POINTER_FIELD(colMin, from->numCols * sizeof(float8));
++	COPY_POINTER_FIELD(colScale, from->numCols * sizeof(float8));
++	COPY_POINTER_FIELD(colCoerceFunc, from->numCols * sizeof(Oid));
++	COPY_NODE_FIELD(skyline_of_options);
++	COPY_SCALAR_FIELD(skyline_method);
++
++	return newnode;
++}
+ 
+ /*
+  * _copyGroup
+@@ -1570,6 +1599,43 @@ _copyGroupClause(GroupClause *from)
+ 	return newnode;
+ }
+ 
++static SkylineClause *
++_copySkylineClause(SkylineClause *from)
++{
++	SkylineClause *newnode = makeNode(SkylineClause);
++
++	COPY_SCALAR_FIELD(skyline_distinct);
++	COPY_NODE_FIELD(skyline_of_list);
++	COPY_NODE_FIELD(skyline_of_options);
++
++	return newnode;
++}
++
++static SkylineOf *
++_copySkylineOf(SkylineOf *from)
++{
++	SkylineOf  *newnode = makeNode(SkylineOf);
++
++	COPY_SCALAR_FIELD(tleSortGroupRef);
++	COPY_SCALAR_FIELD(restype);
++	COPY_SCALAR_FIELD(skylineop);
++	COPY_SCALAR_FIELD(nulls_first);
++	COPY_SCALAR_FIELD(skylineof_dir);
++
++	return newnode;
++}
++
++static SkylineOption *
++_copySkylineOption(SkylineOption *from)
++{
++	SkylineOption *newnode = makeNode(SkylineOption);
++
++	COPY_STRING_FIELD(name);
++	COPY_NODE_FIELD(value);
++
++	return newnode;
++}
++
+ static RowMarkClause *
+ _copyRowMarkClause(RowMarkClause *from)
+ {
+@@ -1728,6 +1794,31 @@ _copySortBy(SortBy *from)
+ 	return newnode;
+ }
+ 
++static SkylineOfClause *
++_copySkylineOfClause(SkylineOfClause *from)
++{
++	SkylineOfClause *newnode = makeNode(SkylineOfClause);
++
++	COPY_SCALAR_FIELD(skyline_distinct);
++	COPY_NODE_FIELD(skyline_of_list);
++	COPY_NODE_FIELD(skyline_of_options);
++
++	return newnode;
++}
++
++static SkylineOfExpr *
++_copySkylineOfExpr(SkylineOfExpr *from)
++{
++	SkylineOfExpr *newnode = makeNode(SkylineOfExpr);
++
++	COPY_SCALAR_FIELD(skylineof_dir);
++	COPY_SCALAR_FIELD(skylineof_nulls);
++	COPY_NODE_FIELD(useOp);
++	COPY_NODE_FIELD(node);
++
++	return newnode;
++}
++
+ static RangeSubselect *
+ _copyRangeSubselect(RangeSubselect *from)
+ {
+@@ -1865,6 +1956,7 @@ _copyQuery(Query *from)
+ 	COPY_NODE_FIELD(havingQual);
+ 	COPY_NODE_FIELD(distinctClause);
+ 	COPY_NODE_FIELD(sortClause);
++	COPY_NODE_FIELD(skylineClause);
+ 	COPY_NODE_FIELD(limitOffset);
+ 	COPY_NODE_FIELD(limitCount);
+ 	COPY_NODE_FIELD(rowMarks);
+@@ -1925,6 +2017,7 @@ _copySelectStmt(SelectStmt *from)
+ 	COPY_NODE_FIELD(whereClause);
+ 	COPY_NODE_FIELD(groupClause);
+ 	COPY_NODE_FIELD(havingClause);
++	COPY_NODE_FIELD(skylineOfClause);
+ 	COPY_NODE_FIELD(valuesLists);
+ 	COPY_NODE_FIELD(sortClause);
+ 	COPY_NODE_FIELD(limitOffset);
+@@ -3083,6 +3176,9 @@ copyObject(void *from)
+ 		case T_Group:
+ 			retval = _copyGroup(from);
+ 			break;
++		case T_Skyline:
++			retval = _copySkyline(from);
++			break;
+ 		case T_Agg:
+ 			retval = _copyAgg(from);
+ 			break;
+@@ -3552,6 +3648,15 @@ copyObject(void *from)
+ 		case T_SortBy:
+ 			retval = _copySortBy(from);
+ 			break;
++		case T_SkylineOfClause:
++			retval = _copySkylineOfClause(from);
++			break;
++		case T_SkylineOfExpr:
++			retval = _copySkylineOfExpr(from);
++			break;
++		case T_SkylineOption:
++			retval = _copySkylineOption(from);
++			break;
+ 		case T_RangeSubselect:
+ 			retval = _copyRangeSubselect(from);
+ 			break;
+@@ -3585,6 +3690,12 @@ copyObject(void *from)
+ 		case T_GroupClause:
+ 			retval = _copyGroupClause(from);
+ 			break;
++		case T_SkylineClause:
++			retval = _copySkylineClause(from);
++			break;
++		case T_SkylineOf:
++			retval = _copySkylineOf(from);
++			break;
+ 		case T_RowMarkClause:
+ 			retval = _copyRowMarkClause(from);
+ 			break;
+diff --git a/src/backend/nodes/equalfuncs.c b/src/backend/nodes/equalfuncs.c
+index 3ff9691..2895555 100644
+--- a/src/backend/nodes/equalfuncs.c
++++ b/src/backend/nodes/equalfuncs.c
+@@ -764,6 +764,7 @@ _equalQuery(Query *a, Query *b)
+ 	COMPARE_NODE_FIELD(havingQual);
+ 	COMPARE_NODE_FIELD(distinctClause);
+ 	COMPARE_NODE_FIELD(sortClause);
++	COMPARE_NODE_FIELD(skylineClause);
+ 	COMPARE_NODE_FIELD(limitOffset);
+ 	COMPARE_NODE_FIELD(limitCount);
+ 	COMPARE_NODE_FIELD(rowMarks);
+@@ -816,6 +817,7 @@ _equalSelectStmt(SelectStmt *a, SelectStmt *b)
+ 	COMPARE_NODE_FIELD(whereClause);
+ 	COMPARE_NODE_FIELD(groupClause);
+ 	COMPARE_NODE_FIELD(havingClause);
++	COMPARE_NODE_FIELD(skylineOfClause);
+ 	COMPARE_NODE_FIELD(valuesLists);
+ 	COMPARE_NODE_FIELD(sortClause);
+ 	COMPARE_NODE_FIELD(limitOffset);
+@@ -1777,6 +1779,36 @@ _equalSortBy(SortBy *a, SortBy *b)
+ }
+ 
+ static bool
++_equalSkylineOfClause(SkylineOfClause *a, SkylineOfClause *b)
++{
++	COMPARE_SCALAR_FIELD(skyline_distinct);
++	COMPARE_NODE_FIELD(skyline_of_list);
++	COMPARE_NODE_FIELD(skyline_of_options);
++
++	return true;
++}
++
++static bool
++_equalSkylineOfExpr(SkylineOfExpr *a, SkylineOfExpr *b)
++{
++	COMPARE_SCALAR_FIELD(skylineof_dir);
++	COMPARE_SCALAR_FIELD(skylineof_nulls);
++	COMPARE_NODE_FIELD(useOp);
++	COMPARE_NODE_FIELD(node);
++
++	return true;
++}
++
++static bool
++_equalSkylineOption(SkylineOption *a, SkylineOption *b)
++{
++	COMPARE_STRING_FIELD(name);
++	COMPARE_NODE_FIELD(value);
++
++	return true;
++}
++
++static bool
+ _equalRangeSubselect(RangeSubselect *a, RangeSubselect *b)
+ {
+ 	COMPARE_NODE_FIELD(subquery);
+@@ -1888,6 +1920,28 @@ _equalSortClause(SortClause *a, SortClause *b)
+ }
+ 
+ static bool
++_equalSkylineOf(SkylineOf *a, SkylineOf *b)
++{
++	COMPARE_SCALAR_FIELD(tleSortGroupRef);
++	COMPARE_SCALAR_FIELD(restype);
++	COMPARE_SCALAR_FIELD(skylineop);
++	COMPARE_SCALAR_FIELD(nulls_first);
++	COMPARE_SCALAR_FIELD(skylineof_dir);
++
++	return true;
++}
++
++static bool
++_equalSkylineClause(SkylineClause *a, SkylineClause *b)
++{
++	COMPARE_SCALAR_FIELD(skyline_distinct);
++	COMPARE_NODE_FIELD(skyline_of_list);
++	COMPARE_NODE_FIELD(skyline_of_options);
++
++	return true;
++}
++
++static bool
+ _equalRowMarkClause(RowMarkClause *a, RowMarkClause *b)
+ {
+ 	COMPARE_SCALAR_FIELD(rti);
+@@ -2478,6 +2532,15 @@ equal(void *a, void *b)
+ 		case T_SortBy:
+ 			retval = _equalSortBy(a, b);
+ 			break;
++		case T_SkylineOfClause:
++			retval = _equalSkylineOfClause(a, b);
++			break;
++		case T_SkylineOfExpr:
++			retval = _equalSkylineOfExpr(a, b);
++			break;
++		case T_SkylineOption:
++			retval = _equalSkylineOption(a, b);
++			break;
+ 		case T_RangeSubselect:
+ 			retval = _equalRangeSubselect(a, b);
+ 			break;
+@@ -2512,6 +2575,12 @@ equal(void *a, void *b)
+ 			/* GroupClause is equivalent to SortClause */
+ 			retval = _equalSortClause(a, b);
+ 			break;
++		case T_SkylineClause:
++			retval = _equalSkylineClause(a, b);
++			break;
++		case T_SkylineOf:
++			retval = _equalSkylineOf(a, b);
++			break;
+ 		case T_RowMarkClause:
+ 			retval = _equalRowMarkClause(a, b);
+ 			break;
+diff --git a/src/backend/nodes/outfuncs.c b/src/backend/nodes/outfuncs.c
+index 2e966c9..e689592 100644
+--- a/src/backend/nodes/outfuncs.c
++++ b/src/backend/nodes/outfuncs.c
+@@ -574,6 +574,55 @@ _outSort(StringInfo str, Sort *node)
+ }
+ 
+ static void
++_outSkyline(StringInfo str, Skyline *node)
++{
++	int			i;
++
++	WRITE_NODE_TYPE("SKYLINE");
++
++	_outPlanInfo(str, (Plan *) node);
++
++	WRITE_BOOL_FIELD(skyline_distinct);
++	WRITE_INT_FIELD(numCols);
++	WRITE_INT_FIELD(flags);
++
++	appendStringInfo(str, " :skylineColIdx");
++	for (i = 0; i < node->numCols; ++i)
++		appendStringInfo(str, " %d", node->skylineColIdx[i]);
++
++	appendStringInfo(str, " :skylineOfOperators");
++	for (i = 0; i < node->numCols; ++i)
++		appendStringInfo(str, " %u", node->skylineOfOperators[i]);
++
++	appendStringInfo(str, " :nullsFirst");
++	for (i = 0; i < node->numCols; ++i)
++		appendStringInfo(str, " %s", booltostr(node->nullsFirst[i]));
++
++	appendStringInfo(str, " :skylineOfDir");
++	for (i = 0; i < node->numCols; ++i)
++		appendStringInfo(str, " %d", node->skylineOfDir[i]);
++
++	appendStringInfo(str, " :colFlags");
++	for (i = 0; i < node->numCols; ++i)
++		appendStringInfo(str, " %d", node->colFlags[i]);
++
++	appendStringInfo(str, " :colMin");
++	for (i = 0; i < node->numCols; ++i)
++		appendStringInfo(str, " %e", node->colMin[i]);
++
++	appendStringInfo(str, " :colScale");
++	for (i = 0; i < node->numCols; ++i)
++		appendStringInfo(str, " %e", node->colScale[i]);
++
++	appendStringInfo(str, " :colCoerceFunc");
++		for (i = 0; i < node->numCols; ++i)
++		appendStringInfo(str, " %u", node->colCoerceFunc[i]);
++
++	WRITE_NODE_FIELD(skyline_of_options);
++	WRITE_INT_FIELD(skyline_method);
++}
++
++static void
+ _outUnique(StringInfo str, Unique *node)
+ {
+ 	int			i;
+@@ -1595,6 +1644,7 @@ _outSelectStmt(StringInfo str, SelectStmt *node)
+ 	WRITE_NODE_FIELD(whereClause);
+ 	WRITE_NODE_FIELD(groupClause);
+ 	WRITE_NODE_FIELD(havingClause);
++	WRITE_NODE_FIELD(skylineOfClause);
+ 	WRITE_NODE_FIELD(valuesLists);
+ 	WRITE_NODE_FIELD(sortClause);
+ 	WRITE_NODE_FIELD(limitOffset);
+@@ -1743,6 +1793,7 @@ _outQuery(StringInfo str, Query *node)
+ 	WRITE_NODE_FIELD(returningList);
+ 	WRITE_NODE_FIELD(groupClause);
+ 	WRITE_NODE_FIELD(havingQual);
++	WRITE_NODE_FIELD(skylineClause);
+ 	WRITE_NODE_FIELD(distinctClause);
+ 	WRITE_NODE_FIELD(sortClause);
+ 	WRITE_NODE_FIELD(limitOffset);
+@@ -1772,6 +1823,37 @@ _outGroupClause(StringInfo str, GroupClause *node)
+ }
+ 
+ static void
++_outSkylineClause(StringInfo str, SkylineClause *node)
++{
++	WRITE_NODE_TYPE("SKYLINECLAUSE");
++
++	WRITE_BOOL_FIELD(skyline_distinct);
++	WRITE_NODE_FIELD(skyline_of_list);
++	WRITE_NODE_FIELD(skyline_of_options);
++}
++
++static void
++_outSkylineOf(StringInfo str, SkylineOf *node)
++{
++	WRITE_NODE_TYPE("SKYLINEOF");
++
++	WRITE_UINT_FIELD(tleSortGroupRef);
++	WRITE_OID_FIELD(restype);
++	WRITE_OID_FIELD(skylineop);
++	WRITE_BOOL_FIELD(nulls_first);
++	WRITE_INT_FIELD(skylineof_dir);
++}
++
++static void
++_outSkylineOption(StringInfo str, SkylineOption *node)
++{
++	WRITE_NODE_TYPE("SKYLINEOPTION");
++
++	WRITE_STRING_FIELD(name);
++	WRITE_NODE_FIELD(value);
++}
++
++static void
+ _outRowMarkClause(StringInfo str, RowMarkClause *node)
+ {
+ 	WRITE_NODE_TYPE("ROWMARKCLAUSE");
+@@ -2140,6 +2222,9 @@ _outNode(StringInfo str, void *obj)
+ 			case T_Sort:
+ 				_outSort(str, obj);
+ 				break;
++			case T_Skyline:
++				_outSkyline(str, obj);
++				break;
+ 			case T_Unique:
+ 				_outUnique(str, obj);
+ 				break;
+@@ -2391,6 +2476,15 @@ _outNode(StringInfo str, void *obj)
+ 			case T_GroupClause:
+ 				_outGroupClause(str, obj);
+ 				break;
++			case T_SkylineClause:
++				_outSkylineClause(str, obj);
++				break;
++			case T_SkylineOf:
++				_outSkylineOf(str, obj);
++				break;
++			case T_SkylineOption:
++				_outSkylineOption(str, obj);
++				break;
+ 			case T_RowMarkClause:
+ 				_outRowMarkClause(str, obj);
+ 				break;
+diff --git a/src/backend/nodes/readfuncs.c b/src/backend/nodes/readfuncs.c
+index bd38229..8394bc4 100644
+--- a/src/backend/nodes/readfuncs.c
++++ b/src/backend/nodes/readfuncs.c
+@@ -148,6 +148,7 @@ _readQuery(void)
+ 	READ_NODE_FIELD(returningList);
+ 	READ_NODE_FIELD(groupClause);
+ 	READ_NODE_FIELD(havingQual);
++	READ_NODE_FIELD(skylineClause);
+ 	READ_NODE_FIELD(distinctClause);
+ 	READ_NODE_FIELD(sortClause);
+ 	READ_NODE_FIELD(limitOffset);
+@@ -217,6 +218,52 @@ _readGroupClause(void)
+ }
+ 
+ /*
++ * _readSkylineClause
++ */
++static SkylineClause *
++_readSkylineClause(void)
++{
++	READ_LOCALS(SkylineClause);
++
++	READ_BOOL_FIELD(skyline_distinct);
++	READ_NODE_FIELD(skyline_of_list);
++	READ_NODE_FIELD(skyline_of_options);
++
++	READ_DONE();
++}
++
++/*
++ * _readSkylineOf
++ */
++static SkylineOf *
++_readSkylineOf(void)
++{
++	READ_LOCALS(SkylineOf);
++
++	READ_UINT_FIELD(tleSortGroupRef);
++	READ_OID_FIELD(restype);
++	READ_OID_FIELD(skylineop);
++	READ_BOOL_FIELD(nulls_first);
++	READ_INT_FIELD(skylineof_dir);
++
++	READ_DONE();
++}
++
++/*
++ * _readSkylineOption
++ */
++static SkylineOption *
++_readSkylineOption(void)
++{
++	READ_LOCALS(SkylineOption);
++
++	READ_STRING_FIELD(name);
++	READ_NODE_FIELD(value);
++
++	READ_DONE();
++}
++
++/*
+  * _readRowMarkClause
+  */
+ static RowMarkClause *
+@@ -1034,6 +1081,12 @@ parseNodeString(void)
+ 		return_value = _readSortClause();
+ 	else if (MATCH("GROUPCLAUSE", 11))
+ 		return_value = _readGroupClause();
++	else if (MATCH("SKYLINECLAUSE", 13))
++		return_value = _readSkylineClause();
++	else if (MATCH("SKYLINEOF", 9))
++		return_value = _readSkylineOf();
++	else if (MATCH("SKYLINEOPTION", 13))
++		return_value = _readSkylineOption();
+ 	else if (MATCH("ROWMARKCLAUSE", 13))
+ 		return_value = _readRowMarkClause();
+ 	else if (MATCH("SETOPERATIONSTMT", 16))
+diff --git a/src/backend/optimizer/path/allpaths.c b/src/backend/optimizer/path/allpaths.c
+index b9f1849..fdc3e64 100644
+--- a/src/backend/optimizer/path/allpaths.c
++++ b/src/backend/optimizer/path/allpaths.c
+@@ -802,6 +802,9 @@ standard_join_search(PlannerInfo *root, int levels_needed, List *initial_rels)
+  * component queries to see if any of them have different output types;
+  * differentTypes[k] is set true if column k has different type in any
+  * component.
++ *
++ * 4. FIXME: Analzye what the case for a subquery with SKYLINE OF is.
++ * Is it safe to push down quals?  For the moment we disable it.
+  */
+ static bool
+ subquery_is_pushdown_safe(Query *subquery, Query *topquery,
+@@ -813,6 +816,10 @@ subquery_is_pushdown_safe(Query *subquery, Query *topquery,
+ 	if (subquery->limitOffset != NULL || subquery->limitCount != NULL)
+ 		return false;
+ 
++	/* Check point 4 */
++	if (subquery->skylineClause != NULL)
++		return false;
++
+ 	/* Are we at top level, or looking at a setop component? */
+ 	if (subquery == topquery)
+ 	{
+diff --git a/src/backend/optimizer/path/costsize.c b/src/backend/optimizer/path/costsize.c
+index dfd398d..5bd7997 100644
+--- a/src/backend/optimizer/path/costsize.c
++++ b/src/backend/optimizer/path/costsize.c
+@@ -73,6 +73,7 @@
+ #include "parser/parse_expr.h"
+ #include "utils/lsyscache.h"
+ #include "utils/selfuncs.h"
++#include "utils/skyline.h"
+ #include "utils/tuplesort.h"
+ 
+ 
+@@ -935,6 +936,160 @@ cost_valuesscan(Path *path, PlannerInfo *root, RelOptInfo *baserel)
+ }
+ 
+ /*
++ * cost_skyline
++ *
++ * FIXME
++ */
++void
++cost_skyline(Path *path, PlannerInfo *root, Cost input_cost,
++			 double input_tuples, int width, double output_tuples,
++			 int skyline_dim, SkylineMethod skyline_method, int limit_tuples)
++{
++	Cost		startup_cost = input_cost;
++	Cost		run_cost = 0;
++	double		input_bytes = relation_byte_size(input_tuples, width);
++	double		output_bytes;
++	long		work_mem_bytes = work_mem * 1024L;
++	bool		enough_memory;
++
++	/*
++	 * The number of compare operator call for comparing two tuples. For the
++	 * moment we assume have to compare all dims in any case.
++	 *
++	 * FIXME: see ticket:39 and [165]
++	 */
++	double		cmps = 1.0 * skyline_dim;
++
++	/* Do we have useful LIMIT? */
++	bool		limit_is_useful = limit_tuples > 0 &&
++		limit_tuples < input_tuples	&&
++		limit_tuples < output_tuples &&
++		skyline_methode_can_use_limit(skyline_method);
++
++	output_bytes = relation_byte_size((limit_is_useful ? limit_tuples : output_tuples), width);
++
++	/* let's assume a sane default if unknown */
++	if (skyline_method == SM_UNKNOWN)
++		skyline_method = SM_BLOCKNESTEDLOOP;
++
++	/*
++	 * Note that we do not take into account here that the user might has
++	 * overwritten window size in terms of memory or slot count
++	 *
++	 * FIXME: should we take it into account?
++	 */
++	enough_memory = output_bytes < work_mem_bytes;
++
++	switch (skyline_method)
++	{
++		case SM_1DIM:
++			/*
++			 * We cheat a bit here, we assume that in general there are no
++			 * duplicates or at least very little compared to the
++			 * input_tuples. Since we only keep the current dominating tuple
++			 * in a slot we are not constraint by enough_memory.
++			 * LIMIT is not useful here, since we only know after scanning
++			 * all input_tuples how many tuples we wrote to the tuplestore
++			 * and will finally be piped out.
++			 */
++			startup_cost += cmps * cpu_operator_cost * input_tuples;
++			break;
++
++		case SM_1DIM_DISTINCT:
++			/*
++			 * We have to compare all input_tuples to the current
++			 * dominating, so extra memory needed.
++			 * LIMIT is not useful here, since at most one tuple will be
++			 * piped out.
++			 */
++			startup_cost += cmps * cpu_operator_cost * input_tuples;
++			break;
++
++		case SM_2DIM_PRESORT:
++			/*
++			 * We just have to compare all input_tuples to the current
++			 * dominating, so no extra memory needed.
++			 *
++			 * If LIMIT is useful we assume the skyline tuples are
++			 * equally distributed over the input_tuples.
++			 */
++			if (limit_is_useful)
++				startup_cost += cmps * cpu_operator_cost * input_tuples * (limit_tuples / output_tuples);
++			else
++				startup_cost += cmps * cpu_operator_cost * input_tuples;
++			break;
++
++		case SM_MATERIALIZEDNESTEDLOOP:
++			/*
++			 * If no LIMIT is given we compare every tuples against every
++			 * tuples.
++			 *
++			 * If LIMIT is useful we assume the skyline tuples are
++			 * equally distributed over the input_tuples.
++			 */
++			if (limit_is_useful)
++				startup_cost += cmps * cpu_operator_cost * input_tuples * (input_tuples * limit_tuples / output_tuples);
++			else
++				startup_cost += cmps * cpu_operator_cost * input_tuples * input_tuples;
++			break;
++
++		case SM_BLOCKNESTEDLOOP:
++			/*
++			 * We assume that on average we have to compare the
++			 * input_tuples to the half of the tuples in the window
++			 * (output_tuples). FIXME: this is the ERWARTUNGSWERT?
++			 *
++			 * We don't gain anything by LIMIT, because tuples could be
++			 * kicked out of the tuplewindow, for instance there could be a
++			 * single best tuple at the very end.
++			 *
++			 * We further assume that if the output_tuples fit into the
++			 * window (enough_memory), that at no stage during the processing
++			 * the window would hold more than this tuples.
++			 */
++			if (enough_memory)
++				startup_cost += cmps * cpu_operator_cost * input_tuples * 0.5 * output_tuples;
++			else
++			{
++				/* FIXME */
++				startup_cost += cmps * cpu_operator_cost * input_tuples * 0.5 * output_tuples;
++			}
++			break;
++
++		case SM_SFS:
++			/*
++			 * We assume that on average we have to compare the
++			 * input_tuples to the half of the tuples in the window
++			 * (output_tuples).
++			 *
++			 * In case of SFS we can make use of LIMIT an break earlier.
++			 */
++			startup_cost += cmps * cpu_operator_cost * input_tuples * 0.5 * (limit_is_useful ? limit_tuples : output_tuples);
++			break;
++
++		case SM_ELIMFILTER:
++			/* FIXME */
++			startup_cost += cmps * cpu_operator_cost * input_tuples * 0.5 * output_tuples;
++			break;
++
++		default:
++			elog(WARNING, "FIXME: skyline method `%d' unknown at %s:%d", skyline_method, __FILE__, __LINE__);
++			break;
++	}
++
++	/*
++	 * Also charge a small amount (arbitrarily set equal to operator cost) per
++	 * extracted tuple.  Note it's correct to use tuples not output_tuples
++	 * here --- the upper LIMIT will pro-rate the run cost so we'd be double
++	 * counting the LIMIT otherwise.
++	 */
++	run_cost += cpu_operator_cost * input_tuples;
++
++	path->startup_cost = startup_cost;
++	path->total_cost = startup_cost + run_cost;
++}
++
++/*
+  * cost_sort
+  *	  Determines and returns the cost of sorting a relation, including
+  *	  the cost of reading the input data.
+diff --git a/src/backend/optimizer/path/pathkeys.c b/src/backend/optimizer/path/pathkeys.c
+index f68bf9a..fbc0d22 100644
+--- a/src/backend/optimizer/path/pathkeys.c
++++ b/src/backend/optimizer/path/pathkeys.c
+@@ -361,6 +361,47 @@ compare_pathkeys(List *keys1, List *keys2)
+ 	return PATHKEYS_BETTER2;	/* key2 is longer */
+ }
+ 
++bool
++skyline_pathkeys_contained_in(List *keys1, List *keys2, int *nuseful)
++{
++	ListCell   *key1,
++			   *key2;
++	int			maxidx = 0;
++	bool		contained = true;		/* It's contained if it's empty but
++										 * that will never happen */
++
++	foreach(key1, keys1)
++	{
++		int			idx = 0;
++		PathKey    *pathkey1 = (PathKey *) lfirst(key1);
++
++		contained = false;
++
++		foreach(key2, keys2)
++		{
++			PathKey    *pathkey2 = (PathKey *) lfirst(key2);
++
++			++idx;
++
++			if (pathkey1 == pathkey2)
++			{
++				if (maxidx < idx)
++					maxidx = idx;
++
++				contained = true;
++				break;
++			}
++		}
++		if (!contained)
++			break;
++	}
++
++	if (nuseful)
++		*nuseful = maxidx;
++
++	return contained;
++}
++
+ /*
+  * pathkeys_contained_in
+  *	  Common special case of compare_pathkeys: we just want to know
+@@ -453,6 +494,32 @@ get_cheapest_fractional_path_for_pathkeys(List *paths,
+ 	return matched_path;
+ }
+ 
++Path *
++get_cheapest_fractional_path_for_skyline_pathkeys(List *paths,
++												  List *pathkeys,
++												  double fraction)
++{
++	Path	   *matched_path = NULL;
++	ListCell   *l;
++
++	foreach(l, paths)
++	{
++		Path	   *path = (Path *) lfirst(l);
++
++		/*
++		 * Since cost comparison is a lot cheaper than pathkey comparison, do
++		 * that first.
++		 */
++		if (matched_path != NULL &&
++			compare_fractional_path_costs(matched_path, path, fraction) <= 0)
++			continue;
++
++		if (skyline_pathkeys_contained_in(pathkeys, path->pathkeys, NULL))
++			matched_path = path;
++	}
++	return matched_path;
++}
++
+ /****************************************************************************
+  *		NEW PATHKEY FORMATION
+  ****************************************************************************/
+@@ -870,6 +937,44 @@ make_pathkeys_for_sortclauses(PlannerInfo *root,
+ 	return pathkeys;
+ }
+ 
++List *
++make_pathkeys_for_skylineclause(PlannerInfo *root,
++								SkylineClause *skylineclause,
++								List *tlist,
++								bool canonicalize)
++{
++	List	   *pathkeys = NIL;
++	ListCell   *l;
++
++	if (skylineclause != NULL)
++	{
++		foreach(l, skylineclause->skyline_of_list)
++		{
++			SkylineOf  *skylineof = (SkylineOf *) lfirst(l);
++			Expr	   *sortkey;
++			PathKey    *pathkey;
++
++			sortkey = (Expr *) get_sortgroupclause_expr((SortClause *) skylineof, tlist);
++			pathkey = make_pathkey_from_sortinfo(root,
++												 sortkey,
++												 skylineof->skylineop,
++												 skylineof->nulls_first,
++												 skylineof->tleSortGroupRef,
++												 canonicalize);
++
++			/* Canonical form eliminates redundant ordering keys */
++			if (canonicalize)
++			{
++				if (!pathkey_is_redundant(pathkey, pathkeys))
++					pathkeys = lappend(pathkeys, pathkey);
++			}
++			else
++				pathkeys = lappend(pathkeys, pathkey);
++		}
++	}
++	return pathkeys;
++}
++
+ /****************************************************************************
+  *		PATHKEYS AND MERGECLAUSES
+  ****************************************************************************/
+@@ -1423,6 +1528,8 @@ right_merge_direction(PlannerInfo *root, PathKey *pathkey)
+ int
+ pathkeys_useful_for_ordering(PlannerInfo *root, List *pathkeys)
+ {
++	int nuseful;
++
+ 	if (root->query_pathkeys == NIL)
+ 		return 0;				/* no special ordering requested */
+ 
+@@ -1435,6 +1542,12 @@ pathkeys_useful_for_ordering(PlannerInfo *root, List *pathkeys)
+ 		return list_length(root->query_pathkeys);
+ 	}
+ 
++	if (skyline_pathkeys_contained_in(root->skyline_pathkeys, pathkeys, &nuseful))
++	{
++		/* It's useful ... or at least the first nuseful keys are */
++		return nuseful;
++	}
++
+ 	return 0;					/* path ordering not useful */
+ }
+ 
+diff --git a/src/backend/optimizer/plan/createplan.c b/src/backend/optimizer/plan/createplan.c
+index 965b504..a26c630 100644
+--- a/src/backend/optimizer/plan/createplan.c
++++ b/src/backend/optimizer/plan/createplan.c
+@@ -17,8 +17,11 @@
+ #include "postgres.h"
+ 
+ #include <limits.h>
++#include <math.h>
+ 
+ #include "access/skey.h"
++#include "access/printtup.h"
++#include "catalog/pg_type.h"
+ #include "nodes/makefuncs.h"
+ #include "optimizer/clauses.h"
+ #include "optimizer/cost.h"
+@@ -29,9 +32,13 @@
+ #include "optimizer/tlist.h"
+ #include "optimizer/var.h"
+ #include "parser/parse_clause.h"
++#include "parser/parse_coerce.h"
+ #include "parser/parse_expr.h"
+ #include "parser/parsetree.h"
+ #include "utils/lsyscache.h"
++#include "utils/selfuncs.h"
++#include "utils/skyline.h"
++#include "utils/syscache.h"
+ 
+ 
+ static Plan *create_scan_plan(PlannerInfo *root, Path *best_path);
+@@ -2691,6 +2698,208 @@ add_sort_column(AttrNumber colIdx, Oid sortOp, bool nulls_first,
+ 	return numCols + 1;
+ }
+ 
++static double
++factorial(int d)
++{
++	/* FIXME: take care for over runs */
++	double		res = 1.0;
++
++	for (; d > 1; d--)
++		res *= d;
++
++	return res;
++}
++
++/*	FIXME: ticket:34 */
++static double
++estimate_skyline_cardinality(double n, int d)
++{
++	double		res;
++
++	if (n <= 1.0)
++		return 1.0;
++
++	res = pow(log(n + 1.0), d - 1) / factorial(d - 1);
++
++	/* avoid patological cases */
++	if (res > n)
++		res = n;
++
++	if (res < 1.0)
++		res = 1.0;
++
++	return res;
++}
++
++Skyline *
++make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause, SkylineMethod skyline_method, int limit_tuples)
++{
++	Plan	   *outertree = lefttree;
++	List	   *sub_tlist = outertree->targetlist;
++	ListCell   *l;
++	Skyline    *node = makeNode(Skyline);
++	Plan	   *plan = &node->plan;
++	int			numskylinecols;
++	SkylineClause *sc = (SkylineClause *) skyline_clause;
++	List	   *skylinecls = sc->skyline_of_list;
++	bool		have_stats = false;
++
++	plan->targetlist = outertree->targetlist;
++	plan->qual = NIL;
++	plan->lefttree = outertree;
++	plan->righttree = NULL;
++
++	numskylinecols = list_length(skylinecls);
++
++	node->flags = 0;
++	node->skylineColIdx = (AttrNumber *) palloc(numskylinecols * sizeof(AttrNumber));
++	node->skylineOfOperators = (Oid *) palloc(numskylinecols * sizeof(Oid));
++	node->nullsFirst = (bool *) palloc(numskylinecols * sizeof(bool));
++	node->skylineOfDir = (int *) palloc(numskylinecols * sizeof(int));
++	node->colFlags = (int *) palloc(numskylinecols * sizeof(int));
++	node->colMin = (float8 *) palloc(numskylinecols * sizeof(float8));
++	node->colScale = (float8 *) palloc(numskylinecols * sizeof(float8));
++	node->colCoerceFunc = (Oid *) palloc(numskylinecols * sizeof(Oid));
++
++	numskylinecols = 0;
++	foreach(l, skylinecls)
++	{
++		SkylineOf		   *skylineof = (SkylineOf *) lfirst(l);
++		TargetEntry		   *tle = get_skylineclause_tle(skylineof, sub_tlist);
++		Oid					coerce_func = InvalidOid;
++		CoercionPathType	pathtype = find_coercion_pathway(FLOAT8OID, skylineof->restype, COERCION_IMPLICIT, &coerce_func);
++
++		node->skylineColIdx[numskylinecols] = tle->resno;
++		node->skylineOfOperators[numskylinecols] = skylineof->skylineop;
++		node->nullsFirst[numskylinecols] = skylineof->nulls_first;
++		node->skylineOfDir[numskylinecols] = (int) skylineof->skylineof_dir;
++		node->colFlags[numskylinecols] = SKYLINE_FLAGS_NONE;
++		node->colCoerceFunc[numskylinecols] = InvalidOid;
++
++		if (pathtype != COERCION_PATH_NONE)
++		{
++			VariableStatData	vardata;
++
++			node->colFlags[numskylinecols] |= SKYLINE_FLAGS_COERCE;
++
++			/* examine stats */
++			examine_variable(root, (Node *)tle->expr, 0, &vardata);
++			if (vardata.statsTuple != NULL)
++			{
++				Datum	min;
++				Datum	max;
++
++				if(get_variable_range(root, &vardata, skylineof->skylineop,
++									  &min, &max))
++				{
++					char	   *min_value;
++					char	   *max_value;
++					double		min_as_double;
++					double		max_as_double;
++					double		range;
++
++					/* for debugging */
++					min_value = datum_to_text(min, false, skylineof->restype);
++					max_value = datum_to_text(max, false, skylineof->restype);
++					elog(DEBUG1, "stats for column '%s': [%s,%s]", (tle->resname ? tle->resname : "?"), min_value, max_value);
++					pfree(min_value);
++					pfree(max_value);
++
++					switch (pathtype)
++					{
++					case COERCION_PATH_FUNC:		/* apply the specified coercion function */
++						min = OidFunctionCall1(coerce_func, min);
++						max = OidFunctionCall1(coerce_func, max);
++
++						node->colCoerceFunc[numskylinecols] = coerce_func;
++						node->colFlags[numskylinecols] |= SKYLINE_FLAGS_COERCE_FUNC;
++						/* fall throught */
++
++					case COERCION_PATH_RELABELTYPE:	/* binary-compatible cast, no function */
++						min_as_double = DatumGetFloat8(min);
++						max_as_double = DatumGetFloat8(max);
++
++						range = max_as_double - min_as_double;
++
++						if (range < SKYLINE_RANK_EPSILON)
++							range = SKYLINE_RANK_EPSILON;
++
++						node->colMin[numskylinecols] = min_as_double - SKYLINE_RANK_BOUND_MIN;
++						node->colScale[numskylinecols] = SKYLINE_RANK_RANGE / range;
++
++						node->colFlags[numskylinecols] |= SKYLINE_FLAGS_HAVE_STATS;
++
++						have_stats = true;
++						break;
++
++					case COERCION_PATH_ARRAYCOERCE:	/* need an ArrayCoerceExpr node */
++					case COERCION_PATH_COERCEVIAIO:	/* need a CoerceViaIO node */
++					case COERCION_PATH_NONE:		/* failed to find any coercion pathway */
++					default:
++						/* do nothing */
++						break;
++					}
++				}
++			}
++			else
++				elog(DEBUG1, "no stats for column '%s'", (tle->resname ? tle->resname : "?"));
++			ReleaseVariableStats(vardata);
++		}
++
++		if (!(node->colFlags[numskylinecols] & SKYLINE_FLAGS_HAVE_STATS))
++		{
++			/* just place some sane values there */
++			node->colMin[numskylinecols] = 0.0 - SKYLINE_RANK_BOUND_MIN;
++			node->colScale[numskylinecols] = SKYLINE_RANK_RANGE;
++		}
++
++		numskylinecols++;
++	}
++
++	node->numCols = numskylinecols;
++
++	if (have_stats)
++		node->flags |= SKYLINE_FLAGS_HAVE_STATS;
++
++	/* only care about copying size */
++	copy_plan_costsize(plan, outertree);
++
++	plan->plan_rows = estimate_skyline_cardinality(outertree->plan_rows, numskylinecols);
++	{
++		Path		path;		/* just a dummy */
++
++		/*
++		 * FIXME: in the presents of a Elimination Filter we must estimate
++		 * the rows different, in fact we just should take the
++		 * outertree->plan_rows
++		 */
++		cost_skyline(&path, root, outertree->startup_cost, outertree->plan_rows, outertree->plan_width, plan->plan_rows, numskylinecols, skyline_method, limit_tuples);
++
++		plan->startup_cost = path.startup_cost;
++		plan->total_cost = path.total_cost;
++	}
++
++	node->skyline_distinct = sc->skyline_distinct;
++	node->skyline_of_options = sc->skyline_of_options;
++	node->skyline_method = skyline_method;
++
++	/* To disable use: return (Skyline *) lefttree; */
++	return node;
++}
++
++ElimFilter *
++make_elimfilter(PlannerInfo *root, Plan *lefttree, Node *skyline_clause, int limit_tuples)
++{
++	ElimFilter *node = (ElimFilter *) make_skyline(root, lefttree, skyline_clause, SM_ELIMFILTER, limit_tuples);
++	/*
++	 * This is bit of a hack, we change the node type for T_Skyline to
++	 * T_ElimFilter.
++	 */
++	node->plan.type = T_ElimFilter;
++
++	return node;
++}
++
+ /*
+  * make_sort_from_pathkeys
+  *	  Create sort plan to sort according to given pathkeys
+diff --git a/src/backend/optimizer/plan/planmain.c b/src/backend/optimizer/plan/planmain.c
+index cf88b06..20f1619 100644
+--- a/src/backend/optimizer/plan/planmain.c
++++ b/src/backend/optimizer/plan/planmain.c
+@@ -83,13 +83,14 @@
+ void
+ query_planner(PlannerInfo *root, List *tlist,
+ 			  double tuple_fraction, double limit_tuples,
+-			  Path **cheapest_path, Path **sorted_path,
++			  Path **cheapest_path, Path **sorted_path, Path **skyline_path,
+ 			  double *num_groups)
+ {
+ 	Query	   *parse = root->parse;
+ 	List	   *joinlist;
+ 	RelOptInfo *final_rel;
+ 	Path	   *cheapestpath;
++	Path	   *skylinepath;
+ 	Path	   *sortedpath;
+ 	Index		rti;
+ 	ListCell   *lc;
+@@ -110,6 +111,7 @@ query_planner(PlannerInfo *root, List *tlist,
+ 		*cheapest_path = (Path *)
+ 			create_result_path((List *) parse->jointree->quals);
+ 		*sorted_path = NULL;
++		*skyline_path = NULL;
+ 
+ 		/*
+ 		 * We still are required to canonicalize any pathkeys, in case it's
+@@ -120,6 +122,8 @@ query_planner(PlannerInfo *root, List *tlist,
+ 													 root->query_pathkeys);
+ 		root->group_pathkeys = canonicalize_pathkeys(root,
+ 													 root->group_pathkeys);
++		root->skyline_pathkeys = canonicalize_pathkeys(root,
++													 root->skyline_pathkeys);
+ 		root->sort_pathkeys = canonicalize_pathkeys(root,
+ 													root->sort_pathkeys);
+ 		return;
+@@ -241,6 +245,7 @@ query_planner(PlannerInfo *root, List *tlist,
+ 	 */
+ 	root->query_pathkeys = canonicalize_pathkeys(root, root->query_pathkeys);
+ 	root->group_pathkeys = canonicalize_pathkeys(root, root->group_pathkeys);
++	root->skyline_pathkeys = canonicalize_pathkeys(root, root->skyline_pathkeys);
+ 	root->sort_pathkeys = canonicalize_pathkeys(root, root->sort_pathkeys);
+ 
+ 	/*
+@@ -350,6 +355,11 @@ query_planner(PlannerInfo *root, List *tlist,
+ 	 */
+ 	cheapestpath = final_rel->cheapest_total_path;
+ 
++	skylinepath =
++		get_cheapest_fractional_path_for_skyline_pathkeys(final_rel->pathlist,
++														  root->query_pathkeys,
++														  tuple_fraction);
++
+ 	sortedpath =
+ 		get_cheapest_fractional_path_for_pathkeys(final_rel->pathlist,
+ 												  root->query_pathkeys,
+@@ -359,11 +369,46 @@ query_planner(PlannerInfo *root, List *tlist,
+ 	if (sortedpath == cheapestpath)
+ 		sortedpath = NULL;
+ 
++	if (sortedpath == skylinepath)
++		sortedpath = NULL;
++
++	if (skylinepath == cheapestpath)
++		skylinepath = NULL;
++
+ 	/*
+ 	 * Forget about the presorted path if it would be cheaper to sort the
+ 	 * cheapest-total path.  Here we need consider only the behavior at the
+ 	 * tuple fraction point.
+ 	 */
++	if (skylinepath)
++	{
++		Path		path;		/* dummy for result of cost_sort */
++
++		if (root->query_pathkeys == NIL ||
++			skyline_pathkeys_contained_in(root->query_pathkeys,
++										  cheapestpath->pathkeys, NULL))
++		{
++			/* No sort needed for cheapest path */
++			path.startup_cost = cheapestpath->startup_cost;
++			path.total_cost = cheapestpath->total_cost;
++		}
++		else
++		{
++			/* Figure cost for sorting */
++			cost_sort(&path, root, root->query_pathkeys,
++					  cheapestpath->total_cost,
++					  final_rel->rows, final_rel->width,
++					  limit_tuples);
++		}
++
++		if (compare_fractional_path_costs(skylinepath, &path,
++										  tuple_fraction) > 0)
++		{
++			/* Presorted path is a loser */
++			skylinepath = NULL;
++		}
++	}
++
+ 	if (sortedpath)
+ 	{
+ 		Path		sort_path;	/* dummy for result of cost_sort */
+@@ -395,4 +440,5 @@ query_planner(PlannerInfo *root, List *tlist,
+ 
+ 	*cheapest_path = cheapestpath;
+ 	*sorted_path = sortedpath;
++	*skyline_path = skylinepath;
+ }
+diff --git a/src/backend/optimizer/plan/planner.c b/src/backend/optimizer/plan/planner.c
+index 257d146..6c1e4cf 100644
+--- a/src/backend/optimizer/plan/planner.c
++++ b/src/backend/optimizer/plan/planner.c
+@@ -39,6 +39,7 @@
+ #include "parser/parse_oper.h"
+ #include "parser/parsetree.h"
+ #include "utils/lsyscache.h"
++#include "utils/skyline.h"
+ #include "utils/syscache.h"
+ 
+ 
+@@ -229,7 +230,7 @@ standard_planner(Query *parse, int cursorOptions, ParamListInfo boundParams)
+  *--------------------
+  */
+ Plan *
+-subquery_planner(PlannerGlobal *glob, Query *parse,
++subquery_planner(PlannerGlobal * glob, Query *parse,
+ 				 Index level, double tuple_fraction,
+ 				 PlannerInfo **subroot)
+ {
+@@ -814,11 +815,13 @@ grouping_planner(PlannerInfo *root, double tuple_fraction)
+ 		/* No set operations, do regular planning */
+ 		List	   *sub_tlist;
+ 		List	   *group_pathkeys;
++		List	   *skyline_pathkeys;
+ 		AttrNumber *groupColIdx = NULL;
+ 		Oid		   *groupOperators = NULL;
+ 		bool		need_tlist_eval = true;
+ 		QualCost	tlist_cost;
+ 		Path	   *cheapest_path;
++		Path	   *skyline_path;
+ 		Path	   *sorted_path;
+ 		Path	   *best_path;
+ 		long		numGroups = 0;
+@@ -848,6 +851,12 @@ grouping_planner(PlannerInfo *root, double tuple_fraction)
+ 										  parse->groupClause,
+ 										  tlist,
+ 										  false);
++
++		root->skyline_pathkeys =
++			make_pathkeys_for_skylineclause(root,
++											(SkylineClause *) parse->skylineClause,
++											tlist,
++											false);
+ 		root->sort_pathkeys =
+ 			make_pathkeys_for_sortclauses(root,
+ 										  parse->sortClause,
+@@ -871,6 +880,7 @@ grouping_planner(PlannerInfo *root, double tuple_fraction)
+ 			count_agg_clauses(parse->havingQual, &agg_counts);
+ 		}
+ 
++		/* FIXME: update comment */
+ 		/*
+ 		 * Figure out whether we need a sorted result from query_planner.
+ 		 *
+@@ -883,6 +893,8 @@ grouping_planner(PlannerInfo *root, double tuple_fraction)
+ 		 */
+ 		if (parse->groupClause)
+ 			root->query_pathkeys = root->group_pathkeys;
++		else if (parse->skylineClause)
++			root->query_pathkeys = root->skyline_pathkeys;
+ 		else if (parse->sortClause)
+ 			root->query_pathkeys = root->sort_pathkeys;
+ 		else
+@@ -895,9 +907,20 @@ grouping_planner(PlannerInfo *root, double tuple_fraction)
+ 		 * the pathkeys.
+ 		 */
+ 		query_planner(root, sub_tlist, tuple_fraction, limit_tuples,
+-					  &cheapest_path, &sorted_path, &dNumGroups);
++					  &cheapest_path, &sorted_path, &skyline_path, &dNumGroups);
+ 
+ 		group_pathkeys = root->group_pathkeys;
++		skyline_pathkeys = root->skyline_pathkeys;
++		/* on "SKYLINE OF ... WITH NOINDEX" drop skyline_pathkeys */
++		if (parse->skylineClause != NULL)
++		{
++			int		no_index;
++			if (skyline_option_get_int(((SkylineClause *) parse->skylineClause)->skyline_of_options, "noindex", &no_index))
++			{
++				skyline_path = NULL;
++				skyline_pathkeys = NULL;
++			}
++		}
+ 		sort_pathkeys = root->sort_pathkeys;
+ 
+ 		/*
+@@ -922,8 +945,25 @@ grouping_planner(PlannerInfo *root, double tuple_fraction)
+ 		 * always read all the input tuples, so use the cheapest-total path.
+ 		 * Otherwise, trust query_planner's decision about which to use.
+ 		 */
+-		if (use_hashed_grouping || !sorted_path)
++		if (use_hashed_grouping || (!sorted_path && !(parse->skylineClause && skyline_path)))
++			best_path = cheapest_path;
++		else if (parse->skylineClause && skyline_path)
++		{
++			SkylineMethod	skyline_method = skyline_method_forced_by_options((SkylineClause *) parse->skylineClause);
++			int				skyline_dim = skyline_get_dim((SkylineClause *) parse->skylineClause);
++
++			if (skyline_dim == 2 && (skyline_method == SM_UNKNOWN || skyline_method == SM_2DIM_PRESORT))
++				best_path = skyline_path;
++			else if (skyline_dim >= 2 && (skyline_method == SM_UNKNOWN || skyline_method == SM_SFS))
++				best_path = skyline_path;
++			else
++			{
++				if (sorted_path)
++					best_path = sorted_path;
++				else
+ 			best_path = cheapest_path;
++			}
++		}
+ 		else
+ 			best_path = sorted_path;
+ 
+@@ -1146,6 +1186,62 @@ grouping_planner(PlannerInfo *root, double tuple_fraction)
+ 		}						/* end of non-minmax-aggregate case */
+ 	}							/* end of if (setOperations) */
+ 
++	if (parse->skylineClause)
++	{
++		/*
++		 * FIXME: refactor this, the method needs to be known here, maybe
++		 * store it in the analyzed clause
++		 */
++		bool			has_matching_path = skyline_pathkeys_contained_in(root->skyline_pathkeys, current_pathkeys, NULL);
++		SkylineMethod	skyline_method = skyline_choose_method((SkylineClause *) parse->skylineClause, has_matching_path);
++
++		Assert(skyline_method != SM_UNKNOWN);
++
++		{
++			int	use_elim_filter = 0;
++
++			if (skyline_option_get_int(((SkylineClause *) parse->skylineClause)->skyline_of_options, "ef", &use_elim_filter))
++			{
++				result_plan = (Plan *) make_elimfilter(root, result_plan, parse->skylineClause, limit_tuples);
++
++				/*
++				 * Note that the relative tuple order is preserved by the elimination filter.
++				 */
++			}
++		}
++
++		if (skyline_method == SM_2DIM_PRESORT || skyline_method == SM_SFS)
++		{
++			if (!has_matching_path)
++			{
++				result_plan = (Plan *) make_sort_from_pathkeys(root,
++															   result_plan,
++															   root->skyline_pathkeys,
++															   limit_tuples);
++				current_pathkeys = root->skyline_pathkeys;
++			}
++		}
++		else if (skyline_method == SM_MATERIALIZEDNESTEDLOOP)
++		{
++			/*
++			 * for the materialized nested loop we need a materialize as outer
++			 * plan
++			 */
++			result_plan = materialize_finished_plan(result_plan);
++		}
++
++		result_plan = (Plan *) make_skyline(root, result_plan, parse->skylineClause, skyline_method, limit_tuples);
++
++		if (!skyline_method_preserves_tuple_order(skyline_method))
++		{
++			/*
++			 * the skyline method used eventually changes the realtive order
++			 * of the tuples, so we drop the current_pathkeys here
++			 */
++			current_pathkeys = NIL;
++		}
++	}
++
+ 	/*
+ 	 * If we were not able to make the plan come out in the right order, add
+ 	 * an explicit sort step.
+diff --git a/src/backend/optimizer/plan/setrefs.c b/src/backend/optimizer/plan/setrefs.c
+index 0ba18bb..0bf002c 100644
+--- a/src/backend/optimizer/plan/setrefs.c
++++ b/src/backend/optimizer/plan/setrefs.c
+@@ -346,6 +346,8 @@ set_plan_refs(PlannerGlobal *glob, Plan *plan, int rtoffset)
+ 		case T_Hash:
+ 		case T_Material:
+ 		case T_Sort:
++		case T_Skyline:
++		case T_ElimFilter:
+ 		case T_Unique:
+ 		case T_SetOp:
+ 
+diff --git a/src/backend/optimizer/plan/subselect.c b/src/backend/optimizer/plan/subselect.c
+index a165bd6..4ad4c9b 100644
+--- a/src/backend/optimizer/plan/subselect.c
++++ b/src/backend/optimizer/plan/subselect.c
+@@ -1289,6 +1289,8 @@ finalize_plan(PlannerInfo *root, Plan *plan, Bitmapset *valid_params)
+ 		case T_Unique:
+ 		case T_SetOp:
+ 		case T_Group:
++		case T_Skyline:
++		case T_ElimFilter:
+ 			break;
+ 
+ 		default:
+diff --git a/src/backend/optimizer/prep/prepjointree.c b/src/backend/optimizer/prep/prepjointree.c
+index a688f1b..454ab22 100644
+--- a/src/backend/optimizer/prep/prepjointree.c
++++ b/src/backend/optimizer/prep/prepjointree.c
+@@ -648,12 +648,13 @@ is_simple_subquery(Query *subquery)
+ 		return false;
+ 
+ 	/*
+-	 * Can't pull up a subquery involving grouping, aggregation, sorting, or
+-	 * limiting.
++	 * Can't pull up a subquery involving grouping, aggregation, skylining,
++	 * sorting, or limiting.
+ 	 */
+ 	if (subquery->hasAggs ||
+ 		subquery->groupClause ||
+ 		subquery->havingQual ||
++		subquery->skylineClause ||
+ 		subquery->sortClause ||
+ 		subquery->distinctClause ||
+ 		subquery->limitOffset ||
+diff --git a/src/backend/optimizer/util/tlist.c b/src/backend/optimizer/util/tlist.c
+index 9d3c0fd..ef4ca9f 100644
+--- a/src/backend/optimizer/util/tlist.c
++++ b/src/backend/optimizer/util/tlist.c
+@@ -154,6 +154,26 @@ get_sortgroupref_tle(Index sortref, List *targetList)
+ 	return NULL;				/* keep compiler quiet */
+ }
+ 
++TargetEntry *
++get_skylineclause_tle(SkylineOf *skylineOf,
++					  List *targetList)
++{
++	Index		refnumber = skylineOf->tleSortGroupRef;
++	ListCell   *l;
++
++	foreach(l, targetList)
++	{
++		TargetEntry *tle = (TargetEntry *) lfirst(l);
++
++		if (tle->ressortgroupref == refnumber)
++			return tle;
++	}
++
++	elog(ERROR, "ORDER/GROUP BY/SKYLINE OF expression not found in targetlist");
++	return NULL;				/* keep compiler quiet */
++}
++
++
+ /*
+  * get_sortgroupclause_tle
+  *		Find the targetlist entry matching the given SortClause
+diff --git a/src/backend/parser/analyze.c b/src/backend/parser/analyze.c
+index 93292de..1185daa 100644
+--- a/src/backend/parser/analyze.c
++++ b/src/backend/parser/analyze.c
+@@ -26,6 +26,7 @@
+ 
+ #include "catalog/pg_type.h"
+ #include "nodes/makefuncs.h"
++#include "nodes/print.h"
+ #include "optimizer/clauses.h"
+ #include "optimizer/var.h"
+ #include "parser/analyze.h"
+@@ -774,6 +775,11 @@ transformSelectStmt(ParseState *pstate, SelectStmt *stmt)
+ 												  &qry->targetList,
+ 												  &qry->sortClause);
+ 
++	qry->skylineClause = transformSkylineClause(pstate,
++												stmt->skylineOfClause,
++												&qry->targetList,
++												true /* fix unknowns */ );
++
+ 	qry->limitOffset = transformLimitClause(pstate, stmt->limitOffset,
+ 											"OFFSET");
+ 	qry->limitCount = transformLimitClause(pstate, stmt->limitCount,
+diff --git a/src/backend/parser/gram.y b/src/backend/parser/gram.y
+index 3dc2c36..23439d4 100644
+--- a/src/backend/parser/gram.y
++++ b/src/backend/parser/gram.y
+@@ -135,6 +135,8 @@ static Node *makeXmlExpr(XmlExprOp op, char *name, List *named_args, List *args)
+ 	FuncWithArgs		*funwithargs;
+ 	DefElem				*defelt;
+ 	SortBy				*sortby;
++	SkylineOfExpr		*skyline_of_expr;
++	SkylineOption		*slopt;
+ 	JoinExpr			*jexpr;
+ 	IndexElem			*ielem;
+ 	Alias				*alias;
+@@ -239,7 +241,7 @@ static Node *makeXmlExpr(XmlExprOp op, char *name, List *named_args, List *args)
+ 				sort_clause opt_sort_clause sortby_list index_params
+ 				name_list from_clause from_list opt_array_bounds
+ 				qualified_name_list any_name any_name_list
+-				any_operator expr_list attrs
++				any_operator expr_list skyline_of_list attrs
+ 				target_list insert_column_list set_target_list
+ 				set_clause_list set_clause multiple_set_clause
+ 				ctext_expr_list ctext_row def_list indirection opt_indirection
+@@ -251,6 +253,8 @@ static Node *makeXmlExpr(XmlExprOp op, char *name, List *named_args, List *args)
+ 				execute_param_clause using_clause returning_clause
+ 				enum_val_list
+ 
++%type <node>	skyline_clause
++
+ %type <range>	OptTempTableName
+ %type <into>	into_clause create_as_target
+ 
+@@ -294,6 +298,9 @@ static Node *makeXmlExpr(XmlExprOp op, char *name, List *named_args, List *args)
+ 
+ %type <vsetstmt> set_rest SetResetClause
+ 
++%type <slopt>	skyline_option
++%type <list>	skyline_options opt_skyline_options
++
+ %type <node>	TableElement ConstraintElem TableFuncElement
+ %type <node>	columnDef
+ %type <defelt>	def_elem old_aggr_elem
+@@ -309,6 +316,7 @@ static Node *makeXmlExpr(XmlExprOp op, char *name, List *named_args, List *args)
+ %type <value>	NumericOnly FloatOnly IntegerOnly
+ %type <alias>	alias_clause
+ %type <sortby>	sortby
++%type <skyline_of_expr>	skyline_of_expr
+ %type <ielem>	index_elem
+ %type <node>	table_ref
+ %type <jexpr>	joined_table
+@@ -429,7 +437,7 @@ static Node *makeXmlExpr(XmlExprOp op, char *name, List *named_args, List *args)
+ 
+ 	SAVEPOINT SCHEMA SCROLL SEARCH SECOND_P SECURITY SELECT SEQUENCE
+ 	SERIALIZABLE SESSION SESSION_USER SET SETOF SHARE
+-	SHOW SIMILAR SIMPLE SMALLINT SOME STABLE STANDALONE_P START STATEMENT
++	SHOW SIMILAR SIMPLE SKYLINE SMALLINT SOME STABLE STANDALONE_P START STATEMENT
+ 	STATISTICS STDIN STDOUT STORAGE STRICT_P STRIP_P SUBSTRING SUPERUSER_P
+ 	SYMMETRIC SYSID SYSTEM_P
+ 
+@@ -6208,7 +6216,7 @@ select_clause:
+ simple_select:
+ 			SELECT opt_distinct target_list
+ 			into_clause from_clause where_clause
+-			group_clause having_clause
++			group_clause having_clause skyline_clause
+ 				{
+ 					SelectStmt *n = makeNode(SelectStmt);
+ 					n->distinctClause = $2;
+@@ -6218,6 +6226,7 @@ simple_select:
+ 					n->whereClause = $6;
+ 					n->groupClause = $7;
+ 					n->havingClause = $8;
++					n->skylineOfClause = $9;
+ 					$$ = (Node *)n;
+ 				}
+ 			| values_clause							{ $$ = $1; }
+@@ -6398,6 +6407,100 @@ having_clause:
+ 			| /*EMPTY*/								{ $$ = NULL; }
+ 		;
+ 
++skyline_clause:
++			SKYLINE	OF skyline_of_list opt_skyline_options
++				{
++					SkylineOfClause *n = makeNode(SkylineOfClause);
++					n->skyline_of_list = $3;
++					n->skyline_distinct = false;
++					n->skyline_of_options = $4;
++					$$ = (Node *)n;
++				}
++			| SKYLINE OF DISTINCT skyline_of_list opt_skyline_options
++				{
++					SkylineOfClause *n = makeNode(SkylineOfClause);
++					n->skyline_of_list = $4;
++					n->skyline_distinct = true;
++					n->skyline_of_options = $5;
++					$$ = (Node *)n;
++				}
++			| /*EMPTY*/								{ $$ = NULL; }
++		;
++
++skyline_of_list:
++			skyline_of_expr
++				{
++					$$ = list_make1($1);
++				}
++			| skyline_of_list ',' skyline_of_expr
++				{
++					$$ = lappend($1, $3);
++				}
++		;
++
++/*
++ * FIMXE: skyline attr is a restricted to c_expr instead of a_expr
++ * to avoid shift/reduce conflicts.
++ */
++skyline_of_expr:
++			c_expr IDENT opt_nulls_order
++				{
++					$$ = makeNode(SkylineOfExpr);
++					$$->node = $1;
++					if (strcmp($2, "min") == 0)
++						$$->skylineof_dir = SKYLINEOF_MIN;
++					else if (strcmp($2, "max") == 0)
++						$$->skylineof_dir = SKYLINEOF_MAX;
++					else if (strcmp($2, "diff") == 0)
++						$$->skylineof_dir = SKYLINEOF_DIFF;
++					else
++						yyerror("syntax error");
++					$$->useOp = NIL;
++					$$->skylineof_nulls = $3;
++				}
++			| c_expr USING qual_all_Op opt_nulls_order
++				{
++					$$ = makeNode(SkylineOfExpr);
++					$$->node = $1;
++					$$->skylineof_dir = SKYLINEOF_USING;
++					$$->useOp = $3;
++					$$->skylineof_nulls = $4;
++				}
++		;
++
++opt_skyline_options:
++			WITH skyline_options					{ $$ = $2; }
++			| /* EMPTY */							{ $$ = NIL; }
++		;
++
++skyline_options:
++			skyline_option
++				{
++					$$ = list_make1($1);
++				}
++			| skyline_options skyline_option
++				{
++					$$ = lappend($1, $2);
++				}
++		;
++
++skyline_option:
++			var_name
++				{
++					SkylineOption *n = makeNode(SkylineOption);
++					n->name = $1;
++					n->value = makeIntConst(1);
++					$$ = n;
++				}
++			| var_name '=' var_value
++				{
++					SkylineOption *n = makeNode(SkylineOption);
++					n->name = $1;
++					n->value = $3;
++					$$ = n;
++				}
++		;
++
+ for_locking_clause:
+ 			for_locking_items						{ $$ = $1; }
+ 			| FOR READ ONLY							{ $$ = NIL; }
+@@ -9393,6 +9496,7 @@ reserved_keyword:
+ 			| RETURNING
+ 			| SELECT
+ 			| SESSION_USER
++			| SKYLINE
+ 			| SOME
+ 			| SYMMETRIC
+ 			| TABLE
+diff --git a/src/backend/parser/keywords.c b/src/backend/parser/keywords.c
+index d363be4..b2c2db2 100644
+--- a/src/backend/parser/keywords.c
++++ b/src/backend/parser/keywords.c
+@@ -327,6 +327,7 @@ static const ScanKeyword ScanKeywords[] = {
+ 	{"show", SHOW, UNRESERVED_KEYWORD},
+ 	{"similar", SIMILAR, TYPE_FUNC_NAME_KEYWORD},
+ 	{"simple", SIMPLE, UNRESERVED_KEYWORD},
++	{"skyline", SKYLINE, RESERVED_KEYWORD},
+ 	{"smallint", SMALLINT, COL_NAME_KEYWORD},
+ 	{"some", SOME, RESERVED_KEYWORD},
+ 	{"stable", STABLE, UNRESERVED_KEYWORD},
+diff --git a/src/backend/parser/parse_agg.c b/src/backend/parser/parse_agg.c
+index 848138b..2186c0a 100644
+--- a/src/backend/parser/parse_agg.c
++++ b/src/backend/parser/parse_agg.c
+@@ -144,6 +144,10 @@ parseCheckAggregates(ParseState *pstate, Query *qry)
+ 		groupClauses = lcons(expr, groupClauses);
+ 	}
+ 
++	/* FIXME:
++	 * No aggregates allowed in SKYLINE OF clauses, either. ???
++	 */
++
+ 	/*
+ 	 * If there are join alias vars involved, we have to flatten them to the
+ 	 * underlying vars, so that aliased and unaliased vars will be correctly
+diff --git a/src/backend/parser/parse_clause.c b/src/backend/parser/parse_clause.c
+index 83124e5..ad88c51 100644
+--- a/src/backend/parser/parse_clause.c
++++ b/src/backend/parser/parse_clause.c
+@@ -31,6 +31,7 @@
+ #include "parser/parse_oper.h"
+ #include "parser/parse_relation.h"
+ #include "parser/parse_target.h"
++#include "parser/parse_type.h"
+ #include "rewrite/rewriteManip.h"
+ #include "utils/guc.h"
+ #include "utils/lsyscache.h"
+@@ -39,8 +40,9 @@
+ #define ORDER_CLAUSE 0
+ #define GROUP_CLAUSE 1
+ #define DISTINCT_ON_CLAUSE 2
++#define SKYLINE_CLAUSE 3
+ 
+-static char *clauseText[] = {"ORDER BY", "GROUP BY", "DISTINCT ON"};
++static char *clauseText[] = {"ORDER BY", "GROUP BY", "DISTINCT ON", "SKYLINE OF"};
+ 
+ static void extractRemainingColumns(List *common_colnames,
+ 						List *src_colnames, List *src_colvars,
+@@ -1186,6 +1188,10 @@ findTargetlistEntry(ParseState *pstate, Node *node, List **tlist, int clause)
+ 		char	   *name = strVal(linitial(((ColumnRef *) node)->fields));
+ 		int			location = ((ColumnRef *) node)->location;
+ 
++		/*
++		 * FIXME: should SKYLINE be treated like GROUP?  || clause ==
++		 * SKYLINE_CLAUSE
++		 */
+ 		if (clause == GROUP_CLAUSE)
+ 		{
+ 			/*
+@@ -1425,6 +1431,52 @@ transformGroupClause(ParseState *pstate, List *grouplist,
+ }
+ 
+ /*
++ * transformSkylineClause
++ *
++ * FIXME
++ */
++Node *
++transformSkylineClause(ParseState *pstate,
++					   Node *skylineOfClause,
++					   List **targetlist,
++					   bool resolveUnknown)
++{
++	if (skylineOfClause == NULL)
++		return NULL;
++
++	{
++		SkylineOfClause *sbc = (SkylineOfClause *) skylineOfClause;
++		List	   *resultlist = NIL;
++		ListCell   *slitem;
++		List	   *skylinelist = sbc->skyline_of_list;
++		SkylineClause *node = makeNode(SkylineClause);
++
++		foreach(slitem, skylinelist)
++		{
++			SkylineOfExpr *skylineof = lfirst(slitem);
++			TargetEntry *tle;
++
++			tle = findTargetlistEntry(pstate, skylineof->node,
++									  targetlist, SKYLINE_CLAUSE);
++
++			resultlist = addTargetToSkylineList(pstate, tle,
++												resultlist, *targetlist,
++												skylineof->skylineof_dir,
++												skylineof->skylineof_nulls,
++												skylineof->useOp,
++												resolveUnknown);
++		}
++
++		node->skyline_distinct = sbc->skyline_distinct;
++		node->skyline_of_list = resultlist;
++		node->skyline_of_options = sbc->skyline_of_options;
++
++		return (Node *) node;
++	}
++}
++
++
++/*
+  * transformSortClause -
+  *	  transform an ORDER BY clause
+  *
+@@ -1718,6 +1770,108 @@ addTargetToSortList(ParseState *pstate, TargetEntry *tle,
+ }
+ 
+ /*
++ * addTargetToSkylineList
++ *
++ * FIXME
++ */
++List *
++addTargetToSkylineList(ParseState *pstate, TargetEntry *tle,
++					   List *skylinelist, List *targetlist,
++					   SkylineOfDir skylineof_dir, SkylineOfNulls skylineof_nulls,
++					   List *skylineof_opname, bool resolveUnknown)
++{
++	Oid			restype = exprType((Node *) tle->expr);
++	Oid			skylineop;
++	Oid			cmpfunc;
++	bool		reverse;
++
++	/* if tlist item is an UNKNOWN literal, change it to TEXT */
++	if (restype == UNKNOWNOID && resolveUnknown)
++	{
++		tle->expr = (Expr *) coerce_type(pstate, (Node *) tle->expr,
++										 restype, TEXTOID, -1,
++										 COERCION_IMPLICIT,
++										 COERCE_IMPLICIT_CAST);
++		restype = TEXTOID;
++	}
++
++	/* determine the sortop */
++	switch (skylineof_dir)
++	{
++		case SKYLINEOF_DEFAULT:
++		case SKYLINEOF_MIN:
++		case SKYLINEOF_DIFF:
++			/* skyline diff must be treated special later */
++			skylineop = ordering_oper_opid(restype);
++			reverse = false;
++			break;
++		case SKYLINEOF_MAX:
++			skylineop = reverse_ordering_oper_opid(restype);
++			reverse = true;
++			break;
++		case SKYLINEOF_USING:
++			Assert(skylineof_opname != NIL);
++			skylineop = compatible_oper_opid(skylineof_opname,
++											 restype,
++											 restype,
++											 false);
++
++			/*
++			 * Verify it's a valid ordering operator, and determine whether to
++			 * consider it like ASC or DESC.
++			 */
++			if (!get_compare_function_for_ordering_op(skylineop,
++													  &cmpfunc, &reverse))
++				ereport(ERROR,
++						(errcode(ERRCODE_WRONG_OBJECT_TYPE),
++					   errmsg("operator %s is not a valid ordering operator",
++							  strVal(llast(skylineof_opname))),
++						 errhint("Ordering operators must be \"<\" or \">\" members of btree operator families.")));
++
++			break;
++		default:
++			elog(ERROR, "unrecognized skylineof_dir: %d", skylineof_dir);
++			skylineop = InvalidOid;		/* keep compiler quiet */
++			reverse = false;
++			break;
++	}
++
++	/* FIXME: avoid making duplicate skyline list entries */
++	if (!targetIsInSkylineList(tle, skylineop, skylinelist))
++	{
++		SkylineOf  *skylineof = makeNode(SkylineOf);
++		Oid			targetType = FLOAT8OID;
++
++		skylineof->tleSortGroupRef = assignSortGroupRef(tle, targetlist);
++		skylineof->restype = restype;
++		skylineof->skylineop = skylineop;
++		skylineof->skylineof_dir = skylineof_dir;
++
++		switch (skylineof_nulls)
++		{
++			case SKYLINEOF_NULLS_DEFAULT:
++				/* NULLS FIRST is default for DESC; other way for ASC */
++				skylineof->nulls_first = reverse;
++				break;
++			case SKYLINEOF_NULLS_FIRST:
++				skylineof->nulls_first = true;
++				break;
++			case SKYLINEOF_NULLS_LAST:
++				skylineof->nulls_first = false;
++				break;
++			default:
++				elog(ERROR, "unrecognized skylineof_nulls: %d", skylineof_nulls);
++				break;
++		}
++
++		skylinelist = lappend(skylinelist, skylineof);
++	}
++
++	return skylinelist;
++}
++
++
++/*
+  * assignSortGroupRef
+  *	  Assign the targetentry an unused ressortgroupref, if it doesn't
+  *	  already have one.  Return the assigned or pre-existing refnumber.
+@@ -1786,3 +1940,31 @@ targetIsInSortList(TargetEntry *tle, Oid sortop, List *sortList)
+ 	}
+ 	return false;
+ }
++
++/*
++ * targetIsInSkylineList
++ *
++ *	FIXME
++ */
++bool
++targetIsInSkylineList(TargetEntry *tle, Oid skylineop, List *skylineList)
++{
++	Index		ref = tle->ressortgroupref;
++	ListCell   *l;
++
++	/* no need to scan list if tle has no marker */
++	if (ref == 0)
++		return false;
++
++	foreach(l, skylineList)
++	{
++		SkylineOf *skylineof = (SkylineOf *) lfirst(l);
++
++		if (skylineof->tleSortGroupRef == ref &&
++			(skylineop == InvalidOid ||
++			 skylineop == skylineof->skylineop ||
++			 skylineop == get_commutator(skylineof->skylineop)))
++			return true;
++	}
++	return false;
++}
+diff --git a/src/backend/utils/Makefile b/src/backend/utils/Makefile
+index 049a417..03293e2 100644
+--- a/src/backend/utils/Makefile
++++ b/src/backend/utils/Makefile
+@@ -8,7 +8,7 @@ subdir = src/backend/utils
+ top_builddir = ../../..
+ include $(top_builddir)/src/Makefile.global
+ 
+-SUBDIRS     = adt cache error fmgr hash init mb misc mmgr resowner sort time
++SUBDIRS     = adt cache error fmgr hash init mb misc mmgr resowner skyline sort time
+ SUBDIROBJS  = $(SUBDIRS:%=%/SUBSYS.o)
+ 
+ 
+diff --git a/src/backend/utils/adt/selfuncs.c b/src/backend/utils/adt/selfuncs.c
+index 4a8a58b..08fc404 100644
+--- a/src/backend/utils/adt/selfuncs.c
++++ b/src/backend/utils/adt/selfuncs.c
+@@ -128,8 +128,6 @@ static double convert_one_bytea_to_scalar(unsigned char *value, int valuelen,
+ 							int rangelo, int rangehi);
+ static char *convert_string_datum(Datum value, Oid typid);
+ static double convert_timevalue_to_scalar(Datum value, Oid typid);
+-static bool get_variable_range(PlannerInfo *root, VariableStatData *vardata,
+-					 Oid sortop, Datum *min, Datum *max);
+ static Selectivity prefix_selectivity(VariableStatData *vardata,
+ 				   Oid vartype, Oid opfamily, Const *prefixcon);
+ static Selectivity pattern_selectivity(Const *patt, Pattern_Type ptype);
+@@ -3961,7 +3959,7 @@ get_variable_numdistinct(VariableStatData *vardata)
+  * sortop is the "<" comparison operator to use.  This should generally
+  * be "<" not ">", as only the former is likely to be found in pg_statistic.
+  */
+-static bool
++bool
+ get_variable_range(PlannerInfo *root, VariableStatData *vardata, Oid sortop,
+ 				   Datum *min, Datum *max)
+ {
+diff --git a/src/backend/utils/sort/tuplestore.c b/src/backend/utils/sort/tuplestore.c
+index e913cf3..e34ec0c 100644
+--- a/src/backend/utils/sort/tuplestore.c
++++ b/src/backend/utils/sort/tuplestore.c
+@@ -711,6 +711,43 @@ tuplestore_rescan(Tuplestorestate *state)
+ 	}
+ }
+ 
++
++/*
++ * tuplsestore_catchup	- move current postion to writepos
++ */
++void
++tuplestore_catchup(Tuplestorestate *state)
++{
++	Assert(state->eflags & EXEC_FLAG_MARK);
++
++	switch (state->status)
++	{
++		case TSS_INMEM:
++			state->eof_reached = false;
++			state->current = state->memtupcount;
++			if (!(state->eflags & (EXEC_FLAG_BACKWARD | EXEC_FLAG_REWIND)))
++				tuplestore_trim(state, 0);
++			break;
++		case TSS_WRITEFILE:
++			state->eof_reached = false;
++			BufFileTell(state->myfile,
++						&state->readpos_file,
++						&state->readpos_offset);
++			break;
++		case TSS_READFILE:
++			state->eof_reached = false;
++			if (BufFileSeek(state->myfile,
++							state->writepos_file,
++							state->writepos_offset,
++							SEEK_SET) != 0)
++				elog(ERROR, "tuplestore_move_readpos_to_writepos failed");
++			break;
++		default:
++			elog(ERROR, "invalid tuplestore state");
++			break;
++	}
++}
++
+ /*
+  * tuplestore_markpos	- saves current position in the tuple sequence
+  */
+diff --git a/src/include/access/printtup.h b/src/include/access/printtup.h
+index 7313153..ff9c6dd 100644
+--- a/src/include/access/printtup.h
++++ b/src/include/access/printtup.h
+@@ -25,6 +25,8 @@ extern void debugStartup(DestReceiver *self, int operation,
+ 			 TupleDesc typeinfo);
+ extern void debugtup(TupleTableSlot *slot, DestReceiver *self);
+ 
++extern char *datum_to_text(Datum datum, bool isnull, Oid restype);
++
+ /* XXX these are really in executor/spi.c */
+ extern void spi_dest_startup(DestReceiver *self, int operation,
+ 				 TupleDesc typeinfo);
+diff --git a/src/include/nodes/execnodes.h b/src/include/nodes/execnodes.h
+index df3f3b6..cb66074 100644
+--- a/src/include/nodes/execnodes.h
++++ b/src/include/nodes/execnodes.h
+@@ -20,6 +20,7 @@
+ #include "nodes/tidbitmap.h"
+ #include "utils/hsearch.h"
+ #include "utils/tuplestore.h"
++#include "utils/tuplewindow.h"
+ 
+ 
+ /* ----------------
+@@ -1343,6 +1344,70 @@ typedef struct GroupState
+ 	bool		grp_done;		/* indicates completion of Group scan */
+ } GroupState;
+ 
++/* --------------------------
++ *  SkylineState information
++ * --------------------------
++ */
++typedef enum
++{
++	SS_INIT,
++	SS_PIPEOUT,
++	SS_FINALPIPEOUT,
++	SS_PROCESS,
++	SS_DONE
++} SkylineStatus;
++
++typedef enum
++{
++	SS_OUTER,
++	SS_TEMP
++} SkylineSource;
++
++#define SL_FLAGS_NONE		0x0000
++#define SL_FLAGS_RANKED		0x0001
++#define SL_FLAGS_ENTROPY	0x0002
++#define SL_FLAGS_RANDOM		0x0004
++
++typedef struct SkylineState
++{
++	ScanState			ss;					/* its first field is NodeTag */
++	SkylineStatus		status;
++	SkylineMethod		skyline_method;
++	int					flags;
++	FmgrInfo		   *compareOpFn;		/* compare funtions */
++	int				   *compareFlags;
++	FmgrInfo		   *coerceFn;
++	int64				sl_pos;				/* for MNL */
++	Tuplestorestate	   *tuplestorestate;	/* used for 1d distinct */
++	TupleWindowState   *window;				/* for BNL and SFS */
++	int64				timestampIn;
++	int64				timestampOut;
++	SkylineSource		source;
++	Tuplestorestate	   *tempIn;
++	Tuplestorestate	   *tempOut;
++	TupleTableSlot	   *extraSlot;
++
++	int64				pass;
++
++	TupleWindowPolicy	window_policy;
++	int					windowsize;
++	int					windowslots;
++
++	int64				cmps_tuples;
++	int64				cmps_fields;
++
++	StringInfo			pass_info;
++} SkylineState;
++
++/* -----------------------------
++ *  ElimFilterState information
++ * -----------------------------
++ */
++
++/* it's a little waste of memory but it's simpler for the moment */
++typedef SkylineState ElimFilterState;
++
++
+ /* ---------------------
+  *	AggState information
+  *
+diff --git a/src/include/nodes/nodes.h b/src/include/nodes/nodes.h
+index c6b284b..9d568bc 100644
+--- a/src/include/nodes/nodes.h
++++ b/src/include/nodes/nodes.h
+@@ -61,6 +61,8 @@ typedef enum NodeTag
+ 	T_HashJoin,
+ 	T_Material,
+ 	T_Sort,
++	T_Skyline,
++	T_ElimFilter,
+ 	T_Group,
+ 	T_Agg,
+ 	T_Unique,
+@@ -93,6 +95,8 @@ typedef enum NodeTag
+ 	T_HashJoinState,
+ 	T_MaterialState,
+ 	T_SortState,
++	T_SkylineState,
++	T_ElimFilterState,
+ 	T_GroupState,
+ 	T_AggState,
+ 	T_UniqueState,
+@@ -327,6 +331,9 @@ typedef enum NodeTag
+ 	T_ResTarget,
+ 	T_TypeCast,
+ 	T_SortBy,
++	T_SkylineOfClause,
++	T_SkylineOfExpr,
++	T_SkylineOption,
+ 	T_RangeSubselect,
+ 	T_RangeFunction,
+ 	T_TypeName,
+@@ -337,6 +344,8 @@ typedef enum NodeTag
+ 	T_RangeTblEntry,
+ 	T_SortClause,
+ 	T_GroupClause,
++	T_SkylineClause,
++	T_SkylineOf,
+ 	T_FkConstraint,
+ 	T_PrivGrantee,
+ 	T_FuncWithArgs,
+diff --git a/src/include/nodes/parsenodes.h b/src/include/nodes/parsenodes.h
+index 7b2716d..f0879a1 100644
+--- a/src/include/nodes/parsenodes.h
++++ b/src/include/nodes/parsenodes.h
+@@ -43,6 +43,29 @@ typedef enum SortByNulls
+ 	SORTBY_NULLS_LAST
+ } SortByNulls;
+ 
++/*
++ * Skyline direction options
++ *
++ * FIXME
++ */
++typedef enum SkylineOfDir
++{
++	SKYLINEOF_DEFAULT,
++	SKYLINEOF_MIN,
++	SKYLINEOF_MAX,
++	SKYLINEOF_DIFF,
++	SKYLINEOF_USING
++} SkylineOfDir;
++
++/*
++ * FIXME
++ */
++typedef enum SkylineOfNulls
++{
++	SKYLINEOF_NULLS_DEFAULT	= SORTBY_NULLS_DEFAULT,
++	SKYLINEOF_NULLS_FIRST	= SORTBY_NULLS_FIRST,
++	SKYLINEOF_NULLS_LAST	= SORTBY_NULLS_LAST
++} SkylineOfNulls;
+ 
+ /*
+  * Grantable rights are encoded so that we can OR them together in a bitmask.
+@@ -120,6 +143,8 @@ typedef struct Query
+ 
+ 	Node	   *havingQual;		/* qualifications applied to groups */
+ 
++	Node	   *skylineClause;	/* a SkylineClause */
++
+ 	List	   *distinctClause; /* a list of SortClause's */
+ 
+ 	List	   *sortClause;		/* a list of SortClause's */
+@@ -344,6 +369,33 @@ typedef struct SortBy
+ } SortBy;
+ 
+ /*
++ * SkylineOfExpr - for SKYLINE OF clause
++ *
++ * FIXME
++ */
++typedef struct SkylineOfExpr
++{
++	NodeTag			type;
++	SkylineOfDir	skylineof_dir;		/* MIN/MAX/DIFF/USING */
++	SkylineOfNulls	skylineof_nulls;	/* NULLS FIRST/LAST */
++	List		   *useOp;				/* name of op to use, if SKYLINEOF_USING */
++	Node		   *node;				/* the expression to skyline of */
++} SkylineOfExpr;
++
++/*
++ * SkylineOfClause - returned by the Parser for SKYLINE OF clause
++ *
++ * FIXME
++ */
++typedef struct SkylineOfClause
++{
++	NodeTag		type;
++	bool		skyline_distinct;		/* SKYLINE OF _DISTINCT_ */
++	List	   *skyline_of_list;		/* a list of SkylineOfExpr */
++	List	   *skyline_of_options;		/* a list of SkylineOption */
++} SkylineOfClause;
++
++/*
+  * RangeSubselect - subquery appearing in a FROM clause
+  */
+ typedef struct RangeSubselect
+@@ -643,6 +695,54 @@ typedef struct SortClause
+ typedef SortClause GroupClause;
+ 
+ /*
++ * SkylineOption
++ *
++ * FIXME
++ */
++typedef struct SkylineOption
++{
++	NodeTag		type;
++	char	   *name;
++	Node	   *value;
++} SkylineOption;
++
++/*
++ * SkylineClause
++ *
++ * The analyzer transforms a SkylineOfClause into SkylineClause.
++ * While the skyline_of_list is transformed from SkylineOfExpr into SkylineOf
++ *
++ * FIXME
++ */
++typedef struct SkylineClause
++{
++	NodeTag		type;
++	bool		skyline_distinct;
++	List	   *skyline_of_list;	/* list of SkylineOf's */
++	List	   *skyline_of_options;
++} SkylineClause;
++
++/*
++ * SkylineOf
++ *
++ * FIXME
++ */
++#define SKYLINE_FLAGS_NONE			0
++#define SKYLINE_FLAGS_COERCE		1
++#define SKYLINE_FLAGS_HAVE_STATS	2
++#define SKYLINE_FLAGS_COERCE_FUNC	4
++
++typedef struct SkylineOf
++{
++	NodeTag			type;
++	Index			tleSortGroupRef;	/* reference into targetlist */
++	Oid				restype;		/* type of the skyline expression */
++	Oid				skylineop;		/* the ordering operator ('<' op) */
++	bool			nulls_first;	/* do NULLs come before normal values? */
++	SkylineOfDir	skylineof_dir;
++} SkylineOf;
++
++/*
+  * RowMarkClause -
+  *	   representation of FOR UPDATE/SHARE clauses
+  *
+@@ -740,6 +840,7 @@ typedef struct SelectStmt
+ 	Node	   *whereClause;	/* WHERE qualification */
+ 	List	   *groupClause;	/* GROUP BY clauses */
+ 	Node	   *havingClause;	/* HAVING conditional-expression */
++	Node	   *skylineOfClause;	/* SKYLINE OF clause */
+ 
+ 	/*
+ 	 * In a "leaf" node representing a VALUES list, the above fields are all
+diff --git a/src/include/nodes/plannodes.h b/src/include/nodes/plannodes.h
+index 6066a82..f275260 100644
+--- a/src/include/nodes/plannodes.h
++++ b/src/include/nodes/plannodes.h
+@@ -454,6 +454,51 @@ typedef struct Sort
+ 	bool	   *nullsFirst;		/* NULLS FIRST/LAST directions */
+ } Sort;
+ 
++/* ----------------
++ *		skyline node
++ * ----------------
++ */
++typedef enum SkylineMethod
++{
++	SM_UNKNOWN,
++	SM_1DIM,
++	SM_1DIM_DISTINCT,
++	SM_2DIM_PRESORT,
++	SM_MATERIALIZEDNESTEDLOOP,
++	SM_BLOCKNESTEDLOOP,
++	SM_SFS,
++	SM_ELIMFILTER
++} SkylineMethod;
++
++typedef struct Skyline
++{
++	Plan		plan;
++	bool		skyline_distinct;
++	int			numCols;
++	int			flags;
++	AttrNumber *skylineColIdx;
++	Oid		   *skylineOfOperators;
++	bool	   *nullsFirst;
++	int		   *skylineOfDir;
++	int		   *colFlags;
++	float8	   *colMin;
++	float8	   *colScale;
++	Oid		   *colCoerceFunc;
++	List	   *skyline_of_options;
++	SkylineMethod skyline_method;
++} Skyline;
++
++#define SKYLINE_RANK_EPSILON	(0.0)
++#define SKYLINE_RANK_BOUND_MIN	(0.0+SKYLINE_RANK_EPSILON)
++#define SKYLINE_RANK_BOUND_MAX	(1.0-SKYLINE_RANK_EPSILON)
++#define SKYLINE_RANK_RANGE		(SKYLINE_RANK_BOUND_MAX-SKYLINE_RANK_BOUND_MIN)
++
++/* ----------------
++ *		elimination filter node
++ * ----------------
++ */
++typedef Skyline ElimFilter;
++
+ /* ---------------
+  *	 group node -
+  *		Used for queries with GROUP BY (but no aggregates) specified.
+diff --git a/src/include/nodes/relation.h b/src/include/nodes/relation.h
+index 46c118f..c3d632d 100644
+--- a/src/include/nodes/relation.h
++++ b/src/include/nodes/relation.h
+@@ -163,6 +163,7 @@ typedef struct PlannerInfo
+ 								 * actual pathkeys afterwards */
+ 
+ 	List	   *group_pathkeys; /* groupClause pathkeys, if any */
++	List	   *skyline_pathkeys;	/* skylineClause pathkeys, if any */
+ 	List	   *sort_pathkeys;	/* sortClause pathkeys, if any */
+ 
+ 	List	   *initial_rels;	/* RelOptInfos we are now trying to join */
+diff --git a/src/include/optimizer/cost.h b/src/include/optimizer/cost.h
+index 6a62502..97fe5ff 100644
+--- a/src/include/optimizer/cost.h
++++ b/src/include/optimizer/cost.h
+@@ -72,6 +72,7 @@ extern void cost_functionscan(Path *path, PlannerInfo *root,
+ 				  RelOptInfo *baserel);
+ extern void cost_valuesscan(Path *path, PlannerInfo *root,
+ 				RelOptInfo *baserel);
++extern void cost_skyline(Path *path, PlannerInfo *root, Cost input_cost, double input_tuples, int width, double output_tuples, int skyline_dim, SkylineMethod skyline_method, int limit_tuples);
+ extern void cost_sort(Path *path, PlannerInfo *root,
+ 		  List *pathkeys, Cost input_cost, double tuples, int width,
+ 		  double limit_tuples);
+diff --git a/src/include/optimizer/paths.h b/src/include/optimizer/paths.h
+index 4434957..7681c83 100644
+--- a/src/include/optimizer/paths.h
++++ b/src/include/optimizer/paths.h
+@@ -155,11 +155,15 @@ typedef enum
+ extern List *canonicalize_pathkeys(PlannerInfo *root, List *pathkeys);
+ extern PathKeysComparison compare_pathkeys(List *keys1, List *keys2);
+ extern bool pathkeys_contained_in(List *keys1, List *keys2);
++extern bool skyline_pathkeys_contained_in(List *keys1, List *keys2, int *nuseful);
+ extern Path *get_cheapest_path_for_pathkeys(List *paths, List *pathkeys,
+ 							   CostSelector cost_criterion);
+ extern Path *get_cheapest_fractional_path_for_pathkeys(List *paths,
+ 										  List *pathkeys,
+ 										  double fraction);
++extern Path *get_cheapest_fractional_path_for_skyline_pathkeys(List *paths,
++										  List *pathkeys,
++										  double fraction);
+ extern List *build_index_pathkeys(PlannerInfo *root, IndexOptInfo *index,
+ 					 ScanDirection scandir);
+ extern List *convert_subquery_pathkeys(PlannerInfo *root, RelOptInfo *rel,
+@@ -172,6 +176,10 @@ extern List *make_pathkeys_for_sortclauses(PlannerInfo *root,
+ 							  List *sortclauses,
+ 							  List *tlist,
+ 							  bool canonicalize);
++extern List *make_pathkeys_for_skylineclause(PlannerInfo *root,
++											 SkylineClause *skylineclause,
++											 List *tlist,
++											 bool canonicalize);
+ extern void cache_mergeclause_eclasses(PlannerInfo *root,
+ 						   RestrictInfo *restrictinfo);
+ extern List *find_mergeclauses_for_pathkeys(PlannerInfo *root,
+diff --git a/src/include/optimizer/planmain.h b/src/include/optimizer/planmain.h
+index f7fded8..c28e046 100644
+--- a/src/include/optimizer/planmain.h
++++ b/src/include/optimizer/planmain.h
+@@ -22,7 +22,7 @@
+  */
+ extern void query_planner(PlannerInfo *root, List *tlist,
+ 			  double tuple_fraction, double limit_tuples,
+-			  Path **cheapest_path, Path **sorted_path,
++			  Path **cheapest_path, Path **sorted_path, Path **skyline_path,
+ 			  double *num_groups);
+ 
+ /*
+@@ -38,6 +38,8 @@ extern Plan *create_plan(PlannerInfo *root, Path *best_path);
+ extern SubqueryScan *make_subqueryscan(List *qptlist, List *qpqual,
+ 				  Index scanrelid, Plan *subplan, List *subrtable);
+ extern Append *make_append(List *appendplans, bool isTarget, List *tlist);
++extern Skyline *make_skyline(PlannerInfo *root, Plan *lefttree, Node *skyline_clause, SkylineMethod skyline_method, int limit_tuples);
++extern ElimFilter *make_elimfilter(PlannerInfo *root, Plan *lefttree, Node *skyline_clause, int limit_tuples);
+ extern Sort *make_sort_from_pathkeys(PlannerInfo *root, Plan *lefttree,
+ 						List *pathkeys, double limit_tuples);
+ extern Sort *make_sort_from_sortclauses(PlannerInfo *root, List *sortcls,
+diff --git a/src/include/optimizer/tlist.h b/src/include/optimizer/tlist.h
+index c7150a0..464a468 100644
+--- a/src/include/optimizer/tlist.h
++++ b/src/include/optimizer/tlist.h
+@@ -27,6 +27,8 @@ extern TargetEntry *get_sortgroupref_tle(Index sortref,
+ 					 List *targetList);
+ extern TargetEntry *get_sortgroupclause_tle(SortClause *sortClause,
+ 						List *targetList);
++extern TargetEntry *get_skylineclause_tle(SkylineOf *skylineOf,
++						List *targetList);
+ extern Node *get_sortgroupclause_expr(SortClause *sortClause,
+ 						 List *targetList);
+ extern List *get_sortgrouplist_exprs(List *sortClauses,
+diff --git a/src/include/parser/parse_clause.h b/src/include/parser/parse_clause.h
+index e103b4f..3ee8800 100644
+--- a/src/include/parser/parse_clause.h
++++ b/src/include/parser/parse_clause.h
+@@ -28,6 +28,8 @@ extern Node *transformLimitClause(ParseState *pstate, Node *clause,
+ 					 const char *constructName);
+ extern List *transformGroupClause(ParseState *pstate, List *grouplist,
+ 					 List **targetlist, List *sortClause);
++extern Node *transformSkylineClause(ParseState *pstate, Node *skylineOfClause,
++					List **targetlist, bool resolveUnknown);
+ extern List *transformSortClause(ParseState *pstate, List *orderlist,
+ 					List **targetlist, bool resolveUnknown);
+ extern List *transformDistinctClause(ParseState *pstate, List *distinctlist,
+@@ -36,11 +38,16 @@ extern List *transformDistinctClause(ParseState *pstate, List *distinctlist,
+ extern List *addAllTargetsToSortList(ParseState *pstate,
+ 						List *sortlist, List *targetlist,
+ 						bool resolveUnknown);
++extern List *addTargetToSkylineList(ParseState *pstate, TargetEntry *tle,
++					List *skylinelist, List *targetlist,
++					SkylineOfDir skylineof_dir, SkylineOfNulls skylineof_nulls,
++					List *skylineof_opname, bool resolveUnknown);
+ extern List *addTargetToSortList(ParseState *pstate, TargetEntry *tle,
+ 					List *sortlist, List *targetlist,
+ 					SortByDir sortby_dir, SortByNulls sortby_nulls,
+ 					List *sortby_opname, bool resolveUnknown);
+ extern Index assignSortGroupRef(TargetEntry *tle, List *tlist);
++extern bool targetIsInSkylineList(TargetEntry *tle, Oid skylineop, List *skylineList);
+ extern bool targetIsInSortList(TargetEntry *tle, Oid sortop, List *sortList);
+ 
+ #endif   /* PARSE_CLAUSE_H */
+diff --git a/src/include/utils/selfuncs.h b/src/include/utils/selfuncs.h
+index 10e5af4..a89fcfc 100644
+--- a/src/include/utils/selfuncs.h
++++ b/src/include/utils/selfuncs.h
+@@ -106,6 +106,8 @@ extern bool get_restriction_variable(PlannerInfo *root, List *args,
+ extern void get_join_variables(PlannerInfo *root, List *args,
+ 				   VariableStatData *vardata1,
+ 				   VariableStatData *vardata2);
++extern bool get_variable_range(PlannerInfo *root, VariableStatData *vardata,
++							   Oid sortop, Datum *min, Datum *max);
+ extern double get_variable_numdistinct(VariableStatData *vardata);
+ extern double mcv_selectivity(VariableStatData *vardata, FmgrInfo *opproc,
+ 				Datum constval, bool varonleft,
+diff --git a/src/include/utils/tuplestore.h b/src/include/utils/tuplestore.h
+index 7ef7b5f..ab7c639 100644
+--- a/src/include/utils/tuplestore.h
++++ b/src/include/utils/tuplestore.h
+@@ -66,5 +66,6 @@ extern bool tuplestore_ateof(Tuplestorestate *state);
+ extern void tuplestore_rescan(Tuplestorestate *state);
+ extern void tuplestore_markpos(Tuplestorestate *state);
+ extern void tuplestore_restorepos(Tuplestorestate *state);
++extern void tuplestore_catchup(Tuplestorestate *state);
+ 
+ #endif   /* TUPLESTORE_H */
+diff --git a/src/test/regress/parallel_schedule b/src/test/regress/parallel_schedule
+index 0aba92c..3af24a6 100644
+--- a/src/test/regress/parallel_schedule
++++ b/src/test/regress/parallel_schedule
+@@ -90,3 +90,8 @@ test: stats
+ 
+ # run tablespace by itself
+ test: tablespace
++
++# ----------
++# Another group of parallel tests
++# ----------
++test: skyline_base
+diff --git a/src/test/regress/serial_schedule b/src/test/regress/serial_schedule
+index 15f179a..5f5ab92 100644
+--- a/src/test/regress/serial_schedule
++++ b/src/test/regress/serial_schedule
+@@ -115,3 +115,4 @@ test: largeobject
+ test: xml
+ test: stats
+ test: tablespace
++test: skyline_base

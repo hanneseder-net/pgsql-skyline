@@ -11,8 +11,8 @@
 
 % multi-objective <=> multikriteriell
 % http://dict.leo.org/forum/viewUnsolvedquery.php?idThread=532247
-Im Bereich der multikriteriellen Optimierung ist es aus Anwendersicht
-manchmal schwierig, eine geeignete Zielfunktion zu finden.
+Im Bereich der multikriteriellen Optimierung ist das Design einer
+geeigneten Zielfunktion aus Anwendersicht eine Herausforderung.
 %
 Der \emph{Skyline Operator} filtert aus einer potentiell gro\ss{}en
 Datenmenge \emph{interessante} Tupel heraus.
@@ -33,35 +33,46 @@ Optimalit\"at} und ihre Berechnung als \emph{Maximum Vektor
 Problem} bekannt.
 
 
-Diese Diplomarbeit pr\"asentiert unsere Arbeit, PostgreSQL, ein Open
-Source relationales Datenbankmanagementsystem (RDBMS), um den Skyline Operator zu
-erweitern.
+Ziel dieser Diplomarbeit ist PostgreSQL, ein Open Source relationales
+Datenbankmanagementsystem (RDBMS), um den Skyline Operator zu
+erweitern und Skyline Algorithmen im RDBMS Kontext zu evaluieren.
 %
-Unsere Implementierung bietet verschiedene \emph{physische Operatoren},
-um die Skyline zu berechnen und zwar: BNL, SFS und eine Variante von
-LESS.
+Das Endziel ist eine Skyline Abfrage Optimierung zu entwickeln, 
+die automatisch gute Abfragepl\"ane bez\"uglich I/O, Zeit und
+Speicherverbrauch erstellt.
 %
-Mit dieser Arbeit hoffen wir den Boden zu ebnen f\"ur weitere
-Forschung und den Skyline Operator von standalone Implementierungen in
-sein nat\"urliches Habitat, das RDBMS, zu verpflanzen.
-%
-Als Nebenresultat unserer Arbeit haben wir einen Fehler in der Originalversion von BNL
-entdeckt und liefern dazu eine korrigierte Version.
+Dieser Arbeit ebnet den Boden f\"ur weitere Forschung und verpflanzt
+den Skyline Operator von standalone Implementierungen in sein
+nat\"urliches Habitat, das RDBMS.
 
 
-Es ist wohlbekannt, dass die Performance von Skyline Abfragen von einer
-Reihe von Parametern abh\"angt.
+Unsere Implementierung bietet verschiedene \emph{physische
+Operatoren}, um die Skyline zu berechnen, allen voran: BNL, SFS und
+eine Variante von LESS.
+%
+Zus\"atzlich erweitern wir die Standardsyntax, um Semantik und
+verschiedene operationale Aspekte zu beeinflussen.
+%
+Als Nebenresultat unserer Arbeit haben wir einen Fehler in der
+Originalversion von BNL entdeckt und liefern dazu eine korrigierte
+Version.
+%
+Wir schlagen ein neues Einsatzgebiet f\"ur den Elimination Filter (EF)
+vor und zwar: BNL+EF. Diese Kombination stellt eine erhebliche
+Verbesserung gegen\"uber BNL dar.
+
+Es ist eine bekannte Tatsache, dass die Performance von Skyline
+Abfragen von einer Reihe von Parametern abh\"angt.
 %
 Aus umfangreichen Experimenten mit unserer Implementierung haben wir
-mehrere Regeln abgeleitet, die bemerkenswert einfach und n\"utzlich
-sind, aber nur schwer durch theoretische Untersuchungen zu gewinnen
-sind.
+mehrere bemerkenswert einfache und n\"utzliche Regeln abgeleitet, die
+nur schwer theoretisch zu gewinnen sind.
 %
-Unsere Resultate sind von Vorteil bei der Entwicklung von Heuristiken
-f\"ur Skyline Abfrage-Optimierung und in der Zwischenzeit liefern sie
-einen Beitrag zum tieferen Verst\"andnis der Skyline Abfrage
-Charakteristik.
+Unsere Resultate helfen Heuristiken f\"ur die Skyline
+Abfrage-Optimierung zu entwickeln und liefern einen Beitrag zum
+tieferen Verst\"andnis der Skyline Abfrage Charakteristik.
 
 
-Alle Resultate und der Source-Code sind auf
-\url{http://skyline.dbai.tuwien.ac.at/} online verf\"ugbar.
+Alle Resultate, der Source-Code und ein Web-Interface zum Testen
+unsere Implementierung sind auf
+\url{http://skyline.dbai.tuwien.ac.at/} verf\"ugbar.

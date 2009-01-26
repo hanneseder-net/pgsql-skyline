@@ -61,6 +61,8 @@
 
 \makeatletter
 \newcommand\ellipsis{\textcolor{blue}{\ensuremath{[\ldots]}}}%
+\newcommand\prebreak{\textcolor{blue}{\ensuremath{\hookleftarrow}}}
+\newcommand\postbreak{ \kern-1em\hbox to 1em{\textcolor{blue}{\ensuremath{\rightarrow}}\hss}}
 
 \newenvironment{interactive}
 {%
@@ -72,8 +74,6 @@
 \newcommand\commentskip{{\vspace{3pt}}}
 %\newcommand\prebreak{\hbox to 1em{\textcolor{blue}{\ensuremath{\hookleftarrow}}}}
 %\newcommand\postbreak{\hbox to 1em{\textcolor{blue}{\ensuremath{\hookrightarrow}}}}
-\newcommand\prebreak{\textcolor{blue}{\ensuremath{\hookleftarrow}}}
-\newcommand\postbreak{ \kern-1em\hbox to 1em{\textcolor{blue}{\ensuremath{\rightarrow}}\hss}}
 \begingroup\small\list{}{\listparindent 0\p@\itemindent\listparindent\leftmargin15\p@\rightmargin15\p@}\item[]\begin{alltt}}{\end{alltt}\endlist\endgroup}
 
 \newdimen\onecolumnwidth
@@ -3874,9 +3874,11 @@ The external interface is a simple iterator interface with a few more
 functions\footnote{see \srcref{src/include/utils/tuplewindow.h}}:
 
 \begin{itemize}
-\item \lstinline|TupleWindowState *tuplewindow_begin(int maxKBytes, int maxSlots, TupleWindowPolicy policy)|
-creates a tuple window with the maximum size of \lstinline|maxKBytes|
-KB or with a maximum of \lstinline|maxSlots| slots. The number of
+\item \lstinline|TupleWindowState *tuplewindow_begin(int maxKBytes, int maxSlots, | \prebreak \\%
+\postbreak \lstinline| TupleWindowPolicy policy)|
+creates a tuple window. The maximum size of the tuple window is 
+limited to \lstinline|maxKBytes|
+KB or \lstinline|maxSlots| slots. The number of
 slots is the stronger limit. For policy see the
 next subsubsection.  The returned value must be
 used in all subsequent calls to the tuple window interface functions.
@@ -3921,14 +3923,14 @@ returns true if the cursor is at the end of the tuple window.
 moves the cursor to the next tuple.
 
 \item \lstinline|void tuplewindow_removecurrent(TupleWindowState *state)|
-removes the current tuple.  Note that this also modifies the cursor.
+removes the current tuple.  Note that this modifies the cursor.
 So when calling \lstinline|tuplewindow_removecurrent|, calling
 \lstinline|tuplewindow_movenext| afterwards skips over a tuple.
 
 \item \lstinline|bool tuplewindow_gettupleslot(TupleWindowState *state, TupleTableSlot *slot, bool removeit)|
 gets the tuple at the current position of the cursor.  When called with
 \lstinline|removeit| true, the returned tuple is removed from the
-tuple window.  Note that this is not the same as calling
+tuple window.  This is not the same as calling
 \lstinline|tuplewindow_gettupleslot| and
 \lstinline|tuplewindow_removecurrent|, as
 \lstinline|tuplewindow_removecurrent| also frees the tuple itself and

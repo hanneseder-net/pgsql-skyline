@@ -243,7 +243,7 @@ problem}} \citep{Kung1975, Preparata1985}. The terms \emph{skyline} and
 \citet{Borzsonyi2001}. The following examples give a motivation why 
 \emph{skyline operator} is a good name for this type of
 \emph{preference queries}, they also illustrate the usage of the
-\idxsql{DIFF} and \inlinesql{DISTINCT} keyword. \idxonlysql{SKYLINE OF DISTINCT}
+\idxsql{DIFF} and \inlinesql{DISTINCT} keywords. \idxonlysql{SKYLINE OF DISTINCT}
 
 In \autoref{fig:threeDskyline} the yellow arrow indicates the
 direction of view and the colored cuboids illustrate
@@ -281,7 +281,7 @@ SELECT * FROM building SKYLINE OF x DIFF, z MAX;
 \end{interactive}
 
 \noindent
-in the above query $a$ and $b$ will be part of the answer, whereas in the following
+In the above query $a$ and $b$ will be part of the answer, whereas in the following one
 it is up to the database system to make a choice between $a$ or $b$, as they 
 are equally good:
 
@@ -332,7 +332,7 @@ However there are good reasons for including a \emph{skyline} or
 \begin{itemize}
 \item 
 From a user's perspective, it is easier to specify and easier to grasp
-what's going on, than a query with a correlated subquery or using
+what's going on than a query with a correlated subquery or using
 SQL's \idxsql{EXCEPT} (see \autoref{sql:rewrite-with-except}).
 
 \item
@@ -439,7 +439,7 @@ However we discovered several \emph{hidden rules}, which are
 remarkably simple and useful, but hard to obtain from the theoretical
 investigation.  We expect that our exposition of experimental results
 on skyline algorithms could serve as a guideline for developing
-heuristics of a skyline query optimizer, and in the meantime, provide
+heuristics of a skyline query optimizer, and in the meantime provide
 some insight for a deeper understanding of the skyline query
 characteristics.
 
@@ -6011,45 +6011,66 @@ before string data.
 \chapter{Conclusion}
 \label{chap:summary}
 
-In this thesis we presented the extension of the open source
-\idx{RDBMS} PostgreSQL with the skyline operator.  It is our strong belief that with
-this effort the skyline operator is in the habitat it belongs to.
+In this thesis we present the extension of PostgreSQL with the skyline
+operator and extensive experiments, with the ultimate goal of building
+a skyline query optimizer.
+%
+It is our strong belief that with this effort the skyline operator is
+in the habitat it belongs to.
 
-The algorithms we have implemented so far are BNL, SFS, and a variant
-of LESS.  
-We have extended the basic syntax of the \inlinesql{SKYLINE~OF}-clause
-\citep{Borzsonyi2001} in order to specify the following aspects:
+First, we give a general introduction and motivate why the name
+``skyline operator'' is a good choice.
+%
+Secondly, we give a formal definition of the skyline operator and we
+treat in detail how skyline queries can be rewritten into standard
+SQL.
+%
+Thirdly, we deal with existing non-index-based skyline algorithms.  We
+describe them using pseudo-code and show some of their properties,
+which are called ``physical properties'' in the database context.
+%
+We prove that the original version of BNL does not terminate in all
+cases and give a corrected version.
+%
+Furthermore we talk about related works.
 
-\begin{itemize}
-\item The treatment of NULL values (\idxsql{NULLS FIRST} and \idxsql{NULLS LAST})
-\item The usage of order relations other than $<$ and $>$ (\texttt{USING \emph{Op}})
-\item Operational aspects of skyline computation, such as 
-\begin{itemize}
-\item \emph{method} (\idxsql{BNL}, \idxsql{SFS}, \idxsql{MNL}, \idxsql{PRESORT} (2 dim only))
-\item \emph{tuple window size} in terms of memory and/or number of slots
-\item \emph{tuple window policy} (append, prepend, ranked by entropy, ranked by a random value)
-\item \emph{usage of indexes} (\idxsql{NOINDEX})
-\item \emph{usage of elimination filter (\idxsql{EF}), 
-  	with the possibility to influence the EF window in the same way
-  	as for the BNL or SFS node}
-\end{itemize}
-\end{itemize}
+
+In \autoref{chap:implementation} we describe the details of our
+implementation.
+%
+The way, the pseudo-code is given, fits into the pipelined
+architecture of the execution engine.
+%
+The algorithms we have implemented so far are two specialized
+algorithms for one dimensional skyline queries, a special case for two
+dimension (PRESORT), a \naive nested loop algorithm (MNL), BNL, SFS,
+and a variant of LESS.
+%
+We extend the basic syntax of the \inlinesql{SKYLINE~OF}-clause
+\citep{Borzsonyi2001} to allow influence on the semantics
+(treatment of \texttt{NULL} values, \ldots) and operational aspects
+(physical operator, tuple window size/policy, \ldots).
 
 A noteworthy result of our efforts is the site
 \url{http://skyline.dbai.tuwien.ac.at/}, where it is possible to
 test-drive our implementation and get an intuition for the behavior of
-the skyline operator.  Furthermore we provide a series of patches,
-applicable against the PostgreSQL 8.3 stable release. By means of that
-we hope to acquaint the skyline operator to a bigger audience and
-lay a brick for further research in the direction of integrating
-preference query concepts into RDBMSs.  We wish that at least one
-flavor of SQL preference clauses will make it into a future SQL
-standard.
+the skyline operator.
+%
+Furthermore we provide a series of patches, applicable against the
+PostgreSQL 8.3 stable release.
+%
+By means of that we hope to acquaint the skyline operator to a larger
+audience and lay the ground for further research in the direction of
+integrating preference query concepts into RDBMSs.
+%
+We wish that at least one flavor of SQL preference clauses will make
+it into a future SQL standard.
 
-We have conducted extensive experiments with a total workload of 
-more than 200~days of CPU time on various datasets.
-The experimental environment we have designed and set up for this
-task is noteworthy on its own.
+We have conducted extensive experiments with a total workload of more
+than 200~days of CPU time on various datasets.
+%
+The experimental environment we have designed and set up for this task
+is noteworthy on its own.
 %
 It is well known that the performance of skyline queries is sensitive
 to a number of parameters.
@@ -6057,9 +6078,9 @@ to a number of parameters.
 From our experimental results we were able to expose several findings
 which are difficult to be verified theoretically.  They are: (1) the
 elimination filter is effective only if the selectivity factor of the
-skyline query is not more than $0.1$; (2) for datasets up to $500$ tuples
-and of relatively small dimensions (e.g. up to five) BNL performs the
-best in all aspects.
+skyline query is not more than $0.1$; (2) for datasets up to $500$
+tuples and of relatively small dimensions (e.g. up to five) BNL
+performs the best in all aspects.
 %
 Our findings are beneficial for developing heuristics for the skyline
 query optimization, and in the meantime provide some insight for a

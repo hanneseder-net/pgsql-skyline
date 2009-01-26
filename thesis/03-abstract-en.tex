@@ -9,9 +9,8 @@
 \addtocontents{toc}{\protect \contentsline {chapter}{Abstract\revision}{\thepage }{}}
 
 
-In the realm of multi-criteria optimization it is sometimes hard from
-a user's perspective to come up with an appropriate objective
-function.
+In the realm of multi-criteria optimization designing an appropriate
+objective function is a challenging task from a user's perspective.
 %
 The \emph{skyline operator} filters out the \emph{interesting} tuples
 from a potentially large dataset.  A tuple belongs to the \emph{skyline} if
@@ -30,29 +29,41 @@ The notion of skyline is also called \emph{Pareto optimal set} and its
 computation \emph{maximum vector problem}.
 
 
-In this thesis we present our work on extending PostgreSQL, an open
-source relational database management system (RDBMS), with the skyline operator.
+In this thesis we aim at extending PostgreSQL, an open source
+relational database management system (RDBMS), with the skyline
+operator and the evaluation of skyline algorithms in the RDBMS
+context, with the ultimate goal of building a skyline query optimizer
+to automatically generate a good query plan w.r.t. I/O, time, and
+memory consumption.
 %
+This effort lays the ground for future work in this area and moves the
+skyline operator from standalone implementations to the habitat it
+belongs to: an RDBMS.
+
+
 Our implementation provides several physical operators for computing
-the skyline, namely: BNL, SFS, and a variant of LESS.
+the skyline, including: BNL, SFS, and a variant of LESS.
 %
-With this effort we hope to lay the ground for future work in this
-area and move the skyline operator from standalone implementations to
-the habitat it belongs to: an RDBMS.
+In addition, we extend the standard syntax to influence the
+semantics and various operational aspects.
 %
-As a byproduct of our work, we discovered a flaw in the original version of BNL and give
-a corrected version.
+As a byproduct of our work, we discovered a flaw in the original
+version of BNL and give a corrected version.
+%
+We propose a new use case for the elimination filter (EF), namely:
+BNL+EF. It turns out that BNL+EF is a substantial improvement to BNL.
 
 It is well known that the performance of skyline queries is sensitive
 to a number of parameters.  
 %
-From extensive experiments on skyline implementations we have
-discovered several rules, which are remarkably simple and useful, but
-hard to obtain from theoretical investigation.
+Extensive experiments on skyline implementations helped us to discover
+several remarkably simple and useful rules, which are hard to obtain
+from theoretical investigations.
 %
 Our findings are beneficial for developing heuristics for the skyline
 query optimization, and in the meantime, provide some insight for a
 deeper understanding of the skyline query characteristics.
 
-All results and source code are available at:
+All results, the source code, and a web-interface to test-drive the
+implementation are available at:
 \url{http://skyline.dbai.tuwien.ac.at/}.

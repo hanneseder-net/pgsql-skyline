@@ -25,7 +25,7 @@
 
 \newcommand\thetitle{On Extending PostgreSQL with the Skyline Operator}
 \newcommand\theauthor{AUTHOR}
-\newcommand\thedate{28.01.2009}
+\newcommand\thedate{27.01.2009}
 
 \title{\thetitle}
 \author{\theauthor}

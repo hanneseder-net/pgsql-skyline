@@ -69,7 +69,7 @@ skyline.bib: ../bibtex/bib/skyline/skyline.bib
 
 
 00-thesis-heder-twoside.tex: 00-thesis.skel Makefile
-	cpp -C -P -D"OPTIONS=a4paper,10pt,final" -D"TWOSIDE=1" -D"AUTHOR=Ing. Bakk.techn. Hannes Eder" $< >$@
+	cpp -C -P -D"OPTIONS=a4paper,10pt,final" -D"TWOSIDE=1" -D"AUTHOR=Hannes Eder" $< >$@
 
 00-thesis-jeder-twoside.tex: 00-thesis.skel Makefile
 	cpp -C -P -D"OPTIONS=a4paper,10pt,final" -D"TWOSIDE=1" -D"AUTHOR=Ing. Bakk.techn. Johann Eder" $< >$@
